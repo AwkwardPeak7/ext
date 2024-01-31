@@ -40,7 +40,7 @@ class PornPics : HttpSource() {
     private val limit = 20
 
     override fun popularMangaRequest(page: Int): Request {
-        return GET("$baseUrl/popular/?limit=$limit&offset=${(page - 1) * limit}", headers)
+        return GET("$baseUrl/popular/?limit=$limit&offset=${pageOffset(page)}", headers)
     }
 
     override fun popularMangaParse(response: Response): MangasPage {
@@ -87,7 +87,7 @@ class PornPics : HttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
-        return GET("$baseUrl/recent/?limit=$limit&offset=${(page - 1) * limit}", headers)
+        return GET("$baseUrl/recent/?limit=$limit&offset=${pageOffset(page)}", headers)
     }
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
@@ -96,7 +96,7 @@ class PornPics : HttpSource() {
         val url = "$baseUrl/search/srch.php".toHttpUrl().newBuilder()
             .addQueryParameter("q", query.trim())
             .addQueryParameter("limit", limit.toString())
-            .addQueryParameter("offset", ((page - 1) * limit).toString())
+            .addQueryParameter("offset", pageOffset(page).toString())
             .build()
 
         return GET(url, headers)
@@ -149,6 +149,8 @@ class PornPics : HttpSource() {
             Page(idx, "", img.absUrl("data-src"))
         }
     }
+
+    private fun pageOffset(page: Int): Int = (page - 1) * limit
 
     private inline fun <reified T> Response.parseAs(): T = use {
         json.decodeFromString(it.body.string())
