@@ -37,6 +37,8 @@ class PornPics : HttpSource() {
     override fun headersBuilder() = super.headersBuilder()
         .set("Referer", "$baseUrl/")
 
+    private val limit = 20
+
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/popular/?limit=$limit&offset=${(page - 1) * limit}", headers)
     }
@@ -150,10 +152,6 @@ class PornPics : HttpSource() {
 
     private inline fun <reified T> Response.parseAs(): T = use {
         json.decodeFromString(it.body.string())
-    }
-
-    companion object {
-        private const val limit = 20
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
