@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.en.ascalonscans
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.FormBody
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor

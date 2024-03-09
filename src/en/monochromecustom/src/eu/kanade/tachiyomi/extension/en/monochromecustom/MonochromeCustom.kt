@@ -3,8 +3,8 @@ package eu.kanade.tachiyomi.extension.en.monochromecustom
 import android.app.Application
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceScreen
-import eu.kanade.tachiyomi.multisrc.monochrome.MonochromeCMS
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import keiyoushix.multisrc.monochrome.MonochromeCMS
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

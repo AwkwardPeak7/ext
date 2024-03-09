@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.readallcomicscom
 
-import eu.kanade.tachiyomi.multisrc.readallcomics.ReadAllComics
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.readallcomics.ReadAllComics
 import org.jsoup.nodes.Element
 
 class ReadAllComicsCom : ReadAllComics("ReadAllComics", "https://readallcomics.com", "en") {

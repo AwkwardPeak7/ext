@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.fr.gloryscans
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import java.text.SimpleDateFormat
 import java.util.Locale
 

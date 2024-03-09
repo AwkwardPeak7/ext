@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.en.mangakakalots
 
-import eu.kanade.tachiyomi.multisrc.mangabox.MangaBox
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.mangabox.MangaBox
 import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Locale

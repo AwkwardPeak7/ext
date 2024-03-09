@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.komikchan
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.Request
 
 class KomikChan : Madara("Komik Chan", "https://komikchan.com", "en") {

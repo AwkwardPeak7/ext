@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.pt.prismascans
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.asObservable
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import rx.Observable
 import java.text.SimpleDateFormat

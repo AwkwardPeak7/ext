@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.mangatyrant
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class MangaTyrant : Madara("MangaTyrant", "https://mangatyrant.com", "en") {
     override val useNewChapterEndpoint = true

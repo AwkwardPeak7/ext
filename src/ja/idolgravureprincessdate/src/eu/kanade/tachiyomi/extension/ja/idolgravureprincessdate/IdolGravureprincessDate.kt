@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.ja.idolgravureprincessdate
 
-import eu.kanade.tachiyomi.multisrc.gravureblogger.GravureBlogger
+import keiyoushix.multisrc.gravureblogger.GravureBlogger
 
 class IdolGravureprincessDate : GravureBlogger(
     "Idol. gravureprincess .date",

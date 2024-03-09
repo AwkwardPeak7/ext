@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.multisrc.bilibili
+package keiyoushix.multisrc.bilibili
 
 import android.app.Application
 import android.content.SharedPreferences

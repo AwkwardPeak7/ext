@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.multisrc.mangasee
+package keiyoushix.multisrc.mangasee
 
 import android.app.Activity
 import android.content.ActivityNotFoundException

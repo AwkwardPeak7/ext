@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.ru.yaoichan
 
-import eu.kanade.tachiyomi.multisrc.multichan.MultiChan
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushix.multisrc.multichan.MultiChan
 import okhttp3.Request
 
 class YaoiChan : MultiChan("YaoiChan", "https://yaoi-chan.me", "ru") {

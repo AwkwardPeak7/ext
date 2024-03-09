@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.extension.en.mangasee
 
-import eu.kanade.tachiyomi.multisrc.nepnep.NepNep
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushix.multisrc.nepnep.NepNep
 import okhttp3.OkHttpClient
 import rx.Observable
 import java.util.concurrent.TimeUnit

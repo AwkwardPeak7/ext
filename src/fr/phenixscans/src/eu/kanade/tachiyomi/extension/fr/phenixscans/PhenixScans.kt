@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.fr.phenixscans
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat
 import java.util.Locale

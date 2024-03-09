@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.mangaforfreecom
 
 import android.annotation.SuppressLint
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext

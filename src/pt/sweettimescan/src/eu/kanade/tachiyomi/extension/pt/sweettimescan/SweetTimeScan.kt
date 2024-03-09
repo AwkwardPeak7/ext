@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.pt.sweettimescan
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import org.jsoup.nodes.Element

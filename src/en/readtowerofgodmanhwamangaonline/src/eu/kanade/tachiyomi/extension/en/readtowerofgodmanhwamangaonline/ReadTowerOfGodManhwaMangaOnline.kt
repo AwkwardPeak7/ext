@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readtowerofgodmanhwamangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadTowerOfGodManhwaMangaOnline : MangaCatalog("Read Tower of God Manhwa Manga Online", "https://ww1.readtowerofgod.com", "en") {
     override val sourceList = listOf(

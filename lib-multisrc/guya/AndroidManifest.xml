@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name="eu.kanade.tachiyomi.multisrc.guya.GuyaUrlActivity"
+            android:name="keiyoushix.multisrc.guya.GuyaUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

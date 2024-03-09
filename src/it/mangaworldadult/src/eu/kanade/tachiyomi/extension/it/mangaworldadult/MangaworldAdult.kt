@@ -1,5 +1,5 @@
 package eu.kanade.tachiyomi.extension.it.mangaworldadult
 
-import eu.kanade.tachiyomi.multisrc.mangaworld.MangaWorld
+import keiyoushix.multisrc.mangaworld.MangaWorld
 
 class MangaworldAdult : MangaWorld("MangaworldAdult", "https://www.mangaworldadult.com", "it")

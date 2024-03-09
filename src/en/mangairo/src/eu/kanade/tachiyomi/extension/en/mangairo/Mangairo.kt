@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.en.mangairo
 
-import eu.kanade.tachiyomi.multisrc.mangabox.MangaBox
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.mangabox.MangaBox
 import okhttp3.Request
 import org.jsoup.nodes.Element
 import java.text.SimpleDateFormat

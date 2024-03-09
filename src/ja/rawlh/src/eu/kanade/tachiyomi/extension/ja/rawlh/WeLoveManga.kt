@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.ja.rawlh
 
-import eu.kanade.tachiyomi.multisrc.fmreader.FMReader
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.fmreader.FMReader
 import okhttp3.Request
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

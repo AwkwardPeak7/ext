@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.extension.pt.cerisescans
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.text.SimpleDateFormat

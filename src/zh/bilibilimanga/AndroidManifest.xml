@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name="eu.kanade.tachiyomi.multisrc.bilibili.BilibiliUrlActivity"
+            android:name="keiyoushix.multisrc.bilibili.BilibiliUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

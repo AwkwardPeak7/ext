@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.es.knightnoscanlation
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import java.text.SimpleDateFormat

@@ -4,12 +4,12 @@ import android.app.Application
 import android.content.SharedPreferences
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
-import eu.kanade.tachiyomi.multisrc.webtoons.Webtoons
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.Page
 import keiyoushix.lib.textinterceptor.TextInterceptor
 import keiyoushix.lib.textinterceptor.TextInterceptorHelper
+import keiyoushix.multisrc.webtoons.Webtoons
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient

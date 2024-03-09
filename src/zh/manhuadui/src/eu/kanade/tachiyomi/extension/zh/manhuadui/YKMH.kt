@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.zh.manhuadui
 
-import eu.kanade.tachiyomi.multisrc.sinmh.SinMH
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushix.multisrc.sinmh.SinMH
 import org.jsoup.nodes.Document
 
 // This site blocks IP outside China

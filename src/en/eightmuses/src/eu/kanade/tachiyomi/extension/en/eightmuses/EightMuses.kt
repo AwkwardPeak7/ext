@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.eightmuses
 
-import eu.kanade.tachiyomi.multisrc.eromuse.EroMuse
+import keiyoushix.multisrc.eromuse.EroMuse
 import kotlin.ExperimentalStdlibApi
 
 @ExperimentalStdlibApi

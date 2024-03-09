@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.ca.fansubscathentai
 
-import eu.kanade.tachiyomi.multisrc.fansubscat.FansubsCat
+import keiyoushix.multisrc.fansubscat.FansubsCat
 
 class FansubsCatHentai : FansubsCat(
     "Fansubs.cat - Hentai",

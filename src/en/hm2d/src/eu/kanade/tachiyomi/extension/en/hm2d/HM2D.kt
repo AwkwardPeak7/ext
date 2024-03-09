@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.hm2d
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class HM2D : Madara(
     "HM2D",

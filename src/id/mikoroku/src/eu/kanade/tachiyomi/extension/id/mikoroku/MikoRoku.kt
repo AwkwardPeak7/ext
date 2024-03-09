@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.extension.id.mikoroku
 
-import eu.kanade.tachiyomi.multisrc.zeistmanga.Genre
-import eu.kanade.tachiyomi.multisrc.zeistmanga.Status
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.zeistmanga.Genre
+import keiyoushix.multisrc.zeistmanga.Status
+import keiyoushix.multisrc.zeistmanga.ZeistManga
 import okhttp3.Response
 import org.jsoup.nodes.Element
 

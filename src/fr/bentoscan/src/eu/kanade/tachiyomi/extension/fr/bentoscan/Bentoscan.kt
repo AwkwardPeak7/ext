@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.fr.bentoscan
 
-import eu.kanade.tachiyomi.multisrc.mmrcms.MMRCMS
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushix.multisrc.mmrcms.MMRCMS
 import okhttp3.Request
 
 class Bentoscan : MMRCMS(

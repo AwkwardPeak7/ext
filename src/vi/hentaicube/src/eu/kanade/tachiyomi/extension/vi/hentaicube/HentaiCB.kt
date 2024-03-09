@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.vi.hentaicube
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushix.multisrc.madara.Madara
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat
 import java.util.Locale

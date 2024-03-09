@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readthepromisedneverlandmangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadThePromisedNeverlandMangaOnline : MangaCatalog("Read The Promised Neverland Manga Online", "https://ww3.readneverland.com", "en") {
     override val sourceList = listOf(

@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.ja.shonenjumpplus
 
-import eu.kanade.tachiyomi.multisrc.gigaviewer.GigaViewer
+import keiyoushix.multisrc.gigaviewer.GigaViewer
 import okhttp3.OkHttpClient
 
 class ShonenJumpPlus : GigaViewer(

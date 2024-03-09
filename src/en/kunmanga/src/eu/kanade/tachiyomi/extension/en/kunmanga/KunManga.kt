@@ -1,5 +1,5 @@
 package eu.kanade.tachiyomi.extension.en.kunmanga
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class KunManga : Madara("Kun Manga", "https://kunmanga.com", "en")

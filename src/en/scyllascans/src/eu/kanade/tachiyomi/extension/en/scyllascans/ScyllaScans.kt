@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.scyllascans
 
-import eu.kanade.tachiyomi.multisrc.readerfront.ReaderFront
+import keiyoushix.multisrc.readerfront.ReaderFront
 
 class ScyllaScans : ReaderFront("Scylla Scans", "https://scyllascans.org", "en") {
     override fun getImageCDN(path: String, width: Int) =

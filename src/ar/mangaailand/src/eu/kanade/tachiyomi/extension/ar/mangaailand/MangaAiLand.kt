@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.ar.mangaailand
 
-import eu.kanade.tachiyomi.multisrc.zeistmanga.Genre
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
+import keiyoushix.multisrc.zeistmanga.Genre
+import keiyoushix.multisrc.zeistmanga.ZeistManga
 
 class MangaAiLand : ZeistManga("Manga Ai Land", "https://manga-ai-land.blogspot.com", "ar") {
 

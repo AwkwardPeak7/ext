@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.extension.en.erofus
 
-import eu.kanade.tachiyomi.multisrc.eromuse.EroMuse
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.eromuse.EroMuse
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Response
 import rx.Observable

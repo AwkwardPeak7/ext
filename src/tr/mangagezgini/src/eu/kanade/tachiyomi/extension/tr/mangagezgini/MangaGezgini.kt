@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.tr.mangagezgini
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushix.multisrc.madara.Madara
 import org.jsoup.nodes.Element
 import java.text.SimpleDateFormat
 import java.util.Locale

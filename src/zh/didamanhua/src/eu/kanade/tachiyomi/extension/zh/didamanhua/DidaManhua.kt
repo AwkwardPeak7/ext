@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.zh.didamanhua
 
-import eu.kanade.tachiyomi.multisrc.mccms.MCCMS
-import eu.kanade.tachiyomi.multisrc.mccms.MCCMSConfig
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.mccms.MCCMS
+import keiyoushix.multisrc.mccms.MCCMSConfig
 
 class DidaManhua : MCCMS(
     "嘀嗒漫画",

@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.pt.wickedwitchscannovo
 
-import eu.kanade.tachiyomi.multisrc.peachscan.PeachScan
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.peachscan.PeachScan
 import java.util.concurrent.TimeUnit
 
 class WickedWitchScan : PeachScan("Wicked Witch Scan", "https://wicked-witch-scan.com", "pt-BR") {

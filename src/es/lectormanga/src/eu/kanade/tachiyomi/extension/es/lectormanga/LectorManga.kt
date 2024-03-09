@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.extension.es.lectormanga
 
-import eu.kanade.tachiyomi.multisrc.lectortmo.LectorTmo
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.lectortmo.LectorTmo
 import okhttp3.Response
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

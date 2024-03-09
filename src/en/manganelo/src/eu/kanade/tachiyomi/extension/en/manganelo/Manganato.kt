@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.manganelo
 
-import eu.kanade.tachiyomi.multisrc.mangabox.MangaBox
 import eu.kanade.tachiyomi.network.GET
+import keiyoushix.multisrc.mangabox.MangaBox
 import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale

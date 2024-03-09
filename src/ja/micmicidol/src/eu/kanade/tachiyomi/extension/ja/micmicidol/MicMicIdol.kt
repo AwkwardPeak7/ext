@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.ja.micmicidol
 
-import eu.kanade.tachiyomi.multisrc.gravureblogger.GravureBlogger
+import keiyoushix.multisrc.gravureblogger.GravureBlogger
 
 class MicMicIdol : GravureBlogger("MIC MIC IDOL", "https://www.micmicidol.club", "ja") {
     override val labelFilters = buildMap {

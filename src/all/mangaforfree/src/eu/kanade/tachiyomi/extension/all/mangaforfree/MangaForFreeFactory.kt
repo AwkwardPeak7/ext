@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.all.mangaforfree
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 

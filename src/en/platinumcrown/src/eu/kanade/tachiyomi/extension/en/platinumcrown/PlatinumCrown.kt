@@ -1,5 +1,5 @@
 package eu.kanade.tachiyomi.extension.en.platinumcrown
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class PlatinumCrown : Madara("Platinum Crown", "https://platinumscans.com", "en")

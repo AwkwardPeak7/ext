@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.extension.id.komikplay
 
-import eu.kanade.tachiyomi.multisrc.zmanga.ZManga
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.zmanga.ZManga
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import org.jsoup.nodes.Element

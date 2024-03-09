@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.readkomik
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 
 class ReadKomik : MangaThemesia("Readkomik", "https://readkomik.com", "en") {

@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.id.mangasusu
 
 import app.cash.quickjs.QuickJs
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Cookie
 import okhttp3.Interceptor
 import okhttp3.Response

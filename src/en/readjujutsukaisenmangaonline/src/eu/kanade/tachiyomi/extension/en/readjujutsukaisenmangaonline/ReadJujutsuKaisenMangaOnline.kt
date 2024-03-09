@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readjujutsukaisenmangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadJujutsuKaisenMangaOnline : MangaCatalog("Read Jujutsu Kaisen Manga Online", "https://ww1.readjujutsukaisen.com", "en") {
     override val sourceList = listOf(

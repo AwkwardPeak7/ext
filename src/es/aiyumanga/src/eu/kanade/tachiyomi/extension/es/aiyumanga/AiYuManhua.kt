@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.es.aiyumanga
 
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.zeistmanga.ZeistManga
 import java.util.concurrent.TimeUnit
 
 class AiYuManhua : ZeistManga(

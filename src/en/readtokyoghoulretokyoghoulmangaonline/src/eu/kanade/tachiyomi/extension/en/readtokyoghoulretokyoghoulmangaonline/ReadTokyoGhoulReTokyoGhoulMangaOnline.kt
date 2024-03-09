@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readtokyoghoulretokyoghoulmangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadTokyoGhoulReTokyoGhoulMangaOnline : MangaCatalog("Read Tokyo Ghoul Re & Tokyo Ghoul Manga Online", "https://ww8.tokyoghoulre.com", "en") {
     override val sourceList = listOf(

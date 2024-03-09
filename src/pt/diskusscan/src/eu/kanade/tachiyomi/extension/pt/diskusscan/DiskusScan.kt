@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.extension.pt.diskusscan
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale

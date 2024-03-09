@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.es.mangaland
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.madara.Madara
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit

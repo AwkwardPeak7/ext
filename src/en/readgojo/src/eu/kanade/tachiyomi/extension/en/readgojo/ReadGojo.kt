@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.readgojo
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import org.jsoup.nodes.Element
 
 class ReadGojo : MangaThemesia("ReadGojo", "https://readgojo.com", "en") {

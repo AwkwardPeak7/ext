@@ -5,7 +5,6 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.preference.EditTextPreference
-import eu.kanade.tachiyomi.multisrc.multichan.MultiChan
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservable
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -15,6 +14,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.multichan.MultiChan
 import okhttp3.Headers
 import okhttp3.Request
 import okhttp3.Response

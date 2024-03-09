@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.es.nekoscans
 
 import android.util.Base64
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import org.jsoup.nodes.Document

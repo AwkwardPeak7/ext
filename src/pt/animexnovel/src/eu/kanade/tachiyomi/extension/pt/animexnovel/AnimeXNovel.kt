@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.extension.pt.animexnovel
 
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.zeistmanga.ZeistManga
 import okhttp3.Response
 
 class AnimeXNovel : ZeistManga("AnimeXNovel", "https://www.animexnovel.com", "pt-BR") {

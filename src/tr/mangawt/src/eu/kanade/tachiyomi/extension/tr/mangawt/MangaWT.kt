@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.tr.mangawt
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class MangaWT : Madara(
     "MangaWT",

@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.babelwuxia
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class BabelWuxia : Madara("Babel Wuxia", "https://babelwuxia.com", "en") {
 

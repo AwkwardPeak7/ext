@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.pt.burningscans
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale

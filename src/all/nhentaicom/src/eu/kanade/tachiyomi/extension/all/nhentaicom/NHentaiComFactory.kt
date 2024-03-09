@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.all.nhentaicom
 
-import eu.kanade.tachiyomi.multisrc.hentaihand.HentaiHand
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushix.multisrc.hentaihand.HentaiHand
 import okhttp3.OkHttpClient
 
 class NHentaiComFactory : SourceFactory {

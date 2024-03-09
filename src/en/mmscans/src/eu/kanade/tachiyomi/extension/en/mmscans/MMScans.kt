@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.en.mmscans
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.madara.Madara
 import org.jsoup.nodes.Element
 
 class MMScans : Madara("MMScans", "https://mm-scans.org", "en") {

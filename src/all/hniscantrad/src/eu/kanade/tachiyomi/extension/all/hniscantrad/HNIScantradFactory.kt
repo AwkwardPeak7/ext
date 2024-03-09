@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.all.hniscantrad
 
-import eu.kanade.tachiyomi.multisrc.foolslide.FoolSlide
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushix.multisrc.foolslide.FoolSlide
 import okhttp3.Response
 
 class HNIScantradFactory : SourceFactory {

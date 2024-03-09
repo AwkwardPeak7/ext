@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.shoujohearts
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class ShoujoHearts : Madara("ShoujoHearts", "https://shoujohearts.com", "en") {
 

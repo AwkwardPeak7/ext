@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.ko.manytoonclub
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class ManyToonClub : Madara("ManyToonClub", "https://manytoon.club", "ko") {
 

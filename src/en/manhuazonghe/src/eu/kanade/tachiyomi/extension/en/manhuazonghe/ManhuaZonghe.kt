@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.manhuazonghe
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class ManhuaZonghe : Madara("Manhua Zonghe", "https://manhuazonghe.com", "en") {
     override val useNewChapterEndpoint = false

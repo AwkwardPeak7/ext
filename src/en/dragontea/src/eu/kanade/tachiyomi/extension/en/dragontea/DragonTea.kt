@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.extension.en.dragontea
 
 import android.util.Base64
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
 import keiyoushix.lib.cryptoaes.CryptoAES
+import keiyoushix.multisrc.madara.Madara
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive

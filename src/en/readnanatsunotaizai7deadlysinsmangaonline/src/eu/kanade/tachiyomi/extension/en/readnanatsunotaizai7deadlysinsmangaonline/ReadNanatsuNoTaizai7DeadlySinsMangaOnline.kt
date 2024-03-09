@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readnanatsunotaizai7deadlysinsmangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadNanatsuNoTaizai7DeadlySinsMangaOnline : MangaCatalog("Read Nanatsu no Taizai 7 Deadly Sins Manga Online", "https://ww3.read7deadlysins.com", "en") {
     override val sourceList = listOf(

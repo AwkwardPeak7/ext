@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readdrstonemangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadDrStoneMangaOnline : MangaCatalog("Read Dr. Stone Manga Online", "https://ww3.readdrstone.com", "en") {
     override val sourceList = listOf(

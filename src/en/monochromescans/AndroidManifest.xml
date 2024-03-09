@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <application>
-    <activity android:name="eu.kanade.tachiyomi.multisrc.monochrome.MonochromeActivity"
+    <activity android:name="keiyoushix.multisrc.monochrome.MonochromeActivity"
               android:theme="@android:style/Theme.NoDisplay"
               android:exported="true"
               android:excludeFromRecents="true">

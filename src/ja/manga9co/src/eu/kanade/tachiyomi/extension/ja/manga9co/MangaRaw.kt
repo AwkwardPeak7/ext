@@ -3,12 +3,12 @@ package eu.kanade.tachiyomi.extension.ja.manga9co
 import android.app.Application
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
-import eu.kanade.tachiyomi.multisrc.mangaraw.ImageListParser
-import eu.kanade.tachiyomi.multisrc.mangaraw.MangaRawTheme
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushix.multisrc.mangaraw.ImageListParser
+import keiyoushix.multisrc.mangaraw.MangaRawTheme
 import okhttp3.Response
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

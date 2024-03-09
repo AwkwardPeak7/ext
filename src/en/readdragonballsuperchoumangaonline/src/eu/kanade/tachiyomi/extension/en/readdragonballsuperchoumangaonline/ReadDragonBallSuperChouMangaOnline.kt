@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readdragonballsuperchoumangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadDragonBallSuperChouMangaOnline : MangaCatalog("Read Dragon Ball Super Chou Manga Online", "https://ww6.dbsmanga.com", "en") {
     override val sourceList = listOf(

@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.pt.silencescan
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 import java.text.SimpleDateFormat
 import java.util.Locale

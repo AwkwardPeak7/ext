@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.anshscans
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class AnshScans : Madara("Ansh Scans", "https://anshscans.org", "en") {
     override val useNewChapterEndpoint = true

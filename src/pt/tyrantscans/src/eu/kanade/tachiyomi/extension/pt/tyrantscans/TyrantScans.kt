@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.pt.tyrantscans
 
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushix.multisrc.zeistmanga.ZeistManga
 import okhttp3.Request
 import okhttp3.Response
 

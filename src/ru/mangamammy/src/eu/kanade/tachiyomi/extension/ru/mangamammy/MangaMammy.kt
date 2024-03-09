@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.ru.mangamammy
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale

@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.mangakitsu
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class MangaKitsu : Madara("Manga Kitsu", "https://mangakitsu.com", "en") {
     override val useNewChapterEndpoint = false

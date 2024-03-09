@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.manhwahentaime
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class ManhwahentaiMe : Madara("Manhwahentai.me", "https://manhwahentai.me", "en") {
 

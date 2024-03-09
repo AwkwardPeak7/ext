@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.ar.onma
 
-import eu.kanade.tachiyomi.multisrc.mmrcms.MMRCMS
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.mmrcms.MMRCMS
 import org.jsoup.nodes.Document
 
 class Onma : MMRCMS(

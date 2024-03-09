@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.manhuaga
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 
 class Manhuaga : Madara("Manhuaga", "https://manhuaga.com", "en") {

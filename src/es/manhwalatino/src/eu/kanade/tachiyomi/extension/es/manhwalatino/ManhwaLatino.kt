@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.es.manhwalatino
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody

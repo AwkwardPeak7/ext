@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.es.datgarscanlation
 
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.zeistmanga.ZeistManga
 
 class DatGarScanlation : ZeistManga(
     "Dat-Gar Scan",

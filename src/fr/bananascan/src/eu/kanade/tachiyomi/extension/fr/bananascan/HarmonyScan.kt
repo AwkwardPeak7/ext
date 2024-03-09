@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.fr.bananascan
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class HarmonyScan : Madara("Harmony-Scan", "https://harmony-scan.fr", "fr") {
     // formally Banana-Scan

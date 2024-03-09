@@ -1,5 +1,5 @@
 package eu.kanade.tachiyomi.extension.en.resetscans
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class ResetScans : Madara("Reset Scans", "https://reset-scans.xyz", "en") {
     override val useNewChapterEndpoint = true

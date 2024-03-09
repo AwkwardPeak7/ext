@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.en.leviatanscans
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.madara.Madara
 import org.jsoup.nodes.Element
 import java.text.SimpleDateFormat
 import java.util.Locale

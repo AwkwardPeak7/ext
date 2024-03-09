@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.elarcpage
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.GET
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.jsoup.Jsoup

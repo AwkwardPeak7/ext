@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.en.omegascans
 
-import eu.kanade.tachiyomi.multisrc.heancms.Genre
-import eu.kanade.tachiyomi.multisrc.heancms.HeanCms
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
+import keiyoushix.multisrc.heancms.Genre
+import keiyoushix.multisrc.heancms.HeanCms
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 class OmegaScans : HeanCms("Omega Scans", "https://omegascans.org", "en") {

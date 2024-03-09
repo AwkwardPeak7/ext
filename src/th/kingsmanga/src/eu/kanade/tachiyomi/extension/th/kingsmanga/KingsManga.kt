@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.th.kingsmanga
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 import java.text.SimpleDateFormat
 import java.util.Locale
 

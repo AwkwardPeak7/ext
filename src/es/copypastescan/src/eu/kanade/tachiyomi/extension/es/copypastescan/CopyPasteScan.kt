@@ -1,5 +1,5 @@
 package eu.kanade.tachiyomi.extension.es.copypastescan
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class CopyPasteScan : Madara("CopyPasteScan", "https://www.cpscan.xyz", "es")

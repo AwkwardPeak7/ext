@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.extension.ja.corocoroonline
 
-import eu.kanade.tachiyomi.multisrc.gigaviewer.GigaViewer
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.gigaviewer.GigaViewer
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.nodes.Element

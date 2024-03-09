@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.all.thunderscans
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import java.text.SimpleDateFormat
 import java.util.Locale
 

@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.id.manhwalist
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 
 class ManhwaList : MangaThemesia("ManhwaList", "https://manhwalist.com", "id") {

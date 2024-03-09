@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.en.mangadig
 
-import eu.kanade.tachiyomi.multisrc.colamanga.ColaManga
-import eu.kanade.tachiyomi.multisrc.colamanga.UriPartFilter
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushix.multisrc.colamanga.ColaManga
+import keiyoushix.multisrc.colamanga.UriPartFilter
 
 class MangaDig : ColaManga("MangaDig", "https://mangadig.com", "en") {
 

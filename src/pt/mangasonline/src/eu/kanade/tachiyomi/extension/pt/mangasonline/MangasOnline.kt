@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.pt.mangasonline
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import java.text.SimpleDateFormat

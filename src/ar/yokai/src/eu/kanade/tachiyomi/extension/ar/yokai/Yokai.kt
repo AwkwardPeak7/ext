@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.extension.ar.yokai
 
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistMangaDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.zeistmanga.ZeistManga
+import keiyoushix.multisrc.zeistmanga.ZeistMangaDto
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import okhttp3.Response

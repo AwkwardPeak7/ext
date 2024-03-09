@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.multisrc.bilibili
+package keiyoushix.multisrc.bilibili
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

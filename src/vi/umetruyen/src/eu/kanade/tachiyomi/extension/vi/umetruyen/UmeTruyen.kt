@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.vi.umetruyen
 
-import eu.kanade.tachiyomi.multisrc.manhwaz.ManhwaZ
+import keiyoushix.multisrc.manhwaz.ManhwaZ
 
 class UmeTruyen : ManhwaZ(
     "UmeTruyen",

@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.setsuscans
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.Interceptor
 import okhttp3.Response
 

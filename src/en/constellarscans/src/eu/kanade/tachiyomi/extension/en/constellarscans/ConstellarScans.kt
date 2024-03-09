@@ -3,7 +3,6 @@ package eu.kanade.tachiyomi.extension.en.constellarscans
 import android.app.Application
 import android.content.SharedPreferences
 import androidx.preference.PreferenceScreen
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.Page
@@ -12,6 +11,7 @@ import keiyoushix.lib.randomua.addRandomUAPreferenceToScreen
 import keiyoushix.lib.randomua.getPrefCustomUA
 import keiyoushix.lib.randomua.getPrefUAType
 import keiyoushix.lib.randomua.setRandomUserAgent
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive

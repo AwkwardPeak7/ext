@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.ca.fansubscat
 
-import eu.kanade.tachiyomi.multisrc.fansubscat.FansubsCat
+import keiyoushix.multisrc.fansubscat.FansubsCat
 
 class FansubsCatMain : FansubsCat(
     "Fansubs.cat",

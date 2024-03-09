@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.es.ikifeng
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Locale

@@ -4,8 +4,8 @@ import android.widget.Toast
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.AppInfo
-import eu.kanade.tachiyomi.multisrc.foolslide.FoolSlide
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushix.multisrc.foolslide.FoolSlide
 
 class FoolSlideCustomizableFactory : SourceFactory {
     override fun createSources() = listOf(FoolSlideCustomizable())

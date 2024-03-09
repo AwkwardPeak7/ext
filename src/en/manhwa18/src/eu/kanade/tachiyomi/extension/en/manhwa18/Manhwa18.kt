@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.en.manhwa18
 
-import eu.kanade.tachiyomi.multisrc.mymangacms.MyMangaCMS
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushix.multisrc.mymangacms.MyMangaCMS
 
 class Manhwa18 : MyMangaCMS("Manhwa18", "https://manhwa18.com", "en") {
 

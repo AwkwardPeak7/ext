@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.multisrc.bilibili
+package keiyoushix.multisrc.bilibili
 
 import android.app.Activity
 import android.content.ActivityNotFoundException

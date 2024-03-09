@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.vi.blogtruyenvn
 
-import eu.kanade.tachiyomi.multisrc.blogtruyen.BlogTruyen
+import keiyoushix.multisrc.blogtruyen.BlogTruyen
 
 class BlogTruyenVn : BlogTruyen("BlogTruyen.vn (unoriginal)", "https://blogtruyenvn.com", "vi") {
     override fun getGenreList() = listOf(

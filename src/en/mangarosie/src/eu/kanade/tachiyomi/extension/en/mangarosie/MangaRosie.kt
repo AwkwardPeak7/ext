@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.mangarosie
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class MangaRosie : Madara("MangaRosie", "https://mangarosie.in", "en") {
     override val useNewChapterEndpoint = false

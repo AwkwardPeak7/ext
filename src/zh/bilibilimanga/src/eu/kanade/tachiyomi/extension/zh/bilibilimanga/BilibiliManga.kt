@@ -1,10 +1,10 @@
 package eu.kanade.tachiyomi.extension.zh.bilibilimanga
 
-import eu.kanade.tachiyomi.multisrc.bilibili.Bilibili
-import eu.kanade.tachiyomi.multisrc.bilibili.BilibiliComicDto
-import eu.kanade.tachiyomi.multisrc.bilibili.BilibiliIntl
-import eu.kanade.tachiyomi.multisrc.bilibili.BilibiliTag
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushix.multisrc.bilibili.Bilibili
+import keiyoushix.multisrc.bilibili.BilibiliComicDto
+import keiyoushix.multisrc.bilibili.BilibiliIntl
+import keiyoushix.multisrc.bilibili.BilibiliTag
 import okhttp3.Headers
 import okhttp3.Response
 

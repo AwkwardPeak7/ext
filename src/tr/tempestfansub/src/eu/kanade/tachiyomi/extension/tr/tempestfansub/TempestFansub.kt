@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.tr.tempestfansub
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 class TempestFansub : MangaThemesia(

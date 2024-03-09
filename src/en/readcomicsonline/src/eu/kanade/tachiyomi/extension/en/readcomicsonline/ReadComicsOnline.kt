@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readcomicsonline
 
-import eu.kanade.tachiyomi.multisrc.mmrcms.MMRCMS
+import keiyoushix.multisrc.mmrcms.MMRCMS
 
 class ReadComicsOnline : MMRCMS(
     "Read Comics Online",

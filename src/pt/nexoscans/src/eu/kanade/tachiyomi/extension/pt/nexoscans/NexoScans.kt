@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.pt.nexoscans
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import java.text.SimpleDateFormat
 import java.util.Locale

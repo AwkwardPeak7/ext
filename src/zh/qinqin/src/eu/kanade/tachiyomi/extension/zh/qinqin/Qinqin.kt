@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.zh.qinqin
 
 import android.util.Base64
-import eu.kanade.tachiyomi.multisrc.sinmh.SinMH
 import eu.kanade.tachiyomi.network.GET
+import keiyoushix.multisrc.sinmh.SinMH
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import javax.crypto.Cipher

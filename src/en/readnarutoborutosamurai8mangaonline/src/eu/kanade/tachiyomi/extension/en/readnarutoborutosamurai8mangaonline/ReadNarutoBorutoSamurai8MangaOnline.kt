@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readnarutoborutosamurai8mangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadNarutoBorutoSamurai8MangaOnline : MangaCatalog("Read Naruto Boruto Samurai 8 Manga Online", "https://ww7.readnaruto.com", "en") {
     override val sourceList = listOf(

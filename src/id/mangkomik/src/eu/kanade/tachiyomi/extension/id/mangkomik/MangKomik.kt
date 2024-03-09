@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.id.mangkomik
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import org.jsoup.nodes.Document
 
 class MangKomik : MangaThemesia("Siren Komik", "https://sirenkomik.my.id", "id") {

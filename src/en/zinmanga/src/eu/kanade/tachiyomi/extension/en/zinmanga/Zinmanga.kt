@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.zinmanga
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class Zinmanga : Madara("Zinmanga", "https://zinmanga.com", "en") {
 

@@ -2,9 +2,9 @@ package eu.kanade.tachiyomi.extension.zh.sixmh
 
 import android.app.Application
 import android.os.Build
-import eu.kanade.tachiyomi.multisrc.mccms.MCCMS
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.mccms.MCCMS
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

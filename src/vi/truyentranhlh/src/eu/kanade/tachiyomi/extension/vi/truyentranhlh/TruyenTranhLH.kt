@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.vi.truyentranhlh
 
-import eu.kanade.tachiyomi.multisrc.mymangacms.MyMangaCMS
+import keiyoushix.multisrc.mymangacms.MyMangaCMS
 
 class TruyenTranhLH : MyMangaCMS("TruyenTranhLH", "https://truyenlh.com", "vi") {
     override val id: Long = 7969606392351831672

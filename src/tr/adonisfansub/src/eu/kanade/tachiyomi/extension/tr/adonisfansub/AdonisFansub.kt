@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.tr.adonisfansub
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.Request
 
 class AdonisFansub : Madara("Adonis Fansub", "https://manga.adonisfansub.com", "tr") {

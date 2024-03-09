@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.ar.hijala
 
-import eu.kanade.tachiyomi.multisrc.zeistmanga.Genre
-import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushix.multisrc.zeistmanga.Genre
+import keiyoushix.multisrc.zeistmanga.ZeistManga
 import okhttp3.Request
 import okhttp3.Response
 

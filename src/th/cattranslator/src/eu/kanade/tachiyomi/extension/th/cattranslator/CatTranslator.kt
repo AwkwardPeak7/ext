@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.th.cattranslator
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.madara.Madara
 import org.jsoup.nodes.Element
 
 class CatTranslator : Madara(

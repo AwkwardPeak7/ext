@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.vi.blogtruyen
 
-import eu.kanade.tachiyomi.multisrc.blogtruyen.BlogTruyen
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushix.multisrc.blogtruyen.BlogTruyen
 
 class BlogTruyenMoi : BlogTruyen("BlogTruyen", "https://blogtruyenmoi.com", "vi") {
     override val client = super.client.newBuilder()

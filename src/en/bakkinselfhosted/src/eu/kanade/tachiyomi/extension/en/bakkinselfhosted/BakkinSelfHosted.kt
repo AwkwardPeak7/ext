@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.extension.en.bakkinselfhosted
 
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceScreen
-import eu.kanade.tachiyomi.multisrc.bakkin.BakkinReaderX
+import keiyoushix.multisrc.bakkin.BakkinReaderX
 
 class BakkinSelfHosted : BakkinReaderX("Bakkin Self-hosted", "", "en") {
     override val baseUrl by lazy {

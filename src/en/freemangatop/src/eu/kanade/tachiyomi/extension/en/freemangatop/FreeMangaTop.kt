@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.freemangatop
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 
 class FreeMangaTop : Madara("FreeMangaTop", "https://freemangatop.com", "en") {
 

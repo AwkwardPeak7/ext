@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.ar.areamanga
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import java.text.SimpleDateFormat
 import java.util.Locale
 

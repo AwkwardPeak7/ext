@@ -1,8 +1,8 @@
 package eu.kanade.tachiyomi.extension.zh.miaoshang
 
-import eu.kanade.tachiyomi.multisrc.mccms.MCCMS
-import eu.kanade.tachiyomi.multisrc.mccms.MCCMSConfig
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
+import keiyoushix.multisrc.mccms.MCCMS
+import keiyoushix.multisrc.mccms.MCCMSConfig
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 class Miaoshang : MCCMS(

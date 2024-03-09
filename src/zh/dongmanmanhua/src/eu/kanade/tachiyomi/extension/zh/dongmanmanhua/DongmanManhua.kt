@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.extension.zh.dongmanmanhua
 
-import eu.kanade.tachiyomi.multisrc.webtoons.Webtoons
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.webtoons.Webtoons
 import okhttp3.Headers
 import okhttp3.Request
 import okhttp3.Response

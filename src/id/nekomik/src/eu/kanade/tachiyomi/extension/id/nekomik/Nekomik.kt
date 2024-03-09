@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.id.nekomik
 
 import app.cash.quickjs.QuickJs
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import okhttp3.OkHttpClient

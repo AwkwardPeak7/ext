@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.en.manhuaaz
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.madara.Madara
 import okhttp3.Response
 
 class ManhuaAZ : Madara("Manhua AZ", "https://manhuaaz.com", "en") {

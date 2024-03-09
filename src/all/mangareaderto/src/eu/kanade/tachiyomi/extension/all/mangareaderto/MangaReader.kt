@@ -1,13 +1,13 @@
 package eu.kanade.tachiyomi.extension.all.mangareaderto
 
 import androidx.preference.PreferenceScreen
-import eu.kanade.tachiyomi.multisrc.mangareader.MangaReader
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.multisrc.mangareader.MangaReader
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive

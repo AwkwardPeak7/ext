@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.vi.nhattruyen
 
-import eu.kanade.tachiyomi.multisrc.wpcomics.WPComics
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushix.multisrc.wpcomics.WPComics
 import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Locale

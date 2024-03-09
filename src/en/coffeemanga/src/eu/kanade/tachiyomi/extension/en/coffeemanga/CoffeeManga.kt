@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.coffeemanga
 
-import eu.kanade.tachiyomi.multisrc.madara.Madara
+import keiyoushix.multisrc.madara.Madara
 import org.jsoup.nodes.Element
 
 class CoffeeManga : Madara("Coffee Manga", "https://coffeemanga.io", "en") {

@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.pt.toshiwayume
 
-import eu.kanade.tachiyomi.multisrc.foolslide.FoolSlide
+import keiyoushix.multisrc.foolslide.FoolSlide
 
 class ToshiWaYume : FoolSlide(
     "Toshi wa Yume",

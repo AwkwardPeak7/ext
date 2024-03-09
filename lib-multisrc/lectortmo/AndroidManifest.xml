@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name="eu.kanade.tachiyomi.multisrc.lectortmo.LectorTmoUrlActivity"
+            android:name="keiyoushix.multisrc.lectortmo.LectorTmoUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

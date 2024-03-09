@@ -1,9 +1,9 @@
 package eu.kanade.tachiyomi.extension.en.xcalibrscans
 
 import android.util.Log
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document

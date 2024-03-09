@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.ja.magazinepocket
 
-import eu.kanade.tachiyomi.multisrc.gigaviewer.GigaViewer
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.multisrc.gigaviewer.GigaViewer
 import okhttp3.OkHttpClient
 import org.jsoup.nodes.Element
 

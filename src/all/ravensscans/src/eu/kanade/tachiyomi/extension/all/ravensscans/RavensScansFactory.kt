@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.all.ravensscans
 
-import eu.kanade.tachiyomi.multisrc.readerfront.ReaderFront
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushix.multisrc.readerfront.ReaderFront
 
 class RavensScansFactory : SourceFactory {
     override fun createSources() = listOf(RavensScans("es"), RavensScans("en"))

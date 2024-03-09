@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.extension.all.mihentai
 
-import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushix.multisrc.mangathemesia.MangaThemesia
 
 class Mihentai : MangaThemesia("Mihentai", "https://mihentai.com", "all") {
     private class StatusFilter : SelectFilter(

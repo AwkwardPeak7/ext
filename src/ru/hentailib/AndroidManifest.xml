@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name="eu.kanade.tachiyomi.multisrc.libgroup.LibUrlActivity"
+            android:name="keiyoushix.multisrc.libgroup.LibUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

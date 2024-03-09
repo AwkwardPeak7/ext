@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.readchainsawmanmangaonline
 
-import eu.kanade.tachiyomi.multisrc.mangacatalog.MangaCatalog
+import keiyoushix.multisrc.mangacatalog.MangaCatalog
 
 class ReadChainsawManMangaOnline : MangaCatalog("Read Chainsaw Man Manga Online", "https://ww1.readchainsawman.com", "en") {
     override val sourceList = listOf(
