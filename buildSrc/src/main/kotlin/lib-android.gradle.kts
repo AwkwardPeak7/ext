@@ -11,7 +11,14 @@ android {
         minSdk = AndroidConfig.minSdk
     }
 
-    namespace = "eu.kanade.tachiyomi.lib.${project.name}"
+    namespace = "keiyoushix.lib.${project.name}"
+
+    sourceSets {
+        named("main") {
+            java.setSrcDirs(listOf("src"))
+            assets.setSrcDirs(listOf("assets"))
+        }
+    }
 
     buildFeatures {
         androidResources = false

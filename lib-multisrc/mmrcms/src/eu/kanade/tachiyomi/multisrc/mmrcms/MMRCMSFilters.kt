@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.multisrc.mmrcms
 
-import eu.kanade.tachiyomi.lib.i18n.Intl
 import eu.kanade.tachiyomi.source.model.Filter
+import keiyoushix.lib.i18n.Intl
 import okhttp3.HttpUrl
 
 interface UriFilter {

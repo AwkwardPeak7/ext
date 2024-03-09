@@ -2,9 +2,6 @@ package eu.kanade.tachiyomi.extension.zh.mangabz
 
 import android.app.Application
 import androidx.preference.PreferenceScreen
-import eu.kanade.tachiyomi.lib.cookieinterceptor.CookieInterceptor
-import eu.kanade.tachiyomi.lib.unpacker.SubstringExtractor
-import eu.kanade.tachiyomi.lib.unpacker.Unpacker
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
@@ -14,6 +11,9 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushix.lib.cookieinterceptor.CookieInterceptor
+import keiyoushix.lib.unpacker.SubstringExtractor
+import keiyoushix.lib.unpacker.Unpacker
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient

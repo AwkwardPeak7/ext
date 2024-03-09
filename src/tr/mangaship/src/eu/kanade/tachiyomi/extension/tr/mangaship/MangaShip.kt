@@ -1,13 +1,13 @@
 package eu.kanade.tachiyomi.extension.tr.mangaship
 
-import eu.kanade.tachiyomi.lib.dataimage.DataImageInterceptor
-import eu.kanade.tachiyomi.lib.dataimage.dataImageAsUrl
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
+import keiyoushix.lib.dataimage.DataImageInterceptor
+import keiyoushix.lib.dataimage.dataImageAsUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.nodes.Document

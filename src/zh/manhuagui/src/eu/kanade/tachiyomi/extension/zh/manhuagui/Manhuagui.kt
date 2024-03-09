@@ -2,8 +2,6 @@ package eu.kanade.tachiyomi.extension.zh.manhuagui
 
 import android.app.Application
 import android.content.SharedPreferences
-import eu.kanade.tachiyomi.lib.lzstring.LZString
-import eu.kanade.tachiyomi.lib.unpacker.Unpacker
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -17,6 +15,8 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.lib.lzstring.LZString
+import keiyoushix.lib.unpacker.Unpacker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay

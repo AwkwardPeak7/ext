@@ -1,8 +1,6 @@
 package eu.kanade.tachiyomi.extension.es.mangasin
 
 import android.util.Base64
-import eu.kanade.tachiyomi.lib.cryptoaes.CryptoAES
-import eu.kanade.tachiyomi.lib.synchrony.Deobfuscator
 import eu.kanade.tachiyomi.multisrc.mmrcms.MMRCMS
 import eu.kanade.tachiyomi.multisrc.mmrcms.SuggestionDto
 import eu.kanade.tachiyomi.network.GET
@@ -12,6 +10,8 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushix.lib.cryptoaes.CryptoAES
+import keiyoushix.lib.synchrony.Deobfuscator
 import kotlinx.serialization.decodeFromString
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request

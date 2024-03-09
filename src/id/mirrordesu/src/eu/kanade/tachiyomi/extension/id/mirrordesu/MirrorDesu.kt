@@ -1,11 +1,11 @@
 package eu.kanade.tachiyomi.extension.id.mirrordesu
 
 import android.util.Base64
-import eu.kanade.tachiyomi.lib.cryptoaes.CryptoAES
-import eu.kanade.tachiyomi.lib.synchrony.Deobfuscator
 import eu.kanade.tachiyomi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushix.lib.cryptoaes.CryptoAES
+import keiyoushix.lib.synchrony.Deobfuscator
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString

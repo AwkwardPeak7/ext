@@ -3,13 +3,13 @@ package eu.kanade.tachiyomi.extension.es.mangacrab
 import android.app.Application
 import android.content.SharedPreferences
 import androidx.preference.PreferenceScreen
-import eu.kanade.tachiyomi.lib.randomua.addRandomUAPreferenceToScreen
-import eu.kanade.tachiyomi.lib.randomua.getPrefCustomUA
-import eu.kanade.tachiyomi.lib.randomua.getPrefUAType
-import eu.kanade.tachiyomi.lib.randomua.setRandomUserAgent
 import eu.kanade.tachiyomi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import keiyoushix.lib.randomua.addRandomUAPreferenceToScreen
+import keiyoushix.lib.randomua.getPrefCustomUA
+import keiyoushix.lib.randomua.getPrefUAType
+import keiyoushix.lib.randomua.setRandomUserAgent
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.text.SimpleDateFormat

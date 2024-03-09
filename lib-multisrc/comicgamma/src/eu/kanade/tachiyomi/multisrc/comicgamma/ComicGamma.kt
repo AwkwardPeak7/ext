@@ -1,13 +1,13 @@
 package eu.kanade.tachiyomi.multisrc.comicgamma
 
-import eu.kanade.tachiyomi.lib.speedbinb.SpeedBinbInterceptor
-import eu.kanade.tachiyomi.lib.speedbinb.SpeedBinbReader
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
+import keiyoushix.lib.speedbinb.SpeedBinbInterceptor
+import keiyoushix.lib.speedbinb.SpeedBinbReader
 import kotlinx.serialization.json.Json
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

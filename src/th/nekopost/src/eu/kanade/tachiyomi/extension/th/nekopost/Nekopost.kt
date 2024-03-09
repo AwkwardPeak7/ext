@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.extension.th.nekopost.model.RawProjectInfo
 import eu.kanade.tachiyomi.extension.th.nekopost.model.RawProjectSearchSummaryList
 import eu.kanade.tachiyomi.extension.th.nekopost.model.RawProjectSummaryList
 import eu.kanade.tachiyomi.extension.th.nekopost.model.SearchRequest
-import eu.kanade.tachiyomi.lib.cryptoaes.CryptoAES
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -14,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import keiyoushix.lib.cryptoaes.CryptoAES
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
