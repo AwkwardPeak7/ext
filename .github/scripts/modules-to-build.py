@@ -83,7 +83,7 @@ chunked = chunker(modules, int(os.getenv("CI_CHUNK_SIZE", 65)))
 
 #     
 # else:
-formatted=f"individualMatrix={json.dumps(chunked)}".replace("\"", "\\\"")
+formatted=f"individualMatrix={json.dumps(chunked)}"
 
 print(formatted)
 
