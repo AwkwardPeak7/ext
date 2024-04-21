@@ -40,17 +40,9 @@ jobs:
 
       - id: generate-matrices
         name: Create output matrices
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-        with:
-          script: |
-            const numIndividualModules = process.env.NUM_INDIVIDUAL_MODULES;
-            const chunkSize = process.env.CI_CHUNK_SIZE;
-
-            const numIndividualChunks = Math.ceil(numIndividualModules / chunkSize);
-
-            console.log(`Individual modules: ${numIndividualModules} (${numIndividualChunks} chunks of ${chunkSize})`);
-
-            core.setOutput('individualMatrix', { 'chunk': [...Array(numIndividualChunks).keys()] });
+        run: |
+          cd main
+          python ./.github/scripts/modules-to-build.py
 
   build_individual:
     name: Build individual modules
@@ -74,16 +66,17 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@750cdda3edd6d51b7fdfc069d2e2818cf3c44f4c # v3.3.1
-        with:
-          cache-read-only: ${{ matrix.chunk != 0 }}
+        # with:
+        #   cache-read-only: ${{ matrix.chunk != 0 }}
 
       - name: Build extensions (chunk ${{ matrix.chunk }})
         env:
-          CI_CHUNK_NUM: ${{ matrix.chunk }}
+          #CI_CHUNK_NUM: ${{ matrix.chunk }}
+          MODULES: ${{ matrix.modules }}
           ALIAS: ${{ secrets.ALIAS }}
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew -p src assembleRelease
+        run: ./gradlew $(echo $MODULES | jq -r 'join(" ")')
 
       - name: Upload APKs (chunk ${{ matrix.chunk }})
         uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
