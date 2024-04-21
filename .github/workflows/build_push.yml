@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Clone repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          ref: workflowtest
 
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@750cdda3edd6d51b7fdfc069d2e2818cf3c44f4c # v3.3.1
