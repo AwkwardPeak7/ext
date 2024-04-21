@@ -41,7 +41,6 @@ jobs:
       - id: generate-matrices
         name: Create output matrices
         run: |
-          cd main
           python ./.github/scripts/modules-to-build.py
 
   build_individual:
