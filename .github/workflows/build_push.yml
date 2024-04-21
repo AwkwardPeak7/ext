@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - workflowtest
     paths:
       - '**'
       - '!**.md'
@@ -87,7 +87,6 @@ jobs:
 
       - name: Upload APKs (chunk ${{ matrix.chunk }})
         uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
-        if: "github.repository == 'keiyoushi/extensions-source'"
         with:
           name: "individual-apks-${{ matrix.chunk }}"
           path: "**/*.apk"
@@ -100,7 +99,6 @@ jobs:
     name: Publish repo
     needs:
       - build_individual
-    if: "github.repository == 'keiyoushi/extensions-source'"
     runs-on: ubuntu-latest
     steps:
       - name: Download APK artifacts
@@ -132,8 +130,6 @@ jobs:
       - name: Checkout repo branch
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
-          repository: keiyoushi/extensions
-          token: ${{ secrets.BOT_PAT }}
           ref: repo
           path: repo
 
