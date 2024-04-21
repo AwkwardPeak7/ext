@@ -84,4 +84,4 @@ chunked = chunker(modules, int(os.getenv("CI_CHUNK_SIZE", 65)))
 #     with open(os.getenv("GITHUB_OUTPUT"), 'a') as outFile:
 #         outFile.write(f"individualMatrix={json.dumps(chunked)}")
 # else:
-print(f"individualMatrix=\"{json.dumps(chunked)}\"")
+print(f"individualMatrix=\"{json.dumps(chunked)}\"".replace("\"", "\\\""))
