@@ -77,7 +77,8 @@ commit = "f33c604087cbc60f4e698affc9dc49a00eca1d69"
 modules, deleted = getModuleList(commit)
 chunked = chunker(modules, int(os.getenv("CI_CHUNK_SIZE", 65)))
 
-with open(os.getenv("GITHUB_ENV", "tmp"), 'a') as envFile:
+with open(os.getenv("GITHUB_ENV"), 'a') as envFile:
     envFile.write(f"DELETED_MODULES={json.dumps(deleted)}")
 
-print(f"::set-output name=individualMatrix::{json.dumps(chunked)}")
+with open(os.getenv("GITHUB_OUTPUT"), 'a') as outFile:
+    outFile.write(f"individualMatrix={json.dumps(chunked)}")
