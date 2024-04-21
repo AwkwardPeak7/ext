@@ -72,8 +72,7 @@ def chunker(iter, size):
         num+=1
     return chunks
 
-#commit = getLastSuccessfulCommitHash()
-commit = "f33c604087cbc60f4e698affc9dc49a00eca1d69"
+commit = getLastSuccessfulCommitHash()
 modules, deleted = getModuleList(commit)
 chunked = chunker(modules, os.getenv("CI_CHUNK_SIZE", 65))
 
