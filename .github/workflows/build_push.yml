@@ -33,16 +33,10 @@ jobs:
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@750cdda3edd6d51b7fdfc069d2e2818cf3c44f4c # v3.3.1
 
-      - name: Get number of modules
-        run: |
-          set -x
-          projects=(src/*/*)
-
-          echo "NUM_INDIVIDUAL_MODULES=${#projects[@]}" >> $GITHUB_ENV
-
       - id: generate-matrices
         name: Create output matrices
         run: |
+          git switch workflowtest
           python ./.github/scripts/modules-to-build.py
 
   build_individual:
