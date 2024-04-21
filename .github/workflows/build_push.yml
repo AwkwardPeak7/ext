@@ -49,7 +49,7 @@ jobs:
       - name: Debug Matrix Modules
         run: |
           echo "Matrix Modules: ${{ needs.prepare.outputs.individualMatrix }}"
-          echo "lol: ${{ toJson(matrix.includes) }}"
+          echo "lol: ${{ toJson(matrix.includes.modules) }}"
 
       - name: Checkout main branch
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -72,13 +72,13 @@ jobs:
       - name: Build extensions (chunk ${{ matrix.chunk }})
         env:
           #CI_CHUNK_NUM: ${{ matrix.chunk }}
-          MODULES: ${{ matrix.includes.modules }}
+          #MODULES: ${{ matrix.includes.modules }}
           ALIAS: ${{ secrets.ALIAS }}
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           echo $MODULES
-          ./gradlew $(echo $MODULES | jq -r 'join(" ")')
+          ./gradlew $(echo ${{ toJson(toJson(matrix.includes.modules)) }} | jq -r 'join(" ")')
 
       - name: Upload APKs (chunk ${{ matrix.chunk }})
         uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
