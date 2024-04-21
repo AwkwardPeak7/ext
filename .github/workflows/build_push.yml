@@ -77,7 +77,7 @@ jobs:
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo ${{ toJson(matrix.includes.modules)
+          echo ${{ toJson(matrix.includes.modules) }}
           ./gradlew $(echo '${{ toJson(matrix.includes.modules) }}' | jq -r 'join(" ")')
 
       - name: Upload APKs (chunk ${{ matrix.includes.chunk }})
