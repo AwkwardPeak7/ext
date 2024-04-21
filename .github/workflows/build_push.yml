@@ -73,7 +73,7 @@ jobs:
       - name: Build extensions (chunk ${{ matrix.chunk }})
         env:
           #CI_CHUNK_NUM: ${{ matrix.chunk }}
-          MODULES: ${{ matrix.modules }}
+          MODULES: ${{ matrix.includes.modules }}
           ALIAS: ${{ secrets.ALIAS }}
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
