@@ -69,7 +69,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@750cdda3edd6d51b7fdfc069d2e2818cf3c44f4c # v3.3.1 
 
-      - name: Build extensions (chunk ${{ matrix.chunk }})
+      - name: Build extensions (chunk ${{ matrix.includes.chunk }})
         env:
           #CI_CHUNK_NUM: ${{ matrix.chunk }}
           #MODULES: ${{ matrix.includes.modules }}
@@ -77,13 +77,13 @@ jobs:
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo $MODULES
-          ./gradlew $(echo ${{ toJson(toJson(matrix.includes.modules)) }} | jq -r 'join(" ")')
+          echo ${{ toJson(matrix.includes.modules)
+          ./gradlew $(echo '${{ toJson(matrix.includes.modules) }}' | jq -r 'join(" ")')
 
-      - name: Upload APKs (chunk ${{ matrix.chunk }})
+      - name: Upload APKs (chunk ${{ matrix.includes.chunk }})
         uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
         with:
-          name: "individual-apks-${{ matrix.chunk }}"
+          name: "individual-apks-${{ matrix.includes.chunk }}"
           path: "**/*.apk"
           retention-days: 1
 
