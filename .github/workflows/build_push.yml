@@ -28,6 +28,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
+          fetch-depth: 0 
           ref: workflowtest
 
       - name: Validate Gradle Wrapper
@@ -35,9 +36,7 @@ jobs:
 
       - id: generate-matrices
         name: Create output matrices
-        run: |
-          git switch workflowtest
-          python ./.github/scripts/modules-to-build.py
+        run: python ./.github/scripts/modules-to-build.py
 
   build_individual:
     name: Build individual modules
