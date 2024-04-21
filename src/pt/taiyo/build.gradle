@@ -1,5 +1,5 @@
 ext {
-    extName = 'Taiyō'
+    extName = 'Taiyo'
     extClass = '.Taiyo'
     extVersionCode = 1
     isNsfw = true
