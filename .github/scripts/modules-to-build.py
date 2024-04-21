@@ -38,7 +38,7 @@ def getModuleList(commitHash):
         if extMatch:
             directory = extMatch.group(1)
             if os.path.isdir(directory):
-                srcModules.add(f":{directory.replace("/", ":")}:assembleRelease")
+                srcModules.add(f':{directory.replace("/", ":")}:assembleRelease')
             else:
                 deletedModules.add(directory)
         else:
