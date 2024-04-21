@@ -67,11 +67,11 @@ jobs:
       - name: Build extensions (chunk ${{ matrix.chunk }})
         env:
           #CI_CHUNK_NUM: ${{ matrix.chunk }}
-          MODULES: ${{ matrix.modules }}
+          #MODULES: ${{ matrix.modules }}
           ALIAS: ${{ secrets.ALIAS }}
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew $(echo $MODULES | jq -r 'join(" ")')
+        run: ./gradlew $(echo ${{ matrix.modules }} | jq -r 'join(" ")')
 
       - name: Upload APKs (chunk ${{ matrix.chunk }})
         uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
