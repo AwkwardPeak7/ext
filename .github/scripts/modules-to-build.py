@@ -75,7 +75,7 @@ def chunker(iter, size):
 #commit = getLastSuccessfulCommitHash()
 commit = "f33c604087cbc60f4e698affc9dc49a00eca1d69"
 modules, deleted = getModuleList(commit)
-chunked = chunker(modules, os.getenv("CI_CHUNK_SIZE", 65))
+chunked = chunker(modules, int(os.getenv("CI_CHUNK_SIZE", 65)))
 
 with open(os.getenv("GITHUB_ENV", "tmp"), 'a') as envFile:
     envFile.write(f"DELETED_MODULES={json.dumps(deleted)}")
