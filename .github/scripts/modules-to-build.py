@@ -70,7 +70,7 @@ def chunker(iter, size):
     for i in range(0, len(iter), size):
         chunks.append({"chunk":num, "modules":iter[i:(i+size)]})
         num+=1
-    return {"modules":chunks}
+    return {"includes":chunks}
 
 #commit = getLastSuccessfulCommitHash()
 commit = "f33c604087cbc60f4e698affc9dc49a00eca1d69"
@@ -81,7 +81,11 @@ chunked = chunker(modules, int(os.getenv("CI_CHUNK_SIZE", 65)))
 #     with open(os.getenv("GITHUB_ENV"), 'a') as envFile:
 #         envFile.write(f"DELETED_MODULES={json.dumps(deleted)}")
 
-#     with open(os.getenv("GITHUB_OUTPUT"), 'a') as outFile:
-#         outFile.write(f"individualMatrix={json.dumps(chunked)}")
+#     
 # else:
-print(f"individualMatrix=\"{json.dumps(chunked)}\"".replace("\"", "\\\""))
+formatted=f"individualMatrix={json.dumps(chunked)}".replace("\"", "\\\"")
+
+print(formatted)
+
+with open(os.getenv("GITHUB_OUTPUT"), 'a') as outFile:
+    outFile.write(formatted)

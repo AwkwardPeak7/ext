@@ -37,7 +37,7 @@ jobs:
       - id: generate-matrices
         name: Create output matrices
         run: |
-          echo $(python ./.github/scripts/modules-to-build.py) >> "$GITHUB_OUTPUT"
+          python ./.github/scripts/modules-to-build.py
 
   build_individual:
     name: Build individual modules
