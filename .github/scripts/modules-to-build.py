@@ -78,7 +78,7 @@ commit = getLastSuccessfulCommitHash()
 modules, deleted = getModuleList(commit)
 chunked = chunker(modules, int(os.getenv("CI_CHUNK_SIZE", 65)))
 
-print(f"Module chunks to build:\n{json.dumps(chunked, indent=4)}\n\nModule to delete:\n{json.dumps(deleted, indent=4)}")
+print(f"Module chunks to build:\n{json.dumps(chunked, indent=2)}\n\nModule to delete:\n{json.dumps(deleted, indent=2)}")
 
 if (os.getenv("CI") == "true"):
     with open(os.getenv("GITHUB_OUTPUT"), 'a') as outFile:
