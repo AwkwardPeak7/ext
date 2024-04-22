@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       individualMatrix: ${{ steps.generate-matrices.outputs.individualMatrix }}
+      deletedModules: ${{ steps.generate-matrices.outputs.deletedModules }}
     steps:
       - name: Clone repo
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -46,11 +47,6 @@ jobs:
     strategy:
       matrix: ${{ fromJSON(needs.prepare.outputs.individualMatrix) }}
     steps:
-      - name: Debug Matrix Modules
-        run: |
-          echo "Matrix Modules: ${{ needs.prepare.outputs.individualMatrix }}"
-          echo "lol: ${{ toJson(matrix.chunk.modules) }}"
-
       - name: Checkout main branch
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
@@ -90,8 +86,7 @@ jobs:
 
   publish_repo:
     name: Publish repo
-    needs:
-      - build_individual
+    needs: [prepare, build_individual]
     runs-on: ubuntu-latest
     steps:
       - name: Download APK artifacts
@@ -120,6 +115,8 @@ jobs:
           path: repo
 
       - name: Create repo artifacts
+        env:
+          DELETED_MODULES: ${{ needs.prepare.outputs.deletedModules }}
         run: |
           cd main
           cp -r ../repo ./

@@ -84,5 +84,5 @@ if (os.getenv("CI") == "true"):
     with open(os.getenv("GITHUB_OUTPUT"), 'a') as outFile:
         outFile.write(f"individualMatrix={json.dumps(chunked)}")
 
-    with open(os.getenv("GITHUB_ENV"), 'a') as envFile:
-        envFile.write(f"DELETED_MODULES={json.dumps(deleted)}")
+    with open(os.getenv("GITHUB_OUTPUT"), 'a') as envFile:
+        envFile.write(f"deletedModules={json.dumps(deleted)}")
