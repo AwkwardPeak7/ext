@@ -13,7 +13,9 @@ except FileNotFoundError:
 
 shutil.copytree(src="../repo/apk", dst=REPO_APK_DIR)
 
-toDelete = json.loads(os.getenv("DELETED_MODULES"))
+deleted_modules = os.getenv("DELETED_MODULES")
+print(deleted_modules)
+toDelete = json.loads(deleted_modules)
 
 for module in toDelete:
     apkName = f"tachiyomi-{module}-v1.4.*.apk"
