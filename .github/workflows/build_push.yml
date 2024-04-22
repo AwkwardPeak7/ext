@@ -49,7 +49,7 @@ jobs:
       - name: Debug Matrix Modules
         run: |
           echo "Matrix Modules: ${{ needs.prepare.outputs.individualMatrix }}"
-          echo "lol: ${{ toJson(matrix.includes.modules) }}"
+          echo "lol: ${{ toJson(matrix.chunk.modules) }}"
 
       - name: Checkout main branch
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -69,21 +69,19 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@750cdda3edd6d51b7fdfc069d2e2818cf3c44f4c # v3.3.1 
 
-      - name: Build extensions (chunk ${{ matrix.includes.chunk }})
+      - name: Build extensions (chunk ${{ matrix.chunk.num }})
         env:
-          #CI_CHUNK_NUM: ${{ matrix.chunk }}
-          #MODULES: ${{ matrix.includes.modules }}
           ALIAS: ${{ secrets.ALIAS }}
           KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          echo '${{ toJson(matrix.includes.modules) }}'
-          ./gradlew $(echo '${{ toJson(matrix.includes.modules) }}' | jq -r 'join(" ")')
+          echo '${{ toJson(matrix.chunk.modules) }}'
+          ./gradlew $(echo '${{ toJson(matrix.chunk.modules) }}' | jq -r 'join(" ")')
 
-      - name: Upload APKs (chunk ${{ matrix.includes.chunk }})
+      - name: Upload APKs (chunk ${{ matrix.chunk.num }})
         uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba # v4.3.2
         with:
-          name: "individual-apks-${{ matrix.includes.chunk }}"
+          name: "individual-apks-${{ matrix.chunk.num }}"
           path: "**/*.apk"
           retention-days: 1
 
@@ -125,6 +123,7 @@ jobs:
         run: |
           cd main
           cp -r ../repo ./
+          
           python ./.github/scripts/move-apks.py
           INSPECTOR_LINK="$(curl -s "https://api.github.com/repos/keiyoushi/extensions-inspector/releases/latest" | jq -r '.assets[0].browser_download_url')"
           curl -L "$INSPECTOR_LINK" -o ./Inspector.jar

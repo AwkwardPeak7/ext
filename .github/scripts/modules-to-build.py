@@ -6,7 +6,8 @@ import json
 
 def getLastSuccessfulCommitHash():
     worflowRuns = requests.get(
-        url = "https://api.github.com/repos/keiyoushi/extensions-source/actions/runs",
+        #url = "https://api.github.com/repos/keiyoushi/extensions-source/actions/runs",
+        url = "https://api.github.com/repos/awkwardpeak7/ext/actions/runs",
         params = {"event":"push", "status":"success"},
     ).json()["workflow_runs"]
 
@@ -40,7 +41,8 @@ def getModuleList(commitHash):
             if os.path.isdir(directory):
                 srcModules.add(f':{directory.replace("/", ":")}:assembleRelease')
             else:
-                deletedModules.add(directory)
+                name = directory.split("src/", 1)[1].replace("/", ".")
+                deletedModules.add(name)
         else:
             multisrcMatch = multisrcRegex.search(file)
             if (multisrcMatch):
@@ -68,24 +70,19 @@ def chunker(iter, size):
         raise ValueError('Chunk size must be greater than 0.')
     num=0
     for i in range(0, len(iter), size):
-        chunks.append({"chunk":num, "modules":iter[i:(i+size)]})
+        chunks.append({"num":num, "modules":iter[i:(i+size)]})
         num+=1
-    return {"includes":chunks}
+    return {"chunk":chunks}
 
-#commit = getLastSuccessfulCommitHash()
-commit = "f33c604087cbc60f4e698affc9dc49a00eca1d69"
+commit = getLastSuccessfulCommitHash()
 modules, deleted = getModuleList(commit)
 chunked = chunker(modules, int(os.getenv("CI_CHUNK_SIZE", 65)))
 
-# if (os.getenv("CI") == "true"):
-#     with open(os.getenv("GITHUB_ENV"), 'a') as envFile:
-#         envFile.write(f"DELETED_MODULES={json.dumps(deleted)}")
+print(f"Module chunks to build:\n{json.dumps(chunked, indent=4)}\n\nModule to delete:\n{json.dumps(deleted, indent=4)}")
 
-#     
-# else:
-formatted=f"individualMatrix={json.dumps(chunked)}"
+if (os.getenv("CI") == "true"):
+    with open(os.getenv("GITHUB_OUTPUT"), 'a') as outFile:
+        outFile.write(f"individualMatrix={json.dumps(chunked)}")
 
-print(formatted)
-
-with open(os.getenv("GITHUB_OUTPUT"), 'a') as outFile:
-    outFile.write(formatted)
+    with open(os.getenv("GITHUB_ENV"), 'a') as envFile:
+        envFile.write(f"DELETED_MODULES={json.dumps(deleted)}")
