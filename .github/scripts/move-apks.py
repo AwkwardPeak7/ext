@@ -2,6 +2,7 @@ from pathlib import Path
 import shutil
 import os
 import glob
+import json
 
 REPO_APK_DIR = Path("repo/apk")
 
