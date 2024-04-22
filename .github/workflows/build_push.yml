@@ -114,13 +114,9 @@ jobs:
           path: repo
 
       - name: Create repo artifacts
-        env:
-          DELETED_MODULES: ${{ toJson(needs.prepare.outputs.deletedModules) }}
         run: |
-          cd main
-          cp -r ../repo ./
-          
-          python ./.github/scripts/move-apks.py
+          cd main          
+          python ./.github/scripts/move-apks.py ${{ needs.prepare.outputs.deletedModules }}
           INSPECTOR_LINK="$(curl -s "https://api.github.com/repos/keiyoushi/extensions-inspector/releases/latest" | jq -r '.assets[0].browser_download_url')"
           curl -L "$INSPECTOR_LINK" -o ./Inspector.jar
           java -jar ./Inspector.jar "repo/apk" "output.json" "tmp"
