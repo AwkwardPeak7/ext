@@ -38,7 +38,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class HentaiVN : ParsedHttpSource(), ConfigurableSource {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -158,7 +157,11 @@ class HentaiVN : ParsedHttpSource(), ConfigurableSource {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = searchUrl.toHttpUrl().newBuilder().apply {
             addQueryParameter("name", query)
             addQueryParameter("dou", "")
@@ -192,7 +195,7 @@ class HentaiVN : ParsedHttpSource(), ConfigurableSource {
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
         if (document.select("p").toString()
-            .contains("Bạn chỉ có thể sử dụng chức năng này khi đã đăng ký thành viên")
+                .contains("Bạn chỉ có thể sử dụng chức năng này khi đã đăng ký thành viên")
         ) {
             throw Exception("Đăng nhập qua WebView để kích hoạt tìm kiếm")
         }
@@ -208,8 +211,7 @@ class HentaiVN : ParsedHttpSource(), ConfigurableSource {
         return MangasPage(mangas, hasNextPage)
     }
 
-    override fun searchMangaSelector() =
-        ".search-ul .search-li, ${latestUpdatesSelector()}"
+    override fun searchMangaSelector() = ".search-ul .search-li, ${latestUpdatesSelector()}"
 
     override fun searchMangaFromElement(element: Element): SManga {
         val manga = SManga.create()
@@ -224,7 +226,11 @@ class HentaiVN : ParsedHttpSource(), ConfigurableSource {
     override fun searchMangaNextPageSelector() = ".pagination *:contains(Cuối), .pagination *:contains(Next)"
 
     private fun searchMangaByIdRequest(id: String) = GET("$searchAllURL?key=$id", headers)
-    private fun searchMangaByIdParse(response: Response, ids: String): MangasPage {
+
+    private fun searchMangaByIdParse(
+        response: Response,
+        ids: String,
+    ): MangasPage {
         val details = mangaDetailsParse(response)
         details.url = "/$ids-doc-truyen-id.html"
         return MangasPage(listOf(details), false)
@@ -396,10 +402,15 @@ class HentaiVN : ParsedHttpSource(), ConfigurableSource {
     }
 
     private class Alls : Filter.Text("Tìm tất cả")
+
     private class Author : Filter.Text("Tác giả")
+
     private class TextField(name: String, val key: String) : Filter.Text(name)
+
     private class Genre(name: String, val id: String) : Filter.CheckBox(name)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Thể loại", genres)
+
     private class TransGroup(name: String, val id: String) : Filter.CheckBox(name) {
         override fun toString(): String {
             return name

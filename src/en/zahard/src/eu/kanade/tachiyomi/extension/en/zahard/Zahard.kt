@@ -22,7 +22,11 @@ class Zahard : MangaThemesia(
 
     override fun chapterListSelector() = "#chapterlist > ul > a"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegment(mangaUrlDirectory.substring(1))
             .addQueryParameter("search", query)

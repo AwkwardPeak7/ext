@@ -26,7 +26,6 @@ import org.jsoup.nodes.Element
 import uy.kohesive.injekt.injectLazy
 
 class MangaMonks : ParsedHttpSource() {
-
     override val name = "MangaMonks"
 
     override val baseUrl = "https://mangamonks.com"
@@ -39,8 +38,11 @@ class MangaMonks : ParsedHttpSource() {
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/popular-manga/$page", headers)
     }
+
     override fun popularMangaSelector() = ".main-slide"
+
     override fun popularMangaNextPageSelector() = "li:nth-last-child(2) a.page-btn"
+
     override fun popularMangaFromElement(element: Element): SManga {
         return SManga.create().apply {
             title = element.selectFirst(".detail a")!!.text()
@@ -55,11 +57,17 @@ class MangaMonks : ParsedHttpSource() {
     }
 
     override fun latestUpdatesSelector() = ".tab-pane .row .col-12"
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     // search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = filters.let { if (it.isEmpty()) getFilterList() else it }
         return if (query.isNotEmpty()) {
             val requestBody = query.toFormRequestBody()
@@ -92,9 +100,11 @@ class MangaMonks : ParsedHttpSource() {
     }
 
     override fun searchMangaSelector() = ".main-slide .item"
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     private val json: Json by injectLazy()
+
     override fun searchMangaParse(response: Response): MangasPage {
         val isJson = response.header("Content-Type")?.contains("application/json") ?: false
         if (isJson) {
@@ -142,6 +152,7 @@ class MangaMonks : ParsedHttpSource() {
 
     // chapters
     override fun chapterListSelector() = ".chapter-list li"
+
     override fun chapterFromElement(element: Element): SChapter {
         return SChapter.create().apply {
             setUrlWithoutDomain(element.select("a").attr("href"))
@@ -149,6 +160,7 @@ class MangaMonks : ParsedHttpSource() {
             date_upload = element.select(".time").text().trim().toDate()
         }
     }
+
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // pages
@@ -167,6 +179,7 @@ class MangaMonks : ParsedHttpSource() {
         StatusFilter(),
         GenreFilter(),
     )
+
     private class StatusFilter : UriPartFilter(
         "Status",
         arrayOf(
@@ -174,6 +187,7 @@ class MangaMonks : ParsedHttpSource() {
             Pair("Completed", "completed"),
         ),
     )
+
     private class GenreFilter : GenreValueFilter(
         "Genre",
         arrayOf(
@@ -249,13 +263,16 @@ class MangaMonks : ParsedHttpSource() {
             Triple("Raw", "83", "raw"),
         ),
     )
+
     private open class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
         fun toUriPart() = vals[state].second
     }
+
     private open class GenreValueFilter(displayName: String, private val vals: Array<Triple<String, String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
         fun toUriPart() = vals[state].third
+
         fun toGenreValue() = vals[state].second
     }
 

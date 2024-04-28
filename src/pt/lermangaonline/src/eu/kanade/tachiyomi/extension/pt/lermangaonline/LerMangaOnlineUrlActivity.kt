@@ -8,7 +8,6 @@ import android.util.Log
 import kotlin.system.exitProcess
 
 class LerMangaOnlineUrlActivity : Activity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val pathSegments = intent?.data?.pathSegments

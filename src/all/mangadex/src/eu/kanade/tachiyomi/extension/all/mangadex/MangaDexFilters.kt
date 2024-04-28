@@ -10,7 +10,6 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import okhttp3.HttpUrl
 
 class MangaDexFilters {
-
     internal fun getMDFilterList(
         preferences: SharedPreferences,
         dexLang: String,
@@ -30,14 +29,19 @@ class MangaDexFilters {
     )
 
     private interface UrlQueryFilter {
-        fun addQueryParameter(url: HttpUrl.Builder, dexLang: String)
+        fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        )
     }
 
     private class HasAvailableChaptersFilter(intl: Intl) :
         Filter.CheckBox(intl["has_available_chapters"]),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             if (state) {
                 url.addQueryParameter("hasAvailableChapters", "true")
                 url.addQueryParameter("availableTranslatedLanguage[]", dexLang)
@@ -50,11 +54,14 @@ class MangaDexFilters {
         val isoCode: String,
         state: Boolean = false,
     ) : Filter.CheckBox(name, state)
+
     private class OriginalLanguageList(intl: Intl, originalLanguage: List<OriginalLanguage>) :
         Filter.Group<OriginalLanguage>(intl["original_language"], originalLanguage),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             state.filter(OriginalLanguage::state)
                 .forEach { lang ->
                     // dex has zh and zh-hk for chinese manhua
@@ -109,11 +116,14 @@ class MangaDexFilters {
     }
 
     private class ContentRating(name: String, val value: String) : Filter.CheckBox(name)
+
     private class ContentRatingList(intl: Intl, contentRating: List<ContentRating>) :
         Filter.Group<ContentRating>(intl["content_rating"], contentRating),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             state.filter(ContentRating::state)
                 .forEach { url.addQueryParameter("contentRating[]", it.value) }
         }
@@ -146,11 +156,14 @@ class MangaDexFilters {
     }
 
     private class Demographic(name: String, val value: String) : Filter.CheckBox(name)
+
     private class DemographicList(intl: Intl, demographics: List<Demographic>) :
         Filter.Group<Demographic>(intl["publication_demographic"], demographics),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             state.filter(Demographic::state)
                 .forEach { url.addQueryParameter("publicationDemographic[]", it.value) }
         }
@@ -165,11 +178,14 @@ class MangaDexFilters {
     )
 
     private class Status(name: String, val value: String) : Filter.CheckBox(name)
+
     private class StatusList(intl: Intl, status: List<Status>) :
         Filter.Group<Status>(intl["status"], status),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             state.filter(Status::state)
                 .forEach { url.addQueryParameter("status[]", it.value) }
         }
@@ -204,8 +220,10 @@ class MangaDexFilters {
             Selection(5, false),
         ),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             if (state != null) {
                 val query = sortables[state!!.index].value
                 val value = if (state!!.ascending) "asc" else "desc"
@@ -220,8 +238,10 @@ class MangaDexFilters {
     private class TagList(collection: String, tags: List<Tag>) :
         Filter.Group<Tag>(collection, tags),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             state.forEach { tag ->
                 if (tag.isIncluded()) {
                     url.addQueryParameter("includedTags[]", tag.id)
@@ -353,8 +373,10 @@ class MangaDexFilters {
     private class TagInclusionMode(intl: Intl, modes: Array<TagMode>) :
         Filter.Select<TagMode>(intl["included_tags_mode"], modes, 0),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             url.addQueryParameter("includedTagsMode", values[state].value)
         }
     }
@@ -362,8 +384,10 @@ class MangaDexFilters {
     private class TagExclusionMode(intl: Intl, modes: Array<TagMode>) :
         Filter.Select<TagMode>(intl["excluded_tags_mode"], modes, 1),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             url.addQueryParameter("excludedTagsMode", values[state].value)
         }
     }
@@ -371,8 +395,10 @@ class MangaDexFilters {
     private class TagsFilter(intl: Intl, innerFilters: FilterList) :
         Filter.Group<Filter<*>>(intl["tags_mode"], innerFilters),
         UrlQueryFilter {
-
-        override fun addQueryParameter(url: HttpUrl.Builder, dexLang: String) {
+        override fun addQueryParameter(
+            url: HttpUrl.Builder,
+            dexLang: String,
+        ) {
             state.filterIsInstance<UrlQueryFilter>()
                 .forEach { filter -> filter.addQueryParameter(url, dexLang) }
         }
@@ -383,7 +409,11 @@ class MangaDexFilters {
         TagExclusionMode(intl, getTagModes(intl)),
     )
 
-    internal fun addFiltersToUrl(url: HttpUrl.Builder, filters: FilterList, dexLang: String): HttpUrl {
+    internal fun addFiltersToUrl(
+        url: HttpUrl.Builder,
+        filters: FilterList,
+        dexLang: String,
+    ): HttpUrl {
         filters.filterIsInstance<UrlQueryFilter>()
             .forEach { filter -> filter.addQueryParameter(url, dexLang) }
 

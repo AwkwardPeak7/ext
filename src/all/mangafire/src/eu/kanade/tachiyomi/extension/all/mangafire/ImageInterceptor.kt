@@ -13,7 +13,6 @@ import java.io.InputStream
 import kotlin.math.min
 
 object ImageInterceptor : Interceptor {
-
     const val SCRAMBLED = "scrambled"
     private const val PIECE_SIZE = 200
     private const val MIN_SPLIT_COUNT = 5
@@ -30,7 +29,10 @@ object ImageInterceptor : Interceptor {
         return response.newBuilder().body(body).build()
     }
 
-    private fun descramble(image: InputStream, offset: Int): ByteArray {
+    private fun descramble(
+        image: InputStream,
+        offset: Int,
+    ): ByteArray {
         // obfuscated code: https://mangafire.to/assets/t1/min/all.js
         // it shuffles arrays of the image slices
 

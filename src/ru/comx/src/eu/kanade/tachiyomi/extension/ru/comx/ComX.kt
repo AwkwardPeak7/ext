@@ -40,7 +40,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class ComX : ParsedHttpSource() {
-
     private val json: Json by injectLazy()
 
     override val name = "Com-X"
@@ -58,7 +57,10 @@ class ComX : ParsedHttpSource() {
         .cookieJar(
             object : CookieJar {
                 // Syncs okhttp with WebView cookies, allowing logged-in users do logged-in stuff
-                override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+                override fun saveFromResponse(
+                    url: HttpUrl,
+                    cookies: List<Cookie>,
+                ) {
                     for (cookie in cookies) {
                         cookieManager.setCookie(url.toString(), cookie.toString())
                     }
@@ -162,10 +164,15 @@ class ComX : ParsedHttpSource() {
         }
         return manga
     }
+
     override fun latestUpdatesNextPageSelector(): Nothing? = null
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             return POST(
                 "$baseUrl/index.php?do=search",
@@ -215,7 +222,9 @@ class ComX : ParsedHttpSource() {
         }
         val pageParameter = if (page > 1) "page/$page/" else ""
         return POST(
-            "$baseUrl/ComicList/p.cat=${sectionPub.joinToString(",")}/g=${mutableGenre.joinToString(",")}/t=${mutableType.joinToString(",")}/adult=${mutableAge.joinToString(",")}/$pageParameter",
+            "$baseUrl/ComicList/p.cat=${sectionPub.joinToString(
+                ",",
+            )}/g=${mutableGenre.joinToString(",")}/t=${mutableType.joinToString(",")}/adult=${mutableAge.joinToString(",")}/$pageParameter",
             body = FormBody.Builder()
                 .add("dlenewssortby", orderBy)
                 .add("dledirection", ascEnd)
@@ -227,8 +236,11 @@ class ComX : ParsedHttpSource() {
     }
 
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
+
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
+
     override fun searchMangaNextPageSelector(): Nothing? = null
 
     // Details
@@ -265,7 +277,11 @@ class ComX : ParsedHttpSource() {
         manga.status = parseStatus(infoElement.select(".page__list li:contains(Статус)").text())
 
         manga.description = infoElement.select(".page__title-original").text().trim() + "\n" +
-            if (document.select(".page__list li:contains(Тип выпуска)").text().contains("!!! События в комиксах - ХРОНОЛОГИЯ !!!")) { "Cобытие в комиксах - ХРОНОЛОГИЯ\n" } else { "" } +
+            if (document.select(".page__list li:contains(Тип выпуска)").text().contains("!!! События в комиксах - ХРОНОЛОГИЯ !!!")) {
+                "Cобытие в комиксах - ХРОНОЛОГИЯ\n"
+            } else {
+                ""
+            } +
             ratingStar + " " + ratingValue + " (голосов: " + ratingVotes + ")\n" +
             infoElement.select(".page__text ").first()?.html()?.let { Jsoup.parse(it) }
                 ?.select("body:not(:has(p)),p,br")
@@ -328,8 +344,7 @@ class ComX : ParsedHttpSource() {
         return chapters ?: emptyList()
     }
 
-    override fun chapterFromElement(element: Element): SChapter =
-        throw NotImplementedError("Unused")
+    override fun chapterFromElement(element: Element): SChapter = throw NotImplementedError("Unused")
 
     // Pages
     override fun pageListParse(response: Response): List<Page> {
@@ -396,8 +411,11 @@ class ComX : ParsedHttpSource() {
     private class CheckFilter(name: String, val id: String) : Filter.CheckBox(name)
 
     private class PubList(publishers: List<CheckFilter>) : Filter.Group<CheckFilter>("Разделы", publishers)
+
     private class GenreList(genres: List<CheckFilter>) : Filter.Group<CheckFilter>("Жанры", genres)
+
     private class TypeList(types: List<CheckFilter>) : Filter.Group<CheckFilter>("Тип выпуска", types)
+
     private class AgeList(ages: List<CheckFilter>) : Filter.Group<CheckFilter>("Возрастное ограничение", ages)
 
     override fun getFilterList() = FilterList(

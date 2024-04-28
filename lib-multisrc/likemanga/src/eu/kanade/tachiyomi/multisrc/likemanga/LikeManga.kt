@@ -29,7 +29,6 @@ abstract class LikeManga(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient
@@ -44,8 +43,11 @@ abstract class LikeManga(
     }
 
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
+
     override fun popularMangaFromElement(element: Element) = searchMangaFromElement(element)
+
     override fun popularMangaSelector() = searchMangaSelector()
+
     override fun popularMangaNextPageSelector() = searchMangaNextPageSelector()
 
     override fun latestUpdatesRequest(page: Int): Request {
@@ -53,11 +55,18 @@ abstract class LikeManga(
     }
 
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
+
     override fun latestUpdatesFromElement(element: Element) = searchMangaFromElement(element)
+
     override fun latestUpdatesSelector() = searchMangaSelector()
+
     override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             addQueryParameter("act", "searchadvance")
             filters.forEach { filter ->
@@ -152,6 +161,7 @@ abstract class LikeManga(
     }
 
     override fun searchMangaSelector() = "div.card-body div.card"
+
     override fun searchMangaNextPageSelector() = "ul.pagination a:contains(»)"
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
@@ -198,7 +208,10 @@ abstract class LikeManga(
         return chapters
     }
 
-    private fun fetchAjaxChapterList(id: Int, page: Int): List<SChapter> {
+    private fun fetchAjaxChapterList(
+        id: Int,
+        page: Int,
+    ): List<SChapter> {
         val request = ajaxChapterListRequest(id, page)
         val response = client.newCall(request).execute()
 
@@ -210,7 +223,10 @@ abstract class LikeManga(
         return ajaxChapterListParse(response)
     }
 
-    private fun ajaxChapterListRequest(id: Int, page: Int): Request {
+    private fun ajaxChapterListRequest(
+        id: Int,
+        page: Int,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             addQueryParameter("act", "ajax")
             addQueryParameter("code", "load_list_chapter")

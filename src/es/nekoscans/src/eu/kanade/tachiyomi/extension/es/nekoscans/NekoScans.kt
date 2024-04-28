@@ -33,7 +33,9 @@ class NekoScans : MangaThemesia(
             .mapIndexed { i, img -> Page(i, chapterUrl, img.imgAttr()) }
 
         // Some sites also loads pages via javascript
-        if (htmlPages.isNotEmpty()) { return htmlPages }
+        if (htmlPages.isNotEmpty()) {
+            return htmlPages
+        }
 
         var docString = document.toString()
 

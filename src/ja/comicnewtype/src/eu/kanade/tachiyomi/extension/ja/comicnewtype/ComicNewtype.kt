@@ -62,7 +62,11 @@ class ComicNewtype : HttpSource() {
 
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val path = when {
             query.isNotBlank() -> "/search/$query/"
             else -> filters.genrePath ?: "/contents/"

@@ -45,7 +45,9 @@ class DragonTea : Madara(
             pageIndexRegex.find(it.attr("id"))?.groupValues?.get(1)?.toInt() ?: 0
         }
 
-        val dtaKey = "15" + orderedElements.joinToString("") { it.attr("id").takeLast(1) } + (((dataId + 88) * 2) - pageCount - 5).toString()
+        val dtaKey = "15" + orderedElements.joinToString(
+            "",
+        ) { it.attr("id").takeLast(1) } + (((dataId + 88) * 2) - pageCount - 5).toString()
         val srcKey = (dataId + 20).toString() + orderedElements.joinToString("") {
             decryptAesJson(it.attr("dta"), dtaKey).jsonPrimitive.content.takeLast(2)
         } + (pageCount * 4).toString()
@@ -56,7 +58,10 @@ class DragonTea : Madara(
         }
     }
 
-    private fun decryptAesJson(ciphertext: String, key: String): JsonElement {
+    private fun decryptAesJson(
+        ciphertext: String,
+        key: String,
+    ): JsonElement {
         val cipherData = json.parseToJsonElement(ciphertext).jsonObject
 
         val unsaltedCiphertext = Base64.decode(cipherData["ct"]!!.jsonPrimitive.content, Base64.DEFAULT)

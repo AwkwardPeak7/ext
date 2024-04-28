@@ -10,7 +10,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class xCaliBRScans : MangaThemesia("xCaliBR Scans", "https://xcalibrscans.com", "en") {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .addInterceptor(AntiScrapInterceptor())
         .rateLimit(2)
@@ -43,7 +42,10 @@ class xCaliBRScans : MangaThemesia("xCaliBR Scans", "https://xcalibrscans.com", 
         return imgUrls.mapIndexed { index, imageUrl -> Page(index, document.location(), imageUrl) }
     }
 
-    private fun parseAntiScrapScramble(element: Element, destination: MutableList<String>) {
+    private fun parseAntiScrapScramble(
+        element: Element,
+        destination: MutableList<String>,
+    ) {
         element.select("div.sword")
             .forEach { swordDiv ->
                 val imgUrls = swordDiv.select("img").map { it.imgAttr() }

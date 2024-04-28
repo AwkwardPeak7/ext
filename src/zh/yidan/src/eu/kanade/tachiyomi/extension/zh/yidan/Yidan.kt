@@ -62,7 +62,11 @@ class Yidan : HttpSource(), ConfigurableSource {
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/prod-api/app-api/vv/mh-list/page".toHttpUrl().newBuilder()
             .apply { if (query.isNotBlank()) addQueryParameter("word", query) }
             .apply { parseFilters(filters, this) }
@@ -75,22 +79,18 @@ class Yidan : HttpSource(), ConfigurableSource {
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
 
     // for WebView
-    override fun mangaDetailsRequest(manga: SManga) =
-        GET("$baseUrl/#/pages/detail/detail?id=${manga.url}")
+    override fun mangaDetailsRequest(manga: SManga) = GET("$baseUrl/#/pages/detail/detail?id=${manga.url}")
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         val request = GET("$baseUrl/prod-api/app-api/vv/mh-list/get?id=${manga.url}", headers)
         return client.newCall(request).asObservableSuccess().map { mangaDetailsParse(it) }
     }
 
-    override fun mangaDetailsParse(response: Response) =
-        response.parseAs<MangaDto>().toSManga(baseUrl)
+    override fun mangaDetailsParse(response: Response) = response.parseAs<MangaDto>().toSManga(baseUrl)
 
-    override fun chapterListRequest(manga: SManga) =
-        GET("$baseUrl/prod-api/app-api/vv/mh-episodes/list?mhid=${manga.url}", headers)
+    override fun chapterListRequest(manga: SManga) = GET("$baseUrl/prod-api/app-api/vv/mh-episodes/list?mhid=${manga.url}", headers)
 
-    override fun chapterListParse(response: Response) =
-        response.parseAs<List<ChapterDto>>().map { it.toSChapter() }
+    override fun chapterListParse(response: Response) = response.parseAs<List<ChapterDto>>().map { it.toSChapter() }
 
     // for WebView
     override fun pageListRequest(chapter: SChapter): Request {
@@ -104,11 +104,10 @@ class Yidan : HttpSource(), ConfigurableSource {
         return client.newCall(GET(url, headers)).asObservableSuccess().map { pageListParse(it) }
     }
 
-    override fun pageListParse(response: Response) =
-        response.parseAs<PageListDto>().images.mapIndexed { index, url ->
-            val imageUrl = if (url.startsWith("http")) url else baseUrl + url
-            Page(index, imageUrl = imageUrl)
-        }
+    override fun pageListParse(response: Response) = response.parseAs<PageListDto>().images.mapIndexed { index, url ->
+        val imageUrl = if (url.startsWith("http")) url else baseUrl + url
+        Page(index, imageUrl = imageUrl)
+    }
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 

@@ -14,7 +14,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class MangaShip : ParsedHttpSource() {
-
     override val name = "Manga Ship"
 
     override val baseUrl = "https://www.mangaship.net"
@@ -61,7 +60,11 @@ class MangaShip : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/Tr/Search?kelime=$query&tur=Manga&page=$page", headers)
     }
 

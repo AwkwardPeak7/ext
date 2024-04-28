@@ -76,7 +76,10 @@ class PageDataDto(
 private val symbolsRegex = Regex("\\W")
 private val hyphenRegex = Regex("-{2,}")
 
-private fun slugify(id: Int, title: String): String = buildString {
+private fun slugify(
+    id: Int,
+    title: String,
+): String = buildString {
     append(id)
     append("-")
     append(

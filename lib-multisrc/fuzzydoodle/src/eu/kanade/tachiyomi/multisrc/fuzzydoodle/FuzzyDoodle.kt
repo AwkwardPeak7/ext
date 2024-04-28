@@ -30,7 +30,6 @@ abstract class FuzzyDoodle(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient
@@ -39,10 +38,10 @@ abstract class FuzzyDoodle(
         .add("Referer", "$baseUrl/")
 
     // Popular
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/manga?page=$page", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/manga?page=$page", headers)
 
     override fun popularMangaSelector() = "div#card-real"
+
     override fun popularMangaNextPageSelector() = "ul.pagination > li:last-child:not(.pagination-disabled)"
 
     override fun popularMangaParse(response: Response): MangasPage {
@@ -66,28 +65,25 @@ abstract class FuzzyDoodle(
     // latest
     protected open val latestFromHomePage = false
 
-    override fun latestUpdatesRequest(page: Int) =
-        if (latestFromHomePage) {
-            latestHomePageRequest(page)
-        } else {
-            latestPageRequest(page)
-        }
+    override fun latestUpdatesRequest(page: Int) = if (latestFromHomePage) {
+        latestHomePageRequest(page)
+    } else {
+        latestPageRequest(page)
+    }
 
-    protected open fun latestHomePageRequest(page: Int) =
-        GET("$baseUrl/?page=$page", headers)
+    protected open fun latestHomePageRequest(page: Int) = GET("$baseUrl/?page=$page", headers)
 
-    protected open fun latestPageRequest(page: Int) =
-        GET("$baseUrl/latest?page=$page", headers)
+    protected open fun latestPageRequest(page: Int) = GET("$baseUrl/latest?page=$page", headers)
 
-    override fun latestUpdatesSelector() =
-        if (latestFromHomePage) {
-            "section:has(h2:containsOwn(Recent Chapters)) div#card-real," +
-                " section:has(h2:containsOwn(Chapitres récents)) div#card-real"
-        } else {
-            popularMangaSelector()
-        }
+    override fun latestUpdatesSelector() = if (latestFromHomePage) {
+        "section:has(h2:containsOwn(Recent Chapters)) div#card-real," +
+            " section:has(h2:containsOwn(Chapitres récents)) div#card-real"
+    } else {
+        popularMangaSelector()
+    }
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
     override fun latestUpdatesParse(response: Response): MangasPage {
@@ -97,7 +93,11 @@ abstract class FuzzyDoodle(
     }
 
     // search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/manga".toHttpUrl().newBuilder().apply {
             addQueryParameter("title", query.trim())
             filters.filterIsInstance<UrlPartFilter>().forEach {
@@ -112,8 +112,11 @@ abstract class FuzzyDoodle(
     }
 
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
+
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     // filters
@@ -222,13 +225,11 @@ abstract class FuzzyDoodle(
         }
     }
 
-    protected fun Element.getInfo(text: String): String? =
-        selectFirst("p:has(span:containsOwn($text)) span.capitalize")
-            ?.ownText()
-            ?.trim()
+    protected fun Element.getInfo(text: String): String? = selectFirst("p:has(span:containsOwn($text)) span.capitalize")
+        ?.ownText()
+        ?.trim()
 
-    protected fun String?.removePlaceHolder(): String? =
-        takeUnless { it == "-" }
+    protected fun String?.removePlaceHolder(): String? = takeUnless { it == "-" }
 
     // chapters
     override fun chapterListParse(response: Response): List<SChapter> {
@@ -253,6 +254,7 @@ abstract class FuzzyDoodle(
     }
 
     override fun chapterListSelector() = "div#chapters-list > a[href]"
+
     protected fun chapterListNextPageSelector() = latestUpdatesNextPageSelector()
 
     override fun chapterFromElement(element: Element) = SChapter.create().apply {

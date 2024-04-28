@@ -25,7 +25,6 @@ import org.jsoup.nodes.Element
 import uy.kohesive.injekt.injectLazy
 
 class InfinityScans : HttpSource() {
-
     override val name = "InfinityScans"
 
     override val baseUrl = "https://infinityscans.net"
@@ -56,23 +55,23 @@ class InfinityScans : HttpSource() {
 
     // Popular
 
-    override fun popularMangaRequest(page: Int): Request =
-        searchMangaRequest(page, "", FilterList(SortFilter("popularity")))
+    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(page, "", FilterList(SortFilter("popularity")))
 
-    override fun popularMangaParse(response: Response): MangasPage =
-        searchMangaParse(response)
+    override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
 
     // Latest
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        searchMangaRequest(page, "", FilterList(SortFilter("latest")))
+    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(page, "", FilterList(SortFilter("latest")))
 
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        searchMangaParse(response)
+    override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegments("ajax/comics")
             .addQueryParameter("page", page.toString())
@@ -195,13 +194,11 @@ class InfinityScans : HttpSource() {
         else -> SManga.UNKNOWN
     }
 
-    private fun Element.getInfo(name: String): String? =
-        selectFirst("div:has(>b:matches($name:))")?.ownText()
+    private fun Element.getInfo(name: String): String? = selectFirst("div:has(>b:matches($name:))")?.ownText()
 
-    private fun Element.getLinks(name: String): String? =
-        select("div:has(>b:matches($name:)) a")
-            .joinToString(", ", transform = Element::text).trim()
-            .takeIf { it.isNotBlank() }
+    private fun Element.getLinks(name: String): String? = select("div:has(>b:matches($name:)) a")
+        .joinToString(", ", transform = Element::text).trim()
+        .takeIf { it.isNotBlank() }
 
     // Chapters
 

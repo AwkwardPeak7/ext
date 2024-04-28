@@ -30,86 +30,77 @@ class Hennojin(override val lang: String, suffix: String) : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun latestUpdatesRequest(page: Int) =
-        popularMangaRequest(page)
+    override fun latestUpdatesRequest(page: Int) = popularMangaRequest(page)
 
-    override fun latestUpdatesFromElement(element: Element) =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
     override fun popularMangaSelector() = ".grid-items .layer-content"
 
     override fun popularMangaNextPageSelector() = ".paginate .next"
 
-    override fun popularMangaRequest(page: Int) =
-        httpUrl.request { addEncodedPathSegments("page/$page") }
+    override fun popularMangaRequest(page: Int) = httpUrl.request { addEncodedPathSegments("page/$page") }
 
-    override fun popularMangaFromElement(element: Element) =
-        SManga.create().apply {
-            element.selectFirst(".title_link > a").let {
-                title = it!!.text()
-                setUrlWithoutDomain(it.attr("href"))
-            }
-            thumbnail_url = element.selectFirst("img")!!.attr("src")
+    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
+        element.selectFirst(".title_link > a").let {
+            title = it!!.text()
+            setUrlWithoutDomain(it.attr("href"))
         }
+        thumbnail_url = element.selectFirst("img")!!.attr("src")
+    }
 
     override fun searchMangaSelector() = popularMangaSelector()
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        httpUrl.request {
-            addEncodedPathSegments("page/$page")
-            addQueryParameter("keyword", query)
-            addQueryParameter("_wpnonce", WP_NONCE)
-        }
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = httpUrl.request {
+        addEncodedPathSegments("page/$page")
+        addQueryParameter("keyword", query)
+        addQueryParameter("_wpnonce", WP_NONCE)
+    }
 
-    override fun searchMangaFromElement(element: Element) =
-        popularMangaFromElement(element)
+    override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun mangaDetailsRequest(manga: SManga) =
-        GET("https://hennojin.com" + manga.url, headers)
+    override fun mangaDetailsRequest(manga: SManga) = GET("https://hennojin.com" + manga.url, headers)
 
-    override fun mangaDetailsParse(document: Document) =
-        SManga.create().apply {
-            description = document.selectFirst(
-                ".manga-subtitle + p + p",
-            )?.html()?.replace("<br> ", "\n")
-            genre = document.select(
-                ".tags-list a[href*=/parody/]," +
-                    ".tags-list a[href*=/tags/]," +
-                    ".tags-list a[href*=/character/]",
-            )?.joinToString { it.text() }
-            artist = document.select(
-                ".tags-list a[href*=/artist/]",
-            )?.joinToString { it.text() }
-            author = document.select(
-                ".tags-list a[href*=/group/]",
-            )?.joinToString { it.text() } ?: artist
-            status = SManga.COMPLETED
-        }
+    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
+        description = document.selectFirst(
+            ".manga-subtitle + p + p",
+        )?.html()?.replace("<br> ", "\n")
+        genre = document.select(
+            ".tags-list a[href*=/parody/]," +
+                ".tags-list a[href*=/tags/]," +
+                ".tags-list a[href*=/character/]",
+        )?.joinToString { it.text() }
+        artist = document.select(
+            ".tags-list a[href*=/artist/]",
+        )?.joinToString { it.text() }
+        author = document.select(
+            ".tags-list a[href*=/group/]",
+        )?.joinToString { it.text() } ?: artist
+        status = SManga.COMPLETED
+    }
 
-    override fun fetchChapterList(manga: SManga) =
-        Request.Builder().url(manga.thumbnail_url!!)
-            .head().build().run(client::newCall)
-            .asObservableSuccess().map { res ->
-                SChapter.create().apply {
-                    name = "Chapter"
-                    url = manga.reader
-                    date_upload = res.date
-                    chapter_number = -1f
-                }.let(::listOf)
-            }!!
+    override fun fetchChapterList(manga: SManga) = Request.Builder().url(manga.thumbnail_url!!)
+        .head().build().run(client::newCall)
+        .asObservableSuccess().map { res ->
+            SChapter.create().apply {
+                name = "Chapter"
+                url = manga.reader
+                date_upload = res.date
+                chapter_number = -1f
+            }.let(::listOf)
+        }!!
 
-    override fun pageListRequest(chapter: SChapter) =
-        GET("https://hennojin.com" + chapter.url, headers)
+    override fun pageListRequest(chapter: SChapter) = GET("https://hennojin.com" + chapter.url, headers)
 
-    override fun pageListParse(document: Document) =
-        document.select(".slideshow-container > img")
-            .mapIndexed { idx, img -> Page(idx, "", img.absUrl("src")) }
+    override fun pageListParse(document: Document) = document.select(".slideshow-container > img")
+        .mapIndexed { idx, img -> Page(idx, "", img.absUrl("src")) }
 
-    private inline fun HttpUrl.request(
-        block: HttpUrl.Builder.() -> HttpUrl.Builder,
-    ) = GET(newBuilder().block().build(), headers)
+    private inline fun HttpUrl.request(block: HttpUrl.Builder.() -> HttpUrl.Builder) = GET(newBuilder().block().build(), headers)
 
     private inline val Response.date: Long
         get() = headers["Last-Modified"]?.run(httpDate::parse)?.time ?: 0L
@@ -117,14 +108,11 @@ class Hennojin(override val lang: String, suffix: String) : ParsedHttpSource() {
     private inline val SManga.reader: String
         get() = "/home/manga-reader/?manga=$title&view=multi"
 
-    override fun chapterListSelector() =
-        throw UnsupportedOperationException()
+    override fun chapterListSelector() = throw UnsupportedOperationException()
 
-    override fun chapterFromElement(element: Element) =
-        throw UnsupportedOperationException()
+    override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(document: Document) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     companion object {
         // Let's hope this doesn't change

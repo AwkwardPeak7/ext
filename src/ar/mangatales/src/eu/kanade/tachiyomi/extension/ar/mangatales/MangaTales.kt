@@ -17,7 +17,10 @@ class MangaTales : Gmanga(
     "ar",
     "https://media.mangatales.com",
 ) {
-    override fun createThumbnail(mangaId: String, cover: String): String {
+    override fun createThumbnail(
+        mangaId: String,
+        cover: String,
+    ): String {
         return "$cdnUrl/uploads/manga/cover/$mangaId/large_$cover"
     }
 

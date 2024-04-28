@@ -7,7 +7,6 @@ import java.util.TimeZone
 import kotlin.time.Duration.Companion.minutes
 
 object MDConstants {
-
     val uuidRegex =
         Regex("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")
 
@@ -113,32 +112,38 @@ object MDConstants {
         groupMangaPlus,
     )
     private const val blockedGroupsPref = "blockedGroups"
+
     fun getBlockedGroupsPrefKey(dexLang: String): String {
         return "${blockedGroupsPref}_$dexLang"
     }
 
     private const val blockedUploaderPref = "blockedUploader"
+
     fun getBlockedUploaderPrefKey(dexLang: String): String {
         return "${blockedUploaderPref}_$dexLang"
     }
 
     private const val hasSanitizedUuidsPref = "hasSanitizedUuids"
+
     fun getHasSanitizedUuidsPrefKey(dexLang: String): String {
         return "${hasSanitizedUuidsPref}_$dexLang"
     }
 
     private const val tryUsingFirstVolumeCoverPref = "tryUsingFirstVolumeCover"
     const val tryUsingFirstVolumeCoverDefault = false
+
     fun getTryUsingFirstVolumeCoverPrefKey(dexLang: String): String {
         return "${tryUsingFirstVolumeCoverPref}_$dexLang"
     }
 
     private const val altTitlesInDescPref = "altTitlesInDesc"
+
     fun getAltTitlesInDescPrefKey(dexLang: String): String {
         return "${altTitlesInDescPref}_$dexLang"
     }
 
     private const val customUserAgentPref = "customUserAgent"
+
     fun getCustomUserAgentPrefKey(dexLang: String): String {
         return "${customUserAgentPref}_$dexLang"
     }

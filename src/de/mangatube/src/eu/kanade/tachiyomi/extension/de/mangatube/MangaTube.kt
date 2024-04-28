@@ -31,7 +31,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class MangaTube : ParsedHttpSource() {
-
     override val name = "Manga Tube"
 
     override val baseUrl = "https://manga-tube.me"
@@ -67,7 +66,10 @@ class MangaTube : ParsedHttpSource() {
 
     // popular uses "success" as a key, search uses "suggestions"
     // for future reference: if adding filters, advanced search might use a different key
-    private fun parseMangaFromJson(response: Response, hasNextPage: Boolean): MangasPage {
+    private fun parseMangaFromJson(
+        response: Response,
+        hasNextPage: Boolean,
+    ): MangasPage {
         var titleKey = "manga_title"
         val mangas = json.decodeFromString<JsonObject>(response.body.string())
             .let { it["success"] ?: it["suggestions"].also { titleKey = "value" } }!!
@@ -110,7 +112,11 @@ class MangaTube : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val rbodyContent = "action=search_query&parameter%5Bquery%5D=$query"
         return POST("$baseUrl/ajax", xhrHeaders, rbodyContent.toRequestBody(null))
     }

@@ -29,7 +29,6 @@ abstract class SinMH(
     _baseUrl: String,
     override val lang: String = "zh",
 ) : ParsedHttpSource() {
-
     override val baseUrl = _baseUrl
     protected open val mobileUrl = _baseUrl.replaceFirst("www.", "m.")
     override val supportsLatest = true
@@ -43,6 +42,7 @@ abstract class SinMH(
     protected open val nextPageSelector = "ul.pagination > li.next:not(.disabled)"
     protected open val comicItemSelector = "#contList > li, li.list-comic"
     protected open val comicItemTitleSelector = "p > a, h3 > a"
+
     protected open fun mangaFromElement(element: Element) = SManga.create().apply {
         val titleElement = element.selectFirst(comicItemTitleSelector)!!
         title = titleElement.text()
@@ -54,8 +54,11 @@ abstract class SinMH(
     // Popular
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/list/click/?page=$page", headers)
+
     override fun popularMangaNextPageSelector(): String? = nextPageSelector
+
     override fun popularMangaSelector() = comicItemSelector
+
     override fun popularMangaFromElement(element: Element) = mangaFromElement(element)
 
     override fun popularMangaParse(response: Response): MangasPage {
@@ -69,8 +72,11 @@ abstract class SinMH(
     // Latest
 
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/list/update/?page=$page", headers)
+
     override fun latestUpdatesNextPageSelector(): String? = nextPageSelector
+
     override fun latestUpdatesSelector() = comicItemSelector
+
     override fun latestUpdatesFromElement(element: Element) = mangaFromElement(element)
 
     override fun latestUpdatesParse(response: Response): MangasPage {
@@ -84,20 +90,26 @@ abstract class SinMH(
     // Search
 
     override fun searchMangaNextPageSelector(): String? = nextPageSelector
+
     override fun searchMangaSelector(): String = comicItemSelector
+
     override fun searchMangaFromElement(element: Element) = mangaFromElement(element)
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        if (query.isNotEmpty()) {
-            GET("$baseUrl/search/?keywords=$query&page=$page", headers)
-        } else {
-            val categories = filters.filterIsInstance<UriPartFilter>().map { it.toUriPart() }
-                .filter { it.isNotEmpty() }
-            val sort = filters.filterIsInstance<SortFilter>().firstOrNull()?.toUriPart().orEmpty()
-            val url = StringBuilder(baseUrl).append("/list/").apply {
-                categories.joinTo(this, separator = "-", postfix = "-/")
-            }.append(sort).append("?page=").append(page).toString()
-            GET(url, headers)
-        }
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = if (query.isNotEmpty()) {
+        GET("$baseUrl/search/?keywords=$query&page=$page", headers)
+    } else {
+        val categories = filters.filterIsInstance<UriPartFilter>().map { it.toUriPart() }
+            .filter { it.isNotEmpty() }
+        val sort = filters.filterIsInstance<SortFilter>().firstOrNull()?.toUriPart().orEmpty()
+        val url = StringBuilder(baseUrl).append("/list/").apply {
+            categories.joinTo(this, separator = "-", postfix = "-/")
+        }.append(sort).append("?page=").append(page).toString()
+        GET(url, headers)
+    }
 
     // Details
 
@@ -119,7 +131,10 @@ abstract class SinMH(
         thumbnail_url = document.selectFirst("div.book-cover img")!!.attr("src")
     }
 
-    protected open fun mangaDetailsParseDefaultGenre(document: Document, detailsList: Element): String {
+    protected open fun mangaDetailsParseDefaultGenre(
+        document: Document,
+        detailsList: Element,
+    ): String {
         val category = detailsList.selectFirst("strong:contains(类型) + a")!!
         val breadcrumbs = document.selectFirst("div.breadcrumb-bar")!!.select("a[href^=/list/]")
         return buildString {
@@ -128,7 +143,10 @@ abstract class SinMH(
         }
     }
 
-    protected fun mangaDetailsParseDMZJStyle(document: Document, hasBreadcrumb: Boolean) = SManga.create().apply {
+    protected fun mangaDetailsParseDMZJStyle(
+        document: Document,
+        hasBreadcrumb: Boolean,
+    ) = SManga.create().apply {
         val detailsDiv = document.selectFirst("div.comic_deCon")!!
         title = detailsDiv.selectFirst(Evaluator.Tag("h1"))!!.text()
         val details = detailsDiv.select("> ul > li")
@@ -155,13 +173,18 @@ abstract class SinMH(
     protected open val dateSelector = ".date"
 
     protected open fun List<SChapter>.sortedDescending() = this.asReversed()
+
     protected open fun Elements.sectionsDescending() = this.asReversed()
 
     override fun chapterListParse(response: Response): List<SChapter> {
         return chapterListParse(response, chapterListSelector(), dateSelector)
     }
 
-    protected fun chapterListParse(response: Response, listSelector: String, dateSelector: String): List<SChapter> {
+    protected fun chapterListParse(
+        response: Response,
+        listSelector: String,
+        dateSelector: String,
+    ): List<SChapter> {
         val document = response.asJsoup()
         val sectionSelector = listSelector.substringBefore(' ')
         val itemSelector = listSelector.substringAfter(' ')
@@ -177,6 +200,7 @@ abstract class SinMH(
 
     /** 必须是 "section item" */
     override fun chapterListSelector() = ".chapter-body li > a"
+
     override fun chapterFromElement(element: Element) = SChapter.create().apply {
         setUrlWithoutDomain(element.attr("href"))
         val children = element.children()
@@ -213,12 +237,11 @@ abstract class SinMH(
     }
 
     // default parsing of ["...","..."]
-    protected open fun parsePageImages(chapterImages: String): List<String> =
-        if (chapterImages.length > 4) {
-            chapterImages.run { substring(2, length - 2) }.replace("""\/""", "/").split("\",\"")
-        } else {
-            emptyList() // []
-        }
+    protected open fun parsePageImages(chapterImages: String): List<String> = if (chapterImages.length > 4) {
+        chapterImages.run { substring(2, length - 2) }.replace("""\/""", "/").split("\",\"")
+    } else {
+        emptyList() // []
+    }
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 

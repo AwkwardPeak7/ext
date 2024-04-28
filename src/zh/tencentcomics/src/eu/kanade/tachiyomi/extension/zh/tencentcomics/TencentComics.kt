@@ -26,7 +26,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class TencentComics : ParsedHttpSource() {
-
     override val name = "腾讯动漫"
 
     // its easier to parse the mobile version of the website
@@ -106,7 +105,8 @@ class TencentComics : ParsedHttpSource() {
     }
 
     // desktop version of the site has more info
-    override fun mangaDetailsRequest(manga: SManga): Request = GET("$desktopUrl/Comic/comicInfo/" + manga.url.substringAfter("/index/"), headers)
+    override fun mangaDetailsRequest(manga: SManga): Request =
+        GET("$desktopUrl/Comic/comicInfo/" + manga.url.substringAfter("/index/"), headers)
 
     override fun mangaDetailsParse(document: Document): SManga {
         return SManga.create().apply {
@@ -181,7 +181,11 @@ class TencentComics : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector() = throw java.lang.UnsupportedOperationException("Not used.")
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(ID_SEARCH_PREFIX)) {
             val id = query.removePrefix(ID_SEARCH_PREFIX)
             client.newCall(searchMangaByIdRequest(id))
@@ -194,13 +198,20 @@ class TencentComics : ParsedHttpSource() {
 
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/comic/index/id/$id", headers)
 
-    private fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    private fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val sManga = mangaDetailsParse(response)
         sManga.url = "/comic/index/id/$id"
         return MangasPage(listOf(sManga), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // impossible to search a manga use the filters
         return if (query.isNotEmpty()) {
             GET("$baseUrl/search/result?word=$query&page=$page", headers)

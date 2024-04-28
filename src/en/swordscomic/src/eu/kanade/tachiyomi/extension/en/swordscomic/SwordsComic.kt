@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class SwordsComic : HttpSource() {
-
     override val name = "Swords Comic"
 
     override val baseUrl = "https://swordscomic.com"
@@ -56,9 +55,17 @@ class SwordsComic : HttpSource() {
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
@@ -106,7 +113,10 @@ class SwordsComic : HttpSource() {
             builder.append("+")
         }
 
-        return listOf(Page(0, "", imageElement.attr("abs:src")), Page(1, "", "https://fakeimg.pl/1800x2252/978B65/000000/?text=$builder&font_size=60&font=comic+sans"))
+        return listOf(
+            Page(0, "", imageElement.attr("abs:src")),
+            Page(1, "", "https://fakeimg.pl/1800x2252/978B65/000000/?text=$builder&font_size=60&font=comic+sans"),
+        )
     }
 
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()

@@ -22,7 +22,6 @@ open class MangaToon(
     final override val lang: String,
     private val urlLang: String = lang,
 ) : ParsedHttpSource() {
-
     override val name = "MangaToon (Limited)"
 
     override val baseUrl = "https://mangatoon.mobi"
@@ -76,7 +75,11 @@ open class MangaToon(
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val searchUrl = "$baseUrl/$urlLang/search".toHttpUrl().newBuilder()
             .addQueryParameter("word", query)
             .toString()
@@ -178,8 +181,15 @@ open class MangaToon(
 
     companion object {
         private val ONGOING_STATUS = listOf(
-            "连载", "on going", "sedang berlangsung", "tiếp tục cập nhật",
-            "en proceso", "atualizando", "เซเรียล", "en cours", "連載中",
+            "连载",
+            "on going",
+            "sedang berlangsung",
+            "tiếp tục cập nhật",
+            "en proceso",
+            "atualizando",
+            "เซเรียล",
+            "en cours",
+            "連載中",
         )
 
         private val COMPLETED_STATUS = listOf(

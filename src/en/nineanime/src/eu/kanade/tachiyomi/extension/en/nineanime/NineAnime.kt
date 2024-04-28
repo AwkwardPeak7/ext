@@ -19,7 +19,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class NineAnime : ParsedHttpSource() {
-
     override val name = "NineAnime"
 
     override val baseUrl = "https://www.nineanime.com"
@@ -75,7 +74,11 @@ class NineAnime : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank()) {
             GET("$baseUrl/search/?name=$query&page=$page.html", headers)
         } else {

@@ -12,7 +12,6 @@ class MMFenix : Madara(
     "es",
     SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
 ) {
-
     override val id: Long = 19158964284779393
 
     override val useLoadMoreRequest = LoadMoreStrategy.Always

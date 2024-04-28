@@ -73,7 +73,10 @@ class TsuminoUtils {
             return stringBuilder.toString()
         }
 
-        fun getCollection(document: Document, selector: String): List<SChapter> {
+        fun getCollection(
+            document: Document,
+            selector: String,
+        ): List<SChapter> {
             return document.select(selector).map { element ->
                 SChapter.create().apply {
                     val chapterNum = element.select("span")[0].text()
@@ -85,7 +88,10 @@ class TsuminoUtils {
             }.reversed()
         }
 
-        fun getChapter(document: Document, response: Response): List<SChapter> {
+        fun getChapter(
+            document: Document,
+            response: Response,
+        ): List<SChapter> {
             val chapterList = mutableListOf<SChapter>()
             val chapter = SChapter.create().apply {
                 name = "Chapter"

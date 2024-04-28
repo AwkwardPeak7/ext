@@ -21,7 +21,6 @@ class FlameComics : MangaThemesia(
     "en",
     mangaUrlDirectory = "/series",
 ) {
-
     // Flame Scans -> Flame Comics
     override val id = 6350607071566689772
 

@@ -12,12 +12,12 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class DynastyDoujins : DynastyScans() {
-
     override val name = "Dynasty-Doujins"
 
     override val searchPrefix = "doujins"
 
     override val categoryPrefix = "Doujin"
+
     override fun popularMangaInitialUrl() = ""
 
     override fun popularMangaFromElement(element: Element): SManga {
@@ -32,7 +32,11 @@ class DynastyDoujins : DynastyScans() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/search?q=$query&classes%5B%5D=Doujin&sort=&page=$page", headers)
     }
 

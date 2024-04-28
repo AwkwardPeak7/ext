@@ -15,12 +15,12 @@ import org.jsoup.nodes.Element
 import java.util.Locale
 
 class MangaPill : ParsedHttpSource() {
-
     override val name = "MangaPill"
     override val baseUrl = "https://mangapill.com"
     override val lang = "en"
     override val supportsLatest = true
     override val client: OkHttpClient = network.cloudflareClient
+
     override fun headersBuilder() = super.headersBuilder().add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int): Request = latestUpdatesRequest(page)
@@ -30,7 +30,9 @@ class MangaPill : ParsedHttpSource() {
     }
 
     override fun popularMangaSelector() = latestUpdatesSelector()
+
     override fun latestUpdatesSelector() = ".grid > div:not([class])"
+
     override fun searchMangaSelector() = latestUpdatesSelector()
 
     override fun popularMangaFromElement(element: Element): SManga = latestUpdatesFromElement(element)
@@ -48,7 +50,9 @@ class MangaPill : ParsedHttpSource() {
     }
 
     override fun popularMangaNextPageSelector() = null
+
     override fun latestUpdatesNextPageSelector() = null
+
     override fun searchMangaNextPageSelector() = "a.btn.btn-sm"
 
     override fun mangaDetailsParse(document: Document): SManga {
@@ -61,7 +65,9 @@ class MangaPill : ParsedHttpSource() {
             genres.add(genre)
         }
         manga.genre = genres.joinToString(", ")
-        manga.status = parseStatus(document.select("div.container > div:first-child > div:last-child > div:nth-child(3) > div:nth-child(2) > div").text())
+        manga.status = parseStatus(
+            document.select("div.container > div:first-child > div:last-child > div:nth-child(3) > div:nth-child(2) > div").text(),
+        )
         manga.description = document.select("div.container > div:first-child > div:last-child > div:nth-child(2) > p").text()
         manga.thumbnail_url = document.select("div.container > div:first-child > div:first-child > img").first()!!.attr("data-src")
 
@@ -94,7 +100,12 @@ class MangaPill : ParsedHttpSource() {
     }
 
     override fun imageUrlParse(document: Document) = ""
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search".toHttpUrl().newBuilder()
             .addQueryParameter("page", page.toString())
             .addQueryParameter("q", query)
@@ -137,7 +148,9 @@ class MangaPill : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val id: String = name) : Filter.TriState(name)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
+
     private class Status : UriPartFilter(
         "Status",
         arrayOf(

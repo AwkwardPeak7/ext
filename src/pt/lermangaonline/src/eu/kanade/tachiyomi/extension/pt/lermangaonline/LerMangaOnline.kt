@@ -93,7 +93,11 @@ class LerMangaOnline : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector() = latestUpdatesNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filter = filters.first() as GenreFilter<*>
         val genre = filter.selected
         val url = "$baseUrl/${if (genre.isGlobal()) "" else genre.slug + "/"}page/$page".toHttpUrl().newBuilder()
@@ -102,7 +106,11 @@ class LerMangaOnline : ParsedHttpSource() {
         return GET(url, headers)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SLUG_SEARCH)) {
             val slug = query.removePrefix(PREFIX_SLUG_SEARCH)
             client.newCall(GET("$baseUrl/$slug", headers))
@@ -113,8 +121,7 @@ class LerMangaOnline : ParsedHttpSource() {
         }
     }
 
-    private fun searchMangaBySlugParse(response: Response): MangasPage =
-        MangasPage(listOf(mangaDetailsParse(response.asJsoup())), false)
+    private fun searchMangaBySlugParse(response: Response): MangasPage = MangasPage(listOf(mangaDetailsParse(response.asJsoup())), false)
 
     override fun getFilterList(): FilterList = FilterList(GenresFilter)
 

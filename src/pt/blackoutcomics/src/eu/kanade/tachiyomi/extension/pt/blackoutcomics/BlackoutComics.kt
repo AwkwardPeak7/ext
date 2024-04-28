@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class BlackoutComics : ParsedHttpSource() {
-
     override val name = "Blackout Comics"
 
     override val baseUrl = "https://blackoutcomics.com"
@@ -35,11 +34,10 @@ class BlackoutComics : ParsedHttpSource() {
             .build()
     }
 
-    override fun headersBuilder() =
-        super.headersBuilder()
-            .add("Referer", "$baseUrl/")
-            .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-            .add("Accept-Language", "en-US,en;q=0.5")
+    override fun headersBuilder() = super.headersBuilder()
+        .add("Referer", "$baseUrl/")
+        .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+        .add("Accept-Language", "en-US,en;q=0.5")
 
     // ============================== Popular ===============================
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/ranking")
@@ -64,7 +62,11 @@ class BlackoutComics : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector() = null
 
     // =============================== Search ===============================
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SEARCH)) { // URL intent handler
             val id = query.removePrefix(PREFIX_SEARCH)
             client.newCall(GET("$baseUrl/comics/$id"))
@@ -80,7 +82,11 @@ class BlackoutComics : ParsedHttpSource() {
         return MangasPage(listOf(details), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Using URLBuilder just to prevent issues with strange queries
         val url = "$baseUrl/comics".toHttpUrl().newBuilder()
             .addQueryParameter("search", query)
@@ -135,10 +141,9 @@ class BlackoutComics : ParsedHttpSource() {
         }
     }
 
-    private fun Element.getInfo(text: String) =
-        selectFirst("p:contains($text)")?.run {
-            selectFirst("b")?.text() ?: ownText()
-        }
+    private fun Element.getInfo(text: String) = selectFirst("p:contains($text)")?.run {
+        selectFirst("b")?.text() ?: ownText()
+    }
 
     // ============================== Chapters ==============================
     override fun chapterListSelector() = "section.relese > div.container > div.row h5:has(a)"

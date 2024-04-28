@@ -14,7 +14,10 @@ import eu.kanade.tachiyomi.source.model.FilterList
  * [6] 1=manga, 2=novel, else=manga
  * [7] vip, 0=default, useless
  */
-internal fun parseFilters(page: Int, filters: FilterList): String {
+internal fun parseFilters(
+    page: Int,
+    filters: FilterList,
+): String {
     var status = '2'
     var type = '0'
     var genre = "0"

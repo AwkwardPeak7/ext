@@ -14,12 +14,12 @@ class HentaiFox(
     lang: String = "all",
     override val mangaLang: String = LANGUAGE_MULTI,
 ) : GalleryAdults(
-    "HentaiFox",
-    "https://hentaifox.com",
-    lang = lang,
-    mangaLang = mangaLang,
-    simpleDateFormat = null,
-) {
+        "HentaiFox",
+        "https://hentaifox.com",
+        lang = lang,
+        mangaLang = mangaLang,
+        simpleDateFormat = null,
+    ) {
     override val supportsLatest = mangaLang.isNotBlank()
 
     private val languages: List<Pair<String, String>> = listOf(
@@ -64,10 +64,13 @@ class HentaiFox(
         return this
     }
 
-    /* Pages */
+    // Pages
     override val pagesRequest = "includes/thumbs_loader.php"
 
-    override fun getServer(document: Document, galleryId: String): String {
+    override fun getServer(
+        document: Document,
+        galleryId: String,
+    ): String {
         val domain = baseUrl.toHttpUrl().host
         // Randomly choose between servers
         return if (Random.nextBoolean()) "i2.$domain" else "i.$domain"
@@ -80,7 +83,10 @@ class HentaiFox(
      * - use plus(+) for separate terms, as AND condition.
      * - use double quote(") to search for exact match.
      */
-    override fun buildQueryString(tags: List<String>, query: String): String {
+    override fun buildQueryString(
+        tags: List<String>,
+        query: String,
+    ): String {
         val regexSpecialCharacters = Regex("""[^a-zA-Z0-9"]+(?=[a-zA-Z0-9"])""")
         return (tags + query + mangaLang).filterNot { it.isBlank() }.joinToString("+") {
             it.trim().replace(regexSpecialCharacters, "+")

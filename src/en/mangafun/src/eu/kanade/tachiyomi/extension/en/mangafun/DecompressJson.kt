@@ -23,7 +23,10 @@ object DecompressJson {
         return decode(values, key)
     }
 
-    private fun decode(values: JsonArray, key: String): JsonElement {
+    private fun decode(
+        values: JsonArray,
+        key: String,
+    ): JsonElement {
         if (key.isEmpty() || key == "_") {
             return JsonPrimitive(null)
         }
@@ -63,7 +66,10 @@ object DecompressJson {
         throw IllegalArgumentException("Unknown data type")
     }
 
-    private fun decodeObject(values: JsonArray, s: String): JsonObject {
+    private fun decodeObject(
+        values: JsonArray,
+        s: String,
+    ): JsonObject {
         if (s == "o|") {
             return JsonObject(emptyMap())
         }
@@ -89,7 +95,10 @@ object DecompressJson {
         }
     }
 
-    private fun decodeArray(values: JsonArray, s: String): JsonArray {
+    private fun decodeArray(
+        values: JsonArray,
+        s: String,
+    ): JsonArray {
         if (s == "a|") {
             return JsonArray(emptyList())
         }
@@ -111,8 +120,7 @@ object DecompressJson {
         }
     }
 
-    private fun decodeNum(s: String): JsonPrimitive =
-        JsonPrimitive(sToInt(s.substringAfter("n|")))
+    private fun decodeNum(s: String): JsonPrimitive = JsonPrimitive(sToInt(s.substringAfter("n|")))
 
     private fun sToInt(s: String): Int {
         var acc = 0

@@ -48,7 +48,6 @@ class Manhuagui(
     override val name: String = "漫画柜",
     override val lang: String = "zh",
 ) : ConfigurableSource, ParsedHttpSource() {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -77,15 +76,27 @@ class Manhuagui(
         if (getShowR18()) {
             network.client.newBuilder()
                 .rateLimitHost(baseHttpUrl, preferences.getString(MAINSITE_RATELIMIT_PREF, MAINSITE_RATELIMIT_DEFAULT_VALUE)!!.toInt(), 10)
-                .rateLimitHost(imageServer[0].toHttpUrl(), preferences.getString(IMAGE_CDN_RATELIMIT_PREF, IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)!!.toInt())
-                .rateLimitHost(imageServer[1].toHttpUrl(), preferences.getString(IMAGE_CDN_RATELIMIT_PREF, IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)!!.toInt())
+                .rateLimitHost(
+                    imageServer[0].toHttpUrl(),
+                    preferences.getString(IMAGE_CDN_RATELIMIT_PREF, IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)!!.toInt(),
+                )
+                .rateLimitHost(
+                    imageServer[1].toHttpUrl(),
+                    preferences.getString(IMAGE_CDN_RATELIMIT_PREF, IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)!!.toInt(),
+                )
                 .addNetworkInterceptor(AddCookieHeaderInterceptor(baseHttpUrl.host))
                 .build()
         } else {
             network.client.newBuilder()
                 .rateLimitHost(baseHttpUrl, preferences.getString(MAINSITE_RATELIMIT_PREF, MAINSITE_RATELIMIT_DEFAULT_VALUE)!!.toInt(), 10)
-                .rateLimitHost(imageServer[0].toHttpUrl(), preferences.getString(IMAGE_CDN_RATELIMIT_PREF, IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)!!.toInt())
-                .rateLimitHost(imageServer[1].toHttpUrl(), preferences.getString(IMAGE_CDN_RATELIMIT_PREF, IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)!!.toInt())
+                .rateLimitHost(
+                    imageServer[0].toHttpUrl(),
+                    preferences.getString(IMAGE_CDN_RATELIMIT_PREF, IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)!!.toInt(),
+                )
+                .rateLimitHost(
+                    imageServer[1].toHttpUrl(),
+                    preferences.getString(IMAGE_CDN_RATELIMIT_PREF, IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)!!.toInt(),
+                )
                 .build()
         }
 
@@ -107,9 +118,14 @@ class Manhuagui(
     }
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/list/view_p$page.html", headers)
+
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/list/update_p$page.html", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query != "") {
             // Normal search
             return GET("$baseUrl/s/${query}_p$page.html", headers)
@@ -171,8 +187,15 @@ class Manhuagui(
                         ),
                     ).enqueue(
                         object : Callback {
-                            override fun onFailure(call: Call, e: IOException) = e.printStackTrace()
-                            override fun onResponse(call: Call, response: Response) = response.close()
+                            override fun onFailure(
+                                call: Call,
+                                e: IOException,
+                            ) = e.printStackTrace()
+
+                            override fun onResponse(
+                                call: Call,
+                                response: Response,
+                            ) = response.close()
                         },
                     )
 
@@ -185,8 +208,15 @@ class Manhuagui(
                         ),
                     ).enqueue(
                         object : Callback {
-                            override fun onFailure(call: Call, e: IOException) = e.printStackTrace()
-                            override fun onResponse(call: Call, response: Response) = response.close()
+                            override fun onFailure(
+                                call: Call,
+                                e: IOException,
+                            ) = e.printStackTrace()
+
+                            override fun onResponse(
+                                call: Call,
+                                response: Response,
+                            ) = response.close()
                         },
                     )
                 }
@@ -202,13 +232,20 @@ class Manhuagui(
     // For ManhuaguiUrlActivity
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/comic/$id", headers)
 
-    private fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    private fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val sManga = mangaDetailsParse(response)
         sManga.url = "/comic/$id/"
         return MangasPage(listOf(sManga), false)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {
             val id = query.removePrefix(PREFIX_ID_SEARCH)
             client.newCall(searchMangaByIdRequest(id))
@@ -242,21 +279,32 @@ class Manhuagui(
     }
 
     override fun popularMangaSelector() = "ul#contList > li"
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun searchMangaSelector() = "div.book-result > ul > li"
+
     override fun chapterListSelector() = "ul > li > a.status0"
 
-    override fun searchMangaNextPageSelector() = "span.current + a" // "a.prev" contain 2~4 elements: first, previous, next and last page, "span.current + a" is a better choice.
+    override fun searchMangaNextPageSelector() =
+        "span.current + a" // "a.prev" contain 2~4 elements: first, previous, next and last page, "span.current + a" is a better choice.
+
     override fun popularMangaNextPageSelector() = searchMangaNextPageSelector()
+
     override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
     override fun headersBuilder(): Headers.Builder = super.headersBuilder()
         .set("Referer", baseUrl)
-        .set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36")
+        .set(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36",
+        )
         .set("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7")
 
     override fun popularMangaFromElement(element: Element) = mangaFromElement(element)
+
     override fun latestUpdatesFromElement(element: Element) = mangaFromElement(element)
+
     private fun mangaFromElement(element: Element): SManga {
         val manga = SManga.create()
         element.select("a.bcover").first()!!.let {
@@ -287,6 +335,7 @@ class Manhuagui(
     }
 
     override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         val chapters = mutableListOf<SChapter>()
@@ -326,7 +375,9 @@ class Manhuagui(
 
                     // Manhuagui only provide upload date for latest chapter
                     if (currentChapter.url == latestChapterHref) {
-                        currentChapter.date_upload = parseDate(document.select("div.book-detail > ul.detail-list > li.status > span > span.red").last()!!)
+                        currentChapter.date_upload = parseDate(
+                            document.select("div.book-detail > ul.detail-list > li.status > span > span.red").last()!!,
+                        )
                     }
                     pageChapters.add(currentChapter)
                 }

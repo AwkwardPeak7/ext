@@ -5,7 +5,6 @@ import java.text.NumberFormat
 import java.util.Locale
 
 class BilibiliIntl(private val lang: String) {
-
     private val locale by lazy { Locale.forLanguageTag(lang) }
 
     private val dateFormatSymbols by lazy { DateFormatSymbols(locale) }

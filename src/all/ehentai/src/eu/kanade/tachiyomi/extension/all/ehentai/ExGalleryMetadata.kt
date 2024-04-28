@@ -46,7 +46,10 @@ class ExGalleryMetadata {
 
         private fun galleryToken(url: String) = splitGalleryUrl(url)[2]
 
-        private fun normalizeUrl(id: String, token: String) = "/g/$id/$token/?nw=always"
+        private fun normalizeUrl(
+            id: String,
+            token: String,
+        ) = "/g/$id/$token/?nw=always"
 
         fun normalizeUrl(url: String) = normalizeUrl(galleryId(url), galleryToken(url))
     }

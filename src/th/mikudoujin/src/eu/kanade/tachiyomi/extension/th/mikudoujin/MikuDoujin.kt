@@ -18,7 +18,6 @@ import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
 class MikuDoujin : ParsedHttpSource() {
-
     override val baseUrl: String = "https://miku-doujin.com"
 
     override val lang: String = "th"
@@ -60,8 +59,7 @@ class MikuDoujin : ParsedHttpSource() {
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
@@ -74,8 +72,11 @@ class MikuDoujin : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaSelector(): String = throw UnsupportedOperationException()
 
@@ -145,7 +146,11 @@ class MikuDoujin : ParsedHttpSource() {
 
     override fun chapterFromElement(element: Element): SChapter = throw UnsupportedOperationException()
 
-    private fun chapterFromElementWithIndex(element: Element, idx: Int, manga: SManga): SChapter {
+    private fun chapterFromElementWithIndex(
+        element: Element,
+        idx: Int,
+        manga: SManga,
+    ): SChapter {
         val chapter = SChapter.create()
         element.select("td a").let {
             chapter.setUrlWithoutDomain(it.attr("href"))
@@ -205,8 +210,7 @@ class MikuDoujin : ParsedHttpSource() {
         }
     }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun getFilterList() = FilterList()
 }

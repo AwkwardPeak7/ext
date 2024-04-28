@@ -13,21 +13,18 @@ class AsmHentai(
     lang: String = "all",
     override val mangaLang: String = LANGUAGE_MULTI,
 ) : GalleryAdults(
-    "AsmHentai",
-    "https://asmhentai.com",
-    lang = lang,
-) {
+        "AsmHentai",
+        "https://asmhentai.com",
+        lang = lang,
+    ) {
     override val supportsLatest = mangaLang.isNotBlank()
 
-    override fun Element.mangaUrl() =
-        selectFirst(".image a")?.attr("abs:href")
+    override fun Element.mangaUrl() = selectFirst(".image a")?.attr("abs:href")
 
-    override fun Element.mangaThumbnail() =
-        selectFirst(".image img")?.imgAttr()
+    override fun Element.mangaThumbnail() = selectFirst(".image img")?.imgAttr()
 
-    override fun Element.mangaLang() =
-        select("a:has(.flag)").attr("href")
-            .removeSuffix("/").substringAfterLast("/")
+    override fun Element.mangaLang() = select("a:has(.flag)").attr("href")
+        .removeSuffix("/").substringAfterLast("/")
 
     override fun popularMangaSelector() = ".preview_item"
 
@@ -48,7 +45,7 @@ class AsmHentai(
                     selectFirst(".book_page h1 + h2")?.ownText()
                         .let { altTitle -> if (!altTitle.isNullOrBlank()) "Alternate Title: $altTitle" else null },
                 )
-            )
+        )
             .joinToString("\n\n")
             .plus(
                 if (preferences.shortTitle) {
@@ -59,7 +56,7 @@ class AsmHentai(
             )
     }
 
-    /* Search */
+    // Search
     override val favoritePath = "inc/user.php?act=favs"
 
     override val mangaDetailInfoSelector = ".book_page"
@@ -69,7 +66,10 @@ class AsmHentai(
     override val pageUri = "gallery"
     override val pageSelector = ".preview_thumb"
 
-    override fun pageRequestForm(document: Document, totalPages: String): FormBody {
+    override fun pageRequestForm(
+        document: Document,
+        totalPages: String,
+    ): FormBody {
         val token = document.select("[name=csrf-token]").attr("content")
 
         return FormBody.Builder()
@@ -82,7 +82,7 @@ class AsmHentai(
             .build()
     }
 
-    /* Filters */
+    // Filters
     override fun tagsParser(document: Document): List<Pair<String, String>> {
         return document.select(".tags_page ul.tags li")
             .mapNotNull {

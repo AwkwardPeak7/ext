@@ -45,7 +45,6 @@ import java.util.Calendar
 abstract class Luscious(
     final override val lang: String,
 ) : ConfigurableSource, HttpSource() {
-
     override val supportsLatest: Boolean = true
     override val name: String = "Luscious"
 
@@ -66,7 +65,10 @@ abstract class Luscious(
 
     private val rewriteOctetStream: Interceptor = Interceptor { chain ->
         val originalResponse: Response = chain.proceed(chain.request())
-        if (originalResponse.headers("Content-Type").contains("application/octet-stream") && originalResponse.request.url.toString().contains(".webp")) {
+        if (originalResponse.headers(
+                "Content-Type",
+            ).contains("application/octet-stream") && originalResponse.request.url.toString().contains(".webp")
+        ) {
             val orgBody = originalResponse.body.bytes()
             val newBody = orgBody.toResponseBody("image/webp".toMediaTypeOrNull())
             originalResponse.newBuilder()
@@ -98,7 +100,11 @@ abstract class Luscious(
 
     // Common
 
-    private fun buildAlbumListRequestInput(page: Int, filters: FilterList, query: String = ""): JsonObject {
+    private fun buildAlbumListRequestInput(
+        page: Int,
+        filters: FilterList,
+        query: String = "",
+    ): JsonObject {
         val sortByFilter = filters.findInstance<SortBySelectFilter>()!!
         val albumTypeFilter = filters.findInstance<AlbumTypeSelectFilter>()!!
         val selectionFilter = filters.findInstance<SelectionSelectFilter>()!!
@@ -204,7 +210,11 @@ abstract class Luscious(
         }
     }
 
-    private fun buildAlbumListRequest(page: Int, filters: FilterList, query: String = ""): Request {
+    private fun buildAlbumListRequest(
+        page: Int,
+        filters: FilterList,
+        query: String = "",
+    ): Request {
         val input = buildAlbumListRequestInput(page, filters, query)
         val url = apiBaseUrl.toHttpUrl().newBuilder()
             .addQueryParameter("operationName", "AlbumList")
@@ -262,7 +272,10 @@ abstract class Luscious(
             .map { parseAlbumPicturesResponse(it, manga.url) }
     }
 
-    private fun parseAlbumPicturesResponse(response: Response, mangaUrl: String): List<SChapter> {
+    private fun parseAlbumPicturesResponse(
+        response: Response,
+        mangaUrl: String,
+    ): List<SChapter> {
         val chapters = mutableListOf<SChapter>()
         when (getMergeChapterPref()) {
             true -> {
@@ -318,7 +331,10 @@ abstract class Luscious(
 
     // Pages
 
-    private fun buildAlbumPicturesRequestInput(id: String, page: Int): JsonObject {
+    private fun buildAlbumPicturesRequestInput(
+        id: String,
+        page: Int,
+    ): JsonObject {
         return buildJsonObject {
             putJsonObject("input") {
                 putJsonArray("filters") {
@@ -335,7 +351,10 @@ abstract class Luscious(
         }
     }
 
-    private fun buildAlbumPicturesPageUrl(id: String, page: Int): String {
+    private fun buildAlbumPicturesPageUrl(
+        id: String,
+        page: Int,
+    ): String {
         val input = buildAlbumPicturesRequestInput(id, page)
         return apiBaseUrl.toHttpUrl().newBuilder()
             .addQueryParameter("operationName", "AlbumListOwnPictures")
@@ -461,6 +480,7 @@ abstract class Luscious(
             return manga
         }
     }
+
     override fun mangaDetailsParse(response: Response): SManga = throw UnsupportedOperationException()
 
     // Popular
@@ -473,7 +493,11 @@ abstract class Luscious(
 
     override fun searchMangaParse(response: Response): MangasPage = parseAlbumListResponse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = buildAlbumListRequest(
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = buildAlbumListRequest(
         page,
         filters.let {
             if (it.isEmpty()) {
@@ -485,7 +509,11 @@ abstract class Luscious(
         query,
     )
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith("ID:")) {
             val id = query.substringAfterLast("ID:")
             client.newCall(buildAlbumInfoRequest(id))
@@ -497,7 +525,11 @@ abstract class Luscious(
     }
 
     class TriStateFilterOption(name: String, val value: String) : Filter.TriState(name)
-    abstract class TriStateGroupFilter(name: String, options: List<TriStateFilterOption>) : Filter.Group<TriStateFilterOption>(name, options) {
+
+    abstract class TriStateGroupFilter(name: String, options: List<TriStateFilterOption>) : Filter.Group<TriStateFilterOption>(
+        name,
+        options,
+    ) {
         private val included: List<String>
             get() = state.filter { it.isIncluded() }.map { it.value }
 
@@ -522,7 +554,11 @@ abstract class Luscious(
     private class GenreGroupFilter(filters: List<TriStateFilterOption>) : TriStateGroupFilter("Genres", filters)
 
     class CheckboxFilterOption(name: String, val value: String, default: Boolean = true) : Filter.CheckBox(name, default)
-    abstract class CheckboxGroupFilter(name: String, options: List<CheckboxFilterOption>) : Filter.Group<CheckboxFilterOption>(name, options) {
+
+    abstract class CheckboxGroupFilter(name: String, options: List<CheckboxFilterOption>) : Filter.Group<CheckboxFilterOption>(
+        name,
+        options,
+    ) {
         val selected: List<String>
             get() = state.filter { it.state }.map { it.value }
 
@@ -530,25 +566,42 @@ abstract class Luscious(
     }
 
     private class InterestGroupFilter(options: List<CheckboxFilterOption>) : CheckboxGroupFilter("Interests", options)
+
     private class LanguageGroupFilter(options: List<CheckboxFilterOption>) : CheckboxGroupFilter("Languages", options)
 
     class SelectFilterOption(val name: String, val value: String)
 
-    abstract class SelectFilter(name: String, private val options: List<SelectFilterOption>, default: Int = 0) : Filter.Select<String>(name, options.map { it.name }.toTypedArray(), default) {
+    abstract class SelectFilter(name: String, private val options: List<SelectFilterOption>, default: Int = 0) : Filter.Select<String>(
+        name,
+        options.map {
+            it.name
+        }.toTypedArray(),
+        default,
+    ) {
         val selected: String
             get() = options[state].value
 
         override fun toString(): String = selected
     }
+
     class SortBySelectFilter(options: List<SelectFilterOption>, default: Int) : SelectFilter("Sort By", options, default)
+
     class AlbumTypeSelectFilter(options: List<SelectFilterOption>) : SelectFilter("Album Type", options)
+
     class ContentTypeSelectFilter(options: List<SelectFilterOption>) : SelectFilter("Content Type", options)
+
     class RestrictGenresSelectFilter(options: List<SelectFilterOption>) : SelectFilter("Restrict Genres", options)
+
     class SelectionSelectFilter(options: List<SelectFilterOption>) : SelectFilter("Selection", options)
+
     class AlbumSizeSelectFilter(options: List<SelectFilterOption>) : SelectFilter("Album Size", options)
+
     class TagTextFilters : TextFilter("Tags")
+
     class CreatorTextFilters : TextFilter("Uploader")
+
     class FavoriteTextFilters : TextFilter("Favorite by User")
+
     override fun getFilterList(): FilterList = getSortFilters(POPULAR_DEFAULT_SORT_STATE)
 
     private fun getSortFilters(sortState: Int) = FilterList(
@@ -645,7 +698,6 @@ abstract class Luscious(
         SelectFilterOption("Banned", "banned"),
         SelectFilterOption("Made by People You Follow", "made_by_following"),
         SelectFilterOption("Faved by People You Follow", "faved_by_following"),
-
     )
 
     private fun getContentTypeFilters() = listOf(
@@ -765,7 +817,6 @@ abstract class Luscious(
     }
 
     companion object {
-
         private const val POPULAR_DEFAULT_SORT_STATE = 0
         private const val LATEST_DEFAULT_SORT_STATE = 6
         private const val SEARCH_DEFAULT_SORT_STATE = 0
@@ -811,23 +862,24 @@ abstract class Luscious(
             }
         """.replace("\n", " ").replace("\\s+".toRegex(), " ")
 
-        val albumInfoQuery = """
-        query AlbumGet(${"$"}id: ID!) {
-            album {
-                get(id: ${"$"}id) {
-                    ... on Album { ...AlbumStandard }
-                    ... on MutationError {
-                        errors {
-                            code message
-                         }
+        val albumInfoQuery =
+            """
+            query AlbumGet(${"$"}id: ID!) {
+                album {
+                    get(id: ${"$"}id) {
+                        ... on Album { ...AlbumStandard }
+                        ... on MutationError {
+                            errors {
+                                code message
+                             }
+                        }
                     }
                 }
             }
-        }
-        fragment AlbumStandard on Album {
-            __typename id title labels description created modified like_status number_of_favorites number_of_dislikes rating moderation_status marked_for_deletion marked_for_processing number_of_pictures number_of_animated_pictures number_of_duplicates slug is_manga url download_url permissions cover { width height size url } created_by { id url name display_name user_title avatar { url size } } content { id title url } language { id title url } tags { category text url count } genres { id title slug url } audiences { id title url url } last_viewed_picture { id position url } is_featured featured_date featured_by { id url name display_name user_title avatar { url size } }
-        }
-        """.trimIndent()
+            fragment AlbumStandard on Album {
+                __typename id title labels description created modified like_status number_of_favorites number_of_dislikes rating moderation_status marked_for_deletion marked_for_processing number_of_pictures number_of_animated_pictures number_of_duplicates slug is_manga url download_url permissions cover { width height size url } created_by { id url name display_name user_title avatar { url size } } content { id title url } language { id title url } tags { category text url count } genres { id title slug url } audiences { id title url url } last_viewed_picture { id position url } is_featured featured_date featured_by { id url name display_name user_title avatar { url size } }
+            }
+            """.trimIndent()
 
         private const val MERGE_CHAPTER_PREF_KEY = "MERGE_CHAPTER"
         private const val MERGE_CHAPTER_PREF_TITLE = "Merge Chapter"
@@ -849,7 +901,11 @@ abstract class Luscious(
         private const val MIRROR_PREF_KEY = "MIRROR"
         private const val MIRROR_PREF_TITLE = "Mirror"
         private val MIRROR_PREF_ENTRIES = arrayOf("Guest", "API", "Members")
-        private val MIRROR_PREF_ENTRY_VALUES = arrayOf("https://www.luscious.net", "https://api.luscious.net", "https://members.luscious.net")
+        private val MIRROR_PREF_ENTRY_VALUES = arrayOf(
+            "https://www.luscious.net",
+            "https://api.luscious.net",
+            "https://members.luscious.net",
+        )
         private val MIRROR_PREF_DEFAULT_VALUE = MIRROR_PREF_ENTRY_VALUES[0]
     }
 
@@ -917,7 +973,10 @@ abstract class Luscious(
     }
 
     private fun getMergeChapterPref(): Boolean = preferences.getBoolean("${MERGE_CHAPTER_PREF_KEY}_$lang", MERGE_CHAPTER_PREF_DEFAULT_VALUE)
+
     private fun getResolutionPref(): String? = preferences.getString("${RESOLUTION_PREF_KEY}_$lang", RESOLUTION_PREF_DEFAULT_VALUE)
+
     private fun getSortPref(): String? = preferences.getString("${SORT_PREF_KEY}_$lang", SORT_PREF_DEFAULT_VALUE)
+
     private fun getMirrorPref(): String? = preferences.getString("${MIRROR_PREF_KEY}_$lang", MIRROR_PREF_DEFAULT_VALUE)
 }

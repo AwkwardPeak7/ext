@@ -4,4 +4,9 @@ import eu.kanade.tachiyomi.multisrc.madara.Madara
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class ShavelProiection : Madara("ShavelProiection", "https://www.shavelproiection.com", "it", dateFormat = SimpleDateFormat("d MMM yyy", Locale("it")))
+class ShavelProiection : Madara(
+    "ShavelProiection",
+    "https://www.shavelproiection.com",
+    "it",
+    dateFormat = SimpleDateFormat("d MMM yyy", Locale("it")),
+)

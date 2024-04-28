@@ -24,7 +24,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class Mangahere : ParsedHttpSource() {
-
     override val id: Long = 2
 
     override val name = "Mangahere"
@@ -41,7 +40,11 @@ class Mangahere : ParsedHttpSource() {
     override val client: OkHttpClient = super.client.newBuilder()
         .cookieJar(
             object : CookieJar {
-                override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {}
+                override fun saveFromResponse(
+                    url: HttpUrl,
+                    cookies: List<Cookie>,
+                ) {}
+
                 override fun loadForRequest(url: HttpUrl): MutableList<Cookie> {
                     return ArrayList<Cookie>().apply {
                         add(
@@ -90,7 +93,11 @@ class Mangahere : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = "div.pager-list-left a:last-child"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search".toHttpUrl().newBuilder()
 
         filters.forEach { filter ->
@@ -304,7 +311,10 @@ class Mangahere : ParsedHttpSource() {
             .also { quickJs.close() }
     }
 
-    private fun extractSecretKey(html: String, quickJs: QuickJs): String {
+    private fun extractSecretKey(
+        html: String,
+        quickJs: QuickJs,
+    ): String {
         val secretKeyScriptLocation = html.indexOf("eval(function(p,a,c,k,e,d)")
         val secretKeyScriptEndLocation = html.indexOf("</script>", secretKeyScriptLocation)
         val secretKeyScript = html.substring(secretKeyScriptLocation, secretKeyScriptEndLocation).removePrefix("eval")
@@ -327,12 +337,17 @@ class Mangahere : ParsedHttpSource() {
     private class Genre(title: String, val id: Int) : Filter.TriState(title)
 
     private class TypeList(types: Array<String>) : Filter.Select<String>("Type", types, 1)
+
     private class CompletionList(completions: Array<String>) : Filter.Select<String>("Completed series", completions, 0)
+
     private class RatingList(ratings: Array<String>) : Filter.Select<String>("Minimum rating", ratings, 0)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
 
     private class ArtistFilter(name: String) : Filter.Text(name)
+
     private class AuthorFilter(name: String) : Filter.Text(name)
+
     private class YearFilter(name: String) : Filter.Text(name)
 
     override fun getFilterList() = FilterList(

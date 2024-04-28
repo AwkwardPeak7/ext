@@ -12,7 +12,6 @@ class InariManga : MangaThemesia(
     "es",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("en")),
 ) {
-
     // Site moved from Madara to MangaThemesia
     override val versionId = 2
 

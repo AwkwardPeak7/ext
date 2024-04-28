@@ -29,7 +29,6 @@ import java.util.Date
 import java.util.Locale
 
 class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), ConfigurableSource {
-
     override val id = 5504588601186153612
 
     private val preferences: SharedPreferences by lazy {
@@ -42,7 +41,11 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
 
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/manga/newest?offset=${20 * (page - 1)}")
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = if (query.isNotEmpty()) {
             "$baseUrl/?do=search&subaction=search&story=$query&search_start=$page"
         } else {
@@ -257,6 +260,7 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
     ) : Filter.TriState(name)
 
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Тэги", genres)
+
     private class OrderBy : UriPartFilter(
         "Сортировка",
         arrayOf("Дата", "Популярность", "Алфавит"),
@@ -275,11 +279,9 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
         val withoutGenres: Array<Pair<String, String>>,
     ) :
         Filter.Sort(displayName, sortNames, Selection(1, false)) {
-        fun toUriPartWithGenres() =
-            if (state!!.ascending) withGenres[state!!.index].first else withGenres[state!!.index].second
+        fun toUriPartWithGenres() = if (state!!.ascending) withGenres[state!!.index].first else withGenres[state!!.index].second
 
-        fun toUriPartWithoutGenres() =
-            if (state!!.ascending) withoutGenres[state!!.index].first else withoutGenres[state!!.index].second
+        fun toUriPartWithoutGenres() = if (state!!.ascending) withoutGenres[state!!.index].first else withoutGenres[state!!.index].second
     }
 
     override fun getFilterList() = FilterList(

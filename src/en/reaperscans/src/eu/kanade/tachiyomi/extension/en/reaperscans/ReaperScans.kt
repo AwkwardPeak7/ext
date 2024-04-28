@@ -38,7 +38,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 class ReaperScans : ParsedHttpSource() {
-
     override val name = "Reaper Scans"
 
     override val baseUrl = "https://reaperscans.com"
@@ -90,7 +89,11 @@ class ReaperScans : ParsedHttpSource() {
     }
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val response = client.newCall(GET(baseUrl)).execute()
         val soup = response.asJsoup()
 
@@ -151,7 +154,11 @@ class ReaperScans : ParsedHttpSource() {
         }
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith(PREFIX_ID_SEARCH)) {
             val realUrl = "/comics/" + query.removePrefix(PREFIX_ID_SEARCH)
             val manga = SManga.create().apply {

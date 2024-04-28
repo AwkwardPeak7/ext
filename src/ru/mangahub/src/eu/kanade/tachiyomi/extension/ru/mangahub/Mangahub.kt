@@ -23,7 +23,6 @@ import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 open class Mangahub : ParsedHttpSource() {
-
     override val name = "Mangahub"
 
     override val baseUrl = "https://mangahub.ru"
@@ -69,7 +68,10 @@ open class Mangahub : ParsedHttpSource() {
     private val userAgentRandomizer = "${Random.nextInt().absoluteValue}"
 
     override fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer")
+        add(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer",
+        )
         add("Referer", baseUrl)
     }
 
@@ -95,14 +97,17 @@ open class Mangahub : ParsedHttpSource() {
         return manga
     }
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun popularMangaNextPageSelector() = ".page-link:contains(→)"
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search/manga".toHttpUrl().newBuilder().apply {
             addQueryParameter("query", query)
             if (page > 1) addQueryParameter("page", page.toString())
@@ -112,8 +117,7 @@ open class Mangahub : ParsedHttpSource() {
 
     override fun searchMangaSelector() = popularMangaSelector()
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun searchMangaNextPageSelector(): String? = popularMangaNextPageSelector()
 
@@ -149,7 +153,10 @@ open class Mangahub : ParsedHttpSource() {
         return chapter
     }
 
-    override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
+    override fun prepareNewChapter(
+        chapter: SChapter,
+        manga: SManga,
+    ) {
         val basic = Regex("(Глава\\s)((\\d|\\.)+)")
         when {
             basic.containsMatchIn(chapter.name) -> {

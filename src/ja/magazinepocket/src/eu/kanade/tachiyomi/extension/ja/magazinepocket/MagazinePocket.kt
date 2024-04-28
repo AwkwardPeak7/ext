@@ -11,7 +11,6 @@ class MagazinePocket : GigaViewer(
     "ja",
     "https://cdn-img.pocket.shonenmagazine.com/public/page",
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .addInterceptor(::imageIntercept)
         .build()

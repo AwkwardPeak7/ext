@@ -14,7 +14,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class Shqqaa : ParsedHttpSource() {
-
     override val name = "مانجا شقاع"
 
     override val baseUrl = "https://www.shqqaa.com"
@@ -64,10 +63,18 @@ class Shqqaa : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector(): String? = null
 
     // Search
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = fetchPopularManga(1)
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = fetchPopularManga(1)
         .map { mp -> MangasPage(mp.mangas.filter { it.title.contains(query, ignoreCase = true) }, false) }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaSelector(): String = throw UnsupportedOperationException()
 
@@ -118,6 +125,7 @@ class Shqqaa : ParsedHttpSource() {
         }
         return pages
     }
+
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun getFilterList() = FilterList()

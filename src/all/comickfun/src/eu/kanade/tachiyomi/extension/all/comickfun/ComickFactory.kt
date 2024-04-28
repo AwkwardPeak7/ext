@@ -54,6 +54,7 @@ class ComickFactory : SourceFactory {
         "sr" to 571668187470919545,
         "da" to 7137437402245830147,
     ).toMap()
+
     override fun createSources(): List<Source> = idMap.keys.map {
         object : Comick(legacyLanguageMappings.getValue(it), it) {
             override val id: Long = idMap[it]!!

@@ -23,7 +23,6 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class ReadM : ParsedHttpSource() {
-
     // Info
     override val name: String = "ReadM"
     override val baseUrl: String = "https://readm.today"
@@ -40,8 +39,11 @@ class ReadM : ParsedHttpSource() {
     // Popular
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/popular-manga/$page", headers)
+
     override fun popularMangaNextPageSelector(): String = "div.pagination a:contains(»)"
+
     override fun popularMangaSelector(): String = "div#discover-response li"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         thumbnail_url = element.selectFirst("img")!!.imgAttr()
         element.select("div.subject-title a").first()!!.apply {
@@ -53,8 +55,11 @@ class ReadM : ParsedHttpSource() {
     // Latest
 
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/latest-releases/$page", headers)
+
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector(): String = "ul.latest-updates > li"
+
     override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
         thumbnail_url = element.selectFirst("img")!!.imgAttr()
         element.select("h2 a").first()!!.apply {
@@ -65,7 +70,11 @@ class ReadM : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val formBody = FormBody.Builder()
             .add("dataType", "json")
             .add("phrase", query)
@@ -78,17 +87,20 @@ class ReadM : ParsedHttpSource() {
     }
 
     override fun searchMangaNextPageSelector(): String = throw UnsupportedOperationException()
+
     override fun searchMangaSelector(): String = throw UnsupportedOperationException()
+
     override fun searchMangaFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
-    override fun searchMangaParse(response: Response) = json.parseToJsonElement(response.body.string()).jsonObject["manga"]?.jsonArray?.map {
-        val obj = it.jsonObject
-        SManga.create().apply {
-            title = obj["title"]!!.jsonPrimitive.content
-            url = obj["url"]!!.jsonPrimitive.content
-            thumbnail_url = "$baseUrl${obj["image"]!!.jsonPrimitive.content}"
-        }
-    }.let { MangasPage(it ?: emptyList(), false) }
+    override fun searchMangaParse(response: Response) =
+        json.parseToJsonElement(response.body.string()).jsonObject["manga"]?.jsonArray?.map {
+            val obj = it.jsonObject
+            SManga.create().apply {
+                title = obj["title"]!!.jsonPrimitive.content
+                url = obj["url"]!!.jsonPrimitive.content
+                thumbnail_url = "$baseUrl${obj["image"]!!.jsonPrimitive.content}"
+            }
+        }.let { MangasPage(it ?: emptyList(), false) }
 
     // Details
 
@@ -112,6 +124,7 @@ class ReadM : ParsedHttpSource() {
     // Chapters
 
     override fun chapterListSelector(): String = "div.season_start"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         name = element.select("a").text()
         url = element.select("a").attr("href")
@@ -155,6 +168,7 @@ class ReadM : ParsedHttpSource() {
     // Pages
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
+
     override fun pageListParse(document: Document): List<Page> = document.select("div.ch-images img").mapIndexed { index, element ->
         Page(index, "", element.imgAttr())
     }

@@ -64,7 +64,11 @@ class SenManga : ParsedHttpSource() {
 
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search".toHttpUrl().newBuilder()
             .addQueryParameter("s", query)
             .addQueryParameter("page", page.toString())
@@ -156,8 +160,7 @@ class SenManga : ParsedHttpSource() {
         }
     }
 
-    override fun imageUrlParse(document: Document) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     override fun getFilterList() = FilterList(
         GenreFilter(getGenreList()),
@@ -167,6 +170,7 @@ class SenManga : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
 
     open class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
@@ -183,6 +187,7 @@ class SenManga : ParsedHttpSource() {
             Pair("Hiatus", "Hiatus"),
         ),
     )
+
     private class TypeFilter : UriPartFilter(
         "Type",
         arrayOf(
@@ -192,6 +197,7 @@ class SenManga : ParsedHttpSource() {
             Pair("Manhwa", "Manhwa"),
         ),
     )
+
     private class OrderFilter : UriPartFilter(
         "Order",
         arrayOf(

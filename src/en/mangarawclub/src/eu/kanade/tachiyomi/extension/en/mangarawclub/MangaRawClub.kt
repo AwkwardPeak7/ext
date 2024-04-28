@@ -18,7 +18,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class MangaRawClub : ParsedHttpSource() {
-
     override val id = 734865402529567092
     override val name = "MangaGeko"
     override val baseUrl = "https://www.mgeko.com"
@@ -45,7 +44,9 @@ class MangaRawClub : ParsedHttpSource() {
     }
 
     override fun searchMangaSelector() = "ul.novel-list > li.novel-item"
+
     override fun popularMangaSelector() = searchMangaSelector()
+
     override fun latestUpdatesSelector() = "ul.novel-list.chapters > li.novel-item"
 
     override fun searchMangaFromElement(element: Element): SManga {
@@ -55,11 +56,15 @@ class MangaRawClub : ParsedHttpSource() {
         manga.setUrlWithoutDomain(element.select("a").first()!!.attr("href"))
         return manga
     }
+
     override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
+
     override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
     override fun searchMangaNextPageSelector() = "ul.pagination > li:last-child > a"
+
     override fun popularMangaNextPageSelector() = searchMangaNextPageSelector()
+
     override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
     override fun mangaDetailsParse(document: Document): SManga {
@@ -151,7 +156,11 @@ class MangaRawClub : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             // Query search
             return GET("$baseUrl/search/?search=$query", headers)
@@ -263,6 +272,7 @@ class MangaRawClub : ParsedHttpSource() {
     )
 
     private class Genre(name: String) : Filter.TriState(name)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres+", genres)
 
     private open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String>>) :

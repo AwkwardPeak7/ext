@@ -8,13 +8,13 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class Senkognito : Senkuro("Senkognito", "https://senkognito.com", "ru") {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
     private var domain: String? = if (preferences.getBoolean(redirect_PREF, true)) "https://senkognito.com" else "https://senkuro.com"
     override val baseUrl: String = domain.toString()
+
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
         val domainRedirect = androidx.preference.CheckBoxPreference(screen.context).apply {
             key = redirect_PREF

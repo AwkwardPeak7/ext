@@ -14,7 +14,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class Collectedcurios : ParsedHttpSource() {
-
     override val name = "Collected Curios"
 
     override val baseUrl = "https://www.collectedcurios.com"
@@ -36,7 +35,6 @@ class Collectedcurios : ParsedHttpSource() {
                         description = "Sequential Art webcomic."
                         thumbnail_url = "https://www.collectedcurios.com/images/CC_2011_Sequential_Art_Button.jpg"
                     },
-
                     SManga.create().apply {
                         title = "Battle Bunnies"
                         artist = "Jolly Jack aka Phillip M Jackson"
@@ -46,7 +44,6 @@ class Collectedcurios : ParsedHttpSource() {
                         description = "Battle Bunnies webcomic."
                         thumbnail_url = "https://www.collectedcurios.com/images/CC_2011_Battle_Bunnies_Button.jpg"
                     },
-
                     /*
                     SManga.create().apply {
                         title = "Spider and Scorpion"
@@ -64,7 +61,11 @@ class Collectedcurios : ParsedHttpSource() {
         )
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return fetchPopularManga(1)
     }
 
@@ -134,7 +135,11 @@ class Collectedcurios : ParsedHttpSource() {
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun popularMangaNextPageSelector(): String? = throw UnsupportedOperationException()
 

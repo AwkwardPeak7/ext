@@ -13,7 +13,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class ExistentialComics : ParsedHttpSource() {
-
     override val name = "Existential Comics"
 
     override val baseUrl = "https://existentialcomics.com"
@@ -36,7 +35,11 @@ class ExistentialComics : ParsedHttpSource() {
         return Observable.just(MangasPage(arrayListOf(manga), false))
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
 
     override fun fetchMangaDetails(manga: SManga) = Observable.just(manga)
 
@@ -54,7 +57,8 @@ class ExistentialComics : ParsedHttpSource() {
         return chapter
     }
 
-    override fun pageListParse(document: Document) = document.select(".comicImg").mapIndexed { i, element -> Page(i, "", "https:" + element.attr("src").substring(1)) }
+    override fun pageListParse(document: Document) =
+        document.select(".comicImg").mapIndexed { i, element -> Page(i, "", "https:" + element.attr("src").substring(1)) }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
@@ -68,7 +72,11 @@ class ExistentialComics : ParsedHttpSource() {
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun popularMangaNextPageSelector(): String? = throw UnsupportedOperationException()
 

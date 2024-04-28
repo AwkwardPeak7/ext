@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class ReadComicTop : ParsedHttpSource() {
-
     override val name = "ReadComic.Top"
 
     override val baseUrl = "https://readcomic.top"
@@ -45,7 +44,11 @@ class ReadComicTop : ParsedHttpSource() {
         return GET(url, headers)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/advanced-search".toHttpUrl().newBuilder().apply {
             addQueryParameter("key", query)
             filters.forEach { filter ->
@@ -78,6 +81,7 @@ class ReadComicTop : ParsedHttpSource() {
         }
         thumbnail_url = "https://fakeimg.pl/200x300/?text=No%20Cover&font_size=62"
     }
+
     override fun searchMangaFromElement(element: Element) = SManga.create().apply {
         with(element.select("div.dlb-right > a.dlb-title")) {
             setUrlWithoutDomain(attr("href"))
@@ -155,6 +159,7 @@ class ReadComicTop : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val toUriPart: String) : Filter.TriState(name)
+
     private class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres) {
         val included: List<String>
             get() = state.filter { it.isIncluded() }.map { it.toUriPart }
@@ -162,12 +167,14 @@ class ReadComicTop : ParsedHttpSource() {
         val excluded: List<String>
             get() = state.filter { it.isExcluded() }.map { it.toUriPart }
     }
+
     private class StatusFilter(statusPairs: Array<Pair<String, String>>) : UriPartFilter("Status", statusPairs)
 
     open class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
         fun toUriPart() = vals[state].second
     }
+
     private val getStatusList = arrayOf(
         Pair("Any", ""), // You might want an option for any status
         Pair("Ongoing", "ONG"),

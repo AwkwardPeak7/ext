@@ -26,7 +26,6 @@ abstract class MangaWorld(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
     override val client: OkHttpClient = network.cloudflareClient
 
@@ -40,12 +39,15 @@ abstract class MangaWorld(
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/archive?sort=most_read&page=$page", headers)
     }
+
     override fun latestUpdatesRequest(page: Int): Request {
         return GET("$baseUrl/?page=$page", headers)
     }
 
     override fun searchMangaSelector() = "div.comics-grid .entry"
+
     override fun popularMangaSelector() = searchMangaSelector()
+
     override fun latestUpdatesSelector() = searchMangaSelector()
 
     override fun searchMangaFromElement(element: Element): SManga {
@@ -57,11 +59,15 @@ abstract class MangaWorld(
         }
         return manga
     }
+
     override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
+
     override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
     override fun searchMangaNextPageSelector(): String? = null
+
     override fun popularMangaNextPageSelector() = searchMangaNextPageSelector()
+
     override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
     override fun searchMangaParse(response: Response): MangasPage {
@@ -74,10 +80,16 @@ abstract class MangaWorld(
         val hasNextPage = mangas.size == 16
         return MangasPage(mangas, hasNextPage)
     }
+
     override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
+
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/archive?page=$page".toHttpUrl().newBuilder()
         url.addQueryParameter("keyword", query)
 
@@ -205,7 +217,10 @@ abstract class MangaWorld(
 
     override fun imageRequest(page: Page): Request {
         val imgHeader = Headers.Builder().apply {
-            add("User-Agent", "Mozilla/5.0 (Linux; U; Android 4.1.1; en-gb; Build/KLP) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30")
+            add(
+                "User-Agent",
+                "Mozilla/5.0 (Linux; U; Android 4.1.1; en-gb; Build/KLP) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30",
+            )
             add("Referer", baseUrl)
         }.build()
         return GET(page.imageUrl!!, imgHeader)
@@ -235,12 +250,15 @@ abstract class MangaWorld(
     private class TextField(name: String, val key: String) : Filter.Text(name)
 
     class Genre(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Generi", genres)
 
     class MType(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class MTypeList(types: List<MType>) : Filter.Group<MType>("Tipologia", types)
 
     class Status(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class StatusList(statuses: List<Status>) : Filter.Group<Status>("Stato", statuses)
 
     protected fun getGenreList() = listOf(
@@ -281,6 +299,7 @@ abstract class MangaWorld(
         Genre("Yaoi", "yaoi"),
         Genre("Yuri", "yuri"),
     )
+
     protected fun getTypesList() = listOf(
         MType("Manga", "manga"),
         MType("Manhua", "manhua"),
@@ -289,6 +308,7 @@ abstract class MangaWorld(
         MType("Thai", "thai"),
         MType("Vietnamita", "vietnamese"),
     )
+
     protected fun getStatusList() = listOf(
         Status("In corso", "ongoing"),
         Status("Finito", "completed"),

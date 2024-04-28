@@ -51,7 +51,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class MangaDexHelper(lang: String) {
-
     val mdFilters = MangaDexFilters()
 
     val json = Json {
@@ -108,18 +107,21 @@ class MangaDexHelper(lang: String) {
     /**
      * Get chapters for manga (aka manga/$id/feed endpoint)
      */
-    fun getChapterEndpoint(mangaId: String, offset: Int, langCode: String) =
-        "${MDConstants.apiMangaUrl}/$mangaId/feed".toHttpUrl().newBuilder()
-            .addQueryParameter("includes[]", MDConstants.scanlationGroup)
-            .addQueryParameter("includes[]", MDConstants.user)
-            .addQueryParameter("limit", "500")
-            .addQueryParameter("offset", offset.toString())
-            .addQueryParameter("translatedLanguage[]", langCode)
-            .addQueryParameter("order[volume]", "desc")
-            .addQueryParameter("order[chapter]", "desc")
-            .addQueryParameter("includeFuturePublishAt", "0")
-            .addQueryParameter("includeEmptyPages", "0")
-            .toString()
+    fun getChapterEndpoint(
+        mangaId: String,
+        offset: Int,
+        langCode: String,
+    ) = "${MDConstants.apiMangaUrl}/$mangaId/feed".toHttpUrl().newBuilder()
+        .addQueryParameter("includes[]", MDConstants.scanlationGroup)
+        .addQueryParameter("includes[]", MDConstants.user)
+        .addQueryParameter("limit", "500")
+        .addQueryParameter("offset", offset.toString())
+        .addQueryParameter("translatedLanguage[]", langCode)
+        .addQueryParameter("order[volume]", "desc")
+        .addQueryParameter("order[chapter]", "desc")
+        .addQueryParameter("includeFuturePublishAt", "0")
+        .addQueryParameter("includeEmptyPages", "0")
+        .toString()
 
     /**
      * Check if the manga url is a valid uuid
@@ -139,8 +141,7 @@ class MangaDexHelper(lang: String) {
     /**
      * Get the latest chapter offset pages are 1 based, so subtract 1
      */
-    fun getLatestChapterOffset(page: Int): String =
-        (MDConstants.latestChapterLimit * (page - 1)).toString()
+    fun getLatestChapterOffset(page: Int): String = (MDConstants.latestChapterLimit * (page - 1)).toString()
 
     /**
      * Remove any HTML characters in manga or chapter name to actual
@@ -167,7 +168,10 @@ class MangaDexHelper(lang: String) {
      * Maps MangaDex status to Tachiyomi status.
      * Adapted from the MangaDex handler from TachiyomiSY.
      */
-    fun getPublicationStatus(attr: MangaAttributesDto, volumes: Map<String, AggregateVolume>): Int {
+    fun getPublicationStatus(
+        attr: MangaAttributesDto,
+        volumes: Map<String, AggregateVolume>,
+    ): Int {
         val chaptersList = volumes.values
             .flatMap { it.chapters.values }
             .map { it.chapter }
@@ -193,8 +197,7 @@ class MangaDexHelper(lang: String) {
         }
     }
 
-    private fun parseDate(dateAsString: String): Long =
-        MDConstants.dateFormatter.parse(dateAsString)?.time ?: 0
+    private fun parseDate(dateAsString: String): Long = MDConstants.dateFormatter.parse(dateAsString)?.time ?: 0
 
     /**
      * Chapter URL where we get the token, last request time.
@@ -218,7 +221,11 @@ class MangaDexHelper(lang: String) {
     /**
      * Check the token map to see if the MD@Home host is still valid.
      */
-    fun getValidImageUrlForPage(page: Page, headers: Headers, client: OkHttpClient): Request {
+    fun getValidImageUrlForPage(
+        page: Page,
+        headers: Headers,
+        client: OkHttpClient,
+    ): Request {
         val (host, tokenRequestUrl, time) = page.url.split(",")
 
         val mdAtHomeServerUrl =
@@ -465,10 +472,19 @@ class MangaDexHelper(lang: String) {
     fun setupEditTextUuidValidator(editText: EditText) {
         editText.addTextChangedListener(
             object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int,
+                ) = Unit
 
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+                override fun onTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    before: Int,
+                    count: Int,
+                ) = Unit
 
                 override fun afterTextChanged(editable: Editable?) {
                     requireNotNull(editable)

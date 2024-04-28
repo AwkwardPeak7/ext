@@ -21,7 +21,6 @@ import java.util.TimeZone
 import kotlin.concurrent.thread
 
 class OlympusScanlation : HttpSource() {
-
     override val versionId = 2
 
     override val baseUrl: String = "https://leelolympus.com"
@@ -69,7 +68,11 @@ class OlympusScanlation : HttpSource() {
         return MangasPage(mangaList, hasNextPage)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val apiUrl = "$apiBaseUrl/api/search".toHttpUrl().newBuilder()
                 .addQueryParameter("name", query)
@@ -141,7 +144,10 @@ class OlympusScanlation : HttpSource() {
         )
     }
 
-    private fun paginatedChapterListRequest(mangaUrl: String, page: Int): Request {
+    private fun paginatedChapterListRequest(
+        mangaUrl: String,
+        page: Int,
+    ): Request {
         return GET(
             url = "$apiBaseUrl/api/series/$mangaUrl/chapters?page=$page&direction=desc&type=comic",
             headers = headers,

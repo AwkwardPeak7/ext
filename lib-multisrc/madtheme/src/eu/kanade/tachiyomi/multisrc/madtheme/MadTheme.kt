@@ -36,7 +36,6 @@ abstract class MadTheme(
     override val lang: String,
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("MMM dd, yyy", Locale.US),
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient.newBuilder()
@@ -56,39 +55,33 @@ abstract class MadTheme(
     private val json: Json by injectLazy()
 
     // Popular
-    override fun popularMangaRequest(page: Int): Request =
-        searchMangaRequest(page, "", FilterList(OrderFilter(0)))
+    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(page, "", FilterList(OrderFilter(0)))
 
-    override fun popularMangaParse(response: Response): MangasPage =
-        searchMangaParse(response)
+    override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
 
-    override fun popularMangaSelector(): String =
-        searchMangaSelector()
+    override fun popularMangaSelector(): String = searchMangaSelector()
 
-    override fun popularMangaFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
 
-    override fun popularMangaNextPageSelector(): String? =
-        searchMangaNextPageSelector()
+    override fun popularMangaNextPageSelector(): String? = searchMangaNextPageSelector()
 
     // Latest
-    override fun latestUpdatesRequest(page: Int): Request =
-        searchMangaRequest(page, "", FilterList(OrderFilter(1)))
+    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(page, "", FilterList(OrderFilter(1)))
 
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        searchMangaParse(response)
+    override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
-    override fun latestUpdatesSelector(): String =
-        searchMangaSelector()
+    override fun latestUpdatesSelector(): String = searchMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
-    override fun latestUpdatesNextPageSelector(): String? =
-        searchMangaNextPageSelector()
+    override fun latestUpdatesNextPageSelector(): String? = searchMangaNextPageSelector()
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search".toHttpUrl().newBuilder()
             .addQueryParameter("q", query)
             .addQueryParameter("page", page.toString())
@@ -186,8 +179,7 @@ abstract class MadTheme(
         throw Exception("HTTP error ${response.code}")
     }
 
-    override fun chapterListRequest(manga: SManga): Request =
-        GET("$baseUrl/api/manga${manga.url}/chapters?source=detail", headers)
+    override fun chapterListRequest(manga: SManga): Request = GET("$baseUrl/api/manga${manga.url}/chapters?source=detail", headers)
 
     override fun searchMangaParse(response: Response): MangasPage {
         if (genresList == null) {
@@ -230,8 +222,8 @@ abstract class MadTheme(
                 // we've got no choice but to fallback to chapter images from HTML.
                 // TODO: This might need to be solved one day ^
                 if (chapterImagesFromJs.all { e ->
-                    e.startsWith("http://") || e.startsWith("https://")
-                }
+                        e.startsWith("http://") || e.startsWith("https://")
+                    }
                 ) {
                     // Great, we can use these.
                     if (chapterImagesFromHtml.count() < chapterImagesFromJs.count()) {
@@ -276,8 +268,7 @@ abstract class MadTheme(
         }
     }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // Date logic lifted from Madara
     private fun parseChapterDate(date: String?): Long {
@@ -327,8 +318,11 @@ abstract class MadTheme(
     )
 
     private class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
+
     private class Genre(name: String, val id: String) : Filter.CheckBox(name)
+
     private var genresList: List<Genre>? = null
+
     private fun getGenreList(): List<Genre> {
         // Filters are fetched immediately once an extension loads
         // We're only able to get filters after a loading the manga directory, and resetting

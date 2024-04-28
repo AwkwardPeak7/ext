@@ -12,7 +12,11 @@ object NewTokiWebtoon : NewToki("NewToki", "webtoon", newTokiPreferences) {
 
     override val baseUrl get() = "https://$NEWTOKI_PREFIX$domainNumber.com"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = ("$baseUrl/webtoon" + (if (page > 1) "/p$page" else "")).toHttpUrl().newBuilder()
         filters.forEach { filter ->
             when (filter) {

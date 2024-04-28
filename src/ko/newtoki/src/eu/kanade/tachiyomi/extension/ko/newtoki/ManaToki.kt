@@ -34,7 +34,11 @@ object ManaToki : NewToki("ManaToki", "comic", manaTokiPreferences) {
         return manga
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = ("$baseUrl/comic" + (if (page > 1) "/p$page" else "")).toHttpUrl().newBuilder()
 
         filters.forEach { filter ->

@@ -16,22 +16,21 @@ class IMHentai(
     lang: String = "all",
     override val mangaLang: String = LANGUAGE_MULTI,
 ) : GalleryAdults(
-    "IMHentai",
-    "https://imhentai.xxx",
-    lang = lang,
-) {
+        "IMHentai",
+        "https://imhentai.xxx",
+        lang = lang,
+    ) {
     override val supportsLatest = true
     override val useIntermediateSearch: Boolean = true
     override val supportAdvancedSearch: Boolean = true
     override val supportSpeechless: Boolean = true
 
-    override fun Element.mangaLang() =
-        select("a:has(.thumb_flag)").attr("href")
-            .removeSuffix("/").substringAfterLast("/")
-            .let {
-                // Include Speechless in search results
-                if (it == LANGUAGE_SPEECHLESS) mangaLang else it
-            }
+    override fun Element.mangaLang() = select("a:has(.thumb_flag)").attr("href")
+        .removeSuffix("/").substringAfterLast("/")
+        .let {
+            // Include Speechless in search results
+            if (it == LANGUAGE_SPEECHLESS) mangaLang else it
+        }
 
     override val client: OkHttpClient = network.cloudflareClient
         .newBuilder()
@@ -63,7 +62,7 @@ class IMHentai(
 
     override val favoritePath = "user/fav_pags.php"
 
-    /* Details */
+    // Details
     override fun Element.getInfo(tag: String): String {
         return select("li:has(.tags_text:contains($tag:)) .tag").map {
             it?.run {
@@ -92,7 +91,7 @@ class IMHentai(
                     selectFirst(".subtitle")?.ownText()
                         .let { altTitle -> if (!altTitle.isNullOrBlank()) "Alternate Title: $altTitle" else null },
                 )
-            )
+        )
             .joinToString("\n\n")
             .plus(
                 if (preferences.shortTitle) {
@@ -103,17 +102,19 @@ class IMHentai(
             )
     }
 
-    override fun Element.getCover() =
-        selectFirst(".left_cover img")?.imgAttr()
+    override fun Element.getCover() = selectFirst(".left_cover img")?.imgAttr()
 
     override val mangaDetailInfoSelector = ".gallery_first"
 
-    /* Pages */
+    // Pages
     override val pageUri = "view"
     override val pageSelector = ".gthumb"
     private val serverSelector = "load_server"
 
-    private fun serverNumber(document: Document, galleryId: String): String {
+    private fun serverNumber(
+        document: Document,
+        galleryId: String,
+    ): String {
         return document.inputIdValueOf(serverSelector).takeIf {
             it.isNotBlank()
         } ?: when (galleryId.toInt()) {
@@ -128,12 +129,18 @@ class IMHentai(
         }
     }
 
-    override fun getServer(document: Document, galleryId: String): String {
+    override fun getServer(
+        document: Document,
+        galleryId: String,
+    ): String {
         val domain = baseUrl.toHttpUrl().host
         return "m${serverNumber(document, galleryId)}.$domain"
     }
 
-    override fun pageRequestForm(document: Document, totalPages: String): FormBody {
+    override fun pageRequestForm(
+        document: Document,
+        totalPages: String,
+    ): FormBody {
         val galleryId = document.inputIdValueOf(galleryIdSelector)
 
         return FormBody.Builder()
@@ -147,7 +154,7 @@ class IMHentai(
             .build()
     }
 
-    /* Filters */
+    // Filters
     override fun tagsParser(document: Document): List<Pair<String, String>> {
         return document.select(".stags .tag_btn")
             .mapNotNull {

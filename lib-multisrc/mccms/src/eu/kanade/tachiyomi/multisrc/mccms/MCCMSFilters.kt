@@ -19,6 +19,7 @@ open class MCCMSFilter(
 }
 
 class SortFilter : MCCMSFilter("排序", SORT_NAMES, SORT_QUERIES)
+
 class WebSortFilter : MCCMSFilter("排序", SORT_NAMES, SORT_QUERIES_WEB)
 
 private val SORT_NAMES = arrayOf("热门人气", "更新时间", "评分")
@@ -26,6 +27,7 @@ private val SORT_QUERIES = arrayOf("order=hits", "order=addtime", "order=score")
 private val SORT_QUERIES_WEB = arrayOf("order/hits", "order/addtime", "order/score")
 
 class StatusFilter : MCCMSFilter("进度", STATUS_NAMES, STATUS_QUERIES)
+
 class WebStatusFilter : MCCMSFilter("进度", STATUS_NAMES, STATUS_QUERIES_WEB)
 
 private val STATUS_NAMES = arrayOf("全部", "连载", "完结")
@@ -33,7 +35,6 @@ private val STATUS_QUERIES = arrayOf("", "serialize=连载", "serialize=完结")
 private val STATUS_QUERIES_WEB = arrayOf("", "finish/1", "finish/2")
 
 class GenreFilter(private val values: Array<String>, private val queries: Array<String>) {
-
     private val apiQueries get() = queries.run {
         Array(size) { i -> "type[tags]=" + this[i] }
     }
@@ -72,7 +73,10 @@ class GenreData(hasCategoryPage: Boolean) {
     }
 }
 
-internal fun parseGenres(document: Document, genreData: GenreData) {
+internal fun parseGenres(
+    document: Document,
+    genreData: GenreData,
+) {
     if (genreData.status == GenreData.FETCHED || genreData.status == GenreData.NO_DATA) return
     val box = document.selectFirst(".cate-selector, .cy_list_l")
     if (box == null || "/tags/" in document.location()) {

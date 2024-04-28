@@ -13,12 +13,17 @@ import rx.Observable
 import java.util.Calendar
 
 class Manga1000 : FMReader("Manga1000", "https://manga1000.top", "ja") {
-
     override val infoElementSelector = "div.row div.row"
 
     // source is picky about URL format
-    private fun mangaRequest(sortBy: String, page: Int): Request {
-        return GET("$baseUrl/manga-list.html?listType=pagination&page=$page&artist=&author=&group=&m_status=&name=&genre=&ungenre=&magazine=&sort=$sortBy&sort_type=DESC", headers)
+    private fun mangaRequest(
+        sortBy: String,
+        page: Int,
+    ): Request {
+        return GET(
+            "$baseUrl/manga-list.html?listType=pagination&page=$page&artist=&author=&group=&m_status=&name=&genre=&ungenre=&magazine=&sort=$sortBy&sort_type=DESC",
+            headers,
+        )
     }
 
     override fun popularMangaRequest(page: Int): Request = mangaRequest("views", page)

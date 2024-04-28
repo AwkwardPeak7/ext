@@ -32,7 +32,6 @@ abstract class Comick(
     override val lang: String,
     private val comickLang: String,
 ) : ConfigurableSource, HttpSource() {
-
     override val name = "Comick"
 
     override val baseUrl = "https://comick.io"
@@ -232,7 +231,11 @@ abstract class Comick(
         return MangasPage(entries, end < searchResponse.size)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$apiUrl/v1.0/search".toHttpUrl().newBuilder().apply {
             filters.forEach { it ->
                 when (it) {
@@ -301,7 +304,13 @@ abstract class Comick(
                     is TagFilter -> {
                         if (it.state.isNotEmpty()) {
                             it.state.split(",").forEach {
-                                addQueryParameter("tags", it.trim().lowercase().replace(SPACE_AND_SLASH_REGEX, "-").replace("'-", "-and-039-").replace("'", "-and-039-"))
+                                addQueryParameter(
+                                    "tags",
+                                    it.trim().lowercase().replace(
+                                        SPACE_AND_SLASH_REGEX,
+                                        "-",
+                                    ).replace("'-", "-and-039-").replace("'", "-and-039-"),
+                                )
                             }
                         }
                     }
@@ -338,10 +347,12 @@ abstract class Comick(
             }
     }
 
-    override fun mangaDetailsParse(response: Response): SManga =
-        mangaDetailsParse(response, SManga.create())
+    override fun mangaDetailsParse(response: Response): SManga = mangaDetailsParse(response, SManga.create())
 
-    private fun mangaDetailsParse(response: Response, manga: SManga): SManga {
+    private fun mangaDetailsParse(
+        response: Response,
+        manga: SManga,
+    ): SManga {
         val mangaData = response.parseAs<Manga>()
         if (!preferences.updateCover && manga.thumbnail_url != mangaData.comic.cover) {
             if (manga.thumbnail_url.toString().endsWith("#1")) {

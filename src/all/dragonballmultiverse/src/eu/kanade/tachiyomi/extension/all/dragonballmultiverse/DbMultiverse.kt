@@ -13,7 +13,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 abstract class DbMultiverse(override val lang: String, private val internalLang: String) : ParsedHttpSource() {
-
     override val name =
         if (internalLang.endsWith("_PA")) {
             "Dragon Ball Multiverse Parody"
@@ -92,13 +91,21 @@ abstract class DbMultiverse(override val lang: String, private val internalLang:
 
     override fun popularMangaNextPageSelector(): String? = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
 
     override fun searchMangaFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
     override fun searchMangaNextPageSelector(): String? = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaSelector(): String = throw UnsupportedOperationException()
 

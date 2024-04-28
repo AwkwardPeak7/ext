@@ -35,7 +35,6 @@ abstract class FoolSlide(
     override val lang: String,
     open val urlModifier: String = "",
 ) : ConfigurableSource, ParsedHttpSource() {
-
     override val supportsLatest = true
 
     private val json by lazy { Injekt.get<Json>() }
@@ -85,7 +84,11 @@ abstract class FoolSlide(
 
     override fun latestUpdatesNextPageSelector(): String? = "div.next"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val searchHeaders = headersBuilder().add("Content-Type", "application/x-www-form-urlencoded").build()
         val form = FormBody.Builder().add("search", query).build()
         return POST("$baseUrl$urlModifier/search/", searchHeaders, form)
@@ -109,7 +112,10 @@ abstract class FoolSlide(
     protected open val mangaDetailsInfoSelector = "div.info"
 
     // if there's no image on the details page, get the first page of the first chapter
-    protected fun getDetailsThumbnail(document: Document, urlSelector: String = chapterUrlSelector): String? {
+    protected fun getDetailsThumbnail(
+        document: Document,
+        urlSelector: String = chapterUrlSelector,
+    ): String? {
         return document.select("div.thumbnail img, table.thumb img").firstOrNull()?.attr("abs:src")
             ?: document.select(chapterListSelector()).last()!!.select(urlSelector).attr("abs:href")
                 .let { url -> client.newCall(allowAdult(GET(url))).execute() }

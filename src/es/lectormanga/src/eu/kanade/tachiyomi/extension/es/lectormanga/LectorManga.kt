@@ -11,7 +11,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class LectorManga : LectorTmo("LectorManga", "https://lectormanga.com", "es") {
-
     override val id = 7925520943983324764
 
     override fun popularMangaSelector() = ".col-6 .card"
@@ -54,7 +53,10 @@ class LectorManga : LectorTmo("LectorManga", "https://lectormanga.com", "es") {
         }
     }
 
-    override fun chapterFromElement(element: Element, chName: String) = SChapter.create().apply {
+    override fun chapterFromElement(
+        element: Element,
+        chName: String,
+    ) = SChapter.create().apply {
         url = element.select("div.row > .text-right > a").attr("href")
         name = chName
         scanlator = element.select("div.col-12.text-truncate span").text()

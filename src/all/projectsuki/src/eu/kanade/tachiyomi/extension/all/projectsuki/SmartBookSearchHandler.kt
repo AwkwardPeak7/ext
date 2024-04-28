@@ -32,14 +32,17 @@ private typealias IsWord = Boolean
 @Suppress("MemberVisibilityCanBePrivate")
 @RequiresApi(Build.VERSION_CODES.N)
 class SmartBookSearchHandler(val rawQuery: String, val rawBooksData: Map<BookID, BookTitle>) {
-
     data class WordsData(val words: List<String>, val extra: List<String>, val wordRanges: List<IntRange>)
 
     data class CollatedElement<Cat>(val value: String, val range: IntRange, val origin: String, val category: Cat)
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun BreakIterator.collate(text: String): List<CollatedElement<Unit>> = collate(text) {}
-    private inline fun <Cat> BreakIterator.collate(text: String, categorizer: (ruleStatus: Int) -> Cat): List<CollatedElement<Cat>> {
+
+    private inline fun <Cat> BreakIterator.collate(
+        text: String,
+        categorizer: (ruleStatus: Int) -> Cat,
+    ): List<CollatedElement<Cat>> {
         this.text = StringCharacterIterator(text)
         var left = first()
         var right = next()
@@ -128,7 +131,9 @@ class SmartBookSearchHandler(val rawQuery: String, val rawBooksData: Map<BookID,
             }
         }
 
-        val byScore: TreeMap<UInt, MutableList<Map.Entry<BookID, Counter>>> = scored.entries.groupByTo(TreeMap(reverseOrder<UInt>())) { it.value.value }
+        val byScore: TreeMap<UInt, MutableList<Map.Entry<BookID, Counter>>> = scored.entries.groupByTo(TreeMap(reverseOrder<UInt>())) {
+            it.value.value
+        }
         val highest = byScore.firstKey().toFloat()
 
         val included: MutableSet<BookID> = LinkedHashSet()
@@ -148,13 +153,17 @@ class SmartBookSearchHandler(val rawQuery: String, val rawBooksData: Map<BookID,
     }
 
     companion object {
-        private inline fun <T> threadLocal(crossinline initializer: () -> T) = PropertyDelegateProvider<Any?, ThreadLocal<T>> { _: Any?, _: KProperty<*> ->
-            object : ThreadLocal<T>() {
-                override fun initialValue(): T? = initializer()
+        private inline fun <T> threadLocal(crossinline initializer: () -> T) =
+            PropertyDelegateProvider<Any?, ThreadLocal<T>> { _: Any?, _: KProperty<*> ->
+                object : ThreadLocal<T>() {
+                    override fun initialValue(): T? = initializer()
+                }
             }
-        }
 
-        private operator fun <T> ThreadLocal<T>.getValue(thisRef: Any?, property: KProperty<*>): T {
+        private operator fun <T> ThreadLocal<T>.getValue(
+            thisRef: Any?,
+            property: KProperty<*>,
+        ): T {
             return get() ?: reportErrorToUser("SmartBookSearchHandler.${property.name}") { "null initialValue" }
         }
 
@@ -171,9 +180,12 @@ class SmartBookSearchHandler(val rawQuery: String, val rawBooksData: Map<BookID,
 
         private val stringSearch: StringSearch by threadLocal {
             StringSearch(
-                /* pattern = */ "dummy",
-                /* target = */ StringCharacterIterator("dummy"),
-                /* collator = */ collator,
+                // pattern =
+                "dummy",
+                // target =
+                StringCharacterIterator("dummy"),
+                // collator =
+                collator,
             ).apply {
                 isOverlapping = true
             }
@@ -183,14 +195,38 @@ class SmartBookSearchHandler(val rawQuery: String, val rawBooksData: Map<BookID,
         @JvmStatic
         @OptIn(ExperimentalUnsignedTypes::class)
         private val fib32: UIntArray = uintArrayOf(
-            1u, 1u, 2u, 3u,
-            5u, 8u, 13u, 21u,
-            34u, 55u, 89u, 144u,
-            233u, 377u, 610u, 987u,
-            1597u, 2584u, 4181u, 6765u,
-            10946u, 17711u, 28657u, 46368u,
-            75025u, 121393u, 196418u, 317811u,
-            514229u, 832040u, 1346269u, 2178309u,
+            1u,
+            1u,
+            2u,
+            3u,
+            5u,
+            8u,
+            13u,
+            21u,
+            34u,
+            55u,
+            89u,
+            144u,
+            233u,
+            377u,
+            610u,
+            987u,
+            1597u,
+            2584u,
+            4181u,
+            6765u,
+            10946u,
+            17711u,
+            28657u,
+            46368u,
+            75025u,
+            121393u,
+            196418u,
+            317811u,
+            514229u,
+            832040u,
+            1346269u,
+            2178309u,
         )
 
         private const val SCORE_EXTRA: UInt = 1u
@@ -209,6 +245,7 @@ internal fun BookID.bookIDToURL(): HttpUrl {
 }
 
 internal fun Map<BookID, BookTitle>.toMangasPage(hasNextPage: Boolean = false): MangasPage = entries.toMangasPage(hasNextPage)
+
 internal fun Iterable<Map.Entry<BookID, BookTitle>>.toMangasPage(hasNextPage: Boolean = false): MangasPage {
     return MangasPage(
         mangas = map { (bookID: BookID, bookTitle: BookTitle) ->

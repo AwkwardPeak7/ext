@@ -7,6 +7,5 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MangaKitsune : Madara("MangaKitsune", "https://mangakitsune.com", "en", dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)) {
-
     override fun chapterListParse(response: Response): List<SChapter> = super.chapterListParse(response).reversed()
 }

@@ -32,7 +32,6 @@ abstract class Senkuro(
     override val baseUrl: String,
     final override val lang: String,
 ) : ConfigurableSource, HttpSource() {
-
     override val supportsLatest = false
 
     override fun headersBuilder(): Headers.Builder = Headers.Builder()
@@ -44,9 +43,8 @@ abstract class Senkuro(
             .rateLimit(5)
             .build()
 
-    private inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody =
-        json.encodeToString(this)
-            .toRequestBody(JSON_MEDIA_TYPE)
+    private inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody = json.encodeToString(this)
+        .toRequestBody(JSON_MEDIA_TYPE)
 
     // Popular
     override fun popularMangaRequest(page: Int): Request {
@@ -56,7 +54,11 @@ abstract class Senkuro(
                 offset = offsetCount * (page - 1),
                 genre = SearchVariables.FiltersDto(
                     // Senkuro eternal built-in exclude 18+ filter
-                    exclude = if (name == "Senkuro") { senkuroExcludeGenres } else { listOf() },
+                    exclude = if (name == "Senkuro") {
+                        senkuroExcludeGenres
+                    } else {
+                        listOf()
+                    },
                 ),
             ),
         ).toJsonRequestBody()
@@ -65,6 +67,7 @@ abstract class Senkuro(
 
         return POST(API_URL, headers, requestBody)
     }
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
     // Latest
@@ -73,7 +76,11 @@ abstract class Senkuro(
     override fun latestUpdatesParse(response: Response): MangasPage = throw NotImplementedError("Unused")
 
     // Search
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         fetchTachiyomiSearchFilters(page) // reset filters before sending searchMangaRequest
         return client.newCall(searchMangaRequest(page, query, filters))
             .asObservableSuccess()
@@ -82,7 +89,11 @@ abstract class Senkuro(
             }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val includeGenres = mutableListOf<String>()
         val excludeGenres = mutableListOf<String>()
         val includeTags = mutableListOf<String>()
@@ -147,7 +158,8 @@ abstract class Senkuro(
         val requestBody = GraphQL(
             SEARCH_QUERY,
             SearchVariables(
-                query = query, offset = offsetCount * (page - 1),
+                query = query,
+                offset = offsetCount * (page - 1),
                 genre = SearchVariables.FiltersDto(
                     includeGenres,
                     excludeGenres,
@@ -181,6 +193,7 @@ abstract class Senkuro(
 
         return POST(API_URL, headers, requestBody)
     }
+
     override fun searchMangaParse(response: Response): MangasPage {
         val page = json.decodeFromString<PageWrapperDto<MangaTachiyomiSearchDto<MangaTachiyomiInfoDto>>>(response.body.string())
         val mangasList = page.data.mangaTachiyomiSearch.mangas.map {
@@ -222,7 +235,7 @@ abstract class Senkuro(
                     getFormatList().filter { formats.orEmpty().contains(it.slug) }.joinToString { it.name } + ", " +
                     genres?.joinToString { git -> git.titles.find { it.lang == "RU" }!!.content } + ", " +
                     tags?.joinToString { tit -> tit.titles.find { it.lang == "RU" }!!.content }
-                ).split(", ").filter { it.isNotEmpty() }.joinToString { it.trim().capitalize() }
+            ).split(", ").filter { it.isNotEmpty() }.joinToString { it.trim().capitalize() }
         }
     }
 
@@ -261,8 +274,13 @@ abstract class Senkuro(
                 chapterListParse(response, manga)
             }
     }
+
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
+
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         val chaptersList = json.decodeFromString<PageWrapperDto<MangaTachiyomiChaptersDto>>(response.body.string())
         val teamsList = chaptersList.data.mangaTachiyomiChapters.teams
         return chaptersList.data.mangaTachiyomiChapters.chapters.map { chapter ->
@@ -275,6 +293,7 @@ abstract class Senkuro(
             }
         }
     }
+
     override fun chapterListRequest(manga: SManga): Request {
         val requestBody = GraphQL(
             CHAPTERS_QUERY,
@@ -353,6 +372,7 @@ abstract class Senkuro(
             }
         }
     }
+
     override fun getFilterList(): FilterList {
         val filters = mutableListOf<Filter<*>>()
         filters += if (genresList.isEmpty() or tagsList.isEmpty()) {
@@ -378,12 +398,19 @@ abstract class Senkuro(
     }
 
     private class FilterersTri(name: String, val slug: String) : Filter.TriState(name)
+
     private class GenreList(genres: List<FilterersTri>) : Filter.Group<FilterersTri>("Жанры", genres)
+
     private class TagList(tags: List<FilterersTri>) : Filter.Group<FilterersTri>("Тэги", tags)
+
     private class TypeList(types: List<FilterersTri>) : Filter.Group<FilterersTri>("Тип", types)
+
     private class FormatList(formats: List<FilterersTri>) : Filter.Group<FilterersTri>("Формат", formats)
+
     private class StatList(status: List<FilterersTri>) : Filter.Group<FilterersTri>("Статус", status)
+
     private class StatTranslateList(tstatus: List<FilterersTri>) : Filter.Group<FilterersTri>("Статус перевода", tstatus)
+
     private class AgeList(ages: List<FilterersTri>) : Filter.Group<FilterersTri>("Возрастное ограничение", ages)
 
     private var genresList: List<FilterersTri> = listOf()
@@ -397,6 +424,7 @@ abstract class Senkuro(
         FilterersTri("OEL Манга", "OEL_MANGA"),
         FilterersTri("РуМанга", "RU_MANGA"),
     )
+
     private fun getStatList() = listOf(
         FilterersTri("Анонс", "ANNOUNCE"),
         FilterersTri("Онгоинг", "ONGOING"),
@@ -418,6 +446,7 @@ abstract class Senkuro(
         FilterersTri("16+", "QUESTIONABLE"),
         FilterersTri("18+", "EXPLICIT"),
     )
+
     private fun getFormatList() = listOf(
         FilterersTri("Сборник", "DIGEST"),
         FilterersTri("Додзинси", "DOUJINSHI"),

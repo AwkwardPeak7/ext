@@ -80,7 +80,11 @@ class Komiku : ParsedHttpSource() {
     // search
     override fun searchMangaSelector() = popularMangaSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var url = "$baseUrlData/page/$page/?post_type=manga".toHttpUrl().newBuilder().addQueryParameter("s", query)
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
             when (filter) {
@@ -145,10 +149,15 @@ class Komiku : ParsedHttpSource() {
     }
 
     private class CategoryNames(categories: Array<Category>) : Filter.Select<Category>("Category", categories, 0)
+
     private class OrderBy(orders: Array<Order>) : Filter.Select<Order>("Order", orders, 0)
+
     private class GenreList1(genres: Array<Genre>) : Filter.Select<Genre>("Genre 1", genres, 0)
+
     private class GenreList2(genres: Array<Genre>) : Filter.Select<Genre>("Genre 2", genres, 0)
+
     private class StatusList(statuses: Array<Status>) : Filter.Select<Status>("Status", statuses, 0)
+
     private class ProjectList(project: Array<Status>) : Filter.Select<Status>("Filter Project", project, 0)
 
     override fun getFilterList() = FilterList(

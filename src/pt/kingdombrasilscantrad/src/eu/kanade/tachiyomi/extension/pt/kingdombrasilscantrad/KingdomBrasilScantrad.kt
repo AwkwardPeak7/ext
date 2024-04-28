@@ -18,7 +18,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class KingdomBrasilScantrad : HttpSource() {
-
     override val name = "Kingdom Brasil Scantrad"
 
     override val baseUrl = "https://www.kingdombrasil.net"
@@ -89,21 +88,22 @@ class KingdomBrasilScantrad : HttpSource() {
         return Observable.just(MangasPage(emptyList(), false))
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
-    override fun searchMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> = Observable.just(manga)
 
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    private fun pagedChapterListRequest(page: Int) =
-        GET(
-            "$baseUrl/blog-frontend-adapter-public/v2/post-feed-page?includeContent=false&languageCode=pt&page=$page&pageSize=50&type=ALL_POSTS",
-            headers,
-        )
+    private fun pagedChapterListRequest(page: Int) = GET(
+        "$baseUrl/blog-frontend-adapter-public/v2/post-feed-page?includeContent=false&languageCode=pt&page=$page&pageSize=50&type=ALL_POSTS",
+        headers,
+    )
 
     override fun chapterListRequest(manga: SManga) = pagedChapterListRequest(1)
 
@@ -149,11 +149,9 @@ class KingdomBrasilScantrad : HttpSource() {
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    private fun getWixCookies() =
-        client.newCall(GET("$baseUrl/_api/v2/dynamicmodel", headers)).execute().close()
+    private fun getWixCookies() = client.newCall(GET("$baseUrl/_api/v2/dynamicmodel", headers)).execute().close()
 
-    private inline fun <reified T> Response.parseAs(): T =
-        json.decodeFromString(body.string())
+    private inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 
     private fun PostDto.toSChapter() = SChapter.create().apply {
         url = this@toSChapter.url.path

@@ -27,8 +27,11 @@ class MangaRawOrg : MangaThemesia("Manga Raw.org", "https://mangaraw.org", "ja")
 
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/search?order=update&page=$page", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        GET("$baseUrl/search?s=$query&page=$page")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET("$baseUrl/search?s=$query&page=$page")
 
     override fun searchMangaSelector() = "div.bsx"
 
@@ -55,12 +58,16 @@ class MangaRawOrg : MangaThemesia("Manga Raw.org", "https://mangaraw.org", "ja")
             }
     }
 
-    private fun pageListParse(response: Response, chapterUrl: String): List<Page> {
+    private fun pageListParse(
+        response: Response,
+        chapterUrl: String,
+    ): List<Page> {
         return response.asJsoup().select("span.page-link").first()!!.ownText().substringAfterLast(" ").toInt()
             .let { lastNum -> IntRange(1, lastNum) }
             .map { num -> Page(num, "$chapterUrl/$num") }
     }
 
     override fun imageUrlParse(document: Document): String = document.select("a.img-block img").attr("abs:src")
+
     override fun getFilterList(): FilterList = FilterList()
 }

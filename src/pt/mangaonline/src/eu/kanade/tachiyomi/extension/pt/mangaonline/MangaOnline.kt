@@ -133,7 +133,11 @@ class MangaOnline : ParsedHttpSource(), ConfigurableSource {
 
     override fun searchMangaNextPageSelector() = ".pagination > .current + a"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotBlank()) {
             val url = "$baseUrl/search".toHttpUrl().newBuilder()
                 .addPathSegment(query)
@@ -185,8 +189,11 @@ class MangaOnline : ParsedHttpSource(), ConfigurableSource {
         }
     }
 
-    private fun String.toDate() =
-        try { dateFormat.parse(trim())!!.time } catch (_: Exception) { 0L }
+    private fun String.toDate() = try {
+        dateFormat.parse(trim())!!.time
+    } catch (_: Exception) {
+        0L
+    }
 
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
 }

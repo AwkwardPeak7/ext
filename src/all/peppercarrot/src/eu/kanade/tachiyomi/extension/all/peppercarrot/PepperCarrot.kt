@@ -47,23 +47,45 @@ class PepperCarrot : HttpSource(), ConfigurableSource {
     }.toObservable()
 
     private fun getArtworkList(): List<SManga> = arrayOf(
-        "artworks", "wallpapers", "sketchbook", "misc",
-        "book-publishing", "comissions", "eshop", "framasoft", "press", "references", "wiki",
+        "artworks",
+        "wallpapers",
+        "sketchbook",
+        "misc",
+        "book-publishing",
+        "comissions",
+        "eshop",
+        "framasoft",
+        "press",
+        "references",
+        "wiki",
     ).map(::getArtworkEntry)
 
     override fun getFilterList() = getFilters(preferences)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.isNotEmpty()) return Observable.error(Exception("No search"))
         if (filters.isNotEmpty()) preferences.saveFrom(filters)
         return fetchPopularManga(page)
     }
 
     override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
+
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
+
     override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> = Single.create<SManga> {

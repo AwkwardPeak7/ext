@@ -32,13 +32,15 @@ open class MangaReader(
         .addInterceptor(ImageInterceptor)
         .build()
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/filter?sort=latest-updated&language=$lang&page=$page", headers)
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/filter?sort=latest-updated&language=$lang&page=$page", headers)
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/filter?sort=most-viewed&language=$lang&page=$page", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/filter?sort=most-viewed&language=$lang&page=$page", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val urlBuilder = baseUrl.toHttpUrl().newBuilder()
         if (query.isNotBlank()) {
             urlBuilder.addPathSegment("search").apply {
@@ -74,14 +76,13 @@ open class MangaReader(
 
     override fun searchMangaNextPageSelector() = ".page-link[title=Next]"
 
-    override fun searchMangaFromElement(element: Element) =
-        SManga.create().apply {
-            url = element.attr("href")
-            element.selectFirst(Evaluator.Tag("img"))!!.let {
-                title = it.attr("alt")
-                thumbnail_url = it.attr("src")
-            }
+    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
+        url = element.attr("href")
+        element.selectFirst(Evaluator.Tag("img"))!!.let {
+            title = it.attr("alt")
+            thumbnail_url = it.attr("src")
         }
+    }
 
     private fun Element.parseAuthorsTo(manga: SManga) {
         val authors = select(Evaluator.Tag("a"))
@@ -134,12 +135,18 @@ open class MangaReader(
     override val chapterType get() = "chap"
     override val volumeType get() = "vol"
 
-    override fun chapterListRequest(mangaUrl: String, type: String): Request {
+    override fun chapterListRequest(
+        mangaUrl: String,
+        type: String,
+    ): Request {
         val id = mangaUrl.substringAfterLast('-')
         return GET("$baseUrl/ajax/manga/reading-list/$id?readingBy=$type", headers)
     }
 
-    override fun parseChapterElements(response: Response, isVolume: Boolean): List<Element> {
+    override fun parseChapterElements(
+        response: Response,
+        isVolume: Boolean,
+    ): List<Element> {
         val container = response.parseHtmlProperty().run {
             val type = if (isVolume) "volumes" else "chapters"
             selectFirst(Evaluator.Id("$lang-$type")) ?: return emptyList()
@@ -172,18 +179,17 @@ open class MangaReader(
         super.setupPreferenceScreen(screen)
     }
 
-    override fun getFilterList() =
-        FilterList(
-            Note,
-            TypeFilter(),
-            StatusFilter(),
-            RatingFilter(),
-            ScoreFilter(),
-            StartDateFilter(),
-            EndDateFilter(),
-            SortFilter(),
-            GenresFilter(),
-        )
+    override fun getFilterList() = FilterList(
+        Note,
+        TypeFilter(),
+        StatusFilter(),
+        RatingFilter(),
+        ScoreFilter(),
+        StartDateFilter(),
+        EndDateFilter(),
+        SortFilter(),
+        GenresFilter(),
+    )
 
     private fun Response.parseHtmlProperty(): Document {
         val html = Json.parseToJsonElement(body.string()).jsonObject["html"]!!.jsonPrimitive.content

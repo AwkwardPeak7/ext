@@ -16,7 +16,6 @@ class DiskusScan : MangaThemesia(
     "pt-BR",
     dateFormat = SimpleDateFormat("MMMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-
     // Changed their theme from Madara to MangaThemesia.
     override val versionId = 2
 

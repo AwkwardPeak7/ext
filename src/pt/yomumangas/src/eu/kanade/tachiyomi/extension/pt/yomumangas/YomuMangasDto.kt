@@ -19,7 +19,6 @@ data class YomuMangasSearchDto(
     val page: Int,
     val pages: Int,
 ) {
-
     val hasNextPage: Boolean
         get() = page < pages
 }
@@ -39,7 +38,6 @@ data class YomuMangasSeriesDto(
     val genres: List<YomuMangasGenreDto>? = emptyList(),
     val description: String? = null,
 ) {
-
     fun toSManga(): SManga = SManga.create().apply {
         title = this@YomuMangasSeriesDto.title
         author = authors.orEmpty().joinToString { it.trim() }
@@ -74,7 +72,6 @@ data class YomuMangasChapterDto(
     @SerialName("uploaded_at") val uploadedAt: String,
     val images: List<YomuMangasImageDto>? = emptyList(),
 ) {
-
     fun toSChapter(series: YomuMangasSeriesDto): SChapter = SChapter.create().apply {
         name = "Capítulo ${chapter.toString().removeSuffix(".0")}"
         date_upload = runCatching { DATE_FORMATTER.parse(uploadedAt)?.time }

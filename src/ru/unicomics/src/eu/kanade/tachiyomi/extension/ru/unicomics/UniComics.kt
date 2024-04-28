@@ -21,7 +21,6 @@ import rx.Observable
 import java.util.concurrent.TimeUnit
 
 class UniComics : ParsedHttpSource() {
-
     override val name = "UniComics"
 
     private val baseDefaultUrl = "https://unicomics.ru"
@@ -38,16 +37,21 @@ class UniComics : ParsedHttpSource() {
         .build()
 
     override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50")
+        .add(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
+        )
         .add("Referer", baseDefaultUrl)
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseDefaultUrl/comics/series/page/$page", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseDefaultUrl/comics/series/page/$page", headers)
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseDefaultUrl/comics/online/page/$page", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseDefaultUrl/comics/online/page/$page", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
             when (filter) {
                 is GetEventsList -> {
@@ -72,10 +76,12 @@ class UniComics : ParsedHttpSource() {
         }
         return popularMangaRequest(page)
     }
+
     override fun searchMangaSelector() =
         ".b-serp-item__content:has(.b-serp-url__item:contains(/comics/):not(:contains($PATH_events)):not(:contains($PATH_publishers)):not(:contains(/page/))):has(.b-serp-item__title-link:not(:contains(Комиксы читать онлайн бесплатно)))"
 
     override fun searchMangaNextPageSelector() = ".b-pager__next"
+
     override fun searchMangaFromElement(element: Element): SManga {
         return SManga.create().apply {
             element.select("a.b-serp-item__title-link").first()!!.let {
@@ -149,7 +155,11 @@ class UniComics : ParsedHttpSource() {
         return GET("$baseDefaultUrl$PATH_URL$id", headers)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SLUG_SEARCH)) {
             val realQuery = query.removePrefix(PREFIX_SLUG_SEARCH)
             client.newCall(searchMangaByIdRequest(realQuery))
@@ -181,9 +191,11 @@ class UniComics : ParsedHttpSource() {
         manga.title = element.select(".list_title").first()!!.text()
         return manga
     }
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
     override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
+
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
     override fun popularMangaNextPageSelector(): String? = null
@@ -224,18 +236,27 @@ class UniComics : ParsedHttpSource() {
         )
     }
 
-    private fun chapterPageListRequest(manga: SManga, page: Int): Request {
+    private fun chapterPageListRequest(
+        manga: SManga,
+        page: Int,
+    ): Request {
         return GET("$baseDefaultUrl${manga.url}/page/$page", headers)
     }
 
     override fun chapterListSelector() = "div.right_comics:has(td:contains(Читать))"
 
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         val document = response.asJsoup()
         return document.select(chapterListSelector()).map { chapterFromElement(it, manga) }
     }
 
-    private fun chapterFromElement(element: Element, manga: SManga): SChapter {
+    private fun chapterFromElement(
+        element: Element,
+        manga: SManga,
+    ): SChapter {
         val urlElement = element.select("td:contains(Читать) a").first()!!
         val chapter = SChapter.create()
         element.select(".list_title").first()!!.text().let {
@@ -268,15 +289,18 @@ class UniComics : ParsedHttpSource() {
             Page(i, document.location() + "/$page")
         }
     }
+
     override fun imageUrlParse(document: Document): String {
         return document.select(".image_online").attr("src")
     }
+
     private class Publishers(publishers: Array<String>) : Filter.Select<String>("Издательства (только)", publishers)
 
     override fun getFilterList() = FilterList(
         Publishers(publishersName),
         GetEventsList(),
     )
+
     private class GetEventsList : Filter.Select<String>(
         "События (только)",
         arrayOf("Нет", "в комиксах"),
@@ -328,6 +352,7 @@ class UniComics : ParsedHttpSource() {
         Publisher("Ballantine Books", "ballantine-books"),
         Publisher("Id Software", "id-software"),
     )
+
     private val publishersName = getPublishersList().map {
         it.name
     }.toTypedArray()

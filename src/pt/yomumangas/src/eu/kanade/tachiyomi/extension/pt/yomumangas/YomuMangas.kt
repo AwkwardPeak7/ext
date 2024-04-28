@@ -20,7 +20,6 @@ import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
 
 class YomuMangas : HttpSource() {
-
     override val name = "Yomu Mangás"
 
     override val baseUrl = "https://yomumangas.com"
@@ -66,7 +65,11 @@ class YomuMangas : HttpSource() {
         return MangasPage(seriesList, hasNextPage = false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val apiUrl = "$API_URL/mangas/search".toHttpUrl().newBuilder()
             .addQueryParameter("query", query)
             .addQueryParameter("page", page.toString())

@@ -42,13 +42,16 @@ open class Webtoons(
     open val localeForCookie: String = lang,
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH),
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = super.client.newBuilder()
         .cookieJar(
             object : CookieJar {
-                override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {}
+                override fun saveFromResponse(
+                    url: HttpUrl,
+                    cookies: List<Cookie>,
+                ) {}
+
                 override fun loadForRequest(url: HttpUrl): List<Cookie> {
                     return listOf<Cookie>(
                         Cookie.Builder()
@@ -131,7 +134,8 @@ open class Webtoons(
         return MangasPage(mangas.distinctBy { it.url }, false)
     }
 
-    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/$langCode/dailySchedule?sortOrder=UPDATE&webtoonCompleteType=ONGOING", headers)
+    override fun latestUpdatesRequest(page: Int) =
+        GET("$baseUrl/$langCode/dailySchedule?sortOrder=UPDATE&webtoonCompleteType=ONGOING", headers)
 
     override fun popularMangaFromElement(element: Element): SManga {
         val manga = SManga.create()
@@ -149,7 +153,11 @@ open class Webtoons(
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (!query.startsWith(URL_SEARCH_PREFIX)) {
             return super.fetchSearchManga(page, query, filters)
         }
@@ -178,7 +186,11 @@ open class Webtoons(
         } ?: emptyResult
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/$langCode/search?keyword=$query".toHttpUrl().newBuilder()
         val uriPart = (filters.find { it is SearchType } as? SearchType)?.toUriPart() ?: ""
 
@@ -281,7 +293,9 @@ open class Webtoons(
     override fun pageListParse(document: Document): List<Page> {
         var pages = document.select("div#_imageList > img").mapIndexed { i, element -> Page(i, "", element.attr("data-url")) }
 
-        if (pages.isNotEmpty()) { return pages }
+        if (pages.isNotEmpty()) {
+            return pages
+        }
 
         val docString = document.toString()
 

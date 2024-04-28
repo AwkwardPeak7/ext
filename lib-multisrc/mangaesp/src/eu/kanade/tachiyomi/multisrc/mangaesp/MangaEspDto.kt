@@ -44,7 +44,6 @@ class SeriesDto(
     val trending: TrendingDto? = null,
     @SerialName("autors") private val authors: List<AuthorDto> = emptyList(),
     private val artists: List<ArtistDto> = emptyList(),
-
 ) {
     fun toSManga(): SManga {
         return SManga.create().apply {

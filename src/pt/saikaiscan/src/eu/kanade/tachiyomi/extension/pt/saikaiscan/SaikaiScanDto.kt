@@ -13,7 +13,6 @@ data class SaikaiScanResultDto<T>(
     val data: T? = null,
     val meta: SaikaiScanMetaDto? = null,
 ) {
-
     val hasNextPage: Boolean
         get() = meta !== null && meta.currentPage < meta.lastPage
 }
@@ -39,7 +38,6 @@ data class SaikaiScanStoryDto(
     val synopsis: String,
     val title: String,
 ) {
-
     fun toSManga(): SManga = SManga.create().apply {
         title = this@SaikaiScanStoryDto.title
         author = authors.joinToString { it.name }
@@ -83,7 +81,6 @@ data class SaikaiScanReleaseDto(
     val slug: String,
     val title: String? = "",
 ) {
-
     fun toSChapter(storySlug: String): SChapter = SChapter.create().apply {
         name = "Capítulo $chapter" +
             (if (this@SaikaiScanReleaseDto.title.isNullOrEmpty().not()) " - ${this@SaikaiScanReleaseDto.title}" else "")

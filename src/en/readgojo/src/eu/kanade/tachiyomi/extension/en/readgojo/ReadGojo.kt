@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import org.jsoup.nodes.Element
 
 class ReadGojo : MangaThemesia("ReadGojo", "https://readgojo.com", "en") {
-
     override fun chapterFromElement(element: Element) = SChapter.create().apply {
         setUrlWithoutDomain(element.attr("href"))
 

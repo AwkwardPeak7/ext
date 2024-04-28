@@ -38,7 +38,6 @@ abstract class EHentai(
     override val lang: String,
     private val ehLang: String,
 ) : ConfigurableSource, HttpSource() {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -137,6 +136,7 @@ abstract class EHentai(
     }
 
     private fun chapterPageCall(np: String) = client.newCall(chapterPageRequest(np)).asObservableSuccess()
+
     private fun chapterPageRequest(np: String) = exGet(np, null, headers)
 
     private fun nextPageUrl(element: Element) = element.select("a[onclick=return false]").last()?.let {
@@ -153,7 +153,11 @@ abstract class EHentai(
         latestUpdatesRequest(page)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val enforceLanguageFilter = filters.find { it is EnforceLanguageFilter }?.state == true
         val uri = Uri.parse("$baseUrl$QUERY_PREFIX").buildUpon()
         var modifiedQuery = when {
@@ -192,10 +196,17 @@ abstract class EHentai(
     override fun latestUpdatesRequest(page: Int) = exGet(baseUrl, page)
 
     override fun popularMangaParse(response: Response) = genericMangaParse(response)
+
     override fun searchMangaParse(response: Response) = genericMangaParse(response)
+
     override fun latestUpdatesParse(response: Response) = genericMangaParse(response)
 
-    private fun exGet(url: String, page: Int? = null, additionalHeaders: Headers? = null, cache: Boolean = true): Request {
+    private fun exGet(
+        url: String,
+        page: Int? = null,
+        additionalHeaders: Headers? = null,
+        cache: Boolean = true,
+    ): Request {
         // pages no longer exist, if app attempts to go to the first page after a request, do not include the page append
         val pageIndex = if (page == 1) null else page
         return GET(
@@ -211,7 +222,6 @@ abstract class EHentai(
                 }
                 headers.build()
             } ?: headers,
-
         ).let {
             if (!cache) {
                 it.newBuilder().cacheControl(CacheControl.FORCE_NETWORK).build()
@@ -310,13 +320,20 @@ abstract class EHentai(
 
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/g/$id", headers)
 
-    private fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    private fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val details = mangaDetailsParse(response)
         details.url = "/g/$id/"
         return MangasPage(listOf(details), false)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {
             val id = query.removePrefix(PREFIX_ID_SEARCH)
             client.newCall(searchMangaByIdRequest(id))
@@ -365,7 +382,11 @@ abstract class EHentai(
     }
 
     @Suppress("SameParameterValue")
-    private fun addParam(url: String, param: String, value: String) = Uri.parse(url)
+    private fun addParam(
+        url: String,
+        param: String,
+        value: String,
+    ) = Uri.parse(url)
         .buildUpon()
         .appendQueryParameter(param, value)
         .toString()
@@ -445,6 +466,7 @@ abstract class EHentai(
     }
 
     class MinPagesOption : PageOption("Minimum Pages", "f_spf")
+
     class MaxPagesOption : PageOption("Maximum Pages", "f_spt")
 
     class RatingOption :
@@ -494,8 +516,14 @@ abstract class EHentai(
     private fun triStateBoxesFrom(tagString: String): List<TagTriState> = tagString.split(", ").map { TagTriState(it) }
 
     class TagTriState(tag: String) : TriState(tag)
-    class TagFilter(name: String, private val triStateBoxes: List<TagTriState>, private val nameSpace: String) : Group<TagTriState>(name, triStateBoxes) {
-        fun markedTags() = triStateBoxes.filter { it.isIncluded() }.map { "$nameSpace:${it.name}" } + triStateBoxes.filter { it.isExcluded() }.map { "-$nameSpace:${it.name}" }
+
+    class TagFilter(name: String, private val triStateBoxes: List<TagTriState>, private val nameSpace: String) : Group<TagTriState>(
+        name,
+        triStateBoxes,
+    ) {
+        fun markedTags() = triStateBoxes.filter {
+            it.isIncluded()
+        }.map { "$nameSpace:${it.name}" } + triStateBoxes.filter { it.isExcluded() }.map { "-$nameSpace:${it.name}" }
     }
 
     // map languages to their internal ids
@@ -548,5 +576,6 @@ abstract class EHentai(
         screen.addPreference(enforceLanguagePref)
     }
 
-    private fun getEnforceLanguagePref(): Boolean = preferences.getBoolean("${ENFORCE_LANGUAGE_PREF_KEY}_$lang", ENFORCE_LANGUAGE_PREF_DEFAULT_VALUE)
+    private fun getEnforceLanguagePref(): Boolean =
+        preferences.getBoolean("${ENFORCE_LANGUAGE_PREF_KEY}_$lang", ENFORCE_LANGUAGE_PREF_DEFAULT_VALUE)
 }

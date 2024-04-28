@@ -22,7 +22,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class MuitoHentai : ParsedHttpSource() {
-
     override val name = "Muito Hentai"
 
     override val baseUrl = "https://www.muitohentai.com"
@@ -72,7 +71,11 @@ class MuitoHentai : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val searchUrl = "$baseUrl/buscar-manga/".toHttpUrl().newBuilder()
             .addQueryParameter("q", query)
             .toString()

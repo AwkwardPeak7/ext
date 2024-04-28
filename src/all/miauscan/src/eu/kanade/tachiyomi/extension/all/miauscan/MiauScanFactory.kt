@@ -24,13 +24,16 @@ open class MiauScan(lang: String) : MangaThemesia(
     lang = lang,
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
 ) {
-
     private val portugueseMode =
         if (lang == "pt-BR") Filter.TriState.STATE_INCLUDE else Filter.TriState.STATE_EXCLUDE
 
     override val seriesGenreSelector = ".mgen a:not(:contains(Português))"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val genreFilterIndex = filters.indexOfFirst { it is GenreListFilter }
         val genreFilter = filters.getOrNull(genreFilterIndex) as? GenreListFilter
             ?: GenreListFilter("", emptyList())

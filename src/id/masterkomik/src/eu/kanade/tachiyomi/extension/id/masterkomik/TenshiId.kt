@@ -13,7 +13,6 @@ class TenshiId : MangaThemesia(
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("id", "ID")),
     mangaUrlDirectory = "/komik",
 ) {
-
     // MasterKomik changed to Tenshi.id
     override val id: Long = 3146720114171452298
 

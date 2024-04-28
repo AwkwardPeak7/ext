@@ -15,7 +15,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class AComics : ParsedHttpSource() {
-
     override val name = "AComics"
 
     override val baseUrl = "https://acomics.ru"
@@ -62,7 +61,11 @@ class AComics : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
     // =============================== Search ===============================
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = if (query.isNotEmpty()) {
             "$baseUrl/search?keyword=$query"
         } else {
@@ -149,7 +152,9 @@ class AComics : ParsedHttpSource() {
 
     // ============================== Filters ===============================
     private class Genre(name: String, val id: String) : Filter.CheckBox(name)
+
     private class Rating(name: String, val id: String) : Filter.CheckBox(name, state = true)
+
     private class Status : Filter.Select<String>("Статус", arrayOf("Все", "Завершенный", "Продолжающийся"))
 
     private class GenreList : Filter.Group<Genre>(

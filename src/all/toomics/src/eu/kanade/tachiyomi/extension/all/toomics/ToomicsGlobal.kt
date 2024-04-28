@@ -25,7 +25,6 @@ abstract class ToomicsGlobal(
     override val lang: String = siteLang,
     displayName: String = "",
 ) : ParsedHttpSource() {
-
     override val name = "Toomics (Only free chapters)" + (if (displayName.isNotEmpty()) " ($displayName)" else "")
 
     override val baseUrl = "https://global.toomics.com"
@@ -68,7 +67,11 @@ abstract class ToomicsGlobal(
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val newHeaders = headersBuilder()
             .add("Content-Type", "application/x-www-form-urlencoded")
             .build()

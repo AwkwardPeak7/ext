@@ -14,9 +14,7 @@ class MangaPlusResponse(
 
 @Serializable
 class ErrorResult(val popups: List<Popup> = emptyList()) {
-
-    fun langPopup(lang: Language): Popup? =
-        popups.firstOrNull { it.language == lang }
+    fun langPopup(lang: Language): Popup? = popups.firstOrNull { it.language == lang }
 }
 
 @Serializable
@@ -82,7 +80,6 @@ class TitleDetailView(
     val titleLabels: TitleLabels,
     val label: Label? = Label(LabelCode.WEEKLY_SHOUNEN_JUMP),
 ) {
-
     val chapterList: List<Chapter> by lazy {
         // Doesn't include `midChapterList` by design as their site API returns it
         // just for visual representation to redirect users to their app. The extension
@@ -263,7 +260,6 @@ class Title(
     val viewCount: Int = 0,
     val language: Language? = Language.ENGLISH,
 ) {
-
     fun toSManga(): SManga = SManga.create().apply {
         title = name
         author = this@Title.author?.replace(" / ", ", ")
@@ -310,7 +306,6 @@ class Chapter(
     val endTimeStamp: Int,
     val isVerticalOnly: Boolean = false,
 ) {
-
     val isExpired: Boolean
         get() = subTitle == null
 

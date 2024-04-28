@@ -32,7 +32,11 @@ class NetTruyen : WPComics(
     }
 
     // Advanced search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isBlank()) {
             val url = "$baseUrl/tim-truyen-nang-cao".toHttpUrl().newBuilder()
 
@@ -120,12 +124,11 @@ class NetTruyen : WPComics(
 
     private class AdvancedStatusFilter(name: String, pairs: List<Pair<String?, String>>) : UriPartFilter(name, pairs)
 
-    private fun getAdvancedStatusList(): List<Pair<String?, String>> =
-        listOf(
-            Pair("-1", intl["STATUS_ALL"]),
-            Pair("1", intl["STATUS_ONGOING"]),
-            Pair("2", intl["STATUS_COMPLETED"]),
-        )
+    private fun getAdvancedStatusList(): List<Pair<String?, String>> = listOf(
+        Pair("-1", intl["STATUS_ALL"]),
+        Pair("1", intl["STATUS_ONGOING"]),
+        Pair("2", intl["STATUS_COMPLETED"]),
+    )
 
     private class GenderFilter : UriPartFilter(
         "Dành cho",

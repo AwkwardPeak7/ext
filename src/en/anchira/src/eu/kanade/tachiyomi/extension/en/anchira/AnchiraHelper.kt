@@ -6,7 +6,10 @@ import java.util.Locale
 object AnchiraHelper {
     fun getPathFromUrl(url: String) = "${url.split("/").reversed()[1]}/${url.split("/").last()}"
 
-    fun prepareTags(tags: List<Tag>, group: Boolean) = tags.map {
+    fun prepareTags(
+        tags: List<Tag>,
+        group: Boolean,
+    ) = tags.map {
         if (it.namespace == null) {
             it.namespace = 6
         }
@@ -30,25 +33,27 @@ object AnchiraHelper {
         }
         .joinToString(", ") { it }
 
-    fun createChapter(entry: Entry, anchiraData: List<EntryKey>) =
-        SChapter.create().apply {
-            val chSuffix = CHAPTER_SUFFIX_RE.find(entry.title)?.value.orEmpty()
-            val chNumber =
-                chSuffix.replace(Regex("[^.\\d]"), "").trim('.').takeUnless { it.isEmpty() } ?: "1"
-            val source = Regex("fakku|irodori").find(
-                anchiraData.find { it.id == entry.id }?.url.orEmpty(),
-            )?.value.orEmpty().titleCase()
-            url = "/g/${entry.id}/${entry.key}"
-            name = "$chNumber. ${entry.title.removeSuffix(chSuffix)}"
-            date_upload = entry.publishedAt * 1000
-            chapter_number = chNumber.toFloat()
-            scanlator = buildString {
-                if (source.isNotEmpty()) {
-                    append("$source - ")
-                }
-                append("${entry.pages} pages")
+    fun createChapter(
+        entry: Entry,
+        anchiraData: List<EntryKey>,
+    ) = SChapter.create().apply {
+        val chSuffix = CHAPTER_SUFFIX_RE.find(entry.title)?.value.orEmpty()
+        val chNumber =
+            chSuffix.replace(Regex("[^.\\d]"), "").trim('.').takeUnless { it.isEmpty() } ?: "1"
+        val source = Regex("fakku|irodori").find(
+            anchiraData.find { it.id == entry.id }?.url.orEmpty(),
+        )?.value.orEmpty().titleCase()
+        url = "/g/${entry.id}/${entry.key}"
+        name = "$chNumber. ${entry.title.removeSuffix(chSuffix)}"
+        date_upload = entry.publishedAt * 1000
+        chapter_number = chNumber.toFloat()
+        scanlator = buildString {
+            if (source.isNotEmpty()) {
+                append("$source - ")
             }
+            append("${entry.pages} pages")
         }
+    }
 
     private fun String.titleCase() = replaceFirstChar {
         if (it.isLowerCase()) {

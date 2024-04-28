@@ -56,7 +56,11 @@ class Mangalay : ParsedHttpSource() {
 
     override fun searchMangaFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 

@@ -24,7 +24,6 @@ open class TaddyInk(
     override val lang: String,
     private val taddyLang: String,
 ) : ConfigurableSource, HttpSource() {
-
     final override val baseUrl = "https://taddy.org"
     override val name = "Taddy INK (Webtoons)"
     override val supportsLatest = false
@@ -63,7 +62,11 @@ open class TaddyInk(
 
     override fun popularMangaParse(response: Response) = parseManga(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val shouldFilterByGenre = filterList.findInstance<GenreFilter>()?.state != 0
         val shouldFilterByCreator = filterList.findInstance<CreatorFilter>()?.state?.isNotBlank() ?: false
@@ -163,7 +166,9 @@ open class TaddyInk(
     )
 
     class CreatorFilter : AdvSearchEntryFilter("Creator")
+
     class TagFilter : AdvSearchEntryFilter("Tags")
+
     open class AdvSearchEntryFilter(name: String) : Filter.Text(name)
 
     private class GenreFilter : UriPartFilter(

@@ -9,7 +9,6 @@ import org.jsoup.nodes.Document
 import rx.Observable
 
 class DynastySeries : DynastyScans() {
-
     override val name = "Dynasty-Series"
 
     override val searchPrefix = "series"
@@ -18,11 +17,19 @@ class DynastySeries : DynastyScans() {
 
     override fun popularMangaInitialUrl() = ""
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/search?q=$query&classes%5B%5D=Series&sort=&page=$page", headers)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith("manga:chapters:")) {
             val seriesName = Regex("""manga:chapters:(.*?)_ch[0-9_]+""").matchEntire(query)?.groups?.get(1)?.value
             if (seriesName != null) {

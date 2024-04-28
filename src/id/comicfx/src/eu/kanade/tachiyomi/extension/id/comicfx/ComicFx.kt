@@ -27,14 +27,16 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class ComicFx : ParsedHttpSource() {
-
     override val name = "Comic Fx"
     override val baseUrl = "https://comicfx.net"
     override val lang = "id"
     override val supportsLatest = true
 
     override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36")
+        .add(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36",
+        )
 
     // Popular
     override fun popularMangaRequest(page: Int): Request {
@@ -69,7 +71,11 @@ class ComicFx : ParsedHttpSource() {
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         // Text search cannot use filters
         if (query.isNotEmpty()) {
             return client.newCall(GET("$baseUrl/search?query=$query"))
@@ -94,7 +100,11 @@ class ComicFx : ParsedHttpSource() {
         return MangasPage(manga, false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
 
         val url = "$baseUrl/filterList".toHttpUrl().newBuilder()
@@ -227,9 +237,16 @@ class ComicFx : ParsedHttpSource() {
     )
 
     private class ArtistFilter(name: String) : Filter.Text(name)
+
     private class AuthorFilter(name: String) : Filter.Text(name)
 
-    private class SortFilter(val sortables: List<Pair<String, String>>) : Filter.Sort("Sort", sortables.map { it.second }.toTypedArray(), Selection(1, false)) {
+    private class SortFilter(val sortables: List<Pair<String, String>>) : Filter.Sort(
+        "Sort",
+        sortables.map {
+            it.second
+        }.toTypedArray(),
+        Selection(1, false),
+    ) {
         fun toUriPart(): String {
             return sortables[this.state!!.index].first
         }

@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Mangahasu : ParsedHttpSource() {
-
     override val name = "Mangahasu"
 
     override val baseUrl = "https://mangahasu.se"
@@ -40,11 +39,9 @@ class Mangahasu : ParsedHttpSource() {
     override fun headersBuilder(): Headers.Builder = super.headersBuilder()
         .add("Referer", baseUrl)
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/most-popular.html?page=$page", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/most-popular.html?page=$page", headers)
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/latest-releases.html?page=$page", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/latest-releases.html?page=$page", headers)
 
     // Only selects popular of all time
     override fun popularMangaSelector() = "div.right div.div_item"
@@ -61,14 +58,17 @@ class Mangahasu : ParsedHttpSource() {
         return manga
     }
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun popularMangaNextPageSelector() = "a[title = Tiếp]"
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/advanced-search.html".toHttpUrl().newBuilder()
         url.addQueryParameter("keyword", query)
         url.addQueryParameter("page", page.toString())
@@ -112,8 +112,7 @@ class Mangahasu : ParsedHttpSource() {
 
     override fun searchMangaSelector() = latestUpdatesSelector()
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     // max 200 results
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
@@ -157,7 +156,10 @@ class Mangahasu : ParsedHttpSource() {
         return chapter
     }
 
-    override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
+    override fun prepareNewChapter(
+        chapter: SChapter,
+        manga: SManga,
+    ) {
         val basic = Regex("""Chapter\s([0-9]+)""")
         when {
             basic.containsMatchIn(chapter.name) -> {
@@ -258,6 +260,7 @@ class Mangahasu : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val id: String) : Filter.TriState(name)
+
     private class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
 
     private fun getGenreList() = listOf(

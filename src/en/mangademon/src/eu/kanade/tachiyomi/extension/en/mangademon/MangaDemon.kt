@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MangaDemon : ParsedHttpSource() {
-
     override val lang = "en"
     override val supportsLatest = true
     override val name = "Manga Demon"
@@ -132,7 +131,11 @@ class MangaDemon : ParsedHttpSource() {
     override fun popularMangaFromElement(element: Element) = latestUpdatesFromElement(element)
 
     // Search
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.isNotEmpty()) {
             super.fetchSearchManga(page, query, filters)
         } else {
@@ -142,7 +145,10 @@ class MangaDemon : ParsedHttpSource() {
         }
     }
 
-    private fun filterSearchRequest(page: Int, filters: FilterList): Request {
+    private fun filterSearchRequest(
+        page: Int,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/browse.php".toHttpUrl().newBuilder().apply {
             addQueryParameter("list", page.toString())
             filters.forEach { filter ->
@@ -170,7 +176,11 @@ class MangaDemon : ParsedHttpSource() {
 
     override fun getFilterList() = getFilters()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search.php".toHttpUrl().newBuilder()
             .addQueryParameter("manga", query)
             .build()

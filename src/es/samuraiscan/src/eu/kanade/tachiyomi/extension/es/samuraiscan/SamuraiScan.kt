@@ -10,7 +10,6 @@ class SamuraiScan : Madara(
     "es",
     SimpleDateFormat("d MMMM, yyyy", Locale("es")),
 ) {
-
     override val mangaSubString = "l"
     override val useNewChapterEndpoint = true
 

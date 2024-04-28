@@ -9,10 +9,13 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 
 class Ngomik : MangaThemesia("Ngomik", "https://ngomik.net", "id", "/manga") {
-
     private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegment(mangaUrlDirectory.substring(1))
             .addQueryParameter("page", page.toString())

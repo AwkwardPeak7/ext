@@ -34,7 +34,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class Tsumino : HttpSource() {
-
     override val name = "Tsumino"
 
     override val baseUrl = "https://www.tsumino.com"
@@ -105,7 +104,11 @@ class Tsumino : HttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Taken from github.com/NerdNumber9/TachiyomiEH
         val f = filters + getFilterList()
         val advSearch = f.filterIsInstance<AdvSearchEntryFilter>().flatMap { filter ->
@@ -139,13 +142,20 @@ class Tsumino : HttpSource() {
 
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/entry/$id", headers)
 
-    private fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    private fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val details = mangaDetailsParse(response)
         details.url = "/entry/$id"
         return MangasPage(listOf(details), false)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {
             val id = query.removePrefix(PREFIX_ID_SEARCH)
             client.newCall(searchMangaByIdRequest(id))
@@ -222,9 +232,7 @@ class Tsumino : HttpSource() {
         ParodyFilter(),
         CharactersFilter(),
         UploaderFilter(),
-
         Filter.Separator(),
-
         SortFilter(),
         LengthFilter(),
         MinimumRatingFilter(),
@@ -232,18 +240,29 @@ class Tsumino : HttpSource() {
     )
 
     class TagFilter : AdvSearchEntryFilter("Tags", 1)
+
     class CategoryFilter : AdvSearchEntryFilter("Categories", 2)
+
     class CollectionFilter : AdvSearchEntryFilter("Collections", 3)
+
     class GroupFilter : AdvSearchEntryFilter("Groups", 4)
+
     class ArtistFilter : AdvSearchEntryFilter("Artists", 5)
+
     class ParodyFilter : AdvSearchEntryFilter("Parodies", 6)
+
     class CharactersFilter : AdvSearchEntryFilter("Characters", 7)
+
     class UploaderFilter : AdvSearchEntryFilter("Uploaders", 8)
+
     open class AdvSearchEntryFilter(name: String, val type: Int) : Filter.Text(name)
 
     class SortFilter : Filter.Select<SortType>("Sort by", SortType.values())
+
     class LengthFilter : Filter.Select<LengthType>("Length", LengthType.values())
+
     class MinimumRatingFilter : Filter.Select<String>("Minimum rating", (0..5).map { "$it stars" }.toTypedArray())
+
     class ExcludeParodiesFilter : Filter.CheckBox("Exclude parodies")
 
     enum class SortType {

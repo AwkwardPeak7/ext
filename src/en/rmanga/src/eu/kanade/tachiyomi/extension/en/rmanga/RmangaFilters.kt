@@ -73,6 +73,7 @@ private val typeFilter: Array<String> = arrayOf(
 )
 
 internal class AuthorFilter(title: String) : Filter.Text(title)
+
 internal class ArtistFilter(title: String) : Filter.Text(title)
 
 internal class StatusFilter(name: String, private val status: Array<String>) :

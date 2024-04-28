@@ -18,8 +18,8 @@ import org.jsoup.nodes.Document
 import java.io.ByteArrayOutputStream
 
 class ManhuaKey : Madara("ManhuaKey", "https://www.manhuakey.com", "th") {
-
     override val filterNonMangaItems = false
+
     override fun searchMangaSelector() = "div.page-item-detail"
 
     override val client = super.client.newBuilder()
@@ -27,6 +27,7 @@ class ManhuaKey : Madara("ManhuaKey", "https://www.manhuakey.com", "th") {
         .build()
 
     override val pageListParseSelector = ".reading-content img, .reading-content div.displayImage + script:containsData(p,a,c,k,e,d)"
+
     override fun pageListParse(document: Document): List<Page> {
         launchIO { countViews(document) }
         val location = document.location()

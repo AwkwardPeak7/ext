@@ -61,7 +61,6 @@ class HeanCmsSeriesDto(
     private val tags: List<HeanCmsTagDto>? = emptyList(),
     val seasons: List<HeanCmsSeasonsDto>? = emptyList(),
 ) {
-
     fun toSManga(
         apiUrl: String,
         coverPath: String,
@@ -161,7 +160,10 @@ class HeanCmsGenreDto(
     val name: String,
 )
 
-private fun String.toAbsoluteThumbnailUrl(apiUrl: String, coverPath: String): String {
+private fun String.toAbsoluteThumbnailUrl(
+    apiUrl: String,
+    coverPath: String,
+): String {
     return if (startsWith("https://") || startsWith("http://")) this else "$apiUrl/$coverPath$this"
 }
 

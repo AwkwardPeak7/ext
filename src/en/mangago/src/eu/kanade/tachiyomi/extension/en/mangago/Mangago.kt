@@ -32,7 +32,6 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class Mangago : ParsedHttpSource() {
-
     override val name = "Mangago"
 
     override val baseUrl = "https://www.mangago.me"
@@ -88,8 +87,7 @@ class Mangago : ParsedHttpSource() {
         thumbnail_url = thumbnailElem.attr("abs:data-src").ifBlank { thumbnailElem.attr("abs:src") }
     }
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/genre/all/$page/?f=1&o=1&sortby=view&e=", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/genre/all/$page/?f=1&o=1&sortby=view&e=", headers)
 
     override fun popularMangaSelector(): String = genreListingSelector
 
@@ -97,8 +95,7 @@ class Mangago : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = genreListingNextPageSelector
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/genre/all/$page/?f=1&o=1&sortby=update_date&e=", headers)
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/genre/all/$page/?f=1&o=1&sortby=update_date&e=", headers)
 
     override fun latestUpdatesSelector() = genreListingSelector
 
@@ -106,7 +103,11 @@ class Mangago : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = genreListingNextPageSelector
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = if (query.isNotBlank()) {
             "$baseUrl/r/l_search".toHttpUrl().newBuilder()
                 .addQueryParameter("name", query)
@@ -250,8 +251,7 @@ class Mangago : ParsedHttpSource() {
         return super.pageListRequest(chapter)
     }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun getFilterList(): FilterList = FilterList(
         Filter.Header("Ignored if using text search"),
@@ -356,7 +356,10 @@ class Mangago : ParsedHttpSource() {
         ),
     )
 
-    private fun findHexEncodedVariable(input: String, variable: String): String {
+    private fun findHexEncodedVariable(
+        input: String,
+        variable: String,
+    ): String {
         val regex = Regex("""var $variable\s*=\s*CryptoJS\.enc\.Hex\.parse\("([0-9a-zA-Z]+)"\)""")
         return regex.find(input)?.groupValues?.get(1) ?: ""
     }
@@ -375,7 +378,11 @@ class Mangago : ParsedHttpSource() {
         return s
     }
 
-    private fun unscrambleImage(image: InputStream, key: String, cols: Int): ByteArray {
+    private fun unscrambleImage(
+        image: InputStream,
+        key: String,
+        cols: Int,
+    ): ByteArray {
         val bitmap = BitmapFactory.decodeStream(image)
 
         val result = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
@@ -409,10 +416,9 @@ class Mangago : ParsedHttpSource() {
         return output.toByteArray()
     }
 
-    private fun buildCookies(cookies: Map<String, String>) =
-        cookies.entries.joinToString(separator = "; ", postfix = ";") {
-            "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
-        }
+    private fun buildCookies(cookies: Map<String, String>) = cookies.entries.joinToString(separator = "; ", postfix = ";") {
+        "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
+    }
 
     private fun String.decodeHex(): ByteArray {
         check(length % 2 == 0) { "Must have an even length" }
@@ -422,7 +428,10 @@ class Mangago : ParsedHttpSource() {
             .toByteArray()
     }
 
-    private fun getDescramblingKey(deobfChapterJs: String, imageUrl: String): String {
+    private fun getDescramblingKey(
+        deobfChapterJs: String,
+        imageUrl: String,
+    ): String {
         val imgkeys = deobfChapterJs
             .substringAfter("var renImg = function(img,width,height,id){")
             .substringBefore("key = key.split(")
@@ -431,10 +440,11 @@ class Mangago : ParsedHttpSource() {
             .joinToString("\n")
             .replace("img.src", "url")
 
-        val js = """
+        val js =
+            """
             function getDescramblingKey(url) { $imgkeys; return key; }
             getDescramblingKey("$imageUrl");
-        """.trimIndent()
+            """.trimIndent()
 
         return QuickJs.create().use {
             it.execute(replacePosBytecode)

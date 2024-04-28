@@ -13,7 +13,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class RuMIX : GroupLe("RuMIX", "https://rumix.me", "ru") {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -21,13 +20,20 @@ class RuMIX : GroupLe("RuMIX", "https://rumix.me", "ru") {
     private var domain: String = preferences.getString(DOMAIN_TITLE, DOMAIN_DEFAULT)!!
     override val baseUrl: String = domain
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = super.searchMangaRequest(page, query, filters).url.newBuilder()
         (if (filters.isEmpty()) getFilterList().reversed() else filters.reversed()).forEach { filter ->
             when (filter) {
                 is OrderBy -> {
                     if (url.toString().contains("&") && filter.state < 6) {
-                        url.addQueryParameter("sortType", arrayOf("RATING", "POPULARITY", "YEAR", "NAME", "DATE_CREATE", "DATE_UPDATE")[filter.state])
+                        url.addQueryParameter(
+                            "sortType",
+                            arrayOf("RATING", "POPULARITY", "YEAR", "NAME", "DATE_CREATE", "DATE_UPDATE")[filter.state],
+                        )
                     } else {
                         val ord = arrayOf("rate", "popularity", "year", "name", "created", "updated", "votes")[filter.state]
                         return GET("$baseUrl/list?sortType=$ord&offset=${70 * (page - 1)}", headers)
@@ -42,6 +48,7 @@ class RuMIX : GroupLe("RuMIX", "https://rumix.me", "ru") {
             popularMangaRequest(page)
         }
     }
+
     private class OrderBy : Filter.Select<String>(
         "Сортировка",
         arrayOf("По популярности", "Популярно сейчас", "По году", "По имени", "Новинки", "По дате обновления", "По рейтингу"),
@@ -62,7 +69,11 @@ class RuMIX : GroupLe("RuMIX", "https://rumix.me", "ru") {
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val res = preferences.edit().putString(DOMAIN_TITLE, newValue as String).commit()
-                    Toast.makeText(screen.context, "Для смены домена необходимо перезапустить приложение с полной остановкой.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        screen.context,
+                        "Для смены домена необходимо перезапустить приложение с полной остановкой.",
+                        Toast.LENGTH_LONG,
+                    ).show()
                     res
                 } catch (e: Exception) {
                     e.printStackTrace()

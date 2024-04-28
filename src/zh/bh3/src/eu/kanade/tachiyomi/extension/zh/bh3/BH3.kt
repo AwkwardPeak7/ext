@@ -23,7 +23,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class BH3 : ParsedHttpSource() {
-
     override val name = "《崩坏3》IP站"
 
     override val baseUrl = "https://comic.bh3.com"
@@ -59,7 +58,11 @@ class BH3 : ParsedHttpSource() {
 
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw Exception("No search")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw Exception("No search")
 
     override fun chapterListRequest(manga: SManga) = GET(baseUrl + manga.url + "/get_chapter", headers)
 

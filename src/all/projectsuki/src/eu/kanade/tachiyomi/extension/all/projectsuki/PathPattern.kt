@@ -58,7 +58,11 @@ data class PathMatchResult(val doesMatch: Boolean, val matchResults: List<MatchR
  * @see PathPattern
  * @see PathMatchResult
  */
-fun HttpUrl.matchAgainst(pattern: PathPattern, allowSubPaths: Boolean = false, ignoreEmptySegments: Boolean = true): PathMatchResult {
+fun HttpUrl.matchAgainst(
+    pattern: PathPattern,
+    allowSubPaths: Boolean = false,
+    ignoreEmptySegments: Boolean = true,
+): PathMatchResult {
     val actualSegments: List<String> = if (ignoreEmptySegments) pathSegments.filter { it.isNotBlank() } else pathSegments
     val sizeReq = when (allowSubPaths) {
         false -> actualSegments.size == pattern.paths.size

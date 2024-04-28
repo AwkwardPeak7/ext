@@ -30,7 +30,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
-
     override val lang: String = "zh"
     override val name: String = "禁漫天堂"
     override val supportsLatest: Boolean = true
@@ -61,6 +60,7 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun popularMangaNextPageSelector(): String = "a.prevnext"
+
     override fun popularMangaSelector(): String {
         return "div.list-col > div.p-b-15:not([data-group])"
     }
@@ -96,7 +96,9 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector(): String = popularMangaSelector()
+
     override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun latestUpdatesParse(response: Response): MangasPage {
@@ -107,13 +109,20 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     // For JinmantiantangUrlActivity
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/album/$id", headers)
 
-    private fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    private fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val sManga = mangaDetailsParse(response)
         sManga.url = "/album/$id/"
         return MangasPage(listOf(sManga), false)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH_NO_COLON, true) || query.toIntOrNull() != null) {
             val id = query.removePrefix(PREFIX_ID_SEARCH_NO_COLON).removePrefix(":")
             client.newCall(searchMangaByIdRequest(id))
@@ -125,7 +134,11 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     }
 
     // 查询信息
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var params = filters.filterIsInstance<UriPartFilter>().joinToString("") { it.toUriPart() }
 
         val url = if (query != "" && !query.contains("-")) {
@@ -153,7 +166,9 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun searchMangaSelector(): String = popularMangaSelector()
+
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun searchMangaParse(response: Response): MangasPage {
@@ -192,7 +207,10 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     }
 
     // 查询漫画状态和类别信息
-    private fun selectDetailsStatusAndGenre(document: Document, index: Int): String {
+    private fun selectDetailsStatusAndGenre(
+        document: Document,
+        index: Int,
+    ): String {
         var status = "0"
         var genre = ""
         if (document.select("span[itemprop=genre] a").size == 0) {
@@ -250,12 +268,21 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
 
     // 漫画图片信息
     override fun pageListParse(document: Document): List<Page> {
-        tailrec fun internalParse(document: Document, pages: MutableList<Page>): List<Page> {
+        tailrec fun internalParse(
+            document: Document,
+            pages: MutableList<Page>,
+        ): List<Page> {
             val elements = document.select("div[class=center scramble-page][id*=0]")
             for (element in elements) {
                 pages.apply {
                     if (element.select("div[class=center scramble-page][id*=0] img").attr("src").indexOf("blank.jpg") >= 0) {
-                        add(Page(size, "", element.select("div[class=center scramble-page][id*=0] img").attr("data-original").split("\\?")[0]))
+                        add(
+                            Page(
+                                size,
+                                "",
+                                element.select("div[class=center scramble-page][id*=0] img").attr("data-original").split("\\?")[0],
+                            ),
+                        )
                     } else {
                         add(Page(size, "", element.select("div[class=center scramble-page][id*=0] img").attr("src").split("\\?")[0]))
                     }
@@ -296,10 +323,8 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
             Pair("汉化", "/albums/doujin/sub/chinese?"),
             Pair("Cosplay", "/albums/doujin/sub/cosplay?"),
             Pair("CG图集", "/albums/doujin/sub/CG?"),
-
             Pair("P站", "/search/photos?search_query=PIXIV&"),
             Pair("3D", "/search/photos?search_query=3D&"),
-
             Pair("剧情", "/search/photos?search_query=劇情&"),
             Pair("校园", "/search/photos?search_query=校園&"),
             Pair("纯爱", "/search/photos?search_query=純愛&"),
@@ -315,7 +340,6 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
             Pair("痴女", "/search/photos?search_query=癡女&"),
             Pair("全彩", "/search/photos?search_query=全彩&"),
             Pair("女性向", "/search/photos?search_query=女性向&"),
-
             Pair("萝莉", "/search/photos?search_query=蘿莉&"),
             Pair("御姐", "/search/photos?search_query=御姐&"),
             Pair("熟女", "/search/photos?search_query=熟女&"),
@@ -332,7 +356,6 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
             Pair("连裤袜", "/search/photos?search_query=連褲襪&"),
             Pair("制服", "/search/photos?search_query=制服&"),
             Pair("兔女郎", "/search/photos?search_query=兔女郎&"),
-
             Pair("群交", "/search/photos?search_query=群交&"),
             Pair("足交", "/search/photos?search_query=足交&"),
             Pair("SM", "/search/photos?search_query=SM&"),
@@ -349,7 +372,6 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
             Pair("兽交", "/search/photos?search_query=獸交&"),
             Pair("亚人", "/search/photos?search_query=亞人&"),
             Pair("魔物", "/search/photos?search_query=魔物&"),
-
             Pair("CG集", "/search/photos?search_query=CG集&"),
             Pair("重口", "/search/photos?search_query=重口&"),
             Pair("猎奇", "/search/photos?search_query=獵奇&"),
@@ -399,6 +421,7 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
         getPreferenceList(screen.context, preferences, updateUrlInterceptor.isUpdated).forEach(screen::addPreference)
         addRandomUAPreferenceToScreen(screen)
     }
+
     companion object {
         private const val PREFIX_ID_SEARCH_NO_COLON = "JM"
         const val PREFIX_ID_SEARCH = "$PREFIX_ID_SEARCH_NO_COLON:"

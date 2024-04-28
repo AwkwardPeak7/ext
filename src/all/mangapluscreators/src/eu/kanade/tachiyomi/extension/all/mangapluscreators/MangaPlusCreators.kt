@@ -18,7 +18,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class MangaPlusCreators(override val lang: String) : HttpSource() {
-
     override val name = "MANGA Plus Creators by SHUEISHA"
 
     override val baseUrl = "https://medibang.com/mpc"
@@ -80,7 +79,11 @@ class MangaPlusCreators(override val lang: String) : HttpSource() {
 
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val refererUrl = "$baseUrl/keywords".toHttpUrl().newBuilder()
             .addQueryParameter("q", query)
             .toString()

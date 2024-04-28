@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import okhttp3.Response
 
 class SobatManKu : ZeistManga("SobatManKu", "https://www.sobatmanku19.cab", "id") {
-
     override val hasFilters = true
 
     override fun chapterListParse(response: Response): List<SChapter> {

@@ -43,14 +43,19 @@ class BacaKomik : ParsedHttpSource() {
     }
 
     override fun popularMangaSelector() = "div.animepost"
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun searchMangaSelector() = popularMangaSelector()
 
     override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
+
     override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
     override fun popularMangaNextPageSelector() = "a.next.page-numbers"
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     override fun searchMangaFromElement(element: Element): SManga {
@@ -62,7 +67,11 @@ class BacaKomik : ParsedHttpSource() {
         return manga
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val builtUrl = if (page == 1) "$baseUrl/daftar-komik/" else "$baseUrl/daftar-komik/page/$page/?order="
         val url = builtUrl.toHttpUrl().newBuilder()
         url.addQueryParameter("title", query)
@@ -99,6 +108,7 @@ class BacaKomik : ParsedHttpSource() {
         }
         return GET(url.build(), headers)
     }
+
     override fun mangaDetailsParse(document: Document): SManga {
         val infoElement = document.select("div.infoanime").first()!!
         val descElement = document.select("div.desc > .entry-content.entry-content-single").first()!!
@@ -173,7 +183,10 @@ class BacaKomik : ParsedHttpSource() {
         }
     }
 
-    override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
+    override fun prepareNewChapter(
+        chapter: SChapter,
+        manga: SManga,
+    ) {
         val basic = Regex("""Chapter\s([0-9]+)""")
         when {
             basic.containsMatchIn(chapter.name) -> {
@@ -248,6 +261,7 @@ class BacaKomik : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val id: String = name) : Filter.TriState(name)
+
     private class GenreListFilter(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
 
     override fun getFilterList() = FilterList(

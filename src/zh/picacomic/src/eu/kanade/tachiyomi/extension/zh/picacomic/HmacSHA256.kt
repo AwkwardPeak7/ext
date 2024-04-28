@@ -8,10 +8,12 @@ private const val algorithm = "HmacSHA256"
 
 private typealias MacResult = ByteArray
 
-internal fun hmacSHA256(key: String, data: String) =
-    Mac.getInstance(algorithm).apply {
-        init(SecretKeySpec(key.toByteArray(), algorithm))
-    }.doFinal(data.toByteArray()) as MacResult
+internal fun hmacSHA256(
+    key: String,
+    data: String,
+) = Mac.getInstance(algorithm).apply {
+    init(SecretKeySpec(key.toByteArray(), algorithm))
+}.doFinal(data.toByteArray()) as MacResult
 
 @Suppress("SpellCheckingInspection")
 private val hexTable = "0123456789abcdef".toCharArray()

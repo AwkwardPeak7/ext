@@ -8,9 +8,9 @@ object SlimeReadFilters {
         displayName: String,
         val vals: Array<Pair<String, String>>,
     ) : Filter.Select<String>(
-        displayName,
-        vals.map { it.first }.toTypedArray(),
-    ) {
+            displayName,
+            vals.map { it.first }.toTypedArray(),
+        ) {
         val selected get() = vals[state].second
     }
 
@@ -23,9 +23,7 @@ object SlimeReadFilters {
 
     private class CheckBoxVal(name: String) : Filter.CheckBox(name, false)
 
-    private inline fun <reified R> FilterList.parseCheckbox(
-        options: Array<Pair<String, String>>,
-    ): Sequence<String> {
+    private inline fun <reified R> FilterList.parseCheckbox(options: Array<Pair<String, String>>): Sequence<String> {
         return (first { it is R } as CheckBoxFilterList).state
             .asSequence()
             .filter { it.state }
@@ -35,7 +33,9 @@ object SlimeReadFilters {
     internal class CategoriesFilter : CheckBoxFilterList("Categorias", SlimeReadFiltersData.CATEGORIES)
 
     internal class GenreFilter : SelectFilter("Gênero", SlimeReadFiltersData.GENRES)
+
     internal class SearchMethodFilter : SelectFilter("Método de busca", SlimeReadFiltersData.SEARCH_METHODS)
+
     internal class StatusFilter : SelectFilter("Status", SlimeReadFiltersData.STATUS)
 
     val FILTER_LIST get() = FilterList(

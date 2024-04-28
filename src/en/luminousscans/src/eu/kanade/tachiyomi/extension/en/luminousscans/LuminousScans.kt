@@ -25,7 +25,11 @@ class LuminousScans : MangaThemesiaAlt(
         .rateLimit(2)
         .build()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val request = super.searchMangaRequest(page, query, filters)
         if (query.isBlank()) return request
 

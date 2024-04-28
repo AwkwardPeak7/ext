@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Mangainua : ParsedHttpSource() {
-
     // Info
     override val name = "MANGA/in/UA"
     override val baseUrl = "https://manga.in.ua"
@@ -64,7 +63,11 @@ class Mangainua : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector() = "a:contains(Наступна)"
 
     // =============================== Search ===============================
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.length > 2) {
             POST(
                 "$baseUrl/index.php?do=search",
@@ -155,6 +158,7 @@ class Mangainua : ParsedHttpSource() {
             }
         }
     }
+
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         val userHash = document.parseUserHash()

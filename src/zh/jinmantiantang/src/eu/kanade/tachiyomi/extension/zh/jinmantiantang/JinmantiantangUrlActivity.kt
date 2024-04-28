@@ -14,7 +14,6 @@ import kotlin.system.exitProcess
  * things.
  */
 class JinmantiantangUrlActivity : Activity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val pathSegments = intent?.data?.pathSegments

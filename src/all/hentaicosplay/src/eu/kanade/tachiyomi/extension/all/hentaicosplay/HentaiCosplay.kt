@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class HentaiCosplay : HttpSource() {
-
     override val name = "Hentai Cosplay"
 
     override val baseUrl = "https://hentai-cosplays.com"
@@ -103,12 +102,20 @@ class HentaiCosplay : HttpSource() {
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         fetchFilters()
         return super.fetchSearchManga(page, query, filters)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val keyword = query.trim().replace(" ", "+")
             return GET("$baseUrl/search/keyword/$keyword/page/$page/", headers)
@@ -165,9 +172,9 @@ class HentaiCosplay : HttpSource() {
         name: String,
         private val options: List<Pair<String, String>>,
     ) : Filter.Select<String>(
-        name,
-        options.map { it.first }.toTypedArray(),
-    ) {
+            name,
+            options.map { it.first }.toTypedArray(),
+        ) {
         val selected get() = options[state].second
     }
 

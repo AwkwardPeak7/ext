@@ -10,7 +10,6 @@ import okhttp3.Response
 import org.jsoup.parser.Parser
 
 object ApiV3 {
-
     private const val v3apiUrl = "https://v3api.idmzj.com"
     private const val apiUrl = "https://api.dmzj.com"
 
@@ -18,7 +17,10 @@ object ApiV3 {
 
     fun latestUpdatesUrl(page: Int) = "$v3apiUrl/classify/0/1/${page - 1}.json"
 
-    fun pageUrl(page: Int, filters: FilterList) = "$v3apiUrl/classify/${parseFilters(filters)}/${page - 1}.json"
+    fun pageUrl(
+        page: Int,
+        filters: FilterList,
+    ) = "$v3apiUrl/classify/${parseFilters(filters)}/${page - 1}.json"
 
     fun parsePage(response: Response): MangasPage {
         val data: List<MangaDto> = response.parseAs()
@@ -51,12 +53,14 @@ object ApiV3 {
 
     fun chapterImagesUrlV1(path: String) = "https://m.idmzj.com/chapinfo/$path.html"
 
-    fun parseChapterImagesV1(response: Response) =
-        response.parseAs<ChapterImagesDto>().toPageList()
+    fun parseChapterImagesV1(response: Response) = response.parseAs<ChapterImagesDto>().toPageList()
 
     fun chapterCommentsUrl(path: String) = "$v3apiUrl/viewPoint/0/$path.json"
 
-    fun parseChapterComments(response: Response, count: Int): List<String> {
+    fun parseChapterComments(
+        response: Response,
+        count: Int,
+    ): List<String> {
         val result: List<ChapterCommentDto> = response.parseAs()
         if (result.isEmpty()) return listOf("没有吐槽")
         val aggregated = result.groupBy({ it.content }, { it.num }).map { (content, likes) ->
@@ -117,6 +121,7 @@ object ApiV3 {
         val num: Int,
     ) : Comparable<ChapterCommentDto> {
         override fun toString() = if (num > 0) "$content [+$num]" else content
+
         override fun compareTo(other: ChapterCommentDto) = other.num.compareTo(num) // descending
     }
 

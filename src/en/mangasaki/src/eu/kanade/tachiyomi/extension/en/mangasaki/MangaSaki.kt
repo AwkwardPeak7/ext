@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MangaSaki : ParsedHttpSource() {
-
     override val name = "MangaSaki"
 
     override val baseUrl = "https://www.mangasaki.org"
@@ -63,7 +62,11 @@ class MangaSaki : ParsedHttpSource() {
     // search
     private var searchMode: Boolean = false
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotEmpty()) {
             searchMode = true
             GET("$baseUrl/search/node/$query?page=${page - 1}", headers)
@@ -129,7 +132,10 @@ class MangaSaki : ParsedHttpSource() {
     // chapters
     override fun chapterListRequest(manga: SManga) = chapterListRequest(manga.url, 1)
 
-    private fun chapterListRequest(url: String, page: Int): Request {
+    private fun chapterListRequest(
+        url: String,
+        page: Int,
+    ): Request {
         return GET("$baseUrl$url?page=${page - 1}", headers)
     }
 

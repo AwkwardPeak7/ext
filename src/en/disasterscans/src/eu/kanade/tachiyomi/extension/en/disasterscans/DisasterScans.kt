@@ -26,7 +26,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class DisasterScans : HttpSource() {
-
     override val name = "Disaster Scans"
 
     override val lang = "en"
@@ -97,9 +96,16 @@ class DisasterScans : HttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = popularMangaRequest(page)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = popularMangaRequest(page)
 
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         val comics = response.parseAs<List<ApiSearchComic>>()
 
         val cdnUrl = preferences.getCdnUrl()
@@ -170,11 +176,9 @@ class DisasterScans : HttpSource() {
             }
     }
 
-    private inline fun <reified T> String.parseAs(): T =
-        json.decodeFromString(this)
+    private inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 
-    private inline fun <reified T> Response.parseAs(): T =
-        body.string().parseAs()
+    private inline fun <reified T> Response.parseAs(): T = body.string().parseAs()
 
     private fun SharedPreferences.getCdnUrl(): String {
         return getString(cdnPref, fallbackCdnUrl) ?: fallbackCdnUrl
@@ -195,15 +199,11 @@ class DisasterScans : HttpSource() {
         const val PREFIX_SLUG = "slug:"
     }
 
-    override fun searchMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun latestUpdatesParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun latestUpdatesRequest(page: Int) =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
 }

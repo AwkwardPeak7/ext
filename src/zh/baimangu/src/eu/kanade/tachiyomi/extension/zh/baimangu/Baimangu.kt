@@ -54,6 +54,7 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
     // Common
     private var commonSelector = "li.fed-list-item"
     private var commonNextPageSelector = "a.fed-btns-info.fed-rims-info:nth-last-child(4)"
+
     private fun commonMangaFromElement(element: Element): SManga {
         val picElement = element.select("a.fed-list-pics").first()!!
         val picUrl = picElement.attr("data-original")
@@ -72,14 +73,20 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
 
     // Popular Manga
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/vodshow/4--hits------$page---.html", headers)
+
     override fun popularMangaNextPageSelector() = commonNextPageSelector
+
     override fun popularMangaSelector() = commonSelector
+
     override fun popularMangaFromElement(element: Element) = commonMangaFromElement(element)
 
     // Latest Updates
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/fenlei/2-$page.html", headers)
+
     override fun latestUpdatesNextPageSelector() = commonNextPageSelector
+
     override fun latestUpdatesSelector() = commonSelector
+
     override fun latestUpdatesFromElement(element: Element) = commonMangaFromElement(element)
 
     // Filter
@@ -106,7 +113,11 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
     )
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank()) {
             GET("$baseUrl/vodsearch/$query----------$page---", headers)
         } else {
@@ -135,7 +146,9 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
     }
 
     override fun searchMangaNextPageSelector() = commonNextPageSelector
+
     override fun searchMangaSelector() = "dl.fed-deta-info, $commonSelector"
+
     override fun searchMangaFromElement(element: Element): SManga {
         if (element.tagName() == "li") {
             return commonMangaFromElement(element)
@@ -183,8 +196,7 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
     }
 
     // Reverse the order of the chapter list
-    override fun chapterListParse(response: Response): List<SChapter> =
-        super.chapterListParse(response).reversed()
+    override fun chapterListParse(response: Response): List<SChapter> = super.chapterListParse(response).reversed()
 
     override fun imageUrlParse(document: Document) = ""
 

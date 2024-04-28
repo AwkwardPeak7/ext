@@ -26,7 +26,6 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class ManhwaWeb : HttpSource(), ConfigurableSource {
-
     private val preferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -74,7 +73,11 @@ class ManhwaWeb : HttpSource(), ConfigurableSource {
         return MangasPage(mangas, false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$apiUrl/manhwa/library".toHttpUrl().newBuilder()
             .addQueryParameter("buscar", query)
 
@@ -134,8 +137,7 @@ class ManhwaWeb : HttpSource(), ConfigurableSource {
         return GET("$apiUrl/manhwa/see/$slug", headers)
     }
 
-    override fun mangaDetailsParse(response: Response): SManga =
-        json.decodeFromString<ComicDetailsDto>(response.body.string()).toSManga()
+    override fun mangaDetailsParse(response: Response): SManga = json.decodeFromString<ComicDetailsDto>(response.body.string()).toSManga()
 
     override fun getChapterUrl(chapter: SChapter): String = baseUrl + chapter.url
 

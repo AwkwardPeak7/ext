@@ -24,7 +24,9 @@ object PeachScanUtils {
     private var classSignature = ClassSignature.Newest
 
     private enum class ClassSignature {
-        Old, New, Newest
+        Old,
+        New,
+        Newest,
     }
 
     init {
@@ -96,7 +98,12 @@ object PeachScanUtils {
         }
     }
 
-    fun decodeImage(data: ByteArray, rgb565: Boolean, filename: String, entryName: String): Bitmap {
+    fun decodeImage(
+        data: ByteArray,
+        rgb565: Boolean,
+        filename: String,
+        entryName: String,
+    ): Bitmap {
         val decoder = when (classSignature) {
             ClassSignature.Newest -> newInstanceMethod.invoke(ImageDecoder.Companion, ByteArrayInputStream(data), false, null)
             else -> newInstanceMethod.invoke(ImageDecoder.Companion, ByteArrayInputStream(data), false)

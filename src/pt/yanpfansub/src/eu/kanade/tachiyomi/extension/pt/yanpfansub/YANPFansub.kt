@@ -16,7 +16,6 @@ class YANPFansub : Madara(
     "pt-BR",
     SimpleDateFormat("MMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-
     // Scanlator changed the theme from WpMangaReader to Madara.
     override val versionId: Int = 2
 

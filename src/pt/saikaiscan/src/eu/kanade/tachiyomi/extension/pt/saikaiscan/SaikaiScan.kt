@@ -19,7 +19,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class SaikaiScan : HttpSource() {
-
     override val name = SOURCE_NAME
 
     override val baseUrl = "https://saikaiscans.net"
@@ -81,7 +80,11 @@ class SaikaiScan : HttpSource() {
 
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val apiHeaders = headersBuilder()
             .add("Accept", ACCEPT_JSON)
             .build()

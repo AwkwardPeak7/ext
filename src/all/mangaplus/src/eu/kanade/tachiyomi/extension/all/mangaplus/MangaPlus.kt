@@ -37,7 +37,6 @@ class MangaPlus(
     private val internalLang: String,
     private val langCode: Language,
 ) : HttpSource(), ConfigurableSource {
-
     override val name = "MANGA Plus by SHUEISHA"
 
     override val baseUrl = "https://mangaplus.shueisha.co.jp"
@@ -175,7 +174,11 @@ class MangaPlus(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.matches(ID_SEARCH_PATTERN)) {
             return mangaDetailsRequest(query.removePrefix(PREFIX_ID_SEARCH))
         } else if (query.matches(CHAPTER_ID_SEARCH_PATTERN)) {
@@ -187,7 +190,10 @@ class MangaPlus(
 
     override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         val result = response.asMangaPlusResponse()
 
         checkNotNull(result.success) {

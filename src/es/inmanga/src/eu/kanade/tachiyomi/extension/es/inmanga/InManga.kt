@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class InManga : ParsedHttpSource() {
-
     override val name = "InManga"
 
     override val baseUrl = "https://inmanga.com"
@@ -51,7 +50,13 @@ class InManga : ParsedHttpSource() {
      * sortby = 1: Populars
      * sortby = 3: Latest
      */
-    private fun requestBodyBuilder(page: Int, isPopular: Boolean): RequestBody = "filter%5Bgeneres%5D%5B%5D=-1&filter%5BqueryString%5D=&filter%5Bskip%5D=${(page - 1) * 10}&filter%5Btake%5D=10&filter%5Bsortby%5D=${if (isPopular) "1" else "3"}&filter%5BbroadcastStatus%5D=0&filter%5BonlyFavorites%5D=false&d=".toRequestBody(null)
+    private fun requestBodyBuilder(
+        page: Int,
+        isPopular: Boolean,
+    ): RequestBody =
+        "filter%5Bgeneres%5D%5B%5D=-1&filter%5BqueryString%5D=&filter%5Bskip%5D=${(page - 1) * 10}&filter%5Btake%5D=10&filter%5Bsortby%5D=${if (isPopular) "1" else "3"}&filter%5BbroadcastStatus%5D=0&filter%5BonlyFavorites%5D=false&d=".toRequestBody(
+            null,
+        )
 
     override fun popularMangaRequest(page: Int) = POST(
         url = "$baseUrl/manga/getMangasConsultResult",
@@ -77,7 +82,11 @@ class InManga : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val skip = (page - 1) * 10
         val body =
             "filter%5Bgeneres%5D%5B%5D=-1&filter%5BqueryString%5D=$query&filter%5Bskip%5D=$skip&filter%5Btake%5D=10&filter%5Bsortby%5D=1&filter%5BbroadcastStatus%5D=0&filter%5BonlyFavorites%5D=false&d=".toRequestBody(

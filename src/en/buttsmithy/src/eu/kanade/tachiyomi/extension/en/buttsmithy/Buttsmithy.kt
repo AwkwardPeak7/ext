@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Buttsmithy : HttpSource() {
-
     override val name = "Buttsmithy"
 
     override val baseUrl = "https://incase.buttsmithy.com"
@@ -210,7 +209,10 @@ class Buttsmithy : HttpSource() {
         return chaptersAsSManga
     }
 
-    private fun decideAlfieStatusFromTitle(chapTitle: String, mostRecentChapTitle: String): Int {
+    private fun decideAlfieStatusFromTitle(
+        chapTitle: String,
+        mostRecentChapTitle: String,
+    ): Int {
         return if (chapTitle == mostRecentChapTitle) {
             SManga.UNKNOWN
         } else {
@@ -319,6 +321,9 @@ class Buttsmithy : HttpSource() {
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 }

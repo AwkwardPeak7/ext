@@ -23,7 +23,6 @@ import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
 
 class VoyceMe : HttpSource() {
-
     // Renamed from "Voyce.Me" to "VoyceMe" as the site uses.
     override val id = 4815322300278778429
 
@@ -96,7 +95,11 @@ class VoyceMe : HttpSource() {
 
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val payload = GraphQlQuery(
             query = SEARCH_QUERY,
             variables = SearchQueryVariables(

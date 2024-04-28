@@ -29,7 +29,6 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class Vomic : HttpSource(), ConfigurableSource {
-
     override val name = "vomic"
 
     override val lang = "zh"
@@ -82,7 +81,11 @@ class Vomic : HttpSource(), ConfigurableSource {
 
     override fun getFilterList() = getFilterListInternal()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val searchQuery = parseSearchQuery(query.trim(), filters)
         if (searchQuery.title.isEmpty() && searchQuery.category.isEmpty()) throw Exception("请输入搜索词或分类")
 
@@ -102,14 +105,11 @@ class Vomic : HttpSource(), ConfigurableSource {
 
     override fun getMangaUrl(manga: SManga) = "$baseUrl/#/detail?id=${manga.id}"
 
-    override fun mangaDetailsRequest(manga: SManga) =
-        GET("$apiUrl/api/v1/detail/get-comic-detail-data?mid=${manga.id}", headers)
+    override fun mangaDetailsRequest(manga: SManga) = GET("$apiUrl/api/v1/detail/get-comic-detail-data?mid=${manga.id}", headers)
 
-    override fun mangaDetailsParse(response: Response) =
-        response.parseAs<MangaDto>().toSMangaDetails()
+    override fun mangaDetailsParse(response: Response) = response.parseAs<MangaDto>().toSMangaDetails()
 
-    override fun chapterListRequest(manga: SManga) =
-        GET("$apiUrl/api/v1/detail/get-comic-detail-chapter-data?mid=${manga.id}", headers)
+    override fun chapterListRequest(manga: SManga) = GET("$apiUrl/api/v1/detail/get-comic-detail-chapter-data?mid=${manga.id}", headers)
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val chapters: List<ChapterDto> = response.parseAs()
@@ -178,8 +178,7 @@ class Vomic : HttpSource(), ConfigurableSource {
 
     private val json: Json by injectLazy()
 
-    private inline fun <reified T> Response.parseAs(): T =
-        json.decodeFromString<ResponseDto<T>>(body.string()).data
+    private inline fun <reified T> Response.parseAs(): T = json.decodeFromString<ResponseDto<T>>(body.string()).data
 
     companion object {
         private const val DOMAIN_PREF = "DOMAIN"

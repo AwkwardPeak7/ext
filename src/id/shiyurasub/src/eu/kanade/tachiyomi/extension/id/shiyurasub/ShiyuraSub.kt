@@ -8,13 +8,13 @@ import okhttp3.Request
 import okhttp3.Response
 
 class ShiyuraSub : ZeistManga("ShiyuraSub", "https://shiyurasub.blogspot.com", "id") {
-
     override val hasFilters = true
     override val hasLanguageFilter = false
 
     override val supportsLatest = false
 
     override fun popularMangaRequest(page: Int): Request = latestUpdatesRequest(page)
+
     override fun popularMangaParse(response: Response): MangasPage = latestUpdatesParse(response)
 
     override val pageListSelector = "main.content article.container"

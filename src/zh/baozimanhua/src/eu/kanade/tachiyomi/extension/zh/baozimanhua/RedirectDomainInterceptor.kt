@@ -4,7 +4,6 @@ import okhttp3.Interceptor
 import okhttp3.Response
 
 class RedirectDomainInterceptor(private val domain: String) : Interceptor {
-
     class Tag
 
     override fun intercept(chain: Interceptor.Chain): Response {

@@ -61,24 +61,23 @@ abstract class Liliana(
 
     // =============================== Latest ===============================
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/all-manga/$page/?sort=last_update&status=0", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/all-manga/$page/?sort=last_update&status=0", headers)
 
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        popularMangaParse(response)
+    override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
-    override fun latestUpdatesSelector(): String =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesSelector(): String = throw UnsupportedOperationException()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
-    override fun latestUpdatesNextPageSelector(): String =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesNextPageSelector(): String = throw UnsupportedOperationException()
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotBlank() && usesPostSearch) {
             val formBody = FormBody.Builder()
                 .add("search", query)
@@ -139,14 +138,11 @@ abstract class Liliana(
         )
     }
 
-    override fun searchMangaSelector(): String =
-        throw UnsupportedOperationException()
+    override fun searchMangaSelector(): String = throw UnsupportedOperationException()
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        throw UnsupportedOperationException()
+    override fun searchMangaFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
-    override fun searchMangaNextPageSelector(): String =
-        throw UnsupportedOperationException()
+    override fun searchMangaNextPageSelector(): String = throw UnsupportedOperationException()
 
     // =============================== Filters ==============================
 

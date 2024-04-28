@@ -78,7 +78,10 @@ private val CHAPTER_FORMATTER by lazy {
     SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
 }
 
-private fun parseDate(dateStr: String, formatter: SimpleDateFormat): Long {
+private fun parseDate(
+    dateStr: String,
+    formatter: SimpleDateFormat,
+): Long {
     return runCatching { formatter.parse(dateStr)?.time }
         .getOrNull() ?: 0L
 }

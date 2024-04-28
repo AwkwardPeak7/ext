@@ -60,7 +60,12 @@ class Picacomic : HttpSource(), ConfigurableSource {
         "Content-Type" to "application/json; charset=UTF-8", // must be exactly matched!
     )
 
-    private fun encrpt(url: String, time: Long, method: String, nonce: String): String {
+    private fun encrpt(
+        url: String,
+        time: Long,
+        method: String,
+        nonce: String,
+    ): String {
         val hmacSha256Key = "~d}\$Q7\$eIni=V)9\\RK/P.RM4;9[7|@/CA}b~OW!3?EV`:<>M7pddUBL5n|0/*Cn"
         val apiKey = basicHeaders["api-key"]
         val path = url.substringAfter("$baseUrl/")
@@ -123,7 +128,10 @@ class Picacomic : HttpSource(), ConfigurableSource {
         return !expValid || !iatValid
     }
 
-    private fun picaHeaders(url: String, method: String = "GET"): Headers {
+    private fun picaHeaders(
+        url: String,
+        method: String = "GET",
+    ): Headers {
         val time = System.currentTimeMillis() / 1000
         val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         val nonce = (1..32).map { allowedChars.random() }
@@ -142,7 +150,10 @@ class Picacomic : HttpSource(), ConfigurableSource {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    private fun getToken(username: String, password: String): String {
+    private fun getToken(
+        username: String,
+        password: String,
+    ): String {
         val url = "$baseUrl/auth/sign-in"
         val body = PicaLoginPayload(username, password)
             .let { Json.encodeToString(it) }
@@ -194,7 +205,11 @@ class Picacomic : HttpSource(), ConfigurableSource {
 
     override fun latestUpdatesParse(response: Response): MangasPage = singlePageParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var sort: String? = null
         var category: String? = null
         var rankPath: String? = null
@@ -265,8 +280,7 @@ class Picacomic : HttpSource(), ConfigurableSource {
         return MangasPage(mangas, comics.page < comics.pages)
     }
 
-    override fun mangaDetailsRequest(manga: SManga): Request =
-        GET(manga.url, picaHeaders(manga.url))
+    override fun mangaDetailsRequest(manga: SManga): Request = GET(manga.url, picaHeaders(manga.url))
 
     override fun mangaDetailsParse(response: Response): SManga {
         val comic = json.decodeFromString<PicaResponse>(
@@ -371,14 +385,46 @@ class Picacomic : HttpSource(), ConfigurableSource {
     private class CategoryFilter : UriPartFilter(
         "类型",
         arrayOf("全部" to "") + arrayOf(
-            "大家都在看", "牛牛不哭", "那年今天", "官方都在看",
-            "嗶咔漢化", "全彩", "長篇", "同人", "短篇", "圓神領域",
-            "碧藍幻想", "CG雜圖", "純愛", "百合花園", "後宮閃光", "單行本", "姐姐系",
-            "妹妹系", "SM", "人妻", "NTR", "強暴",
-            "艦隊收藏", "Love Live", "SAO 刀劍神域", "Fate",
-            "東方", "禁書目錄", "Cosplay",
-            "英語 ENG", "生肉", "性轉換", "足の恋", "非人類",
-            "耽美花園", "偽娘哲學", "扶他樂園", "重口地帶", "歐美", "WEBTOON",
+            "大家都在看",
+            "牛牛不哭",
+            "那年今天",
+            "官方都在看",
+            "嗶咔漢化",
+            "全彩",
+            "長篇",
+            "同人",
+            "短篇",
+            "圓神領域",
+            "碧藍幻想",
+            "CG雜圖",
+            "純愛",
+            "百合花園",
+            "後宮閃光",
+            "單行本",
+            "姐姐系",
+            "妹妹系",
+            "SM",
+            "人妻",
+            "NTR",
+            "強暴",
+            "艦隊收藏",
+            "Love Live",
+            "SAO 刀劍神域",
+            "Fate",
+            "東方",
+            "禁書目錄",
+            "Cosplay",
+            "英語 ENG",
+            "生肉",
+            "性轉換",
+            "足の恋",
+            "非人類",
+            "耽美花園",
+            "偽娘哲學",
+            "扶他樂園",
+            "重口地帶",
+            "歐美",
+            "WEBTOON",
         ).map { it to it }.toTypedArray(),
     )
 

@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Hentaidexy : HttpSource() {
-
     override val name = "Hentaidexy"
 
     override val baseUrl = "https://hentaidexy.net"
@@ -69,7 +68,11 @@ class Hentaidexy : HttpSource() {
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
     // search
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (!query.startsWith(ID_SEARCH_PREFIX)) {
             return super.fetchSearchManga(page, query, filters)
         }
@@ -80,7 +83,11 @@ class Hentaidexy : HttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$apiUrl/api/v1/mangas?page=$page&altTitles=$query&sort=createdAt", headers)
     }
 
@@ -107,7 +114,10 @@ class Hentaidexy : HttpSource() {
         return paginatedChapterListRequest(manga.url, 1)
     }
 
-    private fun paginatedChapterListRequest(mangaID: String, page: Int): Request {
+    private fun paginatedChapterListRequest(
+        mangaID: String,
+        page: Int,
+    ): Request {
         return GET("$apiUrl/api/v1/mangas/$mangaID/chapters?sort=-serialNumber&limit=100&page=$page", headers)
     }
 

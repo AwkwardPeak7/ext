@@ -37,8 +37,11 @@ class LittleGarden : ParsedHttpSource() {
 
     // Popular
     override fun popularMangaRequest(page: Int) = GET(baseUrl)
+
     override fun popularMangaSelector() = "div.listing div .col-md-6.col-lg-6.col-xl-4.col-12"
+
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.select(".item-title .name").text().trim()
         setUrlWithoutDomain(element.select("a").attr("href"))
@@ -47,13 +50,17 @@ class LittleGarden : ParsedHttpSource() {
 
     // Latest
     override fun latestUpdatesRequest(page: Int) = GET(baseUrl)
+
     override fun latestUpdatesSelector() = ".d-sm-block.col-sm-6.col-lg-6.col-xl-3.col-12"
+
     override fun latestUpdatesNextPageSelector(): String? = null
+
     override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst("h3")!!.text().trim()
         setUrlWithoutDomain(element.select("a").attr("href").substringBeforeLast("/"))
         thumbnail_url = element.select(".img.image-item").attr("style").substringAfter("(").substringBefore(")")
     }
+
     override fun latestUpdatesParse(response: Response): MangasPage {
         val document = response.asJsoup()
         val mangas = document.select(latestUpdatesSelector()).map { element ->
@@ -72,10 +79,18 @@ class LittleGarden : ParsedHttpSource() {
         }
         return MangasPage(mangas, false)
     }
+
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
+
     override fun searchMangaNextPageSelector(): String? = null
+
     override fun searchMangaSelector(): String = popularMangaSelector()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val headers = headersBuilder()
             .add("query", query)
             .build()
@@ -87,48 +102,51 @@ class LittleGarden : ParsedHttpSource() {
 
     // Chapter list
     override fun chapterListSelector() = throw UnsupportedOperationException()
+
     override fun chapterFromElement(element: Element): SChapter = throw UnsupportedOperationException()
+
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         val slug = slugRegex.find(document.toString())?.groupValues?.get(1)
+
         fun buildQuery(queryAction: () -> String) = queryAction().replace("%", "$")
         val query = buildQuery {
             """
-                query chapters(
-                	%slug: String,
-                	%limit: Float,
-                	%skip: Float,
-                	%order: Float!,
-                	%isAdmin: Boolean!
-                ) {
-                	chapters(
-                		limit: %limit,
-                		skip: %skip,
-                		where: {
-                			deleted: false,
-                			published: %isAdmin,
-                			manga: {
-                                slug: %slug,
-                                published: %isAdmin,
-                                deleted: false
-                            }
-                		},
-                        order: [{ field: "number", order: %order }]
-                	) {
-                		published
-                        likes
-                        id
-                        number
-                        thumb
-                        manga {
-                          id
-                          name
-                          slug
-                          __typename
+            query chapters(
+            	%slug: String,
+            	%limit: Float,
+            	%skip: Float,
+            	%order: Float!,
+            	%isAdmin: Boolean!
+            ) {
+            	chapters(
+            		limit: %limit,
+            		skip: %skip,
+            		where: {
+            			deleted: false,
+            			published: %isAdmin,
+            			manga: {
+                            slug: %slug,
+                            published: %isAdmin,
+                            deleted: false
                         }
-                        __typename
-                	}
-                }
+            		},
+                    order: [{ field: "number", order: %order }]
+            	) {
+            		published
+                    likes
+                    id
+                    number
+                    thumb
+                    manga {
+                      id
+                      name
+                      slug
+                      __typename
+                    }
+                    __typename
+            	}
+            }
             """.trimIndent()
         }
         val payload = buildJsonObject {
@@ -189,5 +207,6 @@ class LittleGarden : ParsedHttpSource() {
         }
         return pages
     }
+
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 }

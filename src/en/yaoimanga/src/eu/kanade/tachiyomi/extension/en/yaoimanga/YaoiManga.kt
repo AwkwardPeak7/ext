@@ -6,7 +6,6 @@ import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
 class YaoiManga : Madara("Yaoi.mobi", "https://yaoi.mobi", "en") {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(1, 1, TimeUnit.SECONDS)
         .build()

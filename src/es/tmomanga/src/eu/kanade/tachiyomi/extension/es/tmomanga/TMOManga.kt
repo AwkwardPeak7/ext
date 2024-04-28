@@ -18,7 +18,6 @@ import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
 class TMOManga : ParsedHttpSource() {
-
     override val baseUrl = "https://tmomanga.com"
 
     override val lang = "es"
@@ -70,7 +69,11 @@ class TMOManga : ParsedHttpSource() {
         setUrlWithoutDomain(chapterUrl.substringBeforeLast("-").replace("/capitulo/", "/manga/"))
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val urlBuilder = baseUrl.toHttpUrl().newBuilder()
 
         if (query.isNotBlank()) {

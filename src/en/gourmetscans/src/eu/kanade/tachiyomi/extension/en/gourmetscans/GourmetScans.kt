@@ -21,7 +21,11 @@ class GourmetScans : Madara(
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
 
         val filterList = if (filters.isEmpty()) getFilterList() else filters

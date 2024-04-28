@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MangaPlanet : ParsedHttpSource() {
-
     override val name = "Manga Planet"
 
     override val baseUrl = "https://mangaplanet.com"
@@ -69,7 +68,11 @@ class MangaPlanet : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (query.isNotEmpty()) {
                 addPathSegment("search")

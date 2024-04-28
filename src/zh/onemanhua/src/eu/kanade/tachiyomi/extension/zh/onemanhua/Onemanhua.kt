@@ -36,6 +36,7 @@ class Onemanhua : ColaManga("COLAMANGA", "https://www.colamanga.com", "zh") {
             Pair("已完结", "2"),
         ),
     )
+
     private class SortFilter : UriPartFilter(
         "排序",
         "orderBy",
@@ -47,6 +48,7 @@ class Onemanhua : ColaManga("COLAMANGA", "https://www.colamanga.com", "zh") {
         ),
         1,
     )
+
     private class CategoryFilter : UriPartFilter(
         "类型",
         "mainCategoryId",
@@ -84,6 +86,7 @@ class Onemanhua : ColaManga("COLAMANGA", "https://www.colamanga.com", "zh") {
             Pair("生活", "10142"),
         ),
     )
+
     private class CharFilter : UriPartFilter(
         "字母",
         "charCategoryId",

@@ -19,7 +19,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 abstract class MangaReader : HttpSource(), ConfigurableSource {
-
     override val supportsLatest = true
 
     final override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
@@ -65,13 +64,22 @@ abstract class MangaReader : HttpSource(), ConfigurableSource {
     abstract val chapterType: String
     abstract val volumeType: String
 
-    abstract fun chapterListRequest(mangaUrl: String, type: String): Request
+    abstract fun chapterListRequest(
+        mangaUrl: String,
+        type: String,
+    ): Request
 
-    abstract fun parseChapterElements(response: Response, isVolume: Boolean): List<Element>
+    abstract fun parseChapterElements(
+        response: Response,
+        isVolume: Boolean,
+    ): List<Element>
 
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
 
-    open fun updateChapterList(manga: SManga, chapters: List<SChapter>) = Unit
+    open fun updateChapterList(
+        manga: SManga,
+        chapters: List<SChapter>,
+    ) = Unit
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> = Observable.fromCallable {
         val path = manga.url

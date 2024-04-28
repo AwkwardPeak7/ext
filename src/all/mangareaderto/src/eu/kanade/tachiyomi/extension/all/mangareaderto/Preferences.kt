@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import androidx.preference.ListPreference
 
 fun getPreferences(context: Context) = arrayOf(
-
     ListPreference(context).apply {
         key = QUALITY_PREF
         title = "Image quality"

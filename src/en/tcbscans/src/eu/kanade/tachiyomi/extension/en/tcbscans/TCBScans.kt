@@ -20,12 +20,12 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class TCBScans : ParsedHttpSource() {
-
     override val name = "TCB Scans"
     override val baseUrl = "https://tcbscans.com"
     override val lang = "en"
     override val supportsLatest = false
     override val client: OkHttpClient = network.cloudflareClient
+
     companion object {
         private const val MIGRATE_MESSAGE = "Migrate from TCB Scans to TCB Scans"
         private val TITLE_REGEX = "[0-9]+$".toRegex()
@@ -84,13 +84,18 @@ class TCBScans : ParsedHttpSource() {
 
         return MangasPage(mangas, false)
     }
+
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun searchMangaNextPageSelector(): String = throw UnsupportedOperationException()
 
     override fun searchMangaSelector(): String = popularMangaSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val headers = headersBuilder()
             .add("query", query)
             .build()
@@ -107,10 +112,12 @@ class TCBScans : ParsedHttpSource() {
     }
 
     // chapters
-    override fun chapterListSelector() =
-        ".block.border.border-border.bg-card.mb-3.p-3.rounded"
+    override fun chapterListSelector() = ".block.border.border-border.bg-card.mb-3.p-3.rounded"
 
-    private fun chapterWithDate(element: Element, slug: String): SChapter {
+    private fun chapterWithDate(
+        element: Element,
+        slug: String,
+    ): SChapter {
         val seriesPrefs = Injekt.get<Application>().getSharedPreferences("source_${id}_updateTime:$slug", 0)
         val seriesPrefsEditor = seriesPrefs.edit()
 

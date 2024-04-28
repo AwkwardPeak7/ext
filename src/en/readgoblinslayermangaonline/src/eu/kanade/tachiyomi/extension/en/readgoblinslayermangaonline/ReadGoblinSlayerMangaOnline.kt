@@ -19,7 +19,9 @@ class ReadGoblinSlayerMangaOnline : MangaCatalog("Read Goblin Slayer Manga Onlin
         title = document.select("h2 > span").text()
         thumbnail_url = document.select(".card-img-right").attr("src")
     }
+
     override fun chapterListSelector(): String = "tbody > tr"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         name = element.select("td:first-child").text()
         url = element.select("a.btn-primary").attr("abs:href")

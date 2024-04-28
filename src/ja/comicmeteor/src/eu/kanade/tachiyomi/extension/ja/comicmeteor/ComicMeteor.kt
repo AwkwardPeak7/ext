@@ -22,7 +22,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class ComicMeteor : ParsedHttpSource() {
-
     override val name = "COMICメテオ"
 
     override val baseUrl = "https://comic-meteor.jp"
@@ -96,7 +95,11 @@ class ComicMeteor : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegment("comicsearch")
             .addPathSegment("")
@@ -146,8 +149,7 @@ class ComicMeteor : ParsedHttpSource() {
 
     private val reader by lazy { SpeedBinbReader(client, headers, json) }
 
-    override fun pageListParse(document: Document) =
-        reader.pageListParse(document)
+    override fun pageListParse(document: Document) = reader.pageListParse(document)
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 }

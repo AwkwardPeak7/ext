@@ -12,7 +12,6 @@ import org.jsoup.nodes.Element
 import java.util.Calendar
 
 class ManhwaFreak : MangaThemesia("Manhwa Freak", "https://freakcomic.com", "en") {
-
     // they called the theme "mangareaderfix"
 
     // popular
@@ -22,8 +21,11 @@ class ManhwaFreak : MangaThemesia("Manhwa Freak", "https://freakcomic.com", "en"
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl$mangaUrlDirectory", headers)
 
     // search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        GET("$baseUrl/page/$page/?s=$query")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET("$baseUrl/page/$page/?s=$query")
 
     override fun searchMangaSelector() = ".listupd .lastest-serie"
 

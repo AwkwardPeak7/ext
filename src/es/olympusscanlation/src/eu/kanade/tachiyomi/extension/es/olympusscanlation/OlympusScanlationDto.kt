@@ -104,7 +104,10 @@ class ChapterDto(
     private val name: String,
     @SerialName("published_at") private val date: String,
 ) {
-    fun toSChapter(mangaSlug: String, dateFormat: SimpleDateFormat) = SChapter.create().apply {
+    fun toSChapter(
+        mangaSlug: String,
+        dateFormat: SimpleDateFormat,
+    ) = SChapter.create().apply {
         name = "Capitulo ${this@ChapterDto.name}"
         url = "/capitulo/$id/comic-$mangaSlug"
         date_upload = try {

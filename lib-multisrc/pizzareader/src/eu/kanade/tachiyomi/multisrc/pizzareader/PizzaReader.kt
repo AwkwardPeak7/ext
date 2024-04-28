@@ -26,7 +26,6 @@ abstract class PizzaReader(
     private val apiPath: String = "/api",
     private val dateParser: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.ITALY),
 ) : HttpSource() {
-
     override val supportsLatest = true
 
     open val apiUrl by lazy { "$baseUrl$apiPath" }
@@ -37,8 +36,7 @@ abstract class PizzaReader(
         add("Referer", baseUrl)
     }
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$apiUrl/comics", headers)
+    override fun popularMangaRequest(page: Int) = GET("$apiUrl/comics", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val result = json.decodeFromString<PizzaResultsDto>(response.body.string())
@@ -69,7 +67,11 @@ abstract class PizzaReader(
         return MangasPage(comicList, hasNextPage = false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val searchUrl = "$apiUrl/search/".toHttpUrl().newBuilder()
             .addPathSegment(query)
             .toString()
@@ -80,9 +82,8 @@ abstract class PizzaReader(
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
 
     // Workaround to allow "Open in browser" to use the real URL
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> =
-        client.newCall(chapterListRequest(manga)).asObservableSuccess()
-            .map { mangaDetailsParse(it).apply { initialized = true } }
+    override fun fetchMangaDetails(manga: SManga): Observable<SManga> = client.newCall(chapterListRequest(manga)).asObservableSuccess()
+        .map { mangaDetailsParse(it).apply { initialized = true } }
 
     override fun mangaDetailsParse(response: Response): SManga = SManga.create().apply {
         val result = json.decodeFromString<PizzaResultDto>(response.body.string())

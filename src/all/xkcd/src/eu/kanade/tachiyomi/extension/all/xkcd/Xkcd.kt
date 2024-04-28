@@ -47,7 +47,10 @@ open class Xkcd(
     protected open fun String.numbered(number: Any) = "$number - $this"
 
     // TODO: maybe use BreakIterator
-    protected fun wordWrap(title: String, altText: String) = buildString {
+    protected fun wordWrap(
+        title: String,
+        altText: String,
+    ) = buildString {
         title.split(' ').forEachIndexed { i, w ->
             if (i != 0 && i % 7 == 0) append("\n")
             append(w).append(' ')
@@ -65,33 +68,33 @@ open class Xkcd(
         }
     }
 
-    final override fun fetchPopularManga(page: Int) =
-        SManga.create().apply {
-            title = name
-            artist = creator
-            author = creator
-            description = synopsis
-            status = SManga.ONGOING
-            thumbnail_url = THUMBNAIL_URL
-            setUrlWithoutDomain(archive)
-        }.let { Observable.just(MangasPage(listOf(it), false))!! }
+    final override fun fetchPopularManga(page: Int) = SManga.create().apply {
+        title = name
+        artist = creator
+        author = creator
+        description = synopsis
+        status = SManga.ONGOING
+        thumbnail_url = THUMBNAIL_URL
+        setUrlWithoutDomain(archive)
+    }.let { Observable.just(MangasPage(listOf(it), false))!! }
 
-    final override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
-        Observable.just(MangasPage(emptyList(), false))!!
+    final override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = Observable.just(MangasPage(emptyList(), false))!!
 
-    final override fun fetchMangaDetails(manga: SManga) =
-        Observable.just(manga.apply { initialized = true })!!
+    final override fun fetchMangaDetails(manga: SManga) = Observable.just(manga.apply { initialized = true })!!
 
-    override fun chapterListParse(response: Response) =
-        response.asJsoup().select(chapterListSelector).map {
-            SChapter.create().apply {
-                url = it.attr("href")
-                val number = url.removeSurrounding("/")
-                name = it.text().numbered(number)
-                chapter_number = number.toFloat()
-                date_upload = it.attr("title").timestamp()
-            }
+    override fun chapterListParse(response: Response) = response.asJsoup().select(chapterListSelector).map {
+        SChapter.create().apply {
+            url = it.attr("href")
+            val number = url.removeSurrounding("/")
+            name = it.text().numbered(number)
+            chapter_number = number.toFloat()
+            date_upload = it.attr("title").timestamp()
         }
+    }
 
     override fun pageListParse(response: Response): List<Page> {
         // if the img tag is empty or has siblings then it is an interactive comic
@@ -111,29 +114,25 @@ open class Xkcd(
         return listOf(Page(0, "", image), Page(1, "", text.image()))
     }
 
-    final override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    final override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    final override fun latestUpdatesParse(response: Response) =
-        throw UnsupportedOperationException()
+    final override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    final override fun latestUpdatesRequest(page: Int) =
-        throw UnsupportedOperationException()
+    final override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
 
-    final override fun mangaDetailsParse(response: Response) =
-        throw UnsupportedOperationException()
+    final override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    final override fun popularMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    final override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    final override fun popularMangaRequest(page: Int) =
-        throw UnsupportedOperationException()
+    final override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
 
-    final override fun searchMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    final override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    final override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException()
+    final override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     companion object {
         private const val THUMBNAIL_URL =

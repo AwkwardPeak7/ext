@@ -47,7 +47,7 @@ data class Manga(
                     )
                 }
             }
-            )?.joinToString()
+        )?.joinToString()
         status = when (this@Manga.status) {
             "ongoing" -> SManga.ONGOING
             "completed" -> SManga.COMPLETED

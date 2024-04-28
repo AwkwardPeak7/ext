@@ -24,7 +24,6 @@ abstract class ZeistManga(
     override val baseUrl: String,
     override val lang: String,
 ) : HttpSource() {
-
     override val supportsLatest = true
 
     protected val json: Json by injectLazy()
@@ -65,7 +64,11 @@ abstract class ZeistManga(
 
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val startIndex = maxMangaResults * (page - 1) + 1
         val url = apiUrl()
             .addQueryParameter("max-results", (maxMangaResults + 1).toString())
@@ -423,7 +426,10 @@ abstract class ZeistManga(
         else -> SManga.UNKNOWN
     }
 
-    private fun String.replaceLast(oldValue: String, newValue: String): String {
+    private fun String.replaceLast(
+        oldValue: String,
+        newValue: String,
+    ): String {
         val lastIndexOf = lastIndexOf(oldValue)
         return if (lastIndexOf == -1) {
             this

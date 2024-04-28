@@ -24,8 +24,11 @@ class XoxoComics : WPComics(
 ) {
     override val searchPath = "search-comic"
     override val popularPath = "hot-comic"
+
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/comic-update?page=$page", headers)
+
     override fun latestUpdatesSelector() = "li.row"
+
     override fun latestUpdatesFromElement(element: Element): SManga {
         return SManga.create().apply {
             element.select("h3 a").let {
@@ -36,7 +39,11 @@ class XoxoComics : WPComics(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = filters.let { if (it.isEmpty()) getFilterList() else it }
         return if (query.isNotEmpty() || filterList.isEmpty()) {
             // Search won't work together with filter

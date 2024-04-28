@@ -26,7 +26,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class TaoSect : HttpSource() {
-
     override val name = "Tao Sect"
 
     override val baseUrl = "https://taosect.com"
@@ -137,7 +136,11 @@ class TaoSect : HttpSource() {
         return MangasPage(projectList, hasNextPage)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.startsWith(SLUG_PREFIX_SEARCH) && query.removePrefix(SLUG_PREFIX_SEARCH).isNotBlank()) {
             return mangaDetailsRequest(query.removePrefix(SLUG_PREFIX_SEARCH))
         }
@@ -231,7 +234,10 @@ class TaoSect : HttpSource() {
         return result.map { chapterFromObject(it, projectSlug) }
     }
 
-    private fun chapterFromObject(obj: TaoSectChapterDto, projectSlug: String): SChapter = SChapter.create().apply {
+    private fun chapterFromObject(
+        obj: TaoSectChapterDto,
+        projectSlug: String,
+    ): SChapter = SChapter.create().apply {
         name = obj.name
         scanlator = this@TaoSect.name
         date_upload = obj.date.toDate()
@@ -314,7 +320,10 @@ class TaoSect : HttpSource() {
         return GET(page.imageUrl!!, newHeaders)
     }
 
-    private fun countProjectViewRequest(projectId: String, chapterId: String? = null): Request {
+    private fun countProjectViewRequest(
+        projectId: String,
+        chapterId: String? = null,
+    ): Request {
         val formBodyBuilder = FormBody.Builder()
             .add("action", "update_views_v2")
             .add("projeto", projectId)

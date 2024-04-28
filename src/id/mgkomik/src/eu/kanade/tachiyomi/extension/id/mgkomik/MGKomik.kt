@@ -28,13 +28,18 @@ class MGKomik :
         SimpleDateFormat("dd MMM yy", Locale.US),
     ),
     ConfigurableSource {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
     private val encodedString = "AAAAaAAA  AHQAAAG 0AAAAcAAAAHM AAAA6AAA  ALwAAAC8 AAAByAAAAYQAA AHcAQuAZwAA" + "AGkAAAG0AA AAaAAAAHUAAA BiAAAAdQAAAHMAA ABlyAtAAAcgAAAG MAAABvAAAAbgAA AHQAAABlAAAA bgAAAHQAAAAuA  " + "AAAYwAAAG 8AAABtAAAALwAAA GsAAABlyAtAAA aQAAAHkAAABv AAAAdQAAAHMAAAD oAiBuAAAaQAAAC8 AAAB1AAAAcwA" + "  AAGUAAABy AAAALQAAAGE AAABnAAA  AZQAAAG 4AAAG0AAAAe gAAAC8AAABnAAAAaA AAAC0AAABwAAAA YQAAAGcAAABlAA  " + " AAegAAAC8AAAB 1AAAAcwAAAGU AAAByAAAALQA AAGEAAABnA AAAZQAAAG  4AAAG0A AAAegAAAC4A AABtAAAAa QAAAG4AQ " + " uAagAAAHM  AAABvAAAAbg=="
 
-    private val keiListUaUrl = Base64.decode(encodedString.replace("\\s".toRegex(), "").replace("DoAiBu", "BoA").replace("G0A", "B0A").replace("BlyAt", "BlA").replace("AQuA", "AAAAuAAAA"), Base64.DEFAULT).toString(Charsets.UTF_32).replace("z", "s")
+    private val keiListUaUrl = Base64.decode(
+        encodedString.replace(
+            "\\s".toRegex(),
+            "",
+        ).replace("DoAiBu", "BoA").replace("G0A", "B0A").replace("BlyAt", "BlA").replace("AQuA", "AAAAuAAAA"),
+        Base64.DEFAULT,
+    ).toString(Charsets.UTF_32).replace("z", "s")
 
     private var secChUaMP: List<String>? = null
     private var userAgent: String? = null

@@ -23,7 +23,6 @@ abstract class HotComics(
     final override val lang: String,
     final override val baseUrl: String,
 ) : HttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient.newBuilder()
@@ -36,12 +35,18 @@ abstract class HotComics(
         .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/en", headers)
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/en/new", headers)
+
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (query.isNotEmpty()) {
                 addEncodedPathSegments("en/search")
@@ -60,9 +65,9 @@ abstract class HotComics(
         name: String,
         private val options: List<Pair<String, String>>,
     ) : Filter.Select<String>(
-        name,
-        options.map { it.first }.toTypedArray(),
-    ) {
+            name,
+            options.map { it.first }.toTypedArray(),
+        ) {
         val selected get() = options[state].second
     }
 

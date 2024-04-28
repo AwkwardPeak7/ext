@@ -35,19 +35,19 @@ class Danbooru : ParsedHttpSource() {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
     }
 
-    override fun popularMangaRequest(page: Int): Request =
-        searchMangaRequest(page, "", FilterList())
+    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(page, "", FilterList())
 
-    override fun popularMangaFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
 
-    override fun popularMangaNextPageSelector(): String =
-        searchMangaNextPageSelector()
+    override fun popularMangaNextPageSelector(): String = searchMangaNextPageSelector()
 
-    override fun popularMangaSelector(): String =
-        searchMangaSelector()
+    override fun popularMangaSelector(): String = searchMangaSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = Request(
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = Request(
         url = "$baseUrl/pools/gallery".toHttpUrl().newBuilder().run {
             setEncodedQueryParameter("search[category]", "series")
 
@@ -85,12 +85,10 @@ class Danbooru : ParsedHttpSource() {
 
             build()
         },
-
         headers = headers,
     )
 
-    override fun searchMangaSelector(): String =
-        ".post-preview"
+    override fun searchMangaSelector(): String = ".post-preview"
 
     override fun searchMangaFromElement(element: Element) = SManga.create().apply {
         url = element.selectFirst(".post-preview-link")?.attr("href")!!
@@ -101,20 +99,15 @@ class Danbooru : ParsedHttpSource() {
             ?.substringBeforeLast(' ')?.trimStart()
     }
 
-    override fun searchMangaNextPageSelector(): String =
-        "a.paginator-next"
+    override fun searchMangaNextPageSelector(): String = "a.paginator-next"
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        searchMangaRequest(page, "", FilterList(FilterOrder("created_at")))
+    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(page, "", FilterList(FilterOrder("created_at")))
 
-    override fun latestUpdatesSelector(): String =
-        searchMangaSelector()
+    override fun latestUpdatesSelector(): String = searchMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
-    override fun latestUpdatesNextPageSelector(): String =
-        searchMangaNextPageSelector()
+    override fun latestUpdatesNextPageSelector(): String = searchMangaNextPageSelector()
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
         setUrlWithoutDomain(document.location())
@@ -124,8 +117,7 @@ class Danbooru : ParsedHttpSource() {
         update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
     }
 
-    override fun chapterListRequest(manga: SManga): Request =
-        GET("$baseUrl${manga.url}.json?only=id,created_at", headers)
+    override fun chapterListRequest(manga: SManga): Request = GET("$baseUrl${manga.url}.json?only=id,created_at", headers)
 
     override fun chapterListParse(response: Response): List<SChapter> = listOf(
         SChapter.create().apply {
@@ -141,37 +133,28 @@ class Danbooru : ParsedHttpSource() {
         },
     )
 
-    override fun chapterListSelector(): String =
-        throw IllegalStateException("Not used")
+    override fun chapterListSelector(): String = throw IllegalStateException("Not used")
 
-    override fun chapterFromElement(element: Element): SChapter =
-        throw IllegalStateException("Not used")
+    override fun chapterFromElement(element: Element): SChapter = throw IllegalStateException("Not used")
 
-    override fun pageListRequest(chapter: SChapter): Request =
-        GET("$baseUrl${chapter.url}.json?only=post_ids", headers)
+    override fun pageListRequest(chapter: SChapter): Request = GET("$baseUrl${chapter.url}.json?only=post_ids", headers)
 
-    override fun pageListParse(response: Response): List<Page> =
-        json.decodeFromString<JsonObject>(response.body.string())
-            .get("post_ids")?.jsonArray
-            ?.map { it.jsonPrimitive.content }
-            ?.mapIndexed { i, id -> Page(index = i, url = "/posts/$id") }
-            ?: emptyList()
+    override fun pageListParse(response: Response): List<Page> = json.decodeFromString<JsonObject>(response.body.string())
+        .get("post_ids")?.jsonArray
+        ?.map { it.jsonPrimitive.content }
+        ?.mapIndexed { i, id -> Page(index = i, url = "/posts/$id") }
+        ?: emptyList()
 
-    override fun pageListParse(document: Document): List<Page> =
-        throw IllegalStateException("Not used")
+    override fun pageListParse(document: Document): List<Page> = throw IllegalStateException("Not used")
 
-    override fun imageUrlRequest(page: Page): Request =
-        GET("$baseUrl${page.url}.json?only=file_url", headers)
+    override fun imageUrlRequest(page: Page): Request = GET("$baseUrl${page.url}.json?only=file_url", headers)
 
-    override fun imageUrlParse(response: Response): String =
-        json.decodeFromString<JsonObject>(response.body.string())
-            .get("file_url")!!.jsonPrimitive.content
+    override fun imageUrlParse(response: Response): String = json.decodeFromString<JsonObject>(response.body.string())
+        .get("file_url")!!.jsonPrimitive.content
 
-    override fun imageUrlParse(document: Document): String =
-        throw IllegalStateException("Not used")
+    override fun imageUrlParse(document: Document): String = throw IllegalStateException("Not used")
 
-    override fun getChapterUrl(chapter: SChapter): String =
-        baseUrl + chapter.url
+    override fun getChapterUrl(chapter: SChapter): String = baseUrl + chapter.url
 
     override fun getFilterList() = FilterList(
         listOf(
@@ -183,6 +166,5 @@ class Danbooru : ParsedHttpSource() {
         ),
     )
 
-    private fun parseTimestamp(string: String): Long? =
-        runCatching { dateFormat.parse(string)?.time!! }.getOrNull()
+    private fun parseTimestamp(string: String): Long? = runCatching { dateFormat.parse(string)?.time!! }.getOrNull()
 }

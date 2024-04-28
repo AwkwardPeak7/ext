@@ -21,7 +21,6 @@ class InstaManhwa : Madara(
     "en",
     SimpleDateFormat("dd MMMM, yyyy", Locale.US),
 ) {
-
     override val supportsLatest: Boolean = false
     override val fetchGenres = false
 
@@ -29,7 +28,11 @@ class InstaManhwa : Madara(
 
     override fun popularMangaRequest(page: Int): Request = latestUpdatesRequest(page)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/search?s=$query&page=$page", headers)
     }
 
@@ -51,7 +54,11 @@ class InstaManhwa : Madara(
             .map { chapterFromElement(it) }
     }
 
-    private fun getAjaxChapters(mangaId: String, cookie: String, token: String): Document {
+    private fun getAjaxChapters(
+        mangaId: String,
+        cookie: String,
+        token: String,
+    ): Document {
         val headers = headersBuilder()
             .add("Host", baseUrl.substringAfter("https://"))
             .add("Cookie", cookie)

@@ -16,7 +16,6 @@ import okhttp3.Response
 import uy.kohesive.injekt.injectLazy
 
 class VortexScans : HttpSource() {
-
     override val name = "Vortex Scans"
 
     override val baseUrl = "https://vortexscans.com"
@@ -56,9 +55,14 @@ class VortexScans : HttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int) = searchMangaRequest(page, "", getFilterList())
+
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/api/query".toHttpUrl().newBuilder().apply {
             addQueryParameter("page", page.toString())
             addQueryParameter("perPage", perPage.toString())
@@ -135,11 +139,9 @@ class VortexScans : HttpSource() {
         }
     }
 
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    private inline fun <reified T> Response.parseAs(): T =
-        json.decodeFromString(body.string())
+    private inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 }
 
 private const val perPage = 18

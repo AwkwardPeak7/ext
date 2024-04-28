@@ -24,7 +24,6 @@ abstract class Zbulu(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient.newBuilder()
@@ -73,7 +72,11 @@ abstract class Zbulu(
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val authorFilter = filterList.find { it is AuthorFilter } as AuthorFilter
         val genreFilter = filterList.find { it is GenreFilter } as GenreFilter

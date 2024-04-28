@@ -78,7 +78,6 @@ class BookMetadataAggregationDto(
     val releaseDate: String?,
     val summary: String,
     val summaryNumber: String,
-
     val created: String,
     val lastModified: String,
 )
@@ -98,7 +97,10 @@ class BookDto(
     val media: MediaDto,
     val metadata: BookMetadataDto,
 ) {
-    fun getChapterName(template: String, isFromReadList: Boolean): String {
+    fun getChapterName(
+        template: String,
+        isFromReadList: Boolean,
+    ): String {
         val values = hashMapOf(
             "title" to metadata.title,
             "seriesTitle" to seriesTitle,

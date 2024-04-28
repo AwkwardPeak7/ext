@@ -41,7 +41,6 @@ class Mangalek :
         SimpleDateFormat("MMMM dd, yyyy", Locale("ar")),
     ),
     ConfigurableSource {
-
     override val fetchGenres = false
     override val useLoadMoreRequest = LoadMoreStrategy.Always
     override val chapterUrlSuffix = ""
@@ -91,15 +90,18 @@ class Mangalek :
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        POST(
-            "$baseUrl/wp-admin/admin-ajax.php",
-            headers,
-            FormBody.Builder()
-                .add("action", "wp-manga-search-manga")
-                .add("title", query)
-                .build(),
-        )
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = POST(
+        "$baseUrl/wp-admin/admin-ajax.php",
+        headers,
+        FormBody.Builder()
+            .add("action", "wp-manga-search-manga")
+            .add("title", query)
+            .build(),
+    )
 
     private inline fun <reified T> Response.parseAs(): T {
         return json.decodeFromString(body.string())

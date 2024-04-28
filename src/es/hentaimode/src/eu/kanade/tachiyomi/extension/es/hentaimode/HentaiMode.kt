@@ -19,7 +19,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class HentaiMode : ParsedHttpSource() {
-
     override val name = "HentaiMode"
 
     override val baseUrl = "https://hentaimode.com"
@@ -63,7 +62,11 @@ class HentaiMode : ParsedHttpSource() {
     }
 
     // =============================== Search ===============================
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SEARCH)) { // URL intent handler
             val id = query.removePrefix(PREFIX_SEARCH)
             client.newCall(GET("$baseUrl/g/$id"))
@@ -81,7 +84,11 @@ class HentaiMode : ParsedHttpSource() {
         return MangasPage(listOf(details), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         require(query.length >= 3) { "Please use at least 3 characters!" }
         return GET("$baseUrl/buscar?s=$query")
     }

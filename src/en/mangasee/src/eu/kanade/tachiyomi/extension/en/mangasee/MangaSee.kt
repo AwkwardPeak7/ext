@@ -11,7 +11,6 @@ import rx.Observable
 import java.util.concurrent.TimeUnit
 
 class MangaSee : NepNep("MangaSee", "https://mangasee123.com", "en") {
-
     override val id: Long = 9
 
     override val client: OkHttpClient = network.cloudflareClient.newBuilder()
@@ -21,7 +20,11 @@ class MangaSee : NepNep("MangaSee", "https://mangasee123.com", "en") {
         .writeTimeout(1, TimeUnit.MINUTES)
         .build()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith("id:")) {
             val id = query.substringAfter("id:")
             return client.newCall(GET("$baseUrl/manga/$id"))

@@ -22,10 +22,14 @@ class SyoSetu : MangaRawTheme("SyoSetu", "https://syosetu.top") {
     }
 
     override fun popularMangaSelector() = "article"
+
     override fun popularMangaNextPageSelector() = ".next.page-numbers"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        GET("$baseUrl/page/$page?s=$query")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = GET("$baseUrl/page/$page?s=$query")
 
     override fun Document.getSanitizedDetails(): Element =
         selectFirst(Evaluator.Tag("article"))!!.selectFirst(Evaluator.Class("content-wrap-inner"))!!.apply {
@@ -33,6 +37,7 @@ class SyoSetu : MangaRawTheme("SyoSetu", "https://syosetu.top") {
         }
 
     override fun chapterListSelector() = ".chaplist a"
+
     override fun String.sanitizeChapter() = substringAfterLast(" - ")
 
     override fun pageSelector() = Evaluator.Tag("figure")

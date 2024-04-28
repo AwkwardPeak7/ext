@@ -34,14 +34,19 @@ class KomikIndoID : ParsedHttpSource() {
     }
 
     override fun popularMangaSelector() = "div.animepost"
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun searchMangaSelector() = popularMangaSelector()
 
     override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
+
     override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
     override fun popularMangaNextPageSelector() = "a.next.page-numbers"
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     override fun searchMangaFromElement(element: Element): SManga {
@@ -54,7 +59,11 @@ class KomikIndoID : ParsedHttpSource() {
         return manga
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/daftar-manga/page/$page/".toHttpUrl().newBuilder()
             .addQueryParameter("title", query)
         filters.forEach { filter ->
@@ -122,6 +131,7 @@ class KomikIndoID : ParsedHttpSource() {
         }
         return GET(url.build(), headers)
     }
+
     override fun mangaDetailsParse(document: Document): SManga {
         val infoElement = document.select("div.infoanime").first()!!
         val descElement = document.select("div.desc > .entry-content.entry-content-single").first()!!
@@ -132,7 +142,9 @@ class KomikIndoID : ParsedHttpSource() {
         val artistCleaner = document.select(".infox .spe b:contains(Ilustrator)").text()
         manga.artist = document.select(".infox .spe span:contains(Ilustrator)").text().substringAfter(artistCleaner)
         val genres = mutableListOf<String>()
-        infoElement.select(".infox .genre-info a, .infox .spe span:contains(Grafis:) a, .infox .spe span:contains(Tema:) a, .infox .spe span:contains(Konten:) a, .infox .spe span:contains(Jenis Komik:) a").forEach { element ->
+        infoElement.select(
+            ".infox .genre-info a, .infox .spe span:contains(Grafis:) a, .infox .spe span:contains(Tema:) a, .infox .spe span:contains(Konten:) a, .infox .spe span:contains(Jenis Komik:) a",
+        ).forEach { element ->
             val genre = element.text()
             genres.add(genre)
         }
@@ -203,7 +215,10 @@ class KomikIndoID : ParsedHttpSource() {
         }
     }
 
-    override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
+    override fun prepareNewChapter(
+        chapter: SChapter,
+        manga: SManga,
+    ) {
         val basic = Regex("""Chapter\s([0-9]+)""")
         when {
             basic.containsMatchIn(chapter.name) -> {
@@ -260,8 +275,10 @@ class KomikIndoID : ParsedHttpSource() {
     )
 
     private class OriginalLanguage(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class OriginalLanguageFilter(originalLanguage: List<OriginalLanguage>) :
         Filter.Group<OriginalLanguage>("Original language", originalLanguage)
+
     private fun getOriginalLanguage() = listOf(
         OriginalLanguage("Japanese (Manga)", "Manga"),
         OriginalLanguage("Chinese (Manhua)", "Manhua"),
@@ -269,16 +286,20 @@ class KomikIndoID : ParsedHttpSource() {
     )
 
     private class Format(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class FormatFilter(formatList: List<Format>) :
         Filter.Group<Format>("Format", formatList)
+
     private fun getFormat() = listOf(
         Format("Black & White", "0"),
         Format("Full Color", "1"),
     )
 
     private class Demographic(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class DemographicFilter(demographicList: List<Demographic>) :
         Filter.Group<Demographic>("Publication Demographic", demographicList)
+
     private fun getDemographic() = listOf(
         Demographic("Josei", "josei"),
         Demographic("Seinen", "seinen"),
@@ -287,16 +308,20 @@ class KomikIndoID : ParsedHttpSource() {
     )
 
     private class Status(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class StatusFilter(statusList: List<Status>) :
         Filter.Group<Status>("Status", statusList)
+
     private fun getStatus() = listOf(
         Status("Ongoing", "Ongoing"),
         Status("Completed", "Completed"),
     )
 
     private class ContentRating(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class ContentRatingFilter(contentRating: List<ContentRating>) :
         Filter.Group<ContentRating>("Content Rating", contentRating)
+
     private fun getContentRating() = listOf(
         ContentRating("Ecchi", "ecchi"),
         ContentRating("Gore", "gore"),
@@ -305,8 +330,10 @@ class KomikIndoID : ParsedHttpSource() {
     )
 
     private class Theme(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class ThemeFilter(themeList: List<Theme>) :
         Filter.Group<Theme>("Story Theme", themeList)
+
     private fun getTheme() = listOf(
         Theme("Alien", "aliens"),
         Theme("Animal", "animals"),
@@ -350,8 +377,10 @@ class KomikIndoID : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val id: String = name) : Filter.CheckBox(name)
+
     private class GenreFilter(genreList: List<Genre>) :
         Filter.Group<Genre>("Genre", genreList)
+
     private fun getGenre() = listOf(
         Genre("Action", "action"),
         Genre("Adventure", "adventure"),

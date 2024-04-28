@@ -4,6 +4,7 @@ import eu.kanade.tachiyomi.source.model.Filter
 
 open class Genre(val name: String, val slug: String) {
     fun isGlobal() = Global.slug == slug
+
     override fun toString() = name
 
     companion object {

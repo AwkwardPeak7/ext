@@ -15,7 +15,6 @@ class IsekaiScanTop : Madara(
     "https://isekaiscan.top",
     "en",
 ) {
-
     override fun popularMangaRequest(page: Int): Request {
         return GET(
             url = "$baseUrl/popular-manga?page=$page",

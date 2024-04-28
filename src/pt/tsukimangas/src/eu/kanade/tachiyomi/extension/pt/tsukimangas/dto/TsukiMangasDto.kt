@@ -26,7 +26,6 @@ data class SimpleMangaDto(
 data class CompleteMangaDto(
     val id: Int,
     @SerialName("url") val slug: String,
-
     val title: String,
     val poster: String? = null,
     val cover: String? = null,

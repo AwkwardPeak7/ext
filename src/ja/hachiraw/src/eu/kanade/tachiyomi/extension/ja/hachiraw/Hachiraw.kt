@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Hachiraw : ParsedHttpSource() {
-
     override val name = "Hachiraw"
 
     override val baseUrl = "https://hachiraw.net"
@@ -35,12 +34,11 @@ class Hachiraw : ParsedHttpSource() {
         SimpleDateFormat("dd-MM-yyyy", Locale.ROOT)
     }
 
-    override fun popularMangaRequest(page: Int) =
-        searchMangaRequest(
-            page,
-            "",
-            FilterList(SortFilter(2)),
-        )
+    override fun popularMangaRequest(page: Int) = searchMangaRequest(
+        page,
+        "",
+        FilterList(SortFilter(2)),
+    )
 
     override fun popularMangaSelector() = searchMangaSelector()
 
@@ -48,12 +46,11 @@ class Hachiraw : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = searchMangaNextPageSelector()
 
-    override fun latestUpdatesRequest(page: Int) =
-        searchMangaRequest(
-            page,
-            "",
-            FilterList(SortFilter(0)),
-        )
+    override fun latestUpdatesRequest(page: Int) = searchMangaRequest(
+        page,
+        "",
+        FilterList(SortFilter(0)),
+    )
 
     override fun latestUpdatesSelector() = searchMangaSelector()
 
@@ -80,7 +77,11 @@ class Hachiraw : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = filters.ifEmpty { getFilterList() }
         val sortFilter = filterList.filterIsInstance<SortFilter>().firstOrNull()
         val genreFilter = filterList.filterIsInstance<GenreFilter>().firstOrNull()
@@ -164,10 +165,9 @@ class Hachiraw : ParsedHttpSource() {
         }
     }
 
-    override fun pageListParse(document: Document) =
-        document.select("#TopPage img").mapIndexed { i, it ->
-            Page(i, imageUrl = it.absUrl("src"))
-        }
+    override fun pageListParse(document: Document) = document.select("#TopPage img").mapIndexed { i, it ->
+        Page(i, imageUrl = it.absUrl("src"))
+    }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 

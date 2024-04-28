@@ -21,7 +21,9 @@ class ReadOnePunchManMangaOnlineTwo : MangaCatalog("Read One-Punch Man Manga Onl
         title = document.select("h2 > span").text().substringAfter("Manga: ").trim()
         thumbnail_url = document.select(".card-img-right").attr("src")
     }
+
     override fun chapterListSelector(): String = "tbody > tr"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         name = element.select("td:first-child").text()
         url = element.select("a").attr("abs:href")

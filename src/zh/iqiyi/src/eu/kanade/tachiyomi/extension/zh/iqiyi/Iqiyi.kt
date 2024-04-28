@@ -28,8 +28,11 @@ class Iqiyi : ParsedHttpSource() {
     // Popular
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/category/全部_-1_-1_9_$page/", headers)
+
     override fun popularMangaNextPageSelector(): String = "div.mod-page > a.a1:contains(下一页)"
+
     override fun popularMangaSelector(): String = "ul.cartoon-hot-ul > li.cartoon-hot-list"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst("a.cartoon-item-tit")!!.text()
         url = element.selectFirst("a.cartoon-item-tit")!!.attr("href").drop(7)
@@ -39,18 +42,27 @@ class Iqiyi : ParsedHttpSource() {
     // Latest
 
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/category/全部_-1_-1_4_$page/", headers)
+
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/search-keyword=${query}_$page", headers)
     }
 
     override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun searchMangaSelector(): String = "ul.stacksList > li.stacksBook"
+
     override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst("h3.stacksBook-tit > a")!!.text()
         url = element.selectFirst("h3.stacksBook-tit > a")!!.attr("href").drop(7)
@@ -96,6 +108,7 @@ class Iqiyi : ParsedHttpSource() {
     }
 
     override fun chapterListSelector(): String = throw UnsupportedOperationException()
+
     override fun chapterFromElement(element: Element): SChapter = throw UnsupportedOperationException()
 
     // Pages

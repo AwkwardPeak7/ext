@@ -35,7 +35,6 @@ abstract class NepNep(
     override val baseUrl: String,
     override val lang: String,
 ) : HttpSource() {
-
     override val supportsLatest = true
 
     override fun headersBuilder(): Headers.Builder = Headers.Builder()
@@ -47,6 +46,7 @@ abstract class NepNep(
     private lateinit var directory: List<JsonElement>
 
     // Convenience functions to shorten later code
+
     /** Returns value corresponding to given key as a string, or null */
     private fun JsonElement.getString(key: String): String? {
         return this.jsonObject[key]!!.jsonPrimitive.contentOrNull
@@ -140,7 +140,11 @@ abstract class NepNep(
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (page == 1) {
             client.newCall(searchMangaRequest(page, query, filters))
                 .asObservableSuccess()
@@ -152,9 +156,17 @@ abstract class NepNep(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = popularMangaRequest(1)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = popularMangaRequest(1)
 
-    private fun searchMangaParse(response: Response, query: String, filters: FilterList): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+        filters: FilterList,
+    ): MangasPage {
         val trimmedQuery = query.trim()
         directory = directoryFromDocument(response.asJsoup())
             .filter {
@@ -186,7 +198,11 @@ abstract class NepNep(
                 is SelectField -> if (filter.state != 0) {
                     directory = when (filter.name) {
                         "Scan Status" -> directory.filter { it.getString("ss")!!.contains(filter.values[filter.state], ignoreCase = true) }
-                        "Publish Status" -> directory.filter { it.getString("ps")!!.contains(filter.values[filter.state], ignoreCase = true) }
+                        "Publish Status" -> directory.filter {
+                            it.getString(
+                                "ps",
+                            )!!.contains(filter.values[filter.state], ignoreCase = true)
+                        }
                         "Type" -> directory.filter { it.getString("t")!!.contains(filter.values[filter.state], ignoreCase = true) }
                         "Translation" -> directory.filter { it.getString("o")!!.contains("yes", ignoreCase = true) }
                         else -> directory
@@ -282,18 +298,33 @@ abstract class NepNep(
     private fun chapterURLEncode(e: String): String {
         var index = ""
         val t = e.substring(0, 1).toInt()
-        if (1 != t) { index = "-index-$t" }
-        val dgt = if (e.toInt() < 100100) { 4 } else if (e.toInt() < 101000) { 3 } else if (e.toInt() < 110000) { 2 } else { 1 }
+        if (1 != t) {
+            index = "-index-$t"
+        }
+        val dgt = if (e.toInt() < 100100) {
+            4
+        } else if (e.toInt() < 101000) {
+            3
+        } else if (e.toInt() < 110000) {
+            2
+        } else {
+            1
+        }
         val n = e.substring(dgt, e.length - 1)
         var suffix = ""
         val path = e.substring(e.length - 1).toInt()
-        if (0 != path) { suffix = ".$path" }
+        if (0 != path) {
+            suffix = ".$path"
+        }
         return "-chapter-$n$suffix$index.html"
     }
 
     private val chapterImageRegex = Regex("""^0+""")
 
-    private fun chapterImage(e: String, cleanString: Boolean = false): String {
+    private fun chapterImage(
+        e: String,
+        cleanString: Boolean = false,
+    ): String {
         // cleanString will result in an empty string if chapter number is 0, hence the else if below
         val a = e.substring(1, e.length - 1).let { if (cleanString) it.replace(chapterImageRegex, "") else it }
         // If b is not zero, indicates chapter has decimal numbering
@@ -367,17 +398,25 @@ abstract class NepNep(
     // Filters
 
     private class Sort : Filter.Sort("Sort", arrayOf("Alphabetically", "Date updated", "Popularity"), Selection(2, false))
+
     private class Genre(name: String) : Filter.TriState(name)
+
     private class YearField : Filter.Text("Years")
+
     private class AuthorField : Filter.Text("Author")
+
     private class SelectField(name: String, values: Array<String>, state: Int = 0) : Filter.Select<String>(name, values, state)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
 
     override fun getFilterList() = FilterList(
         YearField(),
         AuthorField(),
         SelectField("Scan Status", arrayOf("Any", "Complete", "Discontinued", "Hiatus", "Incomplete", "Ongoing")),
-        SelectField("Publish Status", arrayOf("Any", "Cancelled", "Complete", "Discontinued", "Hiatus", "Incomplete", "Ongoing", "Unfinished")),
+        SelectField(
+            "Publish Status",
+            arrayOf("Any", "Cancelled", "Complete", "Discontinued", "Hiatus", "Incomplete", "Ongoing", "Unfinished"),
+        ),
         SelectField("Type", arrayOf("Any", "Doujinshi", "Manga", "Manhua", "Manhwa", "OEL", "One-shot")),
         SelectField("Translation", arrayOf("Any", "Official Only")),
         Sort(),

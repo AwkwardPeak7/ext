@@ -70,7 +70,10 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         .addInterceptor(ErrorResponseInterceptor(baseUrl, preferences))
         .build()
 
-    private fun randomString(length: Int, pool: String): String {
+    private fun randomString(
+        length: Int,
+        pool: String,
+    ): String {
         return (1..length)
             .map { Random.nextInt(0, pool.length).let { pool[it] } }
             .joinToString("")
@@ -250,7 +253,11 @@ class Manhuaren : HttpSource(), ConfigurableSource {
             .build()
     }
 
-    private fun myRequest(url: HttpUrl, method: String, body: RequestBody?): Request {
+    private fun myRequest(
+        url: HttpUrl,
+        method: String,
+        body: RequestBody?,
+    ): Request {
         val now = DateFormat.format("yyyy-MM-dd+HH:mm:ss", Date()).toString()
         val newUrl = url.newBuilder()
             .setQueryParameter("gsm", "md5")
@@ -298,7 +305,10 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         )
     }
 
-    private fun myPost(url: HttpUrl, body: RequestBody?): Request {
+    private fun myPost(
+        url: HttpUrl,
+        body: RequestBody?,
+    ): Request {
         return myRequest(url, "POST", body).newBuilder()
             .cacheControl(CacheControl.Builder().noCache().noStore().build())
             .build()
@@ -361,7 +371,10 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         }
     }
 
-    private fun hashString(type: String, input: String): String {
+    private fun hashString(
+        type: String,
+        input: String,
+    ): String {
         val hexChars = "0123456789abcdef"
         val bytes = MessageDigest
             .getInstance(type)
@@ -444,7 +457,11 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         return mangasPageParse(response)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var url = baseHttpUrl.newBuilder()
             .addQueryParameter("start", (pageSize * (page - 1)).toString())
             .addQueryParameter("limit", pageSize.toString())
@@ -485,16 +502,22 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         title = obj.getString("mangaName")
         thumbnail_url = ""
         obj.optString("mangaCoverimageUrl").let {
-            if (it != "") { thumbnail_url = it }
+            if (it != "") {
+                thumbnail_url = it
+            }
         }
         if (thumbnail_url == "" || thumbnail_url == "http://mhfm5.tel.cdndm5.com/tag/category/nopic.jpg") {
             obj.optString("mangaPicimageUrl").let {
-                if (it != "") { thumbnail_url = it }
+                if (it != "") {
+                    thumbnail_url = it
+                }
             }
         }
         if (thumbnail_url == "") {
             obj.optString("shareIcon").let {
-                if (it != "") { thumbnail_url = it }
+                if (it != "") {
+                    thumbnail_url = it
+                }
             }
         }
 
@@ -522,18 +545,29 @@ class Manhuaren : HttpSource(), ConfigurableSource {
 
     override fun chapterListRequest(manga: SManga) = mangaDetailsRequest(manga)
 
-    private fun getChapterName(type: String, name: String, title: String): String {
+    private fun getChapterName(
+        type: String,
+        name: String,
+        title: String,
+    ): String {
         return (if (type == "mangaEpisode") "[番外] " else "") + name + (if (title == "") "" else ": $title")
     }
 
-    private fun chaptersFromJSONArray(type: String, arr: JSONArray): List<SChapter> {
+    private fun chaptersFromJSONArray(
+        type: String,
+        arr: JSONArray,
+    ): List<SChapter> {
         val ret = ArrayList<SChapter>()
         for (i in 0 until arr.length()) {
             val obj = arr.getJSONObject(i)
             ret.add(
                 SChapter.create().apply {
                     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    name = if (obj.getInt("isMustPay") == 1) { "(锁) " } else { "" } + getChapterName(type, obj.getString("sectionName"), obj.getString("sectionTitle"))
+                    name = if (obj.getInt("isMustPay") == 1) {
+                        "(锁) "
+                    } else {
+                        ""
+                    } + getChapterName(type, obj.getString("sectionName"), obj.getString("sectionTitle"))
                     date_upload = dateFormat.parse(obj.getString("releaseTime"))?.time ?: 0L
                     chapter_number = obj.getInt("sectionSort").toFloat()
                     url = "/v1/manga/getRead?mangaSectionId=${obj.getInt("sectionId")}"
@@ -648,10 +682,10 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         val vals: Array<Pair<String, String>>,
         state: Int = 0,
     ) : Filter.Select<String>(
-        name,
-        vals.map { it.first }.toTypedArray(),
-        state,
-    ) {
+            name,
+            vals.map { it.first }.toTypedArray(),
+            state,
+        ) {
         fun getId() = vals[state].second
     }
 
@@ -660,11 +694,12 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         val vals: Array<Category>,
         state: Int = 0,
     ) : Filter.Select<String>(
-        name,
-        vals.map { it.name }.toTypedArray(),
-        state,
-    ) {
+            name,
+            vals.map { it.name }.toTypedArray(),
+            state,
+        ) {
         fun getId() = vals[state].id
+
         fun getType() = vals[state].type
     }
 

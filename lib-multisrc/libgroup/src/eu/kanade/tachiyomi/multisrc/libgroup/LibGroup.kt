@@ -54,7 +54,6 @@ abstract class LibGroup(
     override val baseUrl: String,
     final override val lang: String,
 ) : ConfigurableSource, HttpSource() {
-
     private val json: Json by injectLazy()
 
     private val preferences: SharedPreferences by lazy {
@@ -76,6 +75,7 @@ abstract class LibGroup(
             response
         }
     }
+
     override val client: OkHttpClient = network.cloudflareClient.newBuilder()
         .rateLimit(3)
         .connectTimeout(5, TimeUnit.MINUTES)
@@ -85,10 +85,14 @@ abstract class LibGroup(
         .addInterceptor { chain ->
             val response = chain.proceed(chain.request())
             if (response.code == 419) {
-                throw IOException("HTTP error ${response.code}. Проверьте сайт. Для завершения авторизации необходимо перезапустить приложение с полной остановкой.")
+                throw IOException(
+                    "HTTP error ${response.code}. Проверьте сайт. Для завершения авторизации необходимо перезапустить приложение с полной остановкой.",
+                )
             }
             if (response.code == 404) {
-                throw IOException("HTTP error ${response.code}. Проверьте сайт. Попробуйте авторизоваться через WebView\uD83C\uDF0E︎ и обновите список глав.")
+                throw IOException(
+                    "HTTP error ${response.code}. Проверьте сайт. Попробуйте авторизоваться через WebView\uD83C\uDF0E︎ и обновите список глав.",
+                )
             }
             return@addInterceptor response
         }
@@ -115,7 +119,10 @@ abstract class LibGroup(
 
     protected fun catalogHeaders() = Headers.Builder()
         .apply {
-            add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer")
+            add(
+                "User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer",
+            )
             add("Accept", "application/json, text/plain, */*")
             add("X-Requested-With", "XMLHttpRequest")
             add("x-csrf-token", csrfToken)
@@ -124,6 +131,7 @@ abstract class LibGroup(
 
     // Latest
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException() // popularMangaRequest()
+
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
         if (csrfToken.isEmpty()) {
             return client.newCall(popularMangaRequest(page))
@@ -146,11 +154,11 @@ abstract class LibGroup(
             }
     }
 
-    override fun latestUpdatesParse(response: Response) =
-        popularMangaParse(response)
+    override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
     // Popular
     override fun popularMangaRequest(page: Int) = GET(baseUrl, headers)
+
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         if (csrfToken.isEmpty()) {
             return client.newCall(popularMangaRequest(page))
@@ -189,8 +197,12 @@ abstract class LibGroup(
     private fun popularMangaFromElement(el: JsonElement) = SManga.create().apply {
         val slug = el.jsonObject["slug"]!!.jsonPrimitive.content
         title = when {
-            isEng.equals("rus") && el.jsonObject["rus_name"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> el.jsonObject["rus_name"]!!.jsonPrimitive.content
-            isEng.equals("eng") && el.jsonObject["eng_name"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> el.jsonObject["eng_name"]!!.jsonPrimitive.content
+            isEng.equals(
+                "rus",
+            ) && el.jsonObject["rus_name"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> el.jsonObject["rus_name"]!!.jsonPrimitive.content
+            isEng.equals(
+                "eng",
+            ) && el.jsonObject["eng_name"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> el.jsonObject["eng_name"]!!.jsonPrimitive.content
             else -> el.jsonObject["name"]!!.jsonPrimitive.content
         }
         thumbnail_url = if (el.jsonObject["coverImage"] != null) {
@@ -244,8 +256,12 @@ abstract class LibGroup(
         }
         val genres = document.select(".media-tags > a").map { it.text().capitalize() }
         manga.title = when {
-            isEng.equals("rus") && dataManga!!.jsonObject["rusName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["rusName"]!!.jsonPrimitive.content
-            isEng.equals("eng") && dataManga!!.jsonObject["engName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["engName"]!!.jsonPrimitive.content
+            isEng.equals(
+                "rus",
+            ) && dataManga!!.jsonObject["rusName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["rusName"]!!.jsonPrimitive.content
+            isEng.equals(
+                "eng",
+            ) && dataManga!!.jsonObject["engName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["engName"]!!.jsonPrimitive.content
             else -> dataManga!!.jsonObject["name"]!!.jsonPrimitive.content
         }
         manga.thumbnail_url = document.select(".media-header__cover").attr("src")
@@ -260,7 +276,11 @@ abstract class LibGroup(
             SManga.LICENSED
         } else {
             when {
-                statusTranslate.contains("завершен") && statusTitle.contains("приостановлен") || statusTranslate.contains("заморожен") || statusTranslate.contains("заброшен") -> SManga.ON_HIATUS
+                statusTranslate.contains(
+                    "завершен",
+                ) && statusTitle.contains(
+                    "приостановлен",
+                ) || statusTranslate.contains("заморожен") || statusTranslate.contains("заброшен") -> SManga.ON_HIATUS
                 statusTranslate.contains("завершен") && statusTitle.contains("выпуск прекращён") -> SManga.CANCELLED
                 statusTranslate.contains("продолжается") -> SManga.ONGOING
                 statusTranslate.contains("завершен") -> SManga.COMPLETED
@@ -277,17 +297,25 @@ abstract class LibGroup(
         manga.genre = category + ", " + rawAgeStop + ", " + genres.joinToString { it.trim() }
 
         val altName = if (dataManga.jsonObject["altNames"]?.jsonArray.orEmpty().isNotEmpty()) {
-            "Альтернативные названия:\n" + dataManga.jsonObject["altNames"]!!.jsonArray.joinToString(" / ") { it.jsonPrimitive.content } + "\n\n"
+            "Альтернативные названия:\n" + dataManga.jsonObject["altNames"]!!.jsonArray.joinToString(
+                " / ",
+            ) { it.jsonPrimitive.content } + "\n\n"
         } else {
             ""
         }
 
         val mediaNameLanguage = when {
-            isEng.equals("eng") && dataManga.jsonObject["rusName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["rusName"]!!.jsonPrimitive.content + "\n"
-            isEng.equals("rus") && dataManga.jsonObject["engName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["engName"]!!.jsonPrimitive.content + "\n"
+            isEng.equals(
+                "eng",
+            ) && dataManga.jsonObject["rusName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["rusName"]!!.jsonPrimitive.content + "\n"
+            isEng.equals(
+                "rus",
+            ) && dataManga.jsonObject["engName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["engName"]!!.jsonPrimitive.content + "\n"
             else -> ""
         }
-        manga.description = mediaNameLanguage + ratingStar + " " + ratingValue + " (голосов: " + ratingVotes + ")\n" + altName + document.select(".media-description__text").text()
+        manga.description = mediaNameLanguage + ratingStar + " " + ratingValue + " (голосов: " + ratingVotes + ")\n" + altName + document.select(
+            ".media-description__text",
+        ).text()
         return manga
     }
 
@@ -295,7 +323,16 @@ abstract class LibGroup(
         return client.newCall(mangaDetailsRequest(manga))
             .asObservable().doOnNext { response ->
                 if (!response.isSuccessful) {
-                    if (response.code == 404 && response.asJsoup().select(".m-menu__sign-in").isNotEmpty()) throw Exception("HTTP error ${response.code}. Для просмотра 18+ контента необходима авторизация через WebView\uD83C\uDF0E︎") else throw Exception("HTTP error ${response.code}")
+                    if (response.code == 404 && response.asJsoup().select(
+                            ".m-menu__sign-in",
+                        ).isNotEmpty()
+                    ) {
+                        throw Exception(
+                            "HTTP error ${response.code}. Для просмотра 18+ контента необходима авторизация через WebView\uD83C\uDF0E︎",
+                        )
+                    } else {
+                        throw Exception("HTTP error ${response.code}")
+                    }
                 }
             }
             .map { response ->
@@ -344,7 +381,16 @@ abstract class LibGroup(
         return client.newCall(mangaDetailsRequest(manga))
             .asObservable().doOnNext { response ->
                 if (!response.isSuccessful) {
-                    if (response.code == 404 && response.asJsoup().select(".m-menu__sign-in").isNotEmpty()) throw Exception("HTTP error ${response.code}. Для просмотра 18+ контента необходима авторизация через WebView\uD83C\uDF0E︎") else throw Exception("HTTP error ${response.code}")
+                    if (response.code == 404 && response.asJsoup().select(
+                            ".m-menu__sign-in",
+                        ).isNotEmpty()
+                    ) {
+                        throw Exception(
+                            "HTTP error ${response.code}. Для просмотра 18+ контента необходима авторизация через WebView\uD83C\uDF0E︎",
+                        )
+                    } else {
+                        throw Exception("HTTP error ${response.code}")
+                    }
                 }
             }
             .map { response ->
@@ -352,7 +398,13 @@ abstract class LibGroup(
             }
     }
 
-    private fun sortChaptersByTranslator(sortingList: String?, chaptersList: JsonArray?, slug: String, userId: String, branches: List<JsonElement>): List<SChapter>? {
+    private fun sortChaptersByTranslator(
+        sortingList: String?,
+        chaptersList: JsonArray?,
+        slug: String,
+        userId: String,
+        branches: List<JsonElement>,
+    ): List<SChapter>? {
         var chapters: List<SChapter>? = null
         val volume = "(?<=/v)[0-9]+(?=/c[0-9]+)".toRegex()
         val tempChaptersList = mutableListOf<SChapter>()
@@ -380,7 +432,9 @@ abstract class LibGroup(
                             tempChaptersList.addAll(it)
                         }
                     }
-                    chapters = tempChaptersList.distinctBy { volume.find(it.url)?.value + "--" + it.chapter_number }.sortedWith(compareBy({ -it.chapter_number }, { volume.find(it.url)?.value }))
+                    chapters = tempChaptersList.distinctBy {
+                        volume.find(it.url)?.value + "--" + it.chapter_number
+                    }.sortedWith(compareBy({ -it.chapter_number }, { volume.find(it.url)?.value }))
                 }
                 "ms_combining" -> {
                     if (!groupTranslates.contains(teamsBranch.toString())) {
@@ -393,7 +447,16 @@ abstract class LibGroup(
         return chapters
     }
 
-    private fun chapterFromElement(chapterItem: JsonElement, sortingList: String?, slug: String, userId: String, teamIdParam: Int? = null, branches: List<JsonElement>? = null, teams: List<JsonElement>? = null, chaptersList: JsonArray? = null): SChapter {
+    private fun chapterFromElement(
+        chapterItem: JsonElement,
+        sortingList: String?,
+        slug: String,
+        userId: String,
+        teamIdParam: Int? = null,
+        branches: List<JsonElement>? = null,
+        teams: List<JsonElement>? = null,
+        chaptersList: JsonArray? = null,
+    ): SChapter {
         val chapter = SChapter.create()
 
         val volume = chapterItem.jsonObject["chapter_volume"]!!.jsonPrimitive.int
@@ -409,15 +472,37 @@ abstract class LibGroup(
 
         val nameChapter = chapterItem.jsonObject["chapter_name"]?.jsonPrimitive?.contentOrNull
         val fullNameChapter = "Том $volume. Глава $number"
-        chapter.scanlator = if (teams?.size == 1) teams[0].jsonObject["name"]?.jsonPrimitive?.content else if (isScanlatorId.orEmpty().isNotEmpty()) isScanlatorId!![0].jsonObject["name"]?.jsonPrimitive?.content else branches?.let { getScanlatorTeamName(it, chapterItem) } ?: if ((preferences.getBoolean(isScan_USER, false)) || (chaptersList?.distinctBy { it.jsonObject["username"]!!.jsonPrimitive.content }?.size == 1)) chapterItem.jsonObject["username"]!!.jsonPrimitive.content else null
+        chapter.scanlator = if (teams?.size == 1) {
+            teams[0].jsonObject["name"]?.jsonPrimitive?.content
+        } else if (isScanlatorId.orEmpty().isNotEmpty()) {
+            isScanlatorId!![0].jsonObject["name"]?.jsonPrimitive?.content
+        } else {
+            branches?.let {
+                getScanlatorTeamName(it, chapterItem)
+            } ?: if ((preferences.getBoolean(isScan_USER, false)) || (
+                    chaptersList?.distinctBy {
+                        it.jsonObject["username"]!!.jsonPrimitive.content
+                    }?.size == 1
+                )
+            ) {
+                chapterItem.jsonObject["username"]!!.jsonPrimitive.content
+            } else {
+                null
+            }
+        }
         chapter.name = if (nameChapter.isNullOrBlank()) fullNameChapter else "$fullNameChapter - $nameChapter"
-        chapter.date_upload = simpleDateFormat.parse(chapterItem.jsonObject["chapter_created_at"]!!.jsonPrimitive.content.substringBefore(" "))?.time ?: 0L
+        chapter.date_upload = simpleDateFormat.parse(
+            chapterItem.jsonObject["chapter_created_at"]!!.jsonPrimitive.content.substringBefore(" "),
+        )?.time ?: 0L
         chapter.chapter_number = number.toFloatOrNull() ?: -1f
 
         return chapter
     }
 
-    private fun getScanlatorTeamName(branches: List<JsonElement>, chapterItem: JsonElement): String? {
+    private fun getScanlatorTeamName(
+        branches: List<JsonElement>,
+        chapterItem: JsonElement,
+    ): String? {
         var scanlatorData: String? = null
         for (currentBranch in branches.withIndex()) {
             val branch = branches[currentBranch.index].jsonObject
@@ -516,7 +601,11 @@ abstract class LibGroup(
         return GET("$baseUrl/$id", headers)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SLUG_SEARCH)) {
             val realQuery = query.removePrefix(PREFIX_SLUG_SEARCH)
             client.newCall(searchMangaByIdRequest(realQuery))
@@ -536,7 +625,11 @@ abstract class LibGroup(
     }
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (csrfToken.isEmpty()) {
             val tokenResponse = client.newCall(popularMangaRequest(page)).execute()
             val resBody = tokenResponse.body.string()
@@ -575,7 +668,10 @@ abstract class LibGroup(
                 }
                 is OrderBy -> {
                     url.addQueryParameter("dir", if (filter.state!!.ascending) "asc" else "desc")
-                    url.addQueryParameter("sort", arrayOf("rate", "name", "views", "created_at", "last_chapter_at", "chap_count")[filter.state!!.index])
+                    url.addQueryParameter(
+                        "sort",
+                        arrayOf("rate", "name", "views", "created_at", "last_chapter_at", "chap_count")[filter.state!!.index],
+                    )
                 }
                 is MyList -> filter.state.forEach { favorite ->
                     if (favorite.state != Filter.TriState.STATE_IGNORE) {
@@ -597,13 +693,19 @@ abstract class LibGroup(
 
     // Filters
     private class SearchFilter(name: String, val id: String) : Filter.TriState(name)
+
     private class CheckFilter(name: String, val id: String) : Filter.CheckBox(name)
 
     private class CategoryList(categories: List<CheckFilter>) : Filter.Group<CheckFilter>("Тип", categories)
+
     private class FormatList(formas: List<SearchFilter>) : Filter.Group<SearchFilter>("Формат выпуска", formas)
+
     private class StatusList(statuses: List<CheckFilter>) : Filter.Group<CheckFilter>("Статус перевода", statuses)
+
     private class StatusTitleList(titles: List<CheckFilter>) : Filter.Group<CheckFilter>("Статус тайтла", titles)
+
     private class GenreList(genres: List<SearchFilter>) : Filter.Group<SearchFilter>("Жанры", genres)
+
     private class MyList(favorites: List<SearchFilter>) : Filter.Group<SearchFilter>("Мои списки", favorites)
 
     override fun getFilterList() = FilterList(
@@ -738,6 +840,7 @@ abstract class LibGroup(
     private var isServer: String? = preferences.getString(SERVER_PREF, "fourth")
     private var isEng: String? = preferences.getString(LANGUAGE_PREF, "eng")
     private var groupTranslates: String = preferences.getString(TRANSLATORS_TITLE, TRANSLATORS_DEFAULT)!!
+
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         val serverPref = ListPreference(screen.context).apply {
             key = SERVER_PREF
@@ -800,7 +903,12 @@ abstract class LibGroup(
         screen.addPreference(scanlatorUsername)
         screen.addPreference(titleLanguagePref)
     }
-    private fun PreferenceScreen.editTextPreference(title: String, default: String, value: String): androidx.preference.EditTextPreference {
+
+    private fun PreferenceScreen.editTextPreference(
+        title: String,
+        default: String,
+        value: String,
+    ): androidx.preference.EditTextPreference {
         return androidx.preference.EditTextPreference(context).apply {
             key = title
             this.title = title
@@ -810,7 +918,11 @@ abstract class LibGroup(
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val res = preferences.edit().putString(title, newValue as String).commit()
-                    Toast.makeText(context, "Для обновления списка необходимо перезапустить приложение с полной остановкой.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        "Для обновления списка необходимо перезапустить приложение с полной остановкой.",
+                        Toast.LENGTH_LONG,
+                    ).show()
                     res
                 } catch (e: Exception) {
                     e.printStackTrace()

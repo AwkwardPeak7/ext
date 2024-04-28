@@ -21,7 +21,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class TruyenQQ : ParsedHttpSource() {
-
     override val name: String = "TruyenQQ"
 
     override val lang: String = "vi"
@@ -37,14 +36,12 @@ class TruyenQQ : ParsedHttpSource() {
         .followRedirects(true)
         .build()
 
-    override fun headersBuilder(): Headers.Builder =
-        super.headersBuilder().add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder = super.headersBuilder().add("Referer", "$baseUrl/")
 
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)
 
     // Trang html chứa popular
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/truyen-yeu-thich/trang-$page.html", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/truyen-yeu-thich/trang-$page.html", headers)
 
     // Selector trả về array các manga (chọn cả ảnh cx được tí nữa parse)
     override fun popularMangaSelector(): String = "ul.grid > li"
@@ -57,23 +54,24 @@ class TruyenQQ : ParsedHttpSource() {
     }
 
     // Selector của nút trang kế tiếp
-    override fun popularMangaNextPageSelector(): String =
-        ".page_redirect > a:nth-last-child(2) > p:not(.active)"
+    override fun popularMangaNextPageSelector(): String = ".page_redirect > a:nth-last-child(2) > p:not(.active)"
 
     // Trang html chứa Latest (các cập nhật mới nhất)
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/truyen-moi-cap-nhat/trang-$page.html", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/truyen-moi-cap-nhat/trang-$page.html", headers)
 
     // Selector trả về array các manga update (giống selector ở trên)
     override fun latestUpdatesSelector(): String = popularMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
 
     // Tìm kiếm
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = if (query.isNotBlank()) {
             "$baseUrl/tim-kiem/trang-$page.html".toHttpUrl().newBuilder()
                 .addQueryParameter("q", query)
@@ -134,14 +132,12 @@ class TruyenQQ : ParsedHttpSource() {
         .build()
 
     // Pages
-    override fun pageListParse(document: Document): List<Page> =
-        document.select(".page-chapter img")
-            .mapIndexed { idx, it ->
-                Page(idx, imageUrl = it.attr("abs:src"))
-            }
+    override fun pageListParse(document: Document): List<Page> = document.select(".page-chapter img")
+        .mapIndexed { idx, it ->
+            Page(idx, imageUrl = it.attr("abs:src"))
+        }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun getFilterList(): FilterList = FilterList(
         Filter.Header("Không dùng chung với tìm kiếm bằng tên"),

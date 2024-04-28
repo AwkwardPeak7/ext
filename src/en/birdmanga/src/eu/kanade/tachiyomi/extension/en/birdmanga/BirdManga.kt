@@ -23,7 +23,11 @@ class BirdManga : MangaThemesia(
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val request = super.searchMangaRequest(page, query, filters)
         val url = request.url.newBuilder().apply {
             removeAllQueryParameters("title")

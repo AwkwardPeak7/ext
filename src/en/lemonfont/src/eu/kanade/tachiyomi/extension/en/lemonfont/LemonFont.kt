@@ -80,7 +80,11 @@ class LemonFont : ParsedHttpSource() {
         return Observable.just(listOf(Page(0, "", baseUrl + chapter.url)))
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return Observable.just(MangasPage(emptyList(), false))
     }
 
@@ -88,7 +92,11 @@ class LemonFont : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     override fun chapterListSelector() = throw UnsupportedOperationException()
 

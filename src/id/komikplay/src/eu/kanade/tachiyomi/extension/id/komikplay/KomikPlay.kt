@@ -12,7 +12,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class KomikPlay : ZManga("KomikPlay", "https://komikplay.com", "id", SimpleDateFormat("d MMM yyyy", Locale.US)) {
-
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/${pagePathSegment(page)}/?s")
     }
@@ -31,7 +30,11 @@ class KomikPlay : ZManga("KomikPlay", "https://komikplay.com", "id", SimpleDateF
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var url = "$baseUrl/${pagePathSegment(page)}".toHttpUrl().newBuilder()
         url.addQueryParameter("s", query)
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->

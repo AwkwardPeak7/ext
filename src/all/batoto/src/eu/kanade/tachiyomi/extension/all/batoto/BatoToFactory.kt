@@ -8,6 +8,7 @@ class BatoToFactory : SourceFactory {
 }
 
 class LanguageOption(val lang: String, val siteLang: String = lang)
+
 private val languages = listOf(
     LanguageOption("all", ""),
     // Lang options from publish.bato.to

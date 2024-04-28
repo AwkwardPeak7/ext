@@ -26,7 +26,6 @@ import kotlin.random.Random
  * Heavily customized MyMangaReaderCMS source
  */
 class MangaKawaii : ParsedHttpSource() {
-
     override val name = "Mangakawaii"
     override val baseUrl = "https://www.mangakawaii.io"
     private val cdnUrl = "https://cdn.mangakawaii.io"
@@ -56,8 +55,11 @@ class MangaKawaii : ParsedHttpSource() {
 
     // Popular
     override fun popularMangaRequest(page: Int) = GET(baseUrl, headers)
+
     override fun popularMangaSelector() = "a.hot-manga__item"
+
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.select("div.hot-manga__item-caption").select("div.hot-manga__item-name").text().trim()
         setUrlWithoutDomain(element.select("a").attr("href"))
@@ -66,8 +68,11 @@ class MangaKawaii : ParsedHttpSource() {
 
     // Latest
     override fun latestUpdatesRequest(page: Int) = GET(baseUrl, headers)
+
     override fun latestUpdatesSelector() = ".section__list-group li div.section__list-group-left"
+
     override fun latestUpdatesNextPageSelector(): String? = null
+
     override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
         title = element.select("a").attr("title")
         setUrlWithoutDomain(element.select("a").attr("href"))
@@ -75,15 +80,22 @@ class MangaKawaii : ParsedHttpSource() {
     }
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val uri = Uri.parse("$baseUrl/search").buildUpon()
             .appendQueryParameter("query", query)
             .appendQueryParameter("search_type", "manga")
             .appendQueryParameter("page", page.toString())
         return GET(uri.toString(), headers)
     }
+
     override fun searchMangaSelector() = "div.section__list-group-heading"
+
     override fun searchMangaNextPageSelector(): String = "ul.pagination a[rel*=next]"
+
     override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.select("a").text().trim()
         setUrlWithoutDomain(element.select("a").attr("href"))
@@ -116,7 +128,9 @@ class MangaKawaii : ParsedHttpSource() {
 
     // Chapter list
     override fun chapterListSelector() = throw UnsupportedOperationException()
+
     override fun chapterFromElement(element: Element): SChapter = throw UnsupportedOperationException()
+
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
 
@@ -178,7 +192,9 @@ class MangaKawaii : ParsedHttpSource() {
         }
         return pages
     }
+
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
+
     override fun imageRequest(page: Page): Request {
         val imgHeaders = headersBuilder().apply {
             add("Referer", baseUrl)

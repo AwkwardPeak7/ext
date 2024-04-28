@@ -38,7 +38,10 @@ operator fun StringBuilder.plusAssign(other: String) {
 /**
  * Converts bytes into a human readable String
  */
-fun humanReadableByteCount(bytes: Long, si: Boolean): String {
+fun humanReadableByteCount(
+    bytes: Long,
+    si: Boolean,
+): String {
     val unit = if (si) 1000 else 1024
     if (bytes < unit) return "$bytes B"
     val exp = (ln(bytes.toDouble()) / ln(unit.toDouble())).toInt()

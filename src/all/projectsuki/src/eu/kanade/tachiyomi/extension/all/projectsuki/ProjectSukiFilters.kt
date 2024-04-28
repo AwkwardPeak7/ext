@@ -20,9 +20,9 @@ internal val newlineRegex = """\R""".toRegex(RegexOption.IGNORE_CASE)
  */
 @Suppress("NOTHING_TO_INLINE")
 object ProjectSukiFilters {
-
     internal sealed interface ProjectSukiFilter {
         fun HttpUrl.Builder.applyFilter()
+
         val headers: List<Filter.Header> get() = emptyList()
     }
 
@@ -65,6 +65,7 @@ object ProjectSukiFilters {
 
         companion object {
             private val values: Array<StatusValue> = values()
+
             operator fun get(ordinal: Int): StatusValue = values[ordinal]
         }
     }
@@ -80,13 +81,18 @@ object ProjectSukiFilters {
 
         companion object {
             private val values: Array<OriginValue> = OriginValue.values()
+
             operator fun get(ordinal: Int): OriginValue = values[ordinal]
         }
     }
 
     enum class SearchMode(val display: String, val description: SearchMode.() -> String) {
-        SMART("Smart", { "Searches for books that have chapters using Unicode ICU Collation and utilities, should work for queries in all languages." }),
-        SIMPLE("Simple", { "Ideally the same as $SMART. Necessary for Android API < 24. MIGHT make searches faster. Might be unreliable for non-english characters." }),
+        SMART("Smart", {
+            "Searches for books that have chapters using Unicode ICU Collation and utilities, should work for queries in all languages."
+        }),
+        SIMPLE("Simple", {
+            "Ideally the same as $SMART. Necessary for Android API < 24. MIGHT make searches faster. Might be unreliable for non-english characters."
+        }),
         FULL_SITE("Full Site", { "Executes a /search web query on the website. Might return non-relevant results without chapters." }),
         ;
 
@@ -94,11 +100,18 @@ object ProjectSukiFilters {
 
         companion object {
             private val values: Array<SearchMode> = SearchMode.values()
+
             operator fun get(ordinal: Int): SearchMode = values[ordinal]
         }
     }
 
-    class SearchModeFilter(default: SearchMode) : Filter.Select<SearchMode>("Search Mode", SearchMode.values(), state = default.ordinal), ProjectSukiFilter {
+    class SearchModeFilter(default: SearchMode) :
+        Filter.Select<SearchMode>(
+            "Search Mode",
+            SearchMode.values(),
+            state = default.ordinal,
+        ),
+        ProjectSukiFilter {
         override val headers: List<Header> = headers {
             """
             See Extensions > Project Suki > Gear icon

@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Baozi : ParsedHttpSource(), ConfigurableSource {
-
     override val id = 5724751873601868259
 
     override val name = "包子漫画"
@@ -181,7 +180,11 @@ class Baozi : ParsedHttpSource(), ConfigurableSource {
 
     override fun searchMangaNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(ID_SEARCH_PREFIX)) {
             val id = query.removePrefix(ID_SEARCH_PREFIX)
             client.newCall(searchMangaByIdRequest(id))
@@ -194,13 +197,20 @@ class Baozi : ParsedHttpSource(), ConfigurableSource {
 
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/comic/$id", headers)
 
-    private fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    private fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val sManga = mangaDetailsParse(response)
         sManga.url = "/comic/$id"
         return MangasPage(listOf(sManga), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // impossible to search a manga and use the filters
         return if (query.isNotEmpty()) {
             val baseUrl = baseUrl.replace(".dinnerku.com", ".baozimh.com")

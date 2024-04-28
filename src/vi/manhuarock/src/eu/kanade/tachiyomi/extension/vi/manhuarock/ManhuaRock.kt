@@ -26,7 +26,6 @@ import java.util.Locale
 import java.util.TimeZone
 
 class ManhuaRock : ParsedHttpSource() {
-
     // Site changed from FMReader to some Madara copycat
     override val versionId = 2
 
@@ -71,7 +70,11 @@ class ManhuaRock : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (query.isNotBlank()) {
                 addPathSegment("search")

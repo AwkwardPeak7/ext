@@ -18,7 +18,6 @@ import rx.Observable
 import java.util.concurrent.TimeUnit
 
 abstract class NoiseManga(override val lang: String) : ParsedHttpSource() {
-
     override val name = "NOISE"
 
     override val baseUrl = "https://noisemanga.com"
@@ -49,7 +48,11 @@ abstract class NoiseManga(override val lang: String) : ParsedHttpSource() {
     /**
      * Since there are only three series, it's worth to do a client-side search.
      */
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return super.fetchSearchManga(page, query, filters)
             .map {
                 val mangas = it.mangas.filter { m -> m.title.contains(query, true) }
@@ -57,7 +60,11 @@ abstract class NoiseManga(override val lang: String) : ParsedHttpSource() {
             }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = popularMangaRequest(page)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = popularMangaRequest(page)
 
     override fun searchMangaSelector() = popularMangaSelector()
 

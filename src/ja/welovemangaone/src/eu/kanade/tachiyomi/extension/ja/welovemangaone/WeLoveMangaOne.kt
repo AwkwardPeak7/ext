@@ -11,8 +11,7 @@ import org.jsoup.nodes.Element
 import java.util.Calendar
 
 class WeLoveMangaOne : FMReader("WeLoveMangaOne", "https://welovemanga.one", "ja") {
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/manga-list.html?page=$page&sort=last_update")
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/manga-list.html?page=$page&sort=last_update")
 
     override fun chapterListRequest(manga: SManga): Request {
         val mangaId = MID_URL_REGEX.find(manga.url)
@@ -26,7 +25,10 @@ class WeLoveMangaOne : FMReader("WeLoveMangaOne", "https://welovemanga.one", "ja
         return GET(xhrUrl, headers)
     }
 
-    override fun chapterFromElement(element: Element, mangaTitle: String): SChapter {
+    override fun chapterFromElement(
+        element: Element,
+        mangaTitle: String,
+    ): SChapter {
         return SChapter.create().apply {
             element.let {
                 setUrlWithoutDomain(it.attr("abs:href"))

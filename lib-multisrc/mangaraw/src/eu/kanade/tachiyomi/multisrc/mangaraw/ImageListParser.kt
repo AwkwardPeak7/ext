@@ -8,8 +8,8 @@ class ImageListParser(
     private val keys: String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
     private val pattern: String = """'BYFxAcGcC4.*?'""",
 ) {
-
     private val code: String
+
     init {
         code = getCode(html)
     }
@@ -83,7 +83,11 @@ class ImageListParser(
 
     private data class Data(var value: Int, var position: Int, var index: Int)
 
-    private fun getCharCode(data: Data, position: Int, max: Int): Int {
+    private fun getCharCode(
+        data: Data,
+        position: Int,
+        max: Int,
+    ): Int {
         var charIndex = 0
 
         var i = 1
@@ -116,7 +120,6 @@ class ImageListParser(
     }
 
     companion object {
-
         private fun String.charAt(index: Int): String {
             return substring(index, index + 1)
         }

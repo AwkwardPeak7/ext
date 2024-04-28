@@ -19,7 +19,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class Mangatown : ParsedHttpSource() {
-
     override val name = "Mangatown"
 
     override val baseUrl = "https://www.mangatown.com"
@@ -61,7 +60,11 @@ class Mangatown : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return POST("$baseUrl/search?page=$page&name=$query", headers)
     }
 

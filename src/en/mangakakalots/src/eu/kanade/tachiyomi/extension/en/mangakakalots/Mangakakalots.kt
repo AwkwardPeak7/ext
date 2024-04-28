@@ -7,8 +7,14 @@ import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class Mangakakalots : MangaBox("Mangakakalots (unoriginal)", "https://mangakakalots.com", "en", SimpleDateFormat("MMM dd,yy", Locale.ENGLISH)) {
+class Mangakakalots : MangaBox(
+    "Mangakakalots (unoriginal)",
+    "https://mangakakalots.com",
+    "en",
+    SimpleDateFormat("MMM dd,yy", Locale.ENGLISH),
+) {
     override fun searchMangaSelector(): String = "${super.searchMangaSelector()}, div.list-truyen-item-wrap"
+
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
         val mangas = document.select(searchMangaSelector()).map { mangaFromElement(it) }
@@ -17,12 +23,15 @@ class Mangakakalots : MangaBox("Mangakakalots (unoriginal)", "https://mangakakal
 
         return MangasPage(mangas, hasNextPage)
     }
+
     override fun searchMangaNextPageSelector() = "div.group_page a:last-of-type"
+
     override fun getStatusFilters(): Array<Pair<String?, String>> = arrayOf(
         Pair("all", "ALL"),
         Pair("Completed", "Completed"),
         Pair("Ongoing", "Ongoing"),
     )
+
     override fun getGenreFilters(): Array<Pair<String?, String>> = arrayOf(
         Pair("all", "ALL"),
         Pair("Action", "Action"),

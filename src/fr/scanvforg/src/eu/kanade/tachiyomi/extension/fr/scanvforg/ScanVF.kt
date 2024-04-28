@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class ScanVF : ParsedHttpSource() {
-
     override val name = "scanvf.org"
 
     override val baseUrl = "https://scanvf.org"
@@ -93,7 +92,11 @@ class ScanVF : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             addPathSegment("search")
             addQueryParameter("q", query)
@@ -155,8 +158,7 @@ class ScanVF : ParsedHttpSource() {
         }
     }
 
-    override fun imageUrlParse(document: Document): String =
-        document.selectFirst("div.book-page img")!!.absUrl("src")
+    override fun imageUrlParse(document: Document): String = document.selectFirst("div.book-page img")!!.absUrl("src")
 
     // Disable redirects, since an out of range page request redirects us back
     // to the manga details page.

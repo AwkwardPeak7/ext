@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
 
 class IMHentaiFactory : SourceFactory {
-
     override fun createSources(): List<Source> = listOf(
         IMHentai("en", GalleryAdults.LANGUAGE_ENGLISH),
         IMHentai("ja", GalleryAdults.LANGUAGE_JAPANESE),

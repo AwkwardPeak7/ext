@@ -81,93 +81,85 @@ class Netcomics(
         }
     }
 
-    override fun searchMangaParse(response: Response) =
-        response.data<List<Title>>().ifEmpty {
-            error("No more pages")
-        }.map {
-            SManga.create().apply {
-                url = it.slug
-                title = it.toString()
-                genre = it.genres
-                author = it.authors
-                artist = it.artists
-                description = it.description
-                thumbnail_url = it.thumbnail
-                status = when {
-                    it.isCompleted -> SManga.COMPLETED
-                    else -> SManga.ONGOING
-                }
-            }
-        }.run { MangasPage(this, size == 20) }
-
-    override fun chapterListParse(response: Response) =
-        response.data<List<Chapter>>().map {
-            SChapter.create().apply {
-                url = it.path
-                name = it.toString()
-                date_upload = it.timestamp
-                chapter_number = it.number
+    override fun searchMangaParse(response: Response) = response.data<List<Title>>().ifEmpty {
+        error("No more pages")
+    }.map {
+        SManga.create().apply {
+            url = it.slug
+            title = it.toString()
+            genre = it.genres
+            author = it.authors
+            artist = it.artists
+            description = it.description
+            thumbnail_url = it.thumbnail
+            status = when {
+                it.isCompleted -> SManga.COMPLETED
+                else -> SManga.ONGOING
             }
         }
+    }.run { MangasPage(this, size == 20) }
 
-    override fun pageListParse(response: Response) =
-        response.data<PageList>().map {
-            Page(it.seq, "", it.toString())
+    override fun chapterListParse(response: Response) = response.data<List<Chapter>>().map {
+        SChapter.create().apply {
+            url = it.path
+            name = it.toString()
+            date_upload = it.timestamp
+            chapter_number = it.number
         }
+    }
 
-    override fun fetchLatestUpdates(page: Int) =
-        apiUrl.fetch("title", ::searchMangaParse) {
-            addEncodedPathSegment("new")
-            addEncodedQueryParameter("no", page.toString())
-            addEncodedQueryParameter("size", "20")
-            addEncodedQueryParameter("day", day)
+    override fun pageListParse(response: Response) = response.data<PageList>().map {
+        Page(it.seq, "", it.toString())
+    }
+
+    override fun fetchLatestUpdates(page: Int) = apiUrl.fetch("title", ::searchMangaParse) {
+        addEncodedPathSegment("new")
+        addEncodedQueryParameter("no", page.toString())
+        addEncodedQueryParameter("size", "20")
+        addEncodedQueryParameter("day", day)
+    }
+
+    override fun fetchPopularManga(page: Int) = apiUrl.fetch("title", ::searchMangaParse) {
+        addEncodedPathSegment("free")
+        addEncodedQueryParameter("no", page.toString())
+        addEncodedQueryParameter("size", "20")
+    }
+
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = apiUrl.fetch("title", ::searchMangaParse) {
+        if (query.isNotBlank()) {
+            addEncodedPathSegments("search/text")
+            addQueryParameter("text", query)
+        } else {
+            addEncodedPathSegment("genre")
+            addQueryParameter("genre", filters.genre)
         }
+        addEncodedQueryParameter("no", page.toString())
+        addEncodedQueryParameter("size", "20")
+    }
 
-    override fun fetchPopularManga(page: Int) =
-        apiUrl.fetch("title", ::searchMangaParse) {
-            addEncodedPathSegment("free")
-            addEncodedQueryParameter("no", page.toString())
-            addEncodedQueryParameter("size", "20")
-        }
+    override fun fetchMangaDetails(manga: SManga) = rx.Observable.just(manga.apply { initialized = true })!!
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
-        apiUrl.fetch("title", ::searchMangaParse) {
-            if (query.isNotBlank()) {
-                addEncodedPathSegments("search/text")
-                addQueryParameter("text", query)
-            } else {
-                addEncodedPathSegment("genre")
-                addQueryParameter("genre", filters.genre)
-            }
-            addEncodedQueryParameter("no", page.toString())
-            addEncodedQueryParameter("size", "20")
-        }
+    override fun fetchChapterList(manga: SManga) = apiUrl.fetch("chapter", ::chapterListParse) {
+        addEncodedPathSegment("list")
+        addEncodedPathSegment(manga.id)
+        addEncodedPathSegment("rent")
+    }
 
-    override fun fetchMangaDetails(manga: SManga) =
-        rx.Observable.just(manga.apply { initialized = true })!!
+    override fun fetchPageList(chapter: SChapter) = apiUrl.fetch("chapter", ::pageListParse) {
+        addEncodedPathSegment("viewer")
+        addEncodedPathSegment(quality)
+        addEncodedPathSegments(chapter.url)
+    }
 
-    override fun fetchChapterList(manga: SManga) =
-        apiUrl.fetch("chapter", ::chapterListParse) {
-            addEncodedPathSegment("list")
-            addEncodedPathSegment(manga.id)
-            addEncodedPathSegment("rent")
-        }
+    override fun getMangaUrl(manga: SManga) = "$baseUrl/$site/comic/${manga.slug}"
 
-    override fun fetchPageList(chapter: SChapter) =
-        apiUrl.fetch("chapter", ::pageListParse) {
-            addEncodedPathSegment("viewer")
-            addEncodedPathSegment(quality)
-            addEncodedPathSegments(chapter.url)
-        }
+    override fun getChapterUrl(chapter: SChapter) = "$baseUrl/viewer/${chapter.url}"
 
-    override fun getMangaUrl(manga: SManga) =
-        "$baseUrl/$site/comic/${manga.slug}"
-
-    override fun getChapterUrl(chapter: SChapter) =
-        "$baseUrl/viewer/${chapter.url}"
-
-    override fun getFilterList() =
-        FilterList(GenreFilter.NOTE, GenreFilter())
+    override fun getFilterList() = FilterList(GenreFilter.NOTE, GenreFilter())
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         SwitchPreferenceCompat(screen.context).apply {
@@ -207,35 +199,29 @@ class Netcomics(
         }.let(screen::addPreference)
     }
 
-    override fun latestUpdatesRequest(page: Int) =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun popularMangaRequest(page: Int) =
-        throw UnsupportedOperationException()
+    override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
-    override fun mangaDetailsRequest(manga: SManga) =
-        throw UnsupportedOperationException()
+    override fun mangaDetailsRequest(manga: SManga) = throw UnsupportedOperationException()
 
-    override fun chapterListRequest(manga: SManga) =
-        throw UnsupportedOperationException()
+    override fun chapterListRequest(manga: SManga) = throw UnsupportedOperationException()
 
-    override fun pageListRequest(chapter: SChapter) =
-        throw UnsupportedOperationException()
+    override fun pageListRequest(chapter: SChapter) = throw UnsupportedOperationException()
 
-    override fun latestUpdatesParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun popularMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun mangaDetailsParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     private inline val SManga.slug: String
         get() = url.substringBefore('|')
@@ -246,14 +232,13 @@ class Netcomics(
     private inline val FilterList.genre: String
         get() = find { it is GenreFilter }?.toString() ?: ""
 
-    private inline fun <reified T> Response.data() =
-        json.decodeFromJsonElement<T>(
-            json.parseToJsonElement(body.string()).run {
-                jsonObject["data"] ?: throw Error(
-                    jsonObject["message"]!!.jsonPrimitive.content,
-                )
-            },
-        )
+    private inline fun <reified T> Response.data() = json.decodeFromJsonElement<T>(
+        json.parseToJsonElement(body.string()).run {
+            jsonObject["data"] ?: throw Error(
+                jsonObject["message"]!!.jsonPrimitive.content,
+            )
+        },
+    )
 
     private inline fun <R> HttpUrl.fetch(
         path: String,

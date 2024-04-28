@@ -136,7 +136,11 @@ class ScantradUnion : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector(): String? = null
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val searchUrl = "$baseUrl/?s=$query$searchUrlSuffix"
         return GET(searchUrl, headers)
     }

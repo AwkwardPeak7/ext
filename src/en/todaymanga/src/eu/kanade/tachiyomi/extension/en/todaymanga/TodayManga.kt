@@ -23,7 +23,6 @@ import java.util.Calendar
 import java.util.Locale
 
 open class TodayManga : ParsedHttpSource() {
-
     override val name = "TodayManga"
 
     override val baseUrl = "https://todaymanga.com"
@@ -43,8 +42,7 @@ open class TodayManga : ParsedHttpSource() {
 
     // ============================== Popular ===============================
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/category/most-popular".addPage(page), headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/category/most-popular".addPage(page), headers)
 
     override fun popularMangaSelector(): String = "section div.serie"
 
@@ -54,13 +52,11 @@ open class TodayManga : ParsedHttpSource() {
         title = element.selectFirst("h2")!!.text()
     }
 
-    override fun popularMangaNextPageSelector(): String =
-        ".pagination > ul > li.active + li:has(a)"
+    override fun popularMangaNextPageSelector(): String = ".pagination > ul > li.active + li:has(a)"
 
     // =============================== Latest ===============================
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/category/recent".addPage(page), headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/category/recent".addPage(page), headers)
 
     override fun latestUpdatesSelector(): String = "ul.series > li"
 
@@ -72,12 +68,15 @@ open class TodayManga : ParsedHttpSource() {
         thumbnail_url = element.selectFirst("img")!!.imgAttr()
     }
 
-    override fun latestUpdatesNextPageSelector(): String =
-        popularMangaNextPageSelector()
+    override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val categoryFilter = filterList.filterIsInstance<CategoryFilter>().first()
         val genreFilter = filterList.filterIsInstance<GenreFilter>().first()
@@ -111,11 +110,9 @@ open class TodayManga : ParsedHttpSource() {
 
     override fun searchMangaSelector(): String = popularMangaSelector()
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
-    override fun searchMangaNextPageSelector(): String =
-        popularMangaNextPageSelector()
+    override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
 
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()

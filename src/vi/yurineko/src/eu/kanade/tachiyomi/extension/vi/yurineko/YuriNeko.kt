@@ -29,7 +29,6 @@ import java.net.URLDecoder
 import java.util.concurrent.TimeUnit
 
 class YuriNeko : HttpSource() {
-
     override val name = "YuriNeko"
 
     override val baseUrl = "https://yurineko.net"
@@ -62,6 +61,7 @@ class YuriNeko : HttpSource() {
         }.build()
         return chain.proceed(authRequest)
     }
+
     private fun errorIntercept(chain: Interceptor.Chain): Response {
         val response = chain.proceed(chain.request())
 
@@ -95,7 +95,11 @@ class YuriNeko : HttpSource() {
 
     override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith(PREFIX_ID_SEARCH) -> {
                 val id = query.removePrefix(PREFIX_ID_SEARCH).trim()
@@ -113,7 +117,11 @@ class YuriNeko : HttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return when {
             query.startsWith(PREFIX_TAG_SEARCH) ||
                 query.startsWith(PREFIX_COUPLE_SEARCH) ||
@@ -170,15 +178,13 @@ class YuriNeko : HttpSource() {
 
     override fun searchMangaParse(response: Response): MangasPage = popularMangaParse(response)
 
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> =
-        client.newCall(GET("$apiUrl${manga.url}"))
-            .asObservableSuccess()
-            .map { mangaDetailsParse(it) }
+    override fun fetchMangaDetails(manga: SManga): Observable<SManga> = client.newCall(GET("$apiUrl${manga.url}"))
+        .asObservableSuccess()
+        .map { mangaDetailsParse(it) }
 
     override fun mangaDetailsRequest(manga: SManga): Request = GET("$baseUrl${manga.url}")
 
-    override fun mangaDetailsParse(response: Response): SManga =
-        response.parseAs<MangaDto>().toSManga()
+    override fun mangaDetailsParse(response: Response): SManga = response.parseAs<MangaDto>().toSManga()
 
     override fun chapterListRequest(manga: SManga): Request = GET("$apiUrl${manga.url}")
 
@@ -190,8 +196,7 @@ class YuriNeko : HttpSource() {
 
     override fun pageListRequest(chapter: SChapter): Request = GET("$apiUrl${chapter.url}")
 
-    override fun pageListParse(response: Response): List<Page> =
-        response.parseAs<ReadResponseDto>().toPageList()
+    override fun pageListParse(response: Response): List<Page> = response.parseAs<ReadResponseDto>().toPageList()
 
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 

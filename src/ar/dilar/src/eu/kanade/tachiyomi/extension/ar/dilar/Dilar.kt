@@ -23,10 +23,10 @@ private const val RESTART_TACHIYOMI = ".لتطبيق الإعدادات الجد
 
 class Dilar :
     ConfigurableSource, Gmanga(
-    "Dilar",
-    MIRROR_PREF_DEFAULT_VALUE,
-    "ar",
-) {
+        "Dilar",
+        MIRROR_PREF_DEFAULT_VALUE,
+        "ar",
+    ) {
     override fun chaptersRequest(manga: SManga): Request {
         val mangaId = manga.url.substringAfterLast("/")
         return GET("$baseUrl/api/mangas/$mangaId/releases", headers)

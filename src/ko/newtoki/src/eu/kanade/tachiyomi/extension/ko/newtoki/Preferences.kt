@@ -18,7 +18,6 @@ val manaTokiPreferences = getSharedPreferences(MANATOKI_ID).migrate()
 val newTokiPreferences = getSharedPreferences(NEWTOKI_ID).migrate()
 
 fun getPreferencesInternal(context: Context) = arrayOf(
-
     EditTextPreference(context).apply {
         key = DOMAIN_NUMBER_PREF
         title = domainNumberTitle()
@@ -33,7 +32,6 @@ fun getPreferencesInternal(context: Context) = arrayOf(
             }
         }
     },
-
     ListPreference(context).apply {
         key = RATE_LIMIT_PERIOD_PREF
         title = rateLimitTitle()
@@ -57,7 +55,8 @@ val SharedPreferences.rateLimitPeriod: Int
 private fun SharedPreferences.migrate(): SharedPreferences {
     if ("Override BaseUrl" !in this) return this // already migrated
     val editor = edit().clear() // clear all legacy preferences listed below
-    val oldValue = try { // this was a long
+    val oldValue = try {
+        // this was a long
         getLong(RATE_LIMIT_PERIOD_PREF, -1).toInt()
     } catch (_: ClassCastException) {
         -1
@@ -86,5 +85,4 @@ private const val RATE_LIMIT_PERIOD_PREF = "rateLimitPeriod"
 private const val RATE_LIMIT_PERIOD_DEFAULT = 2.toString()
 private const val RATE_LIMIT_PERIOD_MAX = 9
 
-private fun getSharedPreferences(id: Long): SharedPreferences =
-    Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
+private fun getSharedPreferences(id: Long): SharedPreferences = Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)

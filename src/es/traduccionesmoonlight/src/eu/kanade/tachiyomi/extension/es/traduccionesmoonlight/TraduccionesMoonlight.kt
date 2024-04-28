@@ -23,5 +23,6 @@ class TraduccionesMoonlight : MangaThemesia(
     override val seriesStatusSelector = ".tsinfo .imptdt:contains(estado) i"
 
     // Filter out novels
-    override fun searchMangaSelector() = ".utao .uta .imgu:not(:has(.novelabel)), .listupd .bs .bsx:not(:has(.novelabel)), .listo .bs .bsx:not(:has(.novelabel))"
+    override fun searchMangaSelector() =
+        ".utao .uta .imgu:not(:has(.novelabel)), .listupd .bs .bsx:not(:has(.novelabel)), .listo .bs .bsx:not(:has(.novelabel))"
 }

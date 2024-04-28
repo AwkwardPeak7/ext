@@ -30,7 +30,10 @@ data class ApiComic(
     val Author: String,
     val Artist: String,
 ) {
-    fun toSManga(json: Json, cdnUrl: String) = SManga.create().apply {
+    fun toSManga(
+        json: Json,
+        cdnUrl: String,
+    ) = SManga.create().apply {
         title = ComicTitle
         thumbnail_url = "$cdnUrl$CoverImage#thumbnail"
         url = "/comics/$id-${ComicTitle.titleToSlug()}"

@@ -24,8 +24,7 @@ class Pixiv(override val lang: String) : HttpSource() {
 
     private val json: Json by injectLazy()
 
-    override fun headersBuilder(): Headers.Builder =
-        super.headersBuilder().add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder = super.headersBuilder().add("Referer", "$baseUrl/")
 
     private open inner class HttpCall(href: String?) {
         val url: HttpUrl.Builder = baseUrl.toHttpUrl()
@@ -34,8 +33,7 @@ class Pixiv(override val lang: String) : HttpSource() {
         val request: Request.Builder = Request.Builder()
             .headers(headersBuilder().build())
 
-        fun execute(): Response =
-            client.newCall(request.url(url.build()).build()).execute()
+        fun execute(): Response = client.newCall(request.url(url.build()).build()).execute()
     }
 
     private inner class ApiCall(href: String?) : HttpCall(href) {
@@ -44,8 +42,7 @@ class Pixiv(override val lang: String) : HttpSource() {
             request.addHeader("Accept", "application/json")
         }
 
-        inline fun <reified T> executeApi(): T =
-            json.decodeFromString<PixivApiResponse<T>>(execute().body.string()).body!!
+        inline fun <reified T> executeApi(): T = json.decodeFromString<PixivApiResponse<T>>(execute().body.string()).body!!
     }
 
     private var popularMangaNextPage = 1
@@ -84,7 +81,11 @@ class Pixiv(override val lang: String) : HttpSource() {
     private var searchHash: Int? = null
     private lateinit var searchIterator: Iterator<SManga>
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         val filters = filters.list as PixivFilters
         val hash = Pair(query, filters).hashCode()
 
@@ -181,7 +182,10 @@ class Pixiv(override val lang: String) : HttpSource() {
         }
     }
 
-    private fun makeUserIllustSearchSequence(nick: String, type: String?) = sequence<PixivIllust> {
+    private fun makeUserIllustSearchSequence(
+        nick: String,
+        type: String?,
+    ) = sequence<PixivIllust> {
         val searchUsers = HttpCall("/search_user.php?s_mode=s_usr")
             .apply { url.addQueryParameter("nick", nick) }
 
@@ -369,33 +373,27 @@ class Pixiv(override val lang: String) : HttpSource() {
         return Observable.just(pages)
     }
 
-    override fun chapterListParse(response: Response): List<SChapter> =
-        throw UnsupportedOperationException()
+    override fun chapterListParse(response: Response): List<SChapter> = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun mangaDetailsParse(response: Response): SManga =
-        throw UnsupportedOperationException()
+    override fun mangaDetailsParse(response: Response): SManga = throw UnsupportedOperationException()
 
-    override fun pageListParse(response: Response): List<Page> =
-        throw UnsupportedOperationException()
+    override fun pageListParse(response: Response): List<Page> = throw UnsupportedOperationException()
 
-    override fun popularMangaParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
+    override fun popularMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun popularMangaRequest(page: Int): Request =
-        throw UnsupportedOperationException()
+    override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun searchMangaParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
+    override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 }

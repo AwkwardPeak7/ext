@@ -25,7 +25,6 @@ import uy.kohesive.injekt.injectLazy
 import kotlin.random.Random
 
 class ScanManga : ParsedHttpSource() {
-
     override val name = "Scan-Manga"
 
     override val baseUrl = "https://www.scan-manga.com"
@@ -107,7 +106,11 @@ class ScanManga : ParsedHttpSource() {
         return result.toString()
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val searchHeaders = headersBuilder()
             .add("Referer", "$baseUrl/scanlation/liste_series.html")
             .add("x-requested-with", "XMLHttpRequest")
@@ -116,7 +119,11 @@ class ScanManga : ParsedHttpSource() {
         return GET("$baseUrl/scanlation/scan.data.json", searchHeaders)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return client.newCall(searchMangaRequest(page, query, filters))
             .asObservableSuccess()
             .map { response ->
@@ -124,7 +131,10 @@ class ScanManga : ParsedHttpSource() {
             }
     }
 
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         return MangasPage(parseMangaFromJson(response).mangas.filter { it.title.contains(query, ignoreCase = true) }, false)
     }
 

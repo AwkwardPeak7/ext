@@ -28,7 +28,10 @@ internal typealias ScanGroup = String
  * that will return a [Lazy] where the [initializer] is wrapped by a try/catch block that will catch all exceptions
  * that aren't a [ProjectSukiException] and constructing a [reportErrorToUser] with a locationHint.
  */
-internal fun <R> unexpectedErrorCatchingLazy(mode: LazyThreadSafetyMode = LazyThreadSafetyMode.SYNCHRONIZED, initializer: () -> R): PropertyDelegateProvider<Any?, Lazy<R>> {
+internal fun <R> unexpectedErrorCatchingLazy(
+    mode: LazyThreadSafetyMode = LazyThreadSafetyMode.SYNCHRONIZED,
+    initializer: () -> R,
+): PropertyDelegateProvider<Any?, Lazy<R>> {
     return PropertyDelegateProvider { thisRef, property ->
         lazy(mode) {
             try {
@@ -43,7 +46,9 @@ internal fun <R> unexpectedErrorCatchingLazy(mode: LazyThreadSafetyMode = LazyTh
                         append('.')
                         append(property.name)
                     }
-                    reportErrorToUser(locationHint) { """Unexpected ${exception::class.simpleName}: ${exception.message ?: "<no message>"}""" }
+                    reportErrorToUser(
+                        locationHint,
+                    ) { """Unexpected ${exception::class.simpleName}: ${exception.message ?: "<no message>"}""" }
                 }
                 throw exception
             }
@@ -56,7 +61,11 @@ internal fun <R> unexpectedErrorCatchingLazy(mode: LazyThreadSafetyMode = LazyTh
  *
  * Not all URLs produced by this function might point to a valid asset.
  */
-internal fun bookThumbnailUrl(bookID: BookID, extension: String, size: UInt? = null): HttpUrl {
+internal fun bookThumbnailUrl(
+    bookID: BookID,
+    extension: String,
+    size: UInt? = null,
+): HttpUrl {
     return homepageUrl.newBuilder()
         .addPathSegment("images")
         .addPathSegment("gallery")
@@ -154,7 +163,6 @@ internal fun <E> Iterable<E>.switchingPoints(predicate: (E) -> Boolean): List<Sw
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class DataExtractor(val extractionElement: Element) {
-
     private val url: HttpUrl = extractionElement.ownerDocument()?.location()?.toHttpUrlOrNull() ?: reportErrorToUser {
         buildString {
             append("DataExtractor class requires an \"extractionElement\" element ")
@@ -201,6 +209,7 @@ class DataExtractor(val extractionElement: Element) {
     /** Utility class that represents a "book" element, identifier by the [bookID]. */
     data class PSBook(val thumbnail: HttpUrl, val rawTitle: String, val bookUrl: HttpUrl, val bookID: BookID) {
         override fun equals(other: Any?) = other is PSBook && this.bookID == other.bookID
+
         override fun hashCode() = bookID.hashCode()
     }
 
@@ -269,6 +278,7 @@ class DataExtractor(val extractionElement: Element) {
         val description: String,
     ) {
         override fun equals(other: Any?) = other is PSBookDetails && this.book == other.book
+
         override fun hashCode() = book.hashCode()
     }
 
@@ -279,19 +289,23 @@ class DataExtractor(val extractionElement: Element) {
      */
     @Suppress("RegExpUnnecessaryNonCapturingGroup")
     sealed class BookDetail {
-
         open fun tryFind(extractor: DataExtractor): Collection<Element> = emptyList()
 
         abstract val regex: Regex
+
         fun process(element: Element): ProcessedData = ProcessedData(label(element), detailsData(element))
+
         abstract fun label(element: Element?): String
+
         abstract fun detailsData(element: Element): String
 
         data class ProcessedData(val label: String, val detailData: String)
 
         object AltTitle : BookDetail() {
             override val regex: Regex = """(?:alternative|alt\.?) titles?:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Alt titles:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
@@ -301,7 +315,9 @@ class DataExtractor(val extractionElement: Element) {
             }.keys
 
             override val regex: Regex = """authors?:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Authors:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
@@ -311,7 +327,9 @@ class DataExtractor(val extractionElement: Element) {
             }.keys
 
             override val regex: Regex = """artists?:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Artists:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
@@ -321,7 +339,9 @@ class DataExtractor(val extractionElement: Element) {
             }.keys
 
             override val regex: Regex = """status:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Status:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
@@ -331,7 +351,9 @@ class DataExtractor(val extractionElement: Element) {
             }.keys
 
             override val regex: Regex = """origin:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Origin:"
+
             override fun detailsData(element: Element): String = element.text()
 
             internal val koreaRegex: Regex = """kr|korea\s*(?:\(south\))?""".toRegex(RegexOption.IGNORE_CASE)
@@ -341,7 +363,9 @@ class DataExtractor(val extractionElement: Element) {
 
         object ReleaseYear : BookDetail() {
             override val regex: Regex = """release(?: year):?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Release year:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
@@ -349,7 +373,9 @@ class DataExtractor(val extractionElement: Element) {
             override fun tryFind(extractor: DataExtractor): Collection<Element> = extractor.extractionElement.select("#ratings")
 
             override val regex: Regex = """user ratings?:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "User rating:"
+
             override fun detailsData(element: Element): String {
                 val rates = when {
                     element.id() != "ratings" -> 0
@@ -365,19 +391,25 @@ class DataExtractor(val extractionElement: Element) {
 
         object Views : BookDetail() {
             override val regex: Regex = """views?:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Views:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
         object Official : BookDetail() {
             override val regex: Regex = """official:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Official:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
         object Purchase : BookDetail() {
             override val regex: Regex = """purchase:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Purchase:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
@@ -387,12 +419,27 @@ class DataExtractor(val extractionElement: Element) {
             }.keys
 
             override val regex: Regex = """genre(?:\(s\))?:?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun label(element: Element?) = "Genres:"
+
             override fun detailsData(element: Element): String = element.text()
         }
 
         companion object {
-            val all: List<BookDetail> = listOf(AltTitle, Author, Artist, Status, Origin, ReleaseYear, UserRating, Views, Official, Purchase, Genre)
+            val all: List<BookDetail> = listOf(
+                AltTitle,
+                Author,
+                Artist,
+                Status,
+                Origin,
+                ReleaseYear,
+                UserRating,
+                Views,
+                Official,
+                Purchase,
+                Genre,
+            )
+
             fun from(type: String): BookDetail? = all.firstOrNull { it.regex.matches(type) }
         }
     }
@@ -531,38 +578,47 @@ class DataExtractor(val extractionElement: Element) {
 
     /** Represents some data type that a certain column in the chapters table represents. */
     sealed class ChaptersTableColumnDataType(val required: Boolean) {
-
         /** @return true if this data type is represented by a column's raw title. */
         abstract fun isRepresentedBy(from: String): Boolean
 
         /** Represents the chapter's title, which also normally includes the chapter number. */
-        /*data*/ object Chapter : ChaptersTableColumnDataType(required = true) {
+        // data
+        object Chapter : ChaptersTableColumnDataType(required = true) {
             private val chapterHeaderRegex = """chapters?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun isRepresentedBy(from: String): Boolean = from.matches(chapterHeaderRegex)
         }
 
         /** Represents the chapter's scan group. */
-        /*data*/ object Group : ChaptersTableColumnDataType(required = true) {
+        // data
+        object Group : ChaptersTableColumnDataType(required = true) {
             private val groupHeaderRegex = """groups?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun isRepresentedBy(from: String): Boolean = from.matches(groupHeaderRegex)
         }
 
         /** Represents the chapter's release date (when it was added to the site). */
-        /*data*/ object Added : ChaptersTableColumnDataType(required = true) {
+        // data
+        object Added : ChaptersTableColumnDataType(required = true) {
             private val dateHeaderRegex = """added|date""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun isRepresentedBy(from: String): Boolean = from.matches(dateHeaderRegex)
         }
 
         /** Represents the chapter's language. */
-        /*data*/ object Language : ChaptersTableColumnDataType(required = false) {
+        // data
+        object Language : ChaptersTableColumnDataType(required = false) {
             private val languageHeaderRegex = """language""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun isRepresentedBy(from: String): Boolean = from.matches(languageHeaderRegex)
         }
 
         /** Represents the chapter's view count. */
-        /*data*/ object Views : ChaptersTableColumnDataType(required = false) {
+        // data
+        object Views : ChaptersTableColumnDataType(required = false) {
             @Suppress("RegExpUnnecessaryNonCapturingGroup")
             private val languageHeaderRegex = """views?(?:\s*count)?""".toRegex(RegexOption.IGNORE_CASE)
+
             override fun isRepresentedBy(from: String): Boolean = from.matches(languageHeaderRegex)
         }
 
@@ -601,7 +657,6 @@ class DataExtractor(val extractionElement: Element) {
         val chapterDateAdded: Date?,
         val chapterLanguage: String,
     ) {
-
         @Suppress("unused")
         val bookID: BookID = chapterMatchResult["bookid"]!!.value
 
@@ -623,6 +678,7 @@ class DataExtractor(val extractionElement: Element) {
      */
     val bookChapters: Map<ScanGroup, List<BookChapter>> by unexpectedErrorCatchingLazy {
         data class RawTable(val self: Element, val thead: Element, val tbody: Element)
+
         data class AnalyzedTable(val raw: RawTable, val columnDataTypes: Map<ChaptersTableColumnDataType, Int>, val dataRows: List<Elements>)
 
         val allChaptersByGroup: MutableMap<ScanGroup, MutableList<BookChapter>> = extractionElement.select("table")
@@ -672,7 +728,11 @@ class DataExtractor(val extractionElement: Element) {
                         val languageElement: Element? = data[ChaptersTableColumnDataType.Language]
                         // val viewsElement = data[ChaptersTableColumnDataType.Views]
 
-                        val chapterUrl: HttpUrl = (chapterElement.selectFirst("a[href]") ?: reportErrorToUser { "Could not determine chapter url for ${chapterElement.text()}" })
+                        val chapterUrl: HttpUrl = (
+                            chapterElement.selectFirst("a[href]") ?: reportErrorToUser {
+                                "Could not determine chapter url for ${chapterElement.text()}"
+                            }
+                        )
                             .attr("abs:href")
                             .toHttpUrl()
                         val chapterUrlMatch: PathMatchResult = chapterUrl.matchAgainst(chapterUrlPattern)
@@ -820,7 +880,11 @@ class DataExtractor(val extractionElement: Element) {
                     when (last?.index == left) {
                         true -> {
                             // surrounded, replace
-                            missingChapterNumberEdges[missingChapterNumberEdges.lastIndex] = MissingChapterNumberEdge(left, aboveIsKnown = true, belowIsKnown = true)
+                            missingChapterNumberEdges[missingChapterNumberEdges.lastIndex] = MissingChapterNumberEdge(
+                                left,
+                                aboveIsKnown = true,
+                                belowIsKnown = true,
+                            )
                         }
 
                         else -> {
@@ -846,6 +910,7 @@ class DataExtractor(val extractionElement: Element) {
         }
 
         fun MissingChapterNumberEdge.indexAbove(): Int = index - 1
+
         fun MissingChapterNumberEdge.indexBelow(): Int = index + 1
 
         val result: MutableList<BookChapter> = ArrayList(this)
@@ -913,7 +978,9 @@ class DataExtractor(val extractionElement: Element) {
 
                         false -> {
                             // add new edge below current edge's index
-                            missingChapterNumberEdges.addLast(MissingChapterNumberEdge(edge.indexBelow(), aboveIsKnown = true, belowIsKnown = false))
+                            missingChapterNumberEdges.addLast(
+                                MissingChapterNumberEdge(edge.indexBelow(), aboveIsKnown = true, belowIsKnown = false),
+                            )
                         }
                     }
                 }
@@ -938,7 +1005,9 @@ class DataExtractor(val extractionElement: Element) {
 
                         false -> {
                             // add new edge above current edge's index
-                            missingChapterNumberEdges.addLast(MissingChapterNumberEdge(edge.indexAbove(), aboveIsKnown = false, belowIsKnown = true))
+                            missingChapterNumberEdges.addLast(
+                                MissingChapterNumberEdge(edge.indexAbove(), aboveIsKnown = false, belowIsKnown = true),
+                            )
                         }
                     }
                 }
@@ -963,7 +1032,9 @@ class DataExtractor(val extractionElement: Element) {
         )
     }
 
-    private val relativeChapterDateRegex = """(\d+)\s+(years?|months?|weeks?|days?|hours?|mins?|minutes?|seconds?|sec)\s+ago""".toRegex(RegexOption.IGNORE_CASE)
+    private val relativeChapterDateRegex = """(\d+)\s+(years?|months?|weeks?|days?|hours?|mins?|minutes?|seconds?|sec)\s+ago""".toRegex(
+        RegexOption.IGNORE_CASE,
+    )
 
     /**
      * Tries to parse a possibly human-readable relative [Date].

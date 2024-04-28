@@ -21,7 +21,6 @@ abstract class ZManga(
     override val lang: String,
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("MMM d, yyyy", Locale.US),
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient
@@ -57,7 +56,11 @@ abstract class ZManga(
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
     // search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var url = "$baseUrl/advanced-search/${pagePathSegment(page)}".toHttpUrl().newBuilder()
         url.addQueryParameter("title", query)
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
@@ -229,6 +232,7 @@ abstract class ZManga(
             Pair("Doujin", "Doujin"),
         ),
     )
+
     private class OrderByFilter : UriPartFilter(
         "Order By",
         arrayOf(

@@ -25,7 +25,6 @@ import rx.Observable
 import java.net.URLEncoder
 
 class RawOtaku : MangaReader() {
-
     override val name = "Raw Otaku"
 
     override val lang = "ja"
@@ -41,8 +40,7 @@ class RawOtaku : MangaReader() {
 
     // ============================== Popular ===============================
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/filter/?type=all&status=all&language=all&sort=most-viewed&p=$page", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/filter/?type=all&status=all&language=all&sort=most-viewed&p=$page", headers)
 
     // =============================== Latest ===============================
 
@@ -51,7 +49,11 @@ class RawOtaku : MangaReader() {
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (query.isNotBlank()) {
                 addQueryParameter("q", query)
@@ -94,29 +96,27 @@ class RawOtaku : MangaReader() {
 
     override fun searchMangaSelector() = ".manga_list-sbs .manga-poster"
 
-    override fun searchMangaFromElement(element: Element) =
-        SManga.create().apply {
-            setUrlWithoutDomain(element.attr("href"))
-            element.selectFirst(Evaluator.Tag("img"))!!.let {
-                title = it.attr("alt")
-                thumbnail_url = it.imgAttr()
-            }
+    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
+        setUrlWithoutDomain(element.attr("href"))
+        element.selectFirst(Evaluator.Tag("img"))!!.let {
+            title = it.attr("alt")
+            thumbnail_url = it.imgAttr()
         }
+    }
 
     override fun searchMangaNextPageSelector() = "ul.pagination > li.active + li"
 
     // =============================== Filters ==============================
 
-    override fun getFilterList() =
-        FilterList(
-            Note,
-            Filter.Separator(),
-            TypeFilter(),
-            StatusFilter(),
-            LanguageFilter(),
-            SortFilter(),
-            GenresFilter(),
-        )
+    override fun getFilterList() = FilterList(
+        Note,
+        Filter.Separator(),
+        TypeFilter(),
+        StatusFilter(),
+        LanguageFilter(),
+        SortFilter(),
+        GenresFilter(),
+    )
 
     // =========================== Manga Details ============================
 
@@ -175,10 +175,15 @@ class RawOtaku : MangaReader() {
 
     // ============================== Chapters ==============================
 
-    override fun chapterListRequest(mangaUrl: String, type: String): Request =
-        GET(baseUrl + mangaUrl, headers)
+    override fun chapterListRequest(
+        mangaUrl: String,
+        type: String,
+    ): Request = GET(baseUrl + mangaUrl, headers)
 
-    override fun parseChapterElements(response: Response, isVolume: Boolean): List<Element> {
+    override fun parseChapterElements(
+        response: Response,
+        isVolume: Boolean,
+    ): List<Element> {
         TODO("Not yet implemented")
     }
 

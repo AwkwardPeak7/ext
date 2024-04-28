@@ -48,7 +48,6 @@ import java.security.MessageDigest
 import java.util.Locale
 
 open class Komga(private val suffix: String = "") : ConfigurableSource, UnmeteredSource, HttpSource() {
-
     internal val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -102,31 +101,31 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
             .dns(Dns.SYSTEM) // don't use DNS over HTTPS as it breaks IP addressing
             .build()
 
-    override fun popularMangaRequest(page: Int): Request =
-        searchMangaRequest(
-            page,
-            "",
-            FilterList(
-                SeriesSort(Filter.Sort.Selection(1, true)),
-            ),
-        )
+    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(
+        page,
+        "",
+        FilterList(
+            SeriesSort(Filter.Sort.Selection(1, true)),
+        ),
+    )
 
-    override fun popularMangaParse(response: Response): MangasPage =
-        processSeriesPage(response, baseUrl)
+    override fun popularMangaParse(response: Response): MangasPage = processSeriesPage(response, baseUrl)
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        searchMangaRequest(
-            page,
-            "",
-            FilterList(
-                SeriesSort(Filter.Sort.Selection(3, false)),
-            ),
-        )
+    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(
+        page,
+        "",
+        FilterList(
+            SeriesSort(Filter.Sort.Selection(3, false)),
+        ),
+    )
 
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        processSeriesPage(response, baseUrl)
+    override fun latestUpdatesParse(response: Response): MangasPage = processSeriesPage(response, baseUrl)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val collectionId = (filters.find { it is CollectionSelect } as? CollectionSelect)?.let {
             it.collections[it.state].id
         }
@@ -168,10 +167,12 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
         return GET(url.build(), headers)
     }
 
-    override fun searchMangaParse(response: Response): MangasPage =
-        processSeriesPage(response, baseUrl)
+    override fun searchMangaParse(response: Response): MangasPage = processSeriesPage(response, baseUrl)
 
-    private fun processSeriesPage(response: Response, baseUrl: String): MangasPage {
+    private fun processSeriesPage(
+        response: Response,
+        baseUrl: String,
+    ): MangasPage {
         val data = if (response.isFromReadList()) {
             response.parseAs<PageWrapperDto<ReadListDto>>()
         } else {
@@ -465,8 +466,7 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
 
     fun Response.isFromReadList() = request.url.toString().contains("/api/v1/readlists")
 
-    private inline fun <reified T> Response.parseAs(): T =
-        json.decodeFromString(body.string())
+    private inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 
     private val logTag by lazy { "komga${if (suffix.isNotBlank()) ".$suffix" else ""}" }
 

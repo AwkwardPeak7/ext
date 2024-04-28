@@ -14,7 +14,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class MangaPlex : ParsedHttpSource() {
-
     override val name = "MangaPlex"
     override val baseUrl = "https://mangaplex.com"
     override val lang = "en"
@@ -35,10 +34,16 @@ class MangaPlex : ParsedHttpSource() {
 
         manga.thumbnail_url = element.select(".post-thumb img").attr("src")
         // using search for manga page and chapter list
-        manga.url = element.select("h3.post-title a").attr("href").substringBeforeLast("-chapter").replace("$baseUrl/", "/search/").replace("-", "+")
+        manga.url = element.select(
+            "h3.post-title a",
+        ).attr("href").substringBeforeLast("-chapter").replace("$baseUrl/", "/search/").replace("-", "+")
         val mangaTitleSelector = element.select(".post-details p.post-excerpt").text().substringAfter("Read ").substringBefore(" Chapter")
         manga.title =
-            if (mangaTitleSelector.contains("manga", true) || mangaTitleSelector.contains("manhwa", true) || mangaTitleSelector.contains("manhua", true)) {
+            if (mangaTitleSelector.contains(
+                    "manga",
+                    true,
+                ) || mangaTitleSelector.contains("manhwa", true) || mangaTitleSelector.contains("manhua", true)
+            ) {
                 mangaTitleSelector.substringBeforeLast(" ")
             } else {
                 mangaTitleSelector
@@ -56,7 +61,11 @@ class MangaPlex : ParsedHttpSource() {
     override fun popularMangaNextPageSelector(): String = latestUpdatesNextPageSelector()
 
     // search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/search/$query/page/$page")
     }
 
@@ -72,7 +81,10 @@ class MangaPlex : ParsedHttpSource() {
     // chapters
     override fun chapterListRequest(manga: SManga) = chapterListRequest(manga.url, 1)
 
-    private fun chapterListRequest(mangaUrl: String, page: Int): Request {
+    private fun chapterListRequest(
+        mangaUrl: String,
+        page: Int,
+    ): Request {
         val mangaUrlClean = mangaUrl.removePrefix(baseUrl)
         return GET("$baseUrl$mangaUrlClean/page/$page", headers)
     }

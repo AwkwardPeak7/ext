@@ -9,7 +9,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 
 class DDosGuardInterceptor(private val client: OkHttpClient) : Interceptor {
-
     private val cookieManager by lazy { CookieManager.getInstance() }
 
     override fun intercept(chain: Interceptor.Chain): Response {

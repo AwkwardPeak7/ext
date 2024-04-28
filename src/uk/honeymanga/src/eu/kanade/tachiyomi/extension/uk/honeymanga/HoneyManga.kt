@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class HoneyManga : HttpSource() {
-
     override val name = "HoneyManga"
     override val baseUrl = "https://honey-manga.com.ua"
     override val lang = "uk"
@@ -54,7 +53,11 @@ class HoneyManga : HttpSource() {
     override fun latestUpdatesParse(response: Response) = parseAsMangaResponseDto(response)
 
     // =============================== Search ===============================
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.length >= 3) {
             val url = "$SEARCH_API_URL/v2/manga/pattern".toHttpUrl().newBuilder()
                 .addQueryParameter("query", query)
@@ -143,7 +146,10 @@ class HoneyManga : HttpSource() {
         return makeMangasPage(mangaList)
     }
 
-    private fun makeHoneyMangaRequest(page: Int, sortBy: String): Request {
+    private fun makeHoneyMangaRequest(
+        page: Int,
+        sortBy: String,
+    ): Request {
         val body = buildJsonObject {
             put("page", page)
             put("pageSize", DEFAULT_PAGE_SIZE)

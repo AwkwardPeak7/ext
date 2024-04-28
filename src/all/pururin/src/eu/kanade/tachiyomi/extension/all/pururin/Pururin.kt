@@ -62,7 +62,11 @@ abstract class Pururin(
         return "[${this.joinToString(",")}]"
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val includeTags = mutableListOf<String>()
         val excludeTags = mutableListOf<String>()
         var pagesMin: Int

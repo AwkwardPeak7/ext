@@ -21,7 +21,6 @@ import uy.kohesive.injekt.injectLazy
 import java.util.Calendar
 
 class Readmangatoday : ParsedHttpSource() {
-
     override val id: Long = 8
 
     override val name = "ReadMangaToday"
@@ -78,7 +77,11 @@ class Readmangatoday : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = "div.popularToday a.page-link:contains(»)"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val builder = okhttp3.FormBody.Builder()
         builder.add("manga-name", query)
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
@@ -196,9 +199,13 @@ class Readmangatoday : ParsedHttpSource() {
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     private class Status : Filter.TriState("Completed")
+
     private class Genre(name: String, val id: Int) : Filter.TriState(name)
+
     private class TextField(name: String, val key: String) : Filter.Text(name)
+
     private class Type : Filter.Select<String>("Type", arrayOf("All", "Japanese Manga", "Korean Manhwa", "Chinese Manhua"))
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
 
     override fun getFilterList() = FilterList(

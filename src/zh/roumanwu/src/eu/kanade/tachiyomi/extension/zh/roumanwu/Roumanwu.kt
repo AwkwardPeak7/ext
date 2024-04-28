@@ -36,19 +36,25 @@ class Roumanwu : HttpSource(), ConfigurableSource {
     private val json: Json by injectLazy()
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/home", headers)
+
     override fun popularMangaParse(response: Response) = response.nextjsData<HomePage>().getPopular().toMangasPage()
 
     override fun latestUpdatesRequest(page: Int) = popularMangaRequest(page)
+
     override fun latestUpdatesParse(response: Response) = response.nextjsData<HomePage>().recentUpdatedBooks.toMangasPage()
 
     override fun searchMangaParse(response: Response) = response.nextjsData<BookList>().toMangasPage()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        if (query.isNotBlank()) {
-            GET("$baseUrl/search?term=$query&page=${page - 1}", headers)
-        } else {
-            val parts = filters.filterIsInstance<UriPartFilter>().joinToString("") { it.toUriPart() }
-            GET("$baseUrl/books?page=${page - 1}$parts", headers)
-        }
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = if (query.isNotBlank()) {
+        GET("$baseUrl/search?term=$query&page=${page - 1}", headers)
+    } else {
+        val parts = filters.filterIsInstance<UriPartFilter>().joinToString("") { it.toUriPart() }
+        GET("$baseUrl/books?page=${page - 1}$parts", headers)
+    }
 
     override fun mangaDetailsParse(response: Response) = response.nextjsData<BookDetails>().book.toSManga()
 
@@ -85,12 +91,11 @@ class Roumanwu : HttpSource(), ConfigurableSource {
     }
 
     private class StatusFilter : UriPartFilter("狀態", arrayOf("全部", "連載中", "已完結")) {
-        override fun toUriPart() =
-            when (state) {
-                1 -> "&continued=true"
-                2 -> "&continued=false"
-                else -> ""
-            }
+        override fun toUriPart() = when (state) {
+            1 -> "&continued=true"
+            2 -> "&continued=false"
+            else -> ""
+        }
     }
 
     private class SortFilter : UriPartFilter("排序", arrayOf("更新日期", "評分")) {
@@ -120,7 +125,25 @@ class Roumanwu : HttpSource(), ConfigurableSource {
         private val MIRRORS_DESC get() = arrayOf("主站", "镜像")
         private const val MIRROR_DEFAULT = 1.toString() // use mirror
 
-        private val TAGS get() = arrayOf("全部", "\u6B63\u59B9", "\u604B\u7231", "\u51FA\u7248\u6F2B\u753B", "\u8089\u617E", "\u6D6A\u6F2B", "\u5927\u5C3A\u5EA6", "\u5DE8\u4E73", "\u6709\u592B\u4E4B\u5A66", "\u5973\u5927\u751F", "\u72D7\u8840\u5287", "\u540C\u5C45", "\u597D\u53CB", "\u8ABF\u6559", "\u52A8\u4F5C", "\u5F8C\u5BAE", "\u4E0D\u502B")
+        private val TAGS get() = arrayOf(
+            "全部",
+            "\u6B63\u59B9",
+            "\u604B\u7231",
+            "\u51FA\u7248\u6F2B\u753B",
+            "\u8089\u617E",
+            "\u6D6A\u6F2B",
+            "\u5927\u5C3A\u5EA6",
+            "\u5DE8\u4E73",
+            "\u6709\u592B\u4E4B\u5A66",
+            "\u5973\u5927\u751F",
+            "\u72D7\u8840\u5287",
+            "\u540C\u5C45",
+            "\u597D\u53CB",
+            "\u8ABF\u6559",
+            "\u52A8\u4F5C",
+            "\u5F8C\u5BAE",
+            "\u4E0D\u502B",
+        )
     }
 
     private inline fun <reified T> Response.parseAs(): T = json.decodeFromStream(this.body.byteStream())

@@ -11,7 +11,6 @@ import okhttp3.Request
 import java.util.concurrent.TimeUnit
 
 class CosmicScansID : MangaThemesia("CosmicScans.id", "https://cosmicscans.id", "id", "/semua-komik") {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(20, 4, TimeUnit.SECONDS)
         .build()
@@ -22,7 +21,11 @@ class CosmicScansID : MangaThemesia("CosmicScans.id", "https://cosmicscans.id", 
     override fun latestUpdatesRequest(page: Int) = GET(baseUrl + if (page > 1) "/page/$page" else "", headers)
 
     // search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegments("page/$page/")
             .addQueryParameter("s", query)

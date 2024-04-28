@@ -22,8 +22,11 @@ class Comicabc : ParsedHttpSource() {
     // Popular
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/comic/h-$page.html", headers)
+
     override fun popularMangaNextPageSelector(): String = "div.pager a span.mdi-skip-next"
+
     override fun popularMangaSelector(): String = "div.default_row_width > div.col-2"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst("li.cat2_list_name")!!.text()
         setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
@@ -33,18 +36,27 @@ class Comicabc : ParsedHttpSource() {
     // Latest
 
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/comic/u-$page.html", headers)
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/member/search.aspx?key=$query&page=$page", headers)
     }
 
     override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun searchMangaSelector(): String = popularMangaSelector()
+
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     // Details
@@ -65,6 +77,7 @@ class Comicabc : ParsedHttpSource() {
     // Chapters
 
     override fun chapterListSelector(): String = "div#div_li1 td > a"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         val onclick = element.attr("onclick")
         val comicId = onclick.substringAfter("cview('").substringBefore("-")
@@ -72,6 +85,7 @@ class Comicabc : ParsedHttpSource() {
         url = "/online/new-$comicId.html?ch=$chapterId"
         name = element.text()
     }
+
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).reversed()
     }
@@ -95,6 +109,7 @@ class Comicabc : ParsedHttpSource() {
     }
 
     override fun pageListParse(document: Document): List<Page> = throw UnsupportedOperationException()
+
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     companion object {

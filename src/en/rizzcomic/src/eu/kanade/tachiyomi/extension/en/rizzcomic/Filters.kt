@@ -13,11 +13,12 @@ abstract class SelectFilter(
     private val options: List<Pair<String, String>>,
     defaultValue: String? = null,
 ) : FormBodyFilter, Filter.Select<String>(
-    name,
-    options.map { it.first }.toTypedArray(),
-    options.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
-) {
+        name,
+        options.map { it.first }.toTypedArray(),
+        options.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
+    ) {
     abstract val formParameter: String
+
     override fun addFormParameter(form: FormBody.Builder) {
         form.add(formParameter, options[state].second)
     }
@@ -25,6 +26,7 @@ abstract class SelectFilter(
 
 class SortFilter(defaultOrder: String? = null) : SelectFilter("Sort By", sort, defaultOrder) {
     override val formParameter = "OrderValue"
+
     companion object {
         val POPULAR = FilterList(StatusFilter(), TypeFilter(), SortFilter("popular"))
         val LATEST = FilterList(StatusFilter(), TypeFilter(), SortFilter("update"))

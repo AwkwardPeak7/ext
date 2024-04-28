@@ -32,7 +32,11 @@ abstract class PaprikaAlt(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank()) {
             GET("$baseUrl/search?s=$query&post_type=manga&page=$page")
         } else {
@@ -78,7 +82,10 @@ abstract class PaprikaAlt(
     override fun chapterListSelector() = ".animeinfo .rm .cl li"
 
     // changing the signature to pass the manga title in order to trim the title from chapter titles
-    override fun chapterFromElement(element: Element, mangaTitle: String): SChapter {
+    override fun chapterFromElement(
+        element: Element,
+        mangaTitle: String,
+    ): SChapter {
         return SChapter.create().apply {
             element.select(".leftoff").let {
                 name = it.text().substringAfter("$mangaTitle ")

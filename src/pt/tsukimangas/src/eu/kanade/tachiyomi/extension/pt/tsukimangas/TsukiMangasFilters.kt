@@ -9,9 +9,7 @@ object TsukiMangasFilters {
 
     private class CheckBoxVal(name: String) : Filter.CheckBox(name, false)
 
-    private inline fun <reified R> FilterList.parseCheckbox(
-        options: Array<Pair<String, String>>,
-    ): Sequence<String> {
+    private inline fun <reified R> FilterList.parseCheckbox(options: Array<Pair<String, String>>): Sequence<String> {
         return (first { it is R } as CheckBoxFilterList).state
             .asSequence()
             .filter { it.state }
@@ -22,9 +20,9 @@ object TsukiMangasFilters {
         displayName: String,
         val vals: Array<Pair<String, String>>,
     ) : Filter.Select<String>(
-        displayName,
-        vals.map { it.first }.toTypedArray(),
-    ) {
+            displayName,
+            vals.map { it.first }.toTypedArray(),
+        ) {
         val selected get() = vals[state].second
     }
 
@@ -33,17 +31,20 @@ object TsukiMangasFilters {
     }
 
     internal class GenresFilter : CheckBoxFilterList("Gêneros", GENRES)
+
     internal class TagsFilter : CheckBoxFilterList("Tags", TAGS)
 
     internal class FormatFilter : SelectFilter("Formato", FORMATS)
+
     internal class AdultFilter : SelectFilter("Mostrar conteúdo adulto", ADULT_OPTIONS)
+
     internal class ContentFilter : SelectFilter("Filtro", CONTENT_FILTER)
+
     internal class StatusFilter : SelectFilter("Status", STATUS)
 
     internal val FILTER_LIST get() = FilterList(
         GenresFilter(),
         TagsFilter(),
-
         FormatFilter(),
         AdultFilter(),
         ContentFilter(),
@@ -53,7 +54,6 @@ object TsukiMangasFilters {
     internal data class FilterSearchParams(
         val genres: Sequence<String> = emptySequence(),
         val tags: Sequence<String> = emptySequence(),
-
         val format: String = "",
         val adult: String = "",
         val filter: String = "",
@@ -66,7 +66,6 @@ object TsukiMangasFilters {
         return FilterSearchParams(
             filters.parseCheckbox<GenresFilter>(GENRES),
             filters.parseCheckbox<TagsFilter>(TAGS),
-
             filters.getSelected<FormatFilter>(),
             filters.getSelected<AdultFilter>(),
             filters.getSelected<ContentFilter>(),

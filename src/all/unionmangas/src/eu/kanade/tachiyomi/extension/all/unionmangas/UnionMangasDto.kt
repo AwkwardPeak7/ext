@@ -30,8 +30,11 @@ abstract class Pageable {
     abstract var currentPage: String?
     abstract var totalPage: Int
 
-    fun hasNextPage() =
-        try { (currentPage!!.toInt() + 1) < totalPage } catch (_: Exception) { false }
+    fun hasNextPage() = try {
+        (currentPage!!.toInt() + 1) < totalPage
+    } catch (_: Exception) {
+        false
+    }
 }
 
 @Serializable
@@ -41,17 +44,19 @@ class ChapterPageDto(
     override var totalPage: Int,
     @SerialName("data") val chapters: List<ChapterDto> = emptyList(),
 ) : Pageable() {
-    fun toSChapter(langOption: LanguageOption): List<SChapter> =
-        chapters.map { chapter ->
-            SChapter.create().apply {
-                name = chapter.name
-                date_upload = chapter.date.toDate()
-                url = "/${langOption.infix}${chapter.toChapterUrl(langOption.chpPrefix)}"
-            }
+    fun toSChapter(langOption: LanguageOption): List<SChapter> = chapters.map { chapter ->
+        SChapter.create().apply {
+            name = chapter.name
+            date_upload = chapter.date.toDate()
+            url = "/${langOption.infix}${chapter.toChapterUrl(langOption.chpPrefix)}"
         }
+    }
 
-    private fun String.toDate(): Long =
-        try { UnionMangas.dateFormat.parse(trim())!!.time } catch (_: Exception) { 0L }
+    private fun String.toDate(): Long = try {
+        UnionMangas.dateFormat.parse(trim())!!.time
+    } catch (_: Exception) {
+        0L
+    }
 
     private fun ChapterDto.toChapterUrl(prefix: String) = "/${this.slugManga}/$prefix-${this.id}"
 }
@@ -113,7 +118,6 @@ class MangaDetailsDto(
     @SerialName("lsgenres") private val _genres: List<Prop>,
     @SerialName("lsstatus") private val _status: List<Prop>,
 ) {
-
     val thumbnailUrl get() = "${UnionMangas.apiUrl}$_thumbnailUrl"
     val genres get() = _genres.joinToString { it.name }
     val status get() = toSMangaStatus(_status.first().name)
@@ -139,11 +143,13 @@ class PageDto(
     fun getImages(delimiter: String): List<String> = imgData.split(delimiter)
 }
 
-private fun mangaUrlParse(slug: String, pathSegment: String) = "/$pathSegment/$slug"
+private fun mangaUrlParse(
+    slug: String,
+    pathSegment: String,
+) = "/$pathSegment/$slug"
 
-private fun toSMangaStatus(status: String) =
-    when (status.lowercase()) {
-        "ongoing" -> SManga.ONGOING
-        "completed" -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+private fun toSMangaStatus(status: String) = when (status.lowercase()) {
+    "ongoing" -> SManga.ONGOING
+    "completed" -> SManga.COMPLETED
+    else -> SManga.UNKNOWN
+}

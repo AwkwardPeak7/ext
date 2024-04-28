@@ -63,7 +63,11 @@ class NoyAcg : HttpSource(), ConfigurableSource {
 
     override fun getFilterList() = getFilterListInternal()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filters = filters.ifEmpty { getFilterListInternal() }
         val builder = FormBody.Builder()
             .addEncoded("page", page.toString())

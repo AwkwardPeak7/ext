@@ -17,7 +17,6 @@ import org.jsoup.nodes.Element
 import java.util.Calendar
 
 class Nartag : ParsedHttpSource() {
-
     override val name = "Traducciones Amistosas"
 
     override val baseUrl = "https://nartag.com"
@@ -53,7 +52,11 @@ class Nartag : ParsedHttpSource() {
 
     override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/biblioteca".toHttpUrl().newBuilder()
             .addQueryParameter("page", page.toString())
 
@@ -193,6 +196,7 @@ class Nartag : ParsedHttpSource() {
     )
 
     class Category(title: String, val value: String) : Filter.TriState(title)
+
     class CategoryFilter(title: String, categories: List<Category>) : Filter.Group<Category>(title, categories)
 
     private fun getCategoryList() = listOf(

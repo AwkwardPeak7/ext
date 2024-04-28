@@ -46,7 +46,6 @@ open class Comikey(
     override val baseUrl: String = "https://comikey.com",
     private val defaultLanguage: String = "en",
 ) : ParsedHttpSource(), ConfigurableSource {
-
     private val gundamUrl: String = "https://gundam.comikey.net"
 
     override val supportsLatest = true
@@ -111,7 +110,11 @@ open class Comikey(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/comics/".toHttpUrl().newBuilder().apply {
             if (page > 1) {
                 addQueryParameter("page", page.toString())
@@ -294,7 +297,11 @@ open class Comikey(
             }*/
 
             innerWv.webViewClient = object : WebViewClient() {
-                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                override fun onPageStarted(
+                    view: WebView?,
+                    url: String?,
+                    favicon: Bitmap?,
+                ) {
                     super.onPageStarted(view, url, favicon)
                     view?.evaluateJavascript(webviewScript.replace("__interface__", interfaceName)) {}
                 }
@@ -422,7 +429,10 @@ open class Comikey(
         }
     }
 
-    private fun makeEpisodeSlug(episode: ComikeyEpisode, defaultChapterPrefix: String): String {
+    private fun makeEpisodeSlug(
+        episode: ComikeyEpisode,
+        defaultChapterPrefix: String,
+    ): String {
         val e4pid = episode.id.split("-", limit = 2).last()
         val chapterPrefix = if (defaultChapterPrefix == "chapter" && lang != defaultLanguage) {
             when (lang) {
@@ -470,7 +480,11 @@ open class Comikey(
 
         @JavascriptInterface
         @Suppress("UNUSED")
-        fun passPayload(manifestUrl: String, act: String, rawData: String) {
+        fun passPayload(
+            manifestUrl: String,
+            act: String,
+            rawData: String,
+        ) {
             if (this.manifestUrl == null) {
                 this.manifestUrl = manifestUrl.toHttpUrl()
             }

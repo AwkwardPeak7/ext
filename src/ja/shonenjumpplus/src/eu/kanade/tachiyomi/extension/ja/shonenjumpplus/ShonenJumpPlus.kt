@@ -9,7 +9,6 @@ class ShonenJumpPlus : GigaViewer(
     "ja",
     "https://cdn-ak-img.shonenjumpplus.com",
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .addInterceptor(::imageIntercept)
         .build()

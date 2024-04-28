@@ -47,16 +47,25 @@ class Junmeitu : ParsedHttpSource() {
 
     // Popular
     override fun popularMangaFromElement(element: Element) = latestUpdatesFromElement(element)
+
     override fun popularMangaNextPageSelector() = latestUpdatesNextPageSelector()
+
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/beauty/hot-$page.html")
     }
+
     override fun popularMangaSelector() = latestUpdatesSelector()
 
     // Search
     override fun searchMangaFromElement(element: Element) = latestUpdatesFromElement(element)
+
     override fun searchMangaNextPageSelector() = latestUpdatesNextPageSelector()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val tagFilter = filters.findInstance<TagFilter>()
         val modelFilter = filters.findInstance<ModelFilter>()
         val groupFilter = filters.findInstance<GroupFilter>()
@@ -72,6 +81,7 @@ class Junmeitu : ParsedHttpSource() {
             else -> latestUpdatesRequest(page)
         }
     }
+
     override fun searchMangaSelector() = latestUpdatesSelector()
 
     // Details
@@ -144,7 +154,14 @@ class Junmeitu : ParsedHttpSource() {
     )
 
     class SelectFilterOption(val name: String, val value: String = name)
-    abstract class SelectFilter(name: String, private val options: List<SelectFilterOption>, default: Int = 0) : Filter.Select<String>(name, options.map { it.name }.toTypedArray(), default) {
+
+    abstract class SelectFilter(name: String, private val options: List<SelectFilterOption>, default: Int = 0) : Filter.Select<String>(
+        name,
+        options.map {
+            it.name
+        }.toTypedArray(),
+        default,
+    ) {
         val selected: String
             get() = options[state].value
         val slug: String
@@ -152,9 +169,13 @@ class Junmeitu : ParsedHttpSource() {
     }
 
     class TagFilter : Filter.Text("Tag")
+
     class ModelFilter : Filter.Text("Model")
+
     class GroupFilter : Filter.Text("Group")
+
     class CategoryFilter(options: List<SelectFilterOption>, default: Int) : SelectFilter("Category", options, default)
+
     class SortFilter(options: List<SelectFilterOption>, default: Int) : SelectFilter("Sort", options, default)
 
     private fun getCategoryFilter() = listOf(

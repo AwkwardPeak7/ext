@@ -21,7 +21,6 @@ import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 class Nudemoon : ParsedHttpSource() {
-
     override val name = "Nude-Moon"
 
     override val baseUrl = "https://a.nude-moon.fun"
@@ -36,8 +35,12 @@ class Nudemoon : ParsedHttpSource() {
     private val cookieManager by lazy { CookieManager.getInstance() }
 
     private val userAgentRandomizer = "${Random.nextInt().absoluteValue}"
+
     override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", "Mozilla/5.0 (Linux; Android 10; SM-G980F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.$userAgentRandomizer Mobile Safari/537.36")
+        .add(
+            "User-Agent",
+            "Mozilla/5.0 (Linux; Android 10; SM-G980F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.$userAgentRandomizer Mobile Safari/537.36",
+        )
         .add("Referer", baseUrl)
 
     init {
@@ -51,10 +54,9 @@ class Nudemoon : ParsedHttpSource() {
         buildCookies(cookies)
     }
 
-    private fun buildCookies(cookies: Map<String, String>) =
-        cookies.entries.joinToString(separator = "; ", postfix = ";") {
-            "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
-        }
+    private fun buildCookies(cookies: Map<String, String>) = cookies.entries.joinToString(separator = "; ", postfix = ";") {
+        "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
+    }
 
     override val client = network.cloudflareClient.newBuilder()
         .addNetworkInterceptor { chain ->
@@ -68,13 +70,15 @@ class Nudemoon : ParsedHttpSource() {
             chain.proceed(newReq)
         }.build()
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/all_manga?views&rowstart=${30 * (page - 1)}", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/all_manga?views&rowstart=${30 * (page - 1)}", headers)
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/all_manga?date&rowstart=${30 * (page - 1)}", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/all_manga?date&rowstart=${30 * (page - 1)}", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Search by query on this site works really badly, i don't even sure of the need to implement it
         val url = if (query.isNotEmpty()) {
             "$baseUrl/search?stext=${URLEncoder.encode(query, "CP1251")}&rowstart=${30 * (page - 1)}"
@@ -134,11 +138,9 @@ class Nudemoon : ParsedHttpSource() {
         return manga
     }
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun popularMangaNextPageSelector() = "a.small:contains(>)"
 
@@ -239,8 +241,16 @@ class Nudemoon : ParsedHttpSource() {
 
     override fun pageListParse(document: Document): List<Page> = throw UnsupportedOperationException()
 
-    private class Genre(name: String, val id: String = name.replace(' ', '_')) : Filter.CheckBox(name.replaceFirstChar { it.uppercaseChar() })
+    private class Genre(
+        name: String,
+        val id: String = name.replace(
+            ' ',
+            '_',
+        ),
+    ) : Filter.CheckBox(name.replaceFirstChar { it.uppercaseChar() })
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Тэги", genres)
+
     private class OrderBy : Filter.Sort(
         "Сортировка",
         arrayOf("Дата", "Просмотры", "Лайки"),

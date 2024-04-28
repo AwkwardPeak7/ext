@@ -25,7 +25,6 @@ import java.util.Date
 import java.util.Locale
 
 class WebNovel : HttpSource() {
-
     override val name = "WebNovel"
 
     override val baseUrl = "https://www.webnovel.com"
@@ -69,7 +68,11 @@ class WebNovel : HttpSource() {
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotBlank()) {
             val url = "$baseApiUrl$QUERY_SEARCH_PATH?type=manga&pageIndex=$page".toHttpUrl()
                 .newBuilder()
@@ -223,7 +226,10 @@ class WebNovel : HttpSource() {
         return pageListRequest(comicId, chapterId)
     }
 
-    private fun pageListRequest(comicId: String, chapterId: String): Request {
+    private fun pageListRequest(
+        comicId: String,
+        chapterId: String,
+    ): Request {
         // Given a high [width] parameter it gives the highest resolution image available
         return GET("$baseApiUrl/comic/getContent?comicId=$comicId&chapterId=$chapterId&width=9999")
     }
@@ -235,7 +241,6 @@ class WebNovel : HttpSource() {
 
     // LinkedHashMap with a capacity of 25. When exceeding the capacity the oldest entry is removed.
     private val chapterPageCache = object : LinkedHashMap<String, List<ChapterPage>>() {
-
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<ChapterPage>>?): Boolean {
             return size > 25
         }

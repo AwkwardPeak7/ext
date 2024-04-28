@@ -98,7 +98,11 @@ open class Kemono(
         }
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.fromCallable {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.fromCallable {
         if (query.isBlank()) throw Exception("Query is empty")
         fetchCreatorsPage(page) { all ->
             val result = all.filterTo(ArrayList()) { it.name.contains(query, ignoreCase = true) }
@@ -130,18 +134,28 @@ open class Kemono(
 
     private fun cacheCreators() {
         val callback = object : Callback {
-            override fun onResponse(call: Call, response: Response) =
-                response.body.source().run {
-                    readAll(blackholeSink())
-                    close()
-                }
+            override fun onResponse(
+                call: Call,
+                response: Response,
+            ) = response.body.source().run {
+                readAll(blackholeSink())
+                close()
+            }
 
-            override fun onFailure(call: Call, e: IOException) = Unit
+            override fun onFailure(
+                call: Call,
+                e: IOException,
+            ) = Unit
         }
         client.newCall(GET("$baseUrl/$apiPath/creators", headers)).enqueue(callback)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
+
     override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
@@ -184,8 +198,7 @@ open class Kemono(
 
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun pageListRequest(chapter: SChapter): Request =
-        GET("$baseUrl/$apiPath${chapter.url}", headers)
+    override fun pageListRequest(chapter: SChapter): Request = GET("$baseUrl/$apiPath${chapter.url}", headers)
 
     override fun pageListParse(response: Response): List<Page> {
         val post: KemonoPostDto = response.parseAs()

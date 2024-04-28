@@ -31,7 +31,6 @@ open class OtakuSanctuary(
     override val baseUrl: String,
     override val lang: String,
 ) : HttpSource() {
-
     override val supportsLatest = false
 
     override val client = network.cloudflareClient
@@ -99,14 +98,17 @@ open class OtakuSanctuary(
 
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        GET(
-            baseUrl.toHttpUrl().newBuilder().apply {
-                addPathSegments("Home/Search")
-                addQueryParameter("search", query)
-            }.build().toString(),
-            headers,
-        )
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET(
+        baseUrl.toHttpUrl().newBuilder().apply {
+            addPathSegments("Home/Search")
+            addQueryParameter("search", query)
+        }.build().toString(),
+        headers,
+    )
 
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
@@ -202,7 +204,24 @@ open class OtakuSanctuary(
                 var url = helper.processUrl(it.jsonPrimitive.content).removePrefix("image:")
                 val indexServer = getIndexLessServer(usingservers)
 
-                if (url.contains("ImageSyncing") || url.contains("FetchService") || url.contains("otakusan.net_") && (url.contains("extendContent") || url.contains("/Extend")) && !url.contains("fetcher.otakusan.net") && !url.contains("image3.otakusan.net") && !url.contains("image3.otakuscan.net") && !url.contains("[GDP]") && !url.contains("[GDT]")) {
+                if (url.contains(
+                        "ImageSyncing",
+                    ) || url.contains(
+                        "FetchService",
+                    ) || url.contains(
+                        "otakusan.net_",
+                    ) && (
+                        url.contains(
+                            "extendContent",
+                        ) || url.contains(
+                            "/Extend",
+                        )
+                    ) && !url.contains(
+                        "fetcher.otakusan.net",
+                    ) && !url.contains(
+                        "image3.otakusan.net",
+                    ) && !url.contains("image3.otakuscan.net") && !url.contains("[GDP]") && !url.contains("[GDT]")
+                ) {
                     if (url.startsWith("/api/Value/")) {
                         val serverUrl = if (helper.otakusanLang() == "us" && indexServer == 1) {
                             US_SERVERS[0]
@@ -245,7 +264,24 @@ open class OtakuSanctuary(
 
         val newRequest = request.newBuilder()
 
-        if (url.contains("ImageSyncing") || url.contains("FetchService") || url.contains("otakusan.net_") && (url.contains("extendContent") || url.contains("/Extend")) && !url.contains("fetcher.otakusan.net") && !url.contains("image3.otakusan.net") && !url.contains("image3.otakuscan.net") && !url.contains("[GDP]") && !url.contains("[GDT]")) {
+        if (url.contains(
+                "ImageSyncing",
+            ) || url.contains(
+                "FetchService",
+            ) || url.contains(
+                "otakusan.net_",
+            ) && (
+                url.contains(
+                    "extendContent",
+                ) || url.contains(
+                    "/Extend",
+                )
+            ) && !url.contains(
+                "fetcher.otakusan.net",
+            ) && !url.contains(
+                "image3.otakusan.net",
+            ) && !url.contains("image3.otakuscan.net") && !url.contains("[GDP]") && !url.contains("[GDT]")
+        ) {
             if (url.contains("otakusan.net_") && !url.contains("fetcher.otakuscan.net")) {
                 newRequest.header("page-sign", request.url.fragment!!)
             } else {

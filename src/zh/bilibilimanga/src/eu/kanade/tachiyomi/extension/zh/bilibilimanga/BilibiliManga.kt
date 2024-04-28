@@ -13,7 +13,6 @@ class BilibiliManga : Bilibili(
     "https://manga.bilibili.com",
     BilibiliIntl.SIMPLIFIED_CHINESE,
 ) {
-
     override val id: Long = 3561131545129718586
 
     override fun headersBuilder() = Headers.Builder().apply {
@@ -49,8 +48,7 @@ class BilibiliManga : Bilibili(
         BilibiliTag(intl.sortAdded, 3),
     )
 
-    override fun getAllPrices(): Array<String> =
-        arrayOf(intl.priceAll, intl.priceFree, intl.pricePaid, intl.priceWaitForFree)
+    override fun getAllPrices(): Array<String> = arrayOf(intl.priceAll, intl.priceFree, intl.pricePaid, intl.priceWaitForFree)
 
     override fun getAllGenres(): Array<BilibiliTag> = arrayOf(
         BilibiliTag("全部", -1),

@@ -19,7 +19,6 @@ import okhttp3.Response
 import uy.kohesive.injekt.injectLazy
 
 class Rawdevartart : HttpSource() {
-
     override val name = "Rawdevart.art"
 
     override val lang = "ja"
@@ -55,7 +54,11 @@ class Rawdevartart : HttpSource() {
 
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/spa".toHttpUrl().newBuilder().apply {
             addQueryParameter("page", page.toString())
 
@@ -111,6 +114,5 @@ class Rawdevartart : HttpSource() {
         GenreFilter(genres),
     )
 
-    private inline fun <reified T> Response.parseAs(): T =
-        json.decodeFromString(body.string())
+    private inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 }

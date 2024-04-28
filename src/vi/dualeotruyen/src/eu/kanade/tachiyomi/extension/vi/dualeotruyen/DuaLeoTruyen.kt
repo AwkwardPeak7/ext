@@ -19,7 +19,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class DuaLeoTruyen : ParsedHttpSource() {
-
     override val name = "Dưa Leo Truyện"
 
     override val baseUrl = "https://dualeotruyenkk.com"
@@ -55,7 +54,11 @@ class DuaLeoTruyen : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (query.isNotEmpty()) {
                 addPathSegment("tim-kiem.html")

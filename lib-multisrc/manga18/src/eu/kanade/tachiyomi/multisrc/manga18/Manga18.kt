@@ -26,7 +26,6 @@ abstract class Manga18(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient
@@ -50,6 +49,7 @@ abstract class Manga18(
     }
 
     override fun popularMangaSelector() = "div.story_item"
+
     override fun popularMangaNextPageSelector() = ".pagination a[rel=next]"
 
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
@@ -63,11 +63,18 @@ abstract class Manga18(
     }
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             val tag = filters.filterIsInstance<TagFilter>().firstOrNull()
             if (query.isNotEmpty() || tag?.selected.isNullOrEmpty()) {
@@ -88,8 +95,11 @@ abstract class Manga18(
     }
 
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
+
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
     protected open val getAvailableTags = true

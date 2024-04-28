@@ -26,7 +26,6 @@ abstract class Yanmaga(
     private val highQualityImages: Boolean = false,
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.ROOT),
 ) : ParsedHttpSource() {
-
     override val baseUrl = "https://yanmaga.jp"
 
     override val lang = "ja"
@@ -40,7 +39,11 @@ abstract class Yanmaga(
     override fun headersBuilder() = super.headersBuilder()
         .add("Referer", "$baseUrl/")
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             addPathSegment("search")
             addQueryParameter("q", query)

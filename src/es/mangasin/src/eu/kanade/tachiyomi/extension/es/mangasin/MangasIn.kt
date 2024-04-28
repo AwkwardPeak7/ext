@@ -53,7 +53,11 @@ class MangasIn : MMRCMS(
         return MangasPage(manga, hasNextPage)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isEmpty()) {
             return super.searchMangaRequest(page, query, filters)
         }
@@ -107,7 +111,9 @@ class MangasIn : MMRCMS(
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         val mangaUrl = document.location().removeSuffix("/")
-        val encodeChapterData = CHAPTER_DATA_REGEX.find(document.html())?.value ?: throw Exception("No se pudo encontrar la lista de capítulos")
+        val encodeChapterData = CHAPTER_DATA_REGEX.find(
+            document.html(),
+        )?.value ?: throw Exception("No se pudo encontrar la lista de capítulos")
         val unescapedChapterData = encodeChapterData.unescape()
         val chapterData = json.decodeFromString<CDT>(unescapedChapterData)
         val salt = chapterData.s.decodeHex()

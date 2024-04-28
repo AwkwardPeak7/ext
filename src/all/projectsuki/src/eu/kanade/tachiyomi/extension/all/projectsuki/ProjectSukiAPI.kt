@@ -69,7 +69,6 @@ internal typealias BookTitle = String
  * @author Federico d'Alonzo &lt;me@npgx.dev&gt;
  */
 object ProjectSukiAPI {
-
     private inline fun <reified T : Any> Any.tryAs(): T? = this as? T
 
     /**
@@ -96,7 +95,12 @@ object ProjectSukiAPI {
     /**
      * Creates a [Request] for the server to send the chapter's pages.
      */
-    fun chapterPagesRequest(json: Json, headers: Headers, bookID: BookID, chapterID: ChapterID): Request {
+    fun chapterPagesRequest(
+        json: Json,
+        headers: Headers,
+        bookID: BookID,
+        chapterID: ChapterID,
+    ): Request {
         val newHeaders: Headers = headers.newBuilder()
             .add("X-Requested-With", "XMLHttpRequest")
             .add("Content-Type", "application/json;charset=UTF-8")
@@ -111,7 +115,10 @@ object ProjectSukiAPI {
     /**
      * Handles the [Response] returned from [chapterPagesRequest]'s [call][okhttp3.OkHttpClient.newCall].
      */
-    fun parseChapterPagesResponse(json: Json, response: Response): List<Page> {
+    fun parseChapterPagesResponse(
+        json: Json,
+        response: Response,
+    ): List<Page> {
         // response is a json object containing 2 elements
         // chapter_id: seems to be the same as chapterid, I'm not really sure what it's supposed to be
         // src: source html that will be appended in the page
@@ -163,7 +170,10 @@ object ProjectSukiAPI {
     /**
      * Creates a [Request] for the server to send the books.
      */
-    fun bookSearchRequest(json: Json, headers: Headers): Request {
+    fun bookSearchRequest(
+        json: Json,
+        headers: Headers,
+    ): Request {
         val newHeaders: Headers = headers.newBuilder()
             .add("X-Requested-With", "XMLHttpRequest")
             .add("Content-Type", "application/json;charset=UTF-8")
@@ -179,7 +189,10 @@ object ProjectSukiAPI {
     /**
      * Handles the [Response] returned from [parseBookSearchResponse]'s [call][okhttp3.OkHttpClient.newCall].
      */
-    fun parseBookSearchResponse(json: Json, response: Response): Map<BookID, BookTitle> {
+    fun parseBookSearchResponse(
+        json: Json,
+        response: Response,
+    ): Map<BookID, BookTitle> {
         val data: JsonObject = json.runCatching { parseToJsonElement(response.body.string()) }
             .getOrNull()
             ?.tryAs<JsonObject>()

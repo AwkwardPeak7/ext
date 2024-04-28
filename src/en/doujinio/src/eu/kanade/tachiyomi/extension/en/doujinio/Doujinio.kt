@@ -33,17 +33,16 @@ class Doujinio : HttpSource() {
 
     // Latest
 
-    override fun latestUpdatesRequest(page: Int) =
-        POST(
-            "$baseUrl/api/mangas/newest",
-            headers,
-            body = json.encodeToString(
-                LatestRequest(
-                    limit = LATEST_LIMIT,
-                    offset = (page - 1) * LATEST_LIMIT,
-                ),
-            ).toRequestBody("application/json".toMediaType()),
-        )
+    override fun latestUpdatesRequest(page: Int) = POST(
+        "$baseUrl/api/mangas/newest",
+        headers,
+        body = json.encodeToString(
+            LatestRequest(
+                limit = LATEST_LIMIT,
+                offset = (page - 1) * LATEST_LIMIT,
+            ),
+        ).toRequestBody("application/json".toMediaType()),
+    )
 
     override fun latestUpdatesParse(response: Response): MangasPage {
         val latest = response.parseAs<List<Manga>>().map { it.toSManga() }
@@ -62,7 +61,11 @@ class Doujinio : HttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = POST(
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = POST(
         "$baseUrl/api/mangas/search",
         headers,
         body = json.encodeToString(
@@ -87,8 +90,7 @@ class Doujinio : HttpSource() {
 
     // Details
 
-    override fun mangaDetailsRequest(manga: SManga) =
-        GET("https://doujin.io/api/mangas/${getIdFromUrl(manga.url)}", headers)
+    override fun mangaDetailsRequest(manga: SManga) = GET("https://doujin.io/api/mangas/${getIdFromUrl(manga.url)}", headers)
 
     override fun mangaDetailsParse(response: Response) = response.parseAs<Manga>().toSManga()
 
@@ -96,33 +98,29 @@ class Doujinio : HttpSource() {
 
     // Chapter
 
-    override fun chapterListRequest(manga: SManga) =
-        GET("$baseUrl/api/chapters?manga_id=${getIdFromUrl(manga.url)}", headers)
+    override fun chapterListRequest(manga: SManga) = GET("$baseUrl/api/chapters?manga_id=${getIdFromUrl(manga.url)}", headers)
 
-    override fun chapterListParse(response: Response) =
-        response.parseAs<List<Chapter>>().map { it.toSChapter() }.reversed()
+    override fun chapterListParse(response: Response) = response.parseAs<List<Chapter>>().map { it.toSChapter() }.reversed()
 
     // Page List
 
-    override fun pageListRequest(chapter: SChapter) =
-        GET(
-            "$baseUrl/api/mangas/${getIdsFromUrl(chapter.url)}/manifest",
-            headers.newBuilder().apply {
-                add(
-                    "referer",
-                    "https://doujin.io/manga/${getIdsFromUrl(chapter.url).split("/").joinToString("/chapter/")}",
-                )
-            }.build(),
-        )
+    override fun pageListRequest(chapter: SChapter) = GET(
+        "$baseUrl/api/mangas/${getIdsFromUrl(chapter.url)}/manifest",
+        headers.newBuilder().apply {
+            add(
+                "referer",
+                "https://doujin.io/manga/${getIdsFromUrl(chapter.url).split("/").joinToString("/chapter/")}",
+            )
+        }.build(),
+    )
 
-    override fun pageListParse(response: Response) =
-        if (response.headers["content-type"] == "text/html; charset=UTF-8") {
-            throw Exception("You need to login first through the WebView to read the chapter.")
-        } else {
-            json.decodeFromString<ChapterManifest>(
-                response.body.string(),
-            ).toPageList()
-        }
+    override fun pageListParse(response: Response) = if (response.headers["content-type"] == "text/html; charset=UTF-8") {
+        throw Exception("You need to login first through the WebView to read the chapter.")
+    } else {
+        json.decodeFromString<ChapterManifest>(
+            response.body.string(),
+        ).toPageList()
+    }
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
@@ -139,6 +137,5 @@ class Doujinio : HttpSource() {
 
     private inline fun <reified T> Iterable<*>.findInstance() = find { it is T } as? T
 
-    private inline fun <reified T> Response.parseAs(): T =
-        json.decodeFromString<PageResponse<T>>(body.string()).data
+    private inline fun <reified T> Response.parseAs(): T = json.decodeFromString<PageResponse<T>>(body.string()).data
 }

@@ -56,8 +56,7 @@ class MangaOwlTo(
     override fun popularMangaRequest(page: Int) =
         GET("$apiUrl/stories?type=$collection&ordering=-view_count&page=$page".toHttpUrl(), headers)
 
-    override fun popularMangaParse(response: Response) =
-        json.decodeFromString<MangaOwlToStories>(response.body.string()).toMangasPage()
+    override fun popularMangaParse(response: Response) = json.decodeFromString<MangaOwlToStories>(response.body.string()).toMangasPage()
 
     // Latest
 
@@ -68,7 +67,11 @@ class MangaOwlTo(
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotEmpty() || filters.isEmpty()) {
             // Search won't work together with filter
             val url = "$apiUrl/search".toHttpUrl().newBuilder()
@@ -106,8 +109,7 @@ class MangaOwlTo(
         return GET("$apiUrl/stories/${manga.url}", headers)
     }
 
-    override fun mangaDetailsParse(response: Response) =
-        json.decodeFromString<MangaOwlToStory>(response.body.string()).toSManga()
+    override fun mangaDetailsParse(response: Response) = json.decodeFromString<MangaOwlToStory>(response.body.string()).toSManga()
 
     override fun getMangaUrl(manga: SManga): String {
         return "$baseUrl/comic/${manga.url}"
@@ -116,8 +118,7 @@ class MangaOwlTo(
     // Chapters
     override fun chapterListRequest(manga: SManga) = mangaDetailsRequest(manga)
 
-    override fun chapterListParse(response: Response) =
-        json.decodeFromString<MangaOwlToStory>(response.body.string()).chaptersList
+    override fun chapterListParse(response: Response) = json.decodeFromString<MangaOwlToStory>(response.body.string()).chaptersList
 
     override fun getChapterUrl(chapter: SChapter): String {
         return "$baseUrl${chapter.url}"
@@ -129,8 +130,7 @@ class MangaOwlTo(
         return GET("$apiUrl/chapters/$id/images?page_size=1000", headers)
     }
 
-    override fun pageListParse(response: Response) =
-        json.decodeFromString<MangaOwlToChapterPages>(response.body.string()).toPages()
+    override fun pageListParse(response: Response) = json.decodeFromString<MangaOwlToChapterPages>(response.body.string()).toPages()
 
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 

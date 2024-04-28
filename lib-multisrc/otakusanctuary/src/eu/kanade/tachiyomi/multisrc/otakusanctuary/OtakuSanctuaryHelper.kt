@@ -3,14 +3,16 @@ package eu.kanade.tachiyomi.multisrc.otakusanctuary
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 class OtakuSanctuaryHelper(private val lang: String) {
-
     fun otakusanLang() = when (lang) {
         "vi" -> "vn"
         "en" -> "us"
         else -> lang
     }
 
-    fun processUrl(url: String, vi: String = ""): String {
+    fun processUrl(
+        url: String,
+        vi: String = "",
+    ): String {
         var url = url.replace("_h_", "http")
             .replace("_e_", "/extendContent/Manga")
             .replace("_r_", "/extendContent/MangaRaw")
@@ -123,13 +125,13 @@ class OtakuSanctuaryHelper(private val lang: String) {
                     url.contains("ntruyen.info") ||
                     url.contains("chancanvas") ||
                     url.contains("bato.to")
-                ) &&
+            ) &&
             (
                 !url.contains("googleusercontent") &&
                     !url.contains("otakusan") &&
                     !url.contains("otakuscan") &&
                     !url.contains("shopotaku")
-                )
+            )
         ) {
             url =
                 "https://images2-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1&resize_h=0&rewriteMime=image%2F*".toHttpUrl()

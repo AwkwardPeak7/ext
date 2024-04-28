@@ -68,7 +68,7 @@ class Twi4 : HttpSource() {
                         author = manga.select("div.hgroup > p").text()
                         status =
                             if (manga.select("ul:first-child > li:last-child > em.is-completed")
-                                .isEmpty()
+                                    .isEmpty()
                             ) {
                                 SManga.ONGOING
                             } else {
@@ -85,8 +85,7 @@ class Twi4 : HttpSource() {
         return GET(baseUrl, getChromeHeaders())
     }
 
-    override fun mangaDetailsRequest(manga: SManga): Request =
-        GET(getUrlDomain() + manga.url, getChromeHeaders())
+    override fun mangaDetailsRequest(manga: SManga): Request = GET(getUrlDomain() + manga.url, getChromeHeaders())
 
     override fun mangaDetailsParse(response: Response): SManga {
         val document = response.asJsoup()
@@ -131,8 +130,7 @@ class Twi4 : HttpSource() {
         }
     }
 
-    override fun chapterListRequest(manga: SManga): Request =
-        GET(getUrlDomain() + manga.url, getChromeHeaders())
+    override fun chapterListRequest(manga: SManga): Request = GET(getUrlDomain() + manga.url, getChromeHeaders())
 
     // They have a <noscript> layout! This is surprising
     // Though their manga pages fails to load as it relies on JS
@@ -171,8 +169,7 @@ class Twi4 : HttpSource() {
         return ret
     }
 
-    override fun pageListRequest(chapter: SChapter): Request =
-        GET(getUrlDomain() + chapter.url, getChromeHeaders())
+    override fun pageListRequest(chapter: SChapter): Request = GET(getUrlDomain() + chapter.url, getChromeHeaders())
 
     override fun pageListParse(response: Response): List<Page> {
         val doc = response.asJsoup()
@@ -255,25 +252,27 @@ class Twi4 : HttpSource() {
         }
     }
 
-    private fun searchMangaSlug(response: Response, slug: String): MangasPage {
+    private fun searchMangaSlug(
+        response: Response,
+        slug: String,
+    ): MangasPage {
         val details = mangaDetailsParse(response)
         details.setUrlWithoutDomain(baseUrl + slug)
         return MangasPage(listOf(details), false)
     }
 
     // All these functions are unused
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
-    override fun searchMangaParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
+    override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 }

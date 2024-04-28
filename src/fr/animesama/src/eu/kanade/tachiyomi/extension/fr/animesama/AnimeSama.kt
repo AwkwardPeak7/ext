@@ -19,7 +19,6 @@ import org.jsoup.nodes.Element
 import uy.kohesive.injekt.injectLazy
 
 class AnimeSama : ParsedHttpSource() {
-
     override val name = "AnimeSama"
 
     override val baseUrl = "https://anime-sama.fr"
@@ -72,23 +71,30 @@ class AnimeSama : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector(): String? = null
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val uri = Uri.parse("$baseUrl/search/search.php").buildUpon()
             .appendQueryParameter("terme", query + " [SCANS]")
             .appendQueryParameter("s", "Search")
         return GET(uri.toString(), headers)
     }
+
     override fun searchMangaSelector() = "div.media-body"
+
     override fun searchMangaNextPageSelector(): String? = null
+
     override fun searchMangaFromElement(element: Element): SManga {
         return SManga.create().apply {
             title = element.select("h5").text()
             setUrlWithoutDomain(element.select("a").attr("href"))
             thumbnail_url =
                 cdn_url + title.replace(
-                " [SCANS]",
-                "",
-            ).replace(" ", "-").trim() + "carre.jpg"
+                    " [SCANS]",
+                    "",
+                ).replace(" ", "-").trim() + "carre.jpg"
         }
     }
 

@@ -22,7 +22,6 @@ import java.util.Calendar
 import java.util.regex.Pattern
 
 class Hentai2Read : ParsedHttpSource() {
-
     override val name = "Hentai2Read"
 
     override val baseUrl = "https://hentai2read.com"
@@ -49,11 +48,9 @@ class Hentai2Read : ParsedHttpSource() {
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/hentai-list/all/any/all/most-popular/$page/", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/hentai-list/all/any/all/most-popular/$page/", headers)
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/hentai-list/all/any/all/last-updated/$page/", headers)
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/hentai-list/all/any/all/last-updated/$page/", headers)
 
     override fun popularMangaFromElement(element: Element): SManga {
         return SManga.create().apply {
@@ -71,7 +68,11 @@ class Hentai2Read : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {
             val id = query.removePrefix(PREFIX_ID_SEARCH)
             client.newCall(GET("$baseUrl/$id/", headers)).asObservableSuccess()
@@ -83,7 +84,11 @@ class Hentai2Read : ParsedHttpSource() {
         }
     }
 
-    private fun requestSearch(page: Int, query: String, filters: FilterList): Pair<Request, String?> {
+    private fun requestSearch(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Pair<Request, String?> {
         val searchUrl = "$baseUrl/hentai-list/advanced-search"
         var sortOrder: String? = null
 
@@ -123,7 +128,11 @@ class Hentai2Read : ParsedHttpSource() {
     }
 
     // If the user wants to search by a sort order other than alphabetical, we have to make another call
-    private fun parseSearch(response: Response, page: Int, sortOrder: String?): MangasPage {
+    private fun parseSearch(
+        response: Response,
+        page: Int,
+        sortOrder: String?,
+    ): MangasPage {
         val document = if (page == 1 && sortOrder != null) {
             response.asJsoup().select("li.dropdown li:contains($sortOrder) a").first()!!.attr("abs:href")
                 .let { client.newCall(GET(it, headers)).execute().asJsoup() }
@@ -143,7 +152,11 @@ class Hentai2Read : ParsedHttpSource() {
         return MangasPage(mangas, hasNextPage)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaSelector() = popularMangaSelector()
 
@@ -265,17 +278,29 @@ class Hentai2Read : ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     private class MangaNameSelect : Filter.Select<String>("Manga Name", arrayOf("Contains", "Starts With", "Ends With"))
+
     private class ArtistName : Filter.Text("Artist")
+
     private class ArtistNameSelect : Filter.Select<String>("Artist Name", arrayOf("Contains", "Starts With", "Ends With"))
+
     private class CharacterName : Filter.Text("Character")
+
     private class CharacterNameSelect : Filter.Select<String>("Character Name", arrayOf("Contains", "Starts With", "Ends With"))
+
     private class ReleaseYear : Filter.Text("Release Year")
+
     private class ReleaseYearSelect : Filter.Select<String>("Release Year", arrayOf("In", "Before", "After"))
+
     private class Status : Filter.Select<String>("Status", arrayOf("Any", "Completed", "Ongoing"))
+
     private class TagSearchMode : Filter.Select<String>("Tag Search Mode", arrayOf("AND", "OR"))
+
     private class Tag(name: String, val id: Int) : Filter.TriState(name)
+
     private class TagList(title: String, tags: List<Tag>) : Filter.Group<Tag>(title, tags)
+
     private class SortOrder(values: Array<Pair<String, String?>>) : UriPartFilter("Order", values)
+
     private open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String?>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
         fun toUriPart() = vals[state].second

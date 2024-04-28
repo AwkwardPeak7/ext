@@ -143,6 +143,7 @@ class Nekopost : HttpSource() {
             )
         }
     }
+
     override fun popularMangaRequest(page: Int): Request {
         if (page <= 1) existingProject.clear()
         // API has a bug that sometime it returns null on first page
@@ -173,7 +174,11 @@ class Nekopost : HttpSource() {
         return MangasPage(mangaList, hasNextPage = true)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val headers = Headers.headersOf("accept", "*/*", "content-type", "text/plain;charset=UTF-8", "origin", nekopostUrl)
         val requestBody = Json.encodeToString(SearchRequest(query, page)).toRequestBody()
         return POST("$nekopostUrl/api/explore/search", headers, requestBody)

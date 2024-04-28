@@ -33,7 +33,6 @@ abstract class Guya(
     override val baseUrl: String,
     override val lang: String,
 ) : ConfigurableSource, HttpSource() {
-
     override val supportsLatest = true
 
     private val scanlatorCacheUrl by lazy { "$baseUrl/api/get_all_groups/" }
@@ -93,7 +92,10 @@ abstract class Guya(
         return GET("$baseUrl/api/series/${manga.url}/", headers)
     }
 
-    private fun mangaDetailsParse(response: Response, manga: SManga): SManga {
+    private fun mangaDetailsParse(
+        response: Response,
+        manga: SManga,
+    ): SManga {
         val res = response.body.string()
         return parseMangaFromJson(JSONObject(res), manga.title)
     }
@@ -116,7 +118,10 @@ abstract class Guya(
     }
 
     // Called after the request
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         return parseChapterList(response.body.string(), manga)
     }
 
@@ -137,7 +142,10 @@ abstract class Guya(
         return GET("$baseUrl/api/series/${chapter.url.split("/")[0]}/", headers)
     }
 
-    private fun pageListParse(response: Response, chapter: SChapter): List<Page> {
+    private fun pageListParse(
+        response: Response,
+        chapter: SChapter,
+    ): List<Page> {
         val res = response.body.string()
 
         val json = JSONObject(res)
@@ -160,7 +168,11 @@ abstract class Guya(
         return parsePageFromJson(pages, metadata)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith(SLUG_PREFIX) -> {
                 val slug = query.removePrefix(SLUG_PREFIX)
@@ -180,11 +192,18 @@ abstract class Guya(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/api/get_all_series/", headers)
     }
 
-    protected open fun searchMangaParseWithSlug(response: Response, slug: String): MangasPage {
+    protected open fun searchMangaParseWithSlug(
+        response: Response,
+        slug: String,
+    ): MangasPage {
         val results = JSONObject(response.body.string())
         val truncatedJSON = JSONObject()
 
@@ -199,7 +218,10 @@ abstract class Guya(
         return parseManga(truncatedJSON)
     }
 
-    protected open fun searchMangaParse(response: Response, query: String): MangasPage {
+    protected open fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         val res = response.body.string()
         val json = JSONObject(res)
         val truncatedJSON = JSONObject()
@@ -239,7 +261,10 @@ abstract class Guya(
 
     // ------------- Helpers and whatnot ---------------
 
-    private fun parseChapterList(payload: String, manga: SManga): List<SChapter> {
+    private fun parseChapterList(
+        payload: String,
+        manga: SManga,
+    ): List<SChapter> {
         val sortKey = "preferred_sort"
         val response = JSONObject(payload)
         val chapters = response.getJSONObject("chapters")
@@ -311,7 +336,10 @@ abstract class Guya(
     }
 
     // Takes a json of the manga to parse
-    private fun parseMangaFromJson(json: JSONObject, title: String = ""): SManga {
+    private fun parseMangaFromJson(
+        json: JSONObject,
+        title: String = "",
+    ): SManga {
         val manga = SManga.create()
         manga.title = title.ifEmpty { json.getString("title") }
         manga.artist = json.optString("artist")
@@ -335,7 +363,12 @@ abstract class Guya(
         return manga
     }
 
-    private fun parseChapterFromJson(json: JSONObject, num: String, sort: JSONArray, slug: String): SChapter {
+    private fun parseChapterFromJson(
+        json: JSONObject,
+        num: String,
+        sort: JSONArray,
+        slug: String,
+    ): SChapter {
         val chapter = SChapter.create()
 
         // Get the scanlator info based on group ranking; do it first since we need it later
@@ -349,7 +382,10 @@ abstract class Guya(
         return chapter
     }
 
-    private fun parsePageFromJson(json: JSONObject, metadata: JSONObject): List<Page> {
+    private fun parsePageFromJson(
+        json: JSONObject,
+        metadata: JSONObject,
+    ): List<Page> {
         val pages = json.getJSONArray(metadata.getString("scanlator"))
         return List(pages.length()) {
             Page(
@@ -365,7 +401,10 @@ abstract class Guya(
         }
     }
 
-    private fun getBestScanlator(json: JSONObject, sort: JSONArray): String {
+    private fun getBestScanlator(
+        json: JSONObject,
+        sort: JSONArray,
+    ): String {
         val preferred = preferences.getString(scanlatorPreference, null)
 
         if (preferred != null && json.has(preferred)) {
@@ -381,7 +420,12 @@ abstract class Guya(
         }
     }
 
-    private fun pageBuilder(slug: String, folder: String, filename: String, groupId: String): String {
+    private fun pageBuilder(
+        slug: String,
+        folder: String,
+        filename: String,
+        groupId: String,
+    ): String {
         return "$baseUrl/media/manga/$slug/chapters/$folder/$groupId/$filename"
     }
 

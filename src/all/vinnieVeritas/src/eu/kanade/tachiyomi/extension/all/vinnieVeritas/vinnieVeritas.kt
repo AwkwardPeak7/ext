@@ -14,7 +14,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 open class vinnieVeritas(override val lang: String = "en") : ParsedHttpSource() {
-
     override val name = "Vinnie Veritas - CCC"
     override val supportsLatest = false
 
@@ -23,7 +22,11 @@ open class vinnieVeritas(override val lang: String = "en") : ParsedHttpSource() 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         val manga = SManga.create()
         manga.setUrlWithoutDomain("ccc-$lang/")
-        manga.title = if (lang == "en") { "CCC: The city of opportunities" } else { "CCC: La ciudad de las oportunidades" }
+        manga.title = if (lang == "en") {
+            "CCC: The city of opportunities"
+        } else {
+            "CCC: La ciudad de las oportunidades"
+        }
         manga.artist = "Vinnie Veritas"
         manga.author = "Vinnie Veritas"
         manga.status = SManga.ONGOING
@@ -54,7 +57,11 @@ CCC es el nombre de la segunda ciudad mas grande que hay, no son siglas ni la ab
         return super.chapterListParse(response).reversed()
     }
 
-    override fun chapterListSelector() = "option.webcomic${if (lang == "en"){1}else {2}}-link"
+    override fun chapterListSelector() = "option.webcomic${if (lang == "en"){
+        1
+    }else {
+        2
+    }}-link"
 
     override fun chapterFromElement(element: Element): SChapter {
         val chapter = SChapter.create()
@@ -76,7 +83,11 @@ CCC es el nombre de la segunda ciudad mas grande que hay, no son siglas ni la ab
     }
 
     // unused
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = throw UnsupportedOperationException()
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = throw UnsupportedOperationException()
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
@@ -90,7 +101,11 @@ CCC es el nombre de la segunda ciudad mas grande que hay, no son siglas ni la ab
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun popularMangaNextPageSelector(): String? = throw UnsupportedOperationException()
 

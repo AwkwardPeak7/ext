@@ -33,7 +33,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
-
     override val name = "ReadComicOnline"
 
     override val baseUrl = "https://readcomiconline.li"
@@ -99,8 +98,15 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request { // publisher > writer > artist + sorting for both if else
-        if (query.isEmpty() && (if (filters.isEmpty()) getFilterList() else filters).filterIsInstance<GenreList>().all { it.included.isEmpty() && it.excluded.isEmpty() }) {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request { // publisher > writer > artist + sorting for both if else
+        if (query.isEmpty() && (if (filters.isEmpty()) getFilterList() else filters).filterIsInstance<GenreList>().all {
+                it.included.isEmpty() && it.excluded.isEmpty()
+            }
+        ) {
             val url = baseUrl.toHttpUrl().newBuilder().apply {
                 var pathSegmentAdded = false
 
@@ -131,7 +137,9 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
                         break
                     }
                 }
-                addPathSegment((if (filters.isEmpty()) getFilterList() else filters).filterIsInstance<SortFilter>().first().selected.toString())
+                addPathSegment(
+                    (if (filters.isEmpty()) getFilterList() else filters).filterIsInstance<SortFilter>().first().selected.toString(),
+                )
                 addQueryParameter("page", page.toString())
             }.build()
             return GET(url, headers)
@@ -183,12 +191,10 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
             }
     }
 
-    private fun realMangaDetailsRequest(manga: SManga): Request =
-        super.mangaDetailsRequest(manga)
+    private fun realMangaDetailsRequest(manga: SManga): Request = super.mangaDetailsRequest(manga)
 
-    override fun mangaDetailsRequest(manga: SManga): Request =
-        captchaUrl?.let { GET(it, headers) }.also { captchaUrl = null }
-            ?: super.mangaDetailsRequest(manga)
+    override fun mangaDetailsRequest(manga: SManga): Request = captchaUrl?.let { GET(it, headers) }.also { captchaUrl = null }
+        ?: super.mangaDetailsRequest(manga)
 
     private fun parseStatus(status: String) = when {
         status.contains("Ongoing") -> SManga.ONGOING
@@ -231,7 +237,9 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = ""
 
     private class Status : Filter.TriState("Completed")
+
     private class Genre(name: String, val gid: String) : Filter.TriState(name)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres) {
         val included: List<String>
             get() = state.filter { it.isIncluded() }.map { it.gid }
@@ -239,6 +247,7 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
         val excluded: List<String>
             get() = state.filter { it.isExcluded() }.map { it.gid }
     }
+
     open class SelectFilter(displayName: String, private val options: Array<Pair<String, String>>) : Filter.Select<String>(
         displayName,
         options.map { it.first }.toTypedArray(),
@@ -247,8 +256,11 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
     }
 
     private class PublisherFilter() : Filter.Text("Publisher")
+
     private class WriterFilter() : Filter.Text("Writer")
+
     private class ArtistFilter() : Filter.Text("Artist")
+
     private class SortFilter : SelectFilter(
         "Sort By",
         arrayOf(
@@ -391,11 +403,12 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
         return QuickJs.create().use {
             it.execute(rguardBytecode)
 
-            val script = """
+            val script =
+                """
                 var images = ${json.encodeToJsonElement(urls)};
                 beau(images);
                 images;
-            """.trimIndent()
+                """.trimIndent()
             (it.evaluate(script) as Array<Any>).map { it as String }.toList()
         }
     }
@@ -413,7 +426,8 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
          * The MIT License (MIT)
          * Copyright (c) 2014 MaxArt2501
          */
-        private val ATOB_SCRIPT = """
+        private val ATOB_SCRIPT =
+            """
             var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
                 b64re = /^(?:[A-Za-z\d+\/]{4})*?(?:[A-Za-z\d+\/]{2}(?:==)?|[A-Za-z\d+\/]{3}=?)?$/;
 
@@ -437,6 +451,6 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
                 }
                 return result;
             };
-        """.trimIndent()
+            """.trimIndent()
     }
 }

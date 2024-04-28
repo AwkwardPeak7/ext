@@ -39,7 +39,6 @@ abstract class Bilibili(
     final override val baseUrl: String,
     final override val lang: String,
 ) : HttpSource(), ConfigurableSource {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient.newBuilder()
@@ -93,7 +92,11 @@ abstract class Bilibili(
 
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         ID_SEARCH_PATTERN.matchEntire(query)?.let {
             val (id) = it.destructured
             val temporaryManga = SManga.create().apply { url = "/detail/mc$id" }
@@ -239,7 +242,11 @@ abstract class Bilibili(
         return result.data!!.episodeList.map { ep -> chapterFromObject(ep, result.data.id) }
     }
 
-    protected open fun chapterFromObject(episode: BilibiliEpisodeDto, comicId: Int, isUnlocked: Boolean = false): SChapter = SChapter.create().apply {
+    protected open fun chapterFromObject(
+        episode: BilibiliEpisodeDto,
+        comicId: Int,
+        isUnlocked: Boolean = false,
+    ): SChapter = SChapter.create().apply {
         name = buildString {
             if (episode.isPaid && !isUnlocked) {
                 append("$EMOJI_LOCKED ")
@@ -262,7 +269,10 @@ abstract class Bilibili(
     override fun pageListParse(response: Response): List<Page> = imageIndexParse(response)
 
     @Suppress("SameParameterValue")
-    protected open fun imageIndexRequest(chapterUrl: String, credential: String): Request {
+    protected open fun imageIndexRequest(
+        chapterUrl: String,
+        credential: String,
+    ): Request {
         val chapterId = chapterUrl.substringAfterLast("/").toInt()
 
         val jsonPayload = buildJsonObject {
@@ -350,8 +360,7 @@ abstract class Bilibili(
         BilibiliTag(intl.sortUpdated, 4),
     )
 
-    protected open fun getAllStatus(): Array<String> =
-        arrayOf(intl.statusAll, intl.statusOngoing, intl.statusComplete)
+    protected open fun getAllStatus(): Array<String> = arrayOf(intl.statusAll, intl.statusOngoing, intl.statusComplete)
 
     protected open fun getAllPrices(): Array<String> = emptyArray()
 

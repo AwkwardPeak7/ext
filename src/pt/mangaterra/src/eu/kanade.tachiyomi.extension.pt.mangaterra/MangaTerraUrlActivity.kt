@@ -8,7 +8,6 @@ import android.util.Log
 import kotlin.system.exitProcess
 
 class MangaTerraUrlActivity : Activity() {
-
     private val tag = javaClass.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {

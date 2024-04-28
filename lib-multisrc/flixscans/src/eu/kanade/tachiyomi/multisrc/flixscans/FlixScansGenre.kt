@@ -6,9 +6,9 @@ abstract class SelectFilter(
     name: String,
     private val options: List<String>,
 ) : Filter.Select<String>(
-    name,
-    options.toTypedArray(),
-) {
+        name,
+        options.toTypedArray(),
+    ) {
     val selected get() = options[state]
 }
 
@@ -21,9 +21,9 @@ class GenreFilter(
     name: String,
     private val genres: List<GenreHolder>,
 ) : Filter.Group<CheckBoxFilter>(
-    name,
-    genres.map { CheckBoxFilter(it.name.trim(), it.id.toString()) },
-) {
+        name,
+        genres.map { CheckBoxFilter(it.name.trim(), it.id.toString()) },
+    ) {
     val checked get() = state.filter { it.state }.map { it.id }
 }
 

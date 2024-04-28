@@ -256,7 +256,9 @@ class DoujinDesu : ParsedHttpSource(), ConfigurableSource {
         Filter.Select<Category>("Category", categories, 0)
 
     private class OrderBy(orders: Array<Order>) : Filter.Select<Order>("Order", orders, 0)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
+
     private class StatusList(statuses: Array<Status>) : Filter.Select<Status>("Status", statuses, 0)
 
     private fun basicInformationFromElement(element: Element): SManga {
@@ -292,8 +294,7 @@ class DoujinDesu : ParsedHttpSource(), ConfigurableSource {
 
     // Popular
 
-    override fun popularMangaFromElement(element: Element): SManga =
-        basicInformationFromElement(element)
+    override fun popularMangaFromElement(element: Element): SManga = basicInformationFromElement(element)
 
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/manga/page/$page/?title=&author=&character=&statusx=&typex=&order=popular", headers)
@@ -301,8 +302,7 @@ class DoujinDesu : ParsedHttpSource(), ConfigurableSource {
 
     // Latest
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        basicInformationFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = basicInformationFromElement(element)
 
     override fun latestUpdatesRequest(page: Int): Request {
         return GET("$baseUrl/manga/page/$page/?title=&author=&character=&statusx=&typex=&order=update", headers)
@@ -311,16 +311,24 @@ class DoujinDesu : ParsedHttpSource(), ConfigurableSource {
     // Element Selectors
 
     override fun latestUpdatesSelector(): String = "#archives > div.entries > article"
+
     override fun popularMangaSelector(): String = "#archives > div.entries > article"
+
     override fun searchMangaSelector(): String = "#archives > div.entries > article"
 
     override fun popularMangaNextPageSelector(): String = "nav.pagination > ul > li.last > a"
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     // Search & FIlter
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/manga/page/$page/".toHttpUrl().newBuilder()
             .addQueryParameter("title", query)
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
@@ -352,8 +360,7 @@ class DoujinDesu : ParsedHttpSource(), ConfigurableSource {
         return GET(url.build(), headers)
     }
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        basicInformationFromElement(element)
+    override fun searchMangaFromElement(element: Element): SManga = basicInformationFromElement(element)
 
     override fun getFilterList() = FilterList(
         Filter.Header("NB: Filter diabaikan jika memakai pencarian teks!"),
@@ -408,10 +415,9 @@ class DoujinDesu : ParsedHttpSource(), ConfigurableSource {
         return chapter
     }
 
-    override fun headersBuilder(): Headers.Builder =
-        super.headersBuilder()
-            .add("Referer", "$baseUrl/")
-            .add("X-Requested-With", "XMLHttpRequest")
+    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
+        .add("Referer", "$baseUrl/")
+        .add("X-Requested-With", "XMLHttpRequest")
 
     override fun imageRequest(page: Page): Request {
         val newHeaders = headersBuilder()
@@ -425,8 +431,7 @@ class DoujinDesu : ParsedHttpSource(), ConfigurableSource {
     override fun chapterListSelector(): String = "#chapter_list li"
 
     // More parser stuff
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun pageListParse(document: Document): List<Page> {
         val id = document.select("#reader").attr("data-id")

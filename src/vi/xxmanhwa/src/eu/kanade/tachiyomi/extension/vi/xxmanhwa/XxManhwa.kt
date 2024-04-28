@@ -26,7 +26,6 @@ import uy.kohesive.injekt.injectLazy
 import kotlin.random.Random
 
 class XxManhwa : ParsedHttpSource(), ConfigurableSource {
-
     override val name = "XXManhwa"
 
     override val lang = "vi"
@@ -66,7 +65,11 @@ class XxManhwa : ParsedHttpSource(), ConfigurableSource {
 
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             addPathSegment("search")
 

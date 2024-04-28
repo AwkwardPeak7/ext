@@ -28,7 +28,6 @@ abstract class WPComics(
     protected val dateFormat: SimpleDateFormat = SimpleDateFormat("HH:mm - dd/MM/yyyy Z", Locale.US),
     protected val gmtOffset: String? = "+0500",
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient
@@ -81,7 +80,11 @@ abstract class WPComics(
     protected open val searchPath = "tim-truyen"
     protected open val queryParam = "keyword"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/$searchPath".toHttpUrl().newBuilder()
 
         filters.forEach { filter ->
@@ -229,12 +232,11 @@ abstract class WPComics(
 
     protected class GenreFilter(name: String, pairs: List<Pair<String?, String>>) : UriPartFilter(name, pairs)
 
-    protected open fun getStatusList(): List<Pair<String?, String>> =
-        listOf(
-            Pair(null, intl["STATUS_ALL"]),
-            Pair("1", intl["STATUS_ONGOING"]),
-            Pair("2", intl["STATUS_COMPLETED"]),
-        )
+    protected open fun getStatusList(): List<Pair<String?, String>> = listOf(
+        Pair(null, intl["STATUS_ALL"]),
+        Pair("1", intl["STATUS_ONGOING"]),
+        Pair("2", intl["STATUS_COMPLETED"]),
+    )
 
     protected var genreList: List<Pair<String?, String>> = emptyList()
 

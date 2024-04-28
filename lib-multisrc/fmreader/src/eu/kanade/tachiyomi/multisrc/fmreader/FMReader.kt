@@ -32,7 +32,6 @@ abstract class FMReader(
     override val lang: String,
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient
@@ -65,7 +64,11 @@ abstract class FMReader(
     override fun popularMangaRequest(page: Int): Request =
         GET("$baseUrl/$requestPath?listType=pagination&page=$page&$popularSort&sort_type=DESC", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/$requestPath?".toHttpUrl().newBuilder()
             .addQueryParameter("name", query)
             .addQueryParameter("page", page.toString())
@@ -203,9 +206,16 @@ abstract class FMReader(
             "tamamlandı",
         )
         val ongoingWords = setOf(
-            "ongoing", "on going", "updating", "incomplete",
-            "chưa hoàn thành", "đang cập nhật", "Đang tiến hành",
-            "devam ediyor", "Çevirisi Bırakıldı", "Çevirisi Yok",
+            "ongoing",
+            "on going",
+            "updating",
+            "incomplete",
+            "chưa hoàn thành",
+            "đang cập nhật",
+            "Đang tiến hành",
+            "devam ediyor",
+            "Çevirisi Bırakıldı",
+            "Çevirisi Yok",
         )
         return when {
             status == null -> SManga.UNKNOWN
@@ -233,7 +243,10 @@ abstract class FMReader(
 
     open val chapterNameAttrSelector = "title"
 
-    open fun chapterFromElement(element: Element, mangaTitle: String = ""): SChapter {
+    open fun chapterFromElement(
+        element: Element,
+        mangaTitle: String = "",
+    ): SChapter {
         return SChapter.create().apply {
             if (chapterUrlSelector != "") {
                 element.select(chapterUrlSelector).first()!!.let {
@@ -303,6 +316,7 @@ abstract class FMReader(
             }
         }
     }
+
     open fun parseAbsoluteDate(dateStr: String): Long {
         return runCatching { dateFormat.parse(dateStr)?.time }
             .getOrNull() ?: 0L
@@ -341,9 +355,13 @@ abstract class FMReader(
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     private class TextField(name: String, val key: String) : Filter.Text(name)
+
     private class Status : Filter.Select<String>("Status", arrayOf("Any", "Completed", "Ongoing"))
+
     class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
+
     class Genre(name: String, val id: String = name.replace(' ', '+')) : Filter.TriState(name)
+
     private class SortBy : Filter.Sort("Sorted By", arrayOf("A-Z", "Most vỉews", "Last updated"), Selection(1, false))
 
     // TODO: Country (leftover from original LHTranslation)

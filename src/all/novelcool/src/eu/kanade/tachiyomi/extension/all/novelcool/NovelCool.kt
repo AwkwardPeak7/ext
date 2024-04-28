@@ -43,7 +43,6 @@ open class NovelCool(
     final override val lang: String,
     private val siteLang: String = lang,
 ) : ParsedHttpSource(), ConfigurableSource {
-
     override val name = "NovelCool"
 
     override val supportsLatest = true
@@ -117,7 +116,11 @@ open class NovelCool(
 
     override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when (preference.useAppApi) {
             true -> client.newCall(commonApiRequest("$apiUrl/book/search/", page, query))
                 .asObservableSuccess()
@@ -126,7 +129,11 @@ open class NovelCool(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search".toHttpUrl().newBuilder().apply {
             addQueryParameter("name", query.trim())
 
@@ -182,6 +189,7 @@ open class NovelCool(
         val excluded: List<String>
             get() = state.filter { it.isExcluded() }.map { it.id }
     }
+
     class Genre(name: String, val id: String) : Filter.TriState(name)
 
     private fun getStatusList() = listOf(
@@ -202,6 +210,7 @@ open class NovelCool(
         Pair("3 Star", "3"),
         Pair("2 Star", "2"),
     )
+
     private class RatingFilter(title: String, private val ratings: List<Pair<String, String>>) :
         Filter.Select<String>(title, ratings.map { it.first }.toTypedArray()) {
         fun getValue() = ratings[state].second
@@ -396,7 +405,11 @@ open class NovelCool(
         )
     }
 
-    private fun commonApiRequest(url: String, page: Int, query: String? = null): Request {
+    private fun commonApiRequest(
+        url: String,
+        page: Int,
+        query: String? = null,
+    ): Request {
         val payload = NovelCoolBrowsePayload(
             appId = appId,
             lang = siteLang,
@@ -459,10 +472,28 @@ open class NovelCool(
         )
 
         private val ongoingStatusList: Array<String> = arrayOf(
-            "ongoing", "Продолжается", "updating", "em lançamento", "em lançamento", "em andamento",
-            "em andamento", "en cours", "ativo", "lançando", "Đang Tiến Hành", "devam ediyor",
-            "devam ediyor", "in corso", "in arrivo", "en curso", "en curso", "emision",
-            "curso", "en marcha", "Publicandose", "en emision",
+            "ongoing",
+            "Продолжается",
+            "updating",
+            "em lançamento",
+            "em lançamento",
+            "em andamento",
+            "em andamento",
+            "en cours",
+            "ativo",
+            "lançando",
+            "Đang Tiến Hành",
+            "devam ediyor",
+            "devam ediyor",
+            "in corso",
+            "in arrivo",
+            "en curso",
+            "en curso",
+            "emision",
+            "curso",
+            "en marcha",
+            "Publicandose",
+            "en emision",
         )
     }
 }

@@ -21,7 +21,6 @@ abstract class CommitStrip(
     override val lang: String,
     private val siteLang: String,
 ) : ParsedHttpSource() {
-
     override val name = "Commit Strip"
     override val baseUrl = "https://www.commitstrip.com"
 
@@ -62,10 +61,13 @@ abstract class CommitStrip(
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
-        fetchPopularManga(1).map { mangaList ->
-            mangaList.copy(mangaList.mangas.filter { it.title.contains(query) })
-        }
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = fetchPopularManga(1).map { mangaList ->
+        mangaList.copy(mangaList.mangas.filter { it.title.contains(query) })
+    }
 
     // Details
 
@@ -98,14 +100,16 @@ abstract class CommitStrip(
         }.let { Observable.just(it.flatten()) }
     }
 
-    private fun chapterListRequest(manga: SManga, page: Int): Response =
-        client.newCall(GET("${manga.url}/page/$page", headers)).execute().run {
-            if (!isSuccessful) {
-                close()
-                throw Exception("HTTP error $code")
-            }
-            this
+    private fun chapterListRequest(
+        manga: SManga,
+        page: Int,
+    ): Response = client.newCall(GET("${manga.url}/page/$page", headers)).execute().run {
+        if (!isSuccessful) {
+            close()
+            throw Exception("HTTP error $code")
         }
+        this
+    }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).reversed().distinct().mapIndexed { index, chapter ->
@@ -152,7 +156,11 @@ abstract class CommitStrip(
 
     override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     override fun popularMangaNextPageSelector() = throw UnsupportedOperationException()
 

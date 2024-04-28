@@ -13,7 +13,6 @@ import rx.Observable
 import java.net.URLEncoder
 
 open class LeerMangasXYZ : ParsedHttpSource() {
-
     override val baseUrl: String = "https://r1.leermanga.xyz"
 
     override val lang: String = "es"
@@ -47,6 +46,7 @@ open class LeerMangasXYZ : ParsedHttpSource() {
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> = super.fetchChapterList(manga).map {
         it.reversed()
     }
+
     override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
         setUrlWithoutDomain(document.baseUri())
         val rawStatus = document.selectFirst("td:contains(Status)")!!.text()
@@ -96,7 +96,11 @@ open class LeerMangasXYZ : ParsedHttpSource() {
     }
     // ========------- [[<  Request >]]] =========--------
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = GET("$baseUrl/search?query=${encodeString(query)}&page=$page")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET("$baseUrl/search?query=${encodeString(query)}&page=$page")
 
     override fun popularMangaRequest(page: Int): Request = GET(baseUrl, headers)
 

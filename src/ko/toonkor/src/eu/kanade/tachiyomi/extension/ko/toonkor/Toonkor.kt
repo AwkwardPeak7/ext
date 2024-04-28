@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Toonkor : ConfigurableSource, ParsedHttpSource() {
-
     override val name = "Toonkor"
 
     private val defaultBaseUrl = "https://tkor.dog"
@@ -76,7 +75,11 @@ class Toonkor : ConfigurableSource, ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
 
         // Webtoons, Manga, or Hentai
@@ -162,6 +165,7 @@ class Toonkor : ConfigurableSource, ParsedHttpSource() {
     }
 
     private class TypeFilter(vals: Array<Pair<String, String>>) : UriPartFilter("Type", vals)
+
     private class SortFilter(vals: Array<Pair<String, String>>) : UriPartFilter("Sort", vals)
 
     private fun getTypeList() = arrayOf(
@@ -179,6 +183,7 @@ class Toonkor : ConfigurableSource, ParsedHttpSource() {
     open class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
         fun isSelection(name: String): Boolean = name == vals[state].first
+
         fun toUriPart() = vals[state].second
     }
 

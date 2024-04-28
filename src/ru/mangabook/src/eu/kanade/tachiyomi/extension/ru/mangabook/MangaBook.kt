@@ -27,16 +27,19 @@ class MangaBook : ParsedHttpSource() {
     override val supportsLatest = true
     override val client: OkHttpClient = network.cloudflareClient
     private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36"
+
     override fun headersBuilder(): Headers.Builder = Headers.Builder()
         .add("User-Agent", userAgent)
         .add("Accept", "image/webp,*/*;q=0.8")
         .add("Referer", baseUrl)
 
     // Popular
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/filterList?page=$page&ftype[]=0&status[]=0&sortBy=views", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/filterList?page=$page&ftype[]=0&status[]=0&sortBy=views", headers)
+
     override fun popularMangaNextPageSelector() = "a.page-link[rel=next]"
+
     override fun popularMangaSelector() = "article.short:not(.shnews) .short-in"
+
     override fun popularMangaFromElement(element: Element): SManga {
         return SManga.create().apply {
             element.select(".sh-desc a").first()!!.let {
@@ -49,12 +52,19 @@ class MangaBook : ParsedHttpSource() {
 
     // Latest
     override fun latestUpdatesRequest(page: Int) = GET(baseUrl, headers)
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = if (query.isNotBlank()) {
             "$baseUrl/dosearch?query=$query&page=$page"
         } else {
@@ -90,7 +100,9 @@ class MangaBook : ParsedHttpSource() {
     }
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaSelector(): String = popularMangaSelector()
+
     override fun searchMangaFromElement(element: Element): SManga {
         return SManga.create().apply {
             element.select(".flist.row a").first()!!.let {
@@ -158,12 +170,15 @@ class MangaBook : ParsedHttpSource() {
         if (altSelector.isNotEmpty()) {
             altName = "Альтернативные названия:\n" + altSelector.last()!!.text() + "\n\n"
         }
-        manga.description = titlestr.last() + "\n" + ratingStar + " " + ratingValue + " (голосов: " + ratingVotes + ")\n" + altName + infoElement.select(".fdesc.slice-this").text()
+        manga.description = titlestr.last() + "\n" + ratingStar + " " + ratingValue + " (голосов: " + ratingVotes + ")\n" + altName + infoElement.select(
+            ".fdesc.slice-this",
+        ).text()
         return manga
     }
 
     // Chapters
     override fun chapterListSelector(): String = ".chapters li:not(.volume )"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         val link = element.select("h5 a")
         name = element.attr("class").substringAfter("volume-") + ". " + link.text()
@@ -171,6 +186,7 @@ class MangaBook : ParsedHttpSource() {
         setUrlWithoutDomain(link.attr("href") + "/1")
         date_upload = parseDate(element.select(".date-chapter-title-rtl").text().trim())
     }
+
     private fun parseDate(date: String): Long {
         return SimpleDateFormat("dd.MM.yyyy", Locale.US).parse(date)?.time ?: 0
     }
@@ -188,6 +204,7 @@ class MangaBook : ParsedHttpSource() {
     private class CheckFilter(name: String, val id: String) : Filter.CheckBox(name)
 
     private class FormatList(formas: List<CheckFilter>) : Filter.Group<CheckFilter>("Тип", formas)
+
     private class StatusList(statuses: List<CheckFilter>) : Filter.Group<CheckFilter>("Статус", statuses)
 
     override fun getFilterList() = FilterList(
@@ -201,6 +218,7 @@ class MangaBook : ParsedHttpSource() {
         "Сортировка",
         arrayOf("По популярности", "По рейтингу", "По алфавиту", "По дате выхода"),
     )
+
     private fun getFormatList() = listOf(
         CheckFilter("Манга", "1"),
         CheckFilter("Манхва", "2"),
@@ -215,7 +233,9 @@ class MangaBook : ParsedHttpSource() {
     )
 
     private class CategoryList(categories: Array<String>) : Filter.Select<String>("Категории", categories)
+
     private data class CatUnit(val name: String, val query: String)
+
     private val categoriesName = getCategoryList().map {
         it.name
     }.toTypedArray()

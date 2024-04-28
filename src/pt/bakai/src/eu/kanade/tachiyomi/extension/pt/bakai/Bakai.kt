@@ -23,7 +23,6 @@ import rx.Observable
 import java.util.concurrent.TimeUnit
 
 class Bakai : ParsedHttpSource() {
-
     override val name = "Bakai"
 
     override val baseUrl = "https://bakai.org"
@@ -43,11 +42,12 @@ class Bakai : ParsedHttpSource() {
 
                     private val cookieJar = network.client.cookieJar
 
-                    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) =
-                        cookieJar.saveFromResponse(url, cookies.removeLimit())
+                    override fun saveFromResponse(
+                        url: HttpUrl,
+                        cookies: List<Cookie>,
+                    ) = cookieJar.saveFromResponse(url, cookies.removeLimit())
 
-                    override fun loadForRequest(url: HttpUrl) =
-                        cookieJar.loadForRequest(url).removeLimit()
+                    override fun loadForRequest(url: HttpUrl) = cookieJar.loadForRequest(url).removeLimit()
                 },
             )
             .build()
@@ -86,7 +86,11 @@ class Bakai : ParsedHttpSource() {
     }
 
     // =============================== Search ===============================
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SEARCH)) { // URL intent handler
             val id = query.removePrefix(PREFIX_SEARCH)
             client.newCall(GET("$baseUrl/hentai/$id"))
@@ -102,7 +106,11 @@ class Bakai : ParsedHttpSource() {
         return MangasPage(listOf(details), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search3/".toHttpUrl().newBuilder()
             .addQueryParameter("q", query)
             .addQueryParameter("type", "cms_records1")

@@ -6,7 +6,10 @@ import okhttp3.HttpUrl
 
 fun getFilterListInternal() = FilterList(ListingFilter(), GenreFilter())
 
-fun parseFilters(filters: FilterList, builder: HttpUrl.Builder) {
+fun parseFilters(
+    filters: FilterList,
+    builder: HttpUrl.Builder,
+) {
     for (filter in filters) when (filter) {
         is ListingFilter -> {
             if (filter.state > 0) {

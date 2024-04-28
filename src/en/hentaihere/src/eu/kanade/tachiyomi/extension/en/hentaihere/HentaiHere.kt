@@ -20,7 +20,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class HentaiHere : ParsedHttpSource() {
-
     override val name = "HentaiHere"
 
     override val baseUrl = "https://hentaihere.com"
@@ -32,17 +31,13 @@ class HentaiHere : ParsedHttpSource() {
     private val json: Json by injectLazy()
 
     // Popular
-    override fun popularMangaRequest(page: Int) =
-        searchMangaRequest(page, "", getFilterList())
+    override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", getFilterList())
 
-    override fun popularMangaSelector() =
-        searchMangaSelector()
+    override fun popularMangaSelector() = searchMangaSelector()
 
-    override fun popularMangaFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
 
-    override fun popularMangaNextPageSelector() =
-        searchMangaNextPageSelector()
+    override fun popularMangaNextPageSelector() = searchMangaNextPageSelector()
 
     // Search
     override fun fetchSearchManga(
@@ -62,13 +57,20 @@ class HentaiHere : ParsedHttpSource() {
 
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/m/$id")
 
-    private fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    private fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val details = mangaDetailsParse(response)
         details.url = "/m/$id"
         return MangasPage(listOf(details), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val sortFilter = filterList.find { it is SortFilter } as SortFilter
         val alphabetFilter = filterList.find { it is AlphabetFilter } as AlphabetFilter
@@ -132,20 +134,16 @@ class HentaiHere : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaNextPageSelector() =
-        ".pagination > li:last-child:not(.disabled)"
+    override fun searchMangaNextPageSelector() = ".pagination > li:last-child:not(.disabled)"
 
     // Latest
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/directory/newest?page=$page")
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/directory/newest?page=$page")
 
     override fun latestUpdatesSelector() = searchMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
-    override fun latestUpdatesNextPageSelector() =
-        searchMangaNextPageSelector()
+    override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
     // Details
     override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
@@ -160,7 +158,9 @@ class HentaiHere : ParsedHttpSource() {
         description = document.select("#info > div:has(> .text-info:contains(Brief Summary:))")
             .first()
             ?.ownText()
-        if (description == "Nothing yet!") { description = "" }
+        if (description == "Nothing yet!") {
+            description = ""
+        }
 
         genre = (categories + contents).joinToString { it.text() }
         status = when (licensed) {
@@ -196,20 +196,17 @@ class HentaiHere : ParsedHttpSource() {
     }
 
     // Pages
-    override fun pageListParse(response: Response): List<Page> =
-        json.decodeFromString<List<String>>(
-            response.body.string()
-                .substringAfter("var rff_imageList = ")
-                .substringBefore(";"),
-        ).mapIndexed { i, imagePath ->
-            Page(i, "", "$IMAGE_SERVER_URL/hentai$imagePath")
-        }
+    override fun pageListParse(response: Response): List<Page> = json.decodeFromString<List<String>>(
+        response.body.string()
+            .substringAfter("var rff_imageList = ")
+            .substringBefore(";"),
+    ).mapIndexed { i, imagePath ->
+        Page(i, "", "$IMAGE_SERVER_URL/hentai$imagePath")
+    }
 
-    override fun pageListParse(document: Document): List<Page> =
-        throw UnsupportedOperationException()
+    override fun pageListParse(document: Document): List<Page> = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(document: Document) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     // Filters
     override fun getFilterList(): FilterList {

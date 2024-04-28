@@ -20,7 +20,6 @@ import java.util.Date
 import java.util.Locale
 
 class ComicExtra : ParsedHttpSource() {
-
     override val name = "ComicExtra"
 
     override val baseUrl = "https://comicextra.org"
@@ -39,7 +38,11 @@ class ComicExtra : ParsedHttpSource() {
 
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/comic-updates/$page", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank()) {
             val url = "$baseUrl/search".toHttpUrl().newBuilder().apply {
                 addQueryParameter("keyword", query)
@@ -70,7 +73,8 @@ class ComicExtra : ParsedHttpSource() {
         thumbnail_url = fetchThumbnailURL(element.select("div.hlb-t > a").attr("href"))
     }
 
-    private fun fetchThumbnailURL(url: String) = client.newCall(GET(url, headers)).execute().asJsoup().select("div.movie-l-img > img").attr("src")
+    private fun fetchThumbnailURL(url: String) =
+        client.newCall(GET(url, headers)).execute().asJsoup().select("div.movie-l-img > img").attr("src")
 
     private fun fetchPagesFromNav(url: String) = client.newCall(GET(url, headers)).execute().asJsoup()
 

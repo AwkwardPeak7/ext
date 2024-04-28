@@ -58,13 +58,20 @@ class Manga18fx : Madara(
         return MangasPage(mangas, hasNextPage)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
-        super.fetchSearchManga(page, query, filters).doOnNext {
-            for (manga in it.mangas)
-                manga.url = manga.url.removeSuffix("/")
-        }
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = super.fetchSearchManga(page, query, filters).doOnNext {
+        for (manga in it.mangas)
+            manga.url = manga.url.removeSuffix("/")
+    }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isEmpty()) {
             filters.forEach { filter ->
                 if (filter is GenreFilter) {

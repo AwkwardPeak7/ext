@@ -8,7 +8,6 @@ inline fun <reified T> List<*>.firstInstanceOrNull() = firstOrNull { it is T } a
 
 open class EnhancedSelect(name: String, private val _values: List<FilterOption>, state: Int = 0) :
     Filter.Select<String>(name, _values.map { it.displayName }.toTypedArray(), state) {
-
     val selectedValue: String?
         get() = _values.getOrNull(state)?.value
 }

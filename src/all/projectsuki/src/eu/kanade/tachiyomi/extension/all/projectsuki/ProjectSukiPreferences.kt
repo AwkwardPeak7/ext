@@ -21,13 +21,13 @@ private inline val INFO: Nothing get() = error("INFO")
  * @author Federico d'Alonzo &lt;me@npgx.dev&gt;
  */
 class ProjectSukiPreferences(id: Long) {
-
     internal val shared by lazy { Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000) }
 
     abstract inner class PSPreference<Raw : Any, T : Any>(val preferenceIdentifier: String, val default: Raw) {
-
         abstract val rawGet: SharedPreferences.(identifier: String, default: Raw) -> Raw
+
         abstract fun Raw.transform(): T
+
         abstract fun PreferenceScreen.constructPreference(): Preference
 
         protected inline fun summary(block: () -> String): String = block().trimIndent()
@@ -35,8 +35,12 @@ class ProjectSukiPreferences(id: Long) {
         operator fun invoke(): T = shared.rawGet(preferenceIdentifier, default).transform()
     }
 
-    val defaultSearchMode = object : PSPreference<String, ProjectSukiFilters.SearchMode>("$SHORT_FORM_ID-default-search-mode", ProjectSukiFilters.SearchMode.SMART.display) {
+    val defaultSearchMode = object : PSPreference<String, ProjectSukiFilters.SearchMode>(
+        "$SHORT_FORM_ID-default-search-mode",
+        ProjectSukiFilters.SearchMode.SMART.display,
+    ) {
         override val rawGet: SharedPreferences.(identifier: String, default: String) -> String = { id, def -> getString(id, def)!! }
+
         override fun String.transform(): ProjectSukiFilters.SearchMode = ProjectSukiFilters.SearchMode.values()
             .firstOrNull { it.display == this } ?: ProjectSukiFilters.SearchMode.SMART
 
@@ -59,6 +63,7 @@ class ProjectSukiPreferences(id: Long) {
 
     val whitelistedLanguages = object : PSPreference<String, Set<String>>("$SHORT_FORM_ID-languages-whitelist", "") {
         override val rawGet: SharedPreferences.(identifier: String, default: String) -> String = { id, def -> getString(id, def)!! }
+
         override fun String.transform(): Set<String> {
             return split(',')
                 .filter { it.isNotBlank() }
@@ -84,6 +89,7 @@ class ProjectSukiPreferences(id: Long) {
 
     val blacklistedLanguages = object : PSPreference<String, Set<String>>("$SHORT_FORM_ID-languages-blacklist", "") {
         override val rawGet: SharedPreferences.(identifier: String, default: String) -> String = { id, def -> getString(id, def)!! }
+
         override fun String.transform(): Set<String> {
             return split(",")
                 .filter { it.isNotBlank() }

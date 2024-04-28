@@ -29,7 +29,10 @@ object ImageInterceptor : Interceptor {
         ).decode(key.atob(), url.queryParameter("iv")!!.atob())
     }
 
-    private fun Response.decode(key: ByteArray, iv: ByteArray) = AES.let {
+    private fun Response.decode(
+        key: ByteArray,
+        iv: ByteArray,
+    ) = AES.let {
         it.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
         newBuilder().body(it.doFinal(body.bytes()).toResponseBody(mediaType)).build()
     }

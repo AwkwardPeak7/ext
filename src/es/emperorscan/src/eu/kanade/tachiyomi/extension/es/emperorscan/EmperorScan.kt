@@ -24,7 +24,6 @@ class EmperorScan :
         SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
     ),
     ConfigurableSource {
-
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
 

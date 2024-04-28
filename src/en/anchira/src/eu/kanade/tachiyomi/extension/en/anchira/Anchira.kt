@@ -136,10 +136,17 @@ class Anchira : HttpSource(), ConfigurableSource {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        GET(applyFilters(page, query, filters).build(), headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = GET(applyFilters(page, query, filters).build(), headers)
 
-    private fun applyFilters(page: Int, query: String, filters: FilterList): HttpUrl.Builder {
+    private fun applyFilters(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): HttpUrl.Builder {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val trendingFilter = filterList.findInstance<TrendingFilter>()
         val sortTrendingFilter = filters.findInstance<SortTrendingFilter>()
@@ -255,13 +262,12 @@ class Anchira : HttpSource(), ConfigurableSource {
         }
     }
 
-    override fun getMangaUrl(manga: SManga) =
-        if (preferences.openSource && !manga.url.startsWith("?")) {
-            val id = manga.url.split("/").reversed()[1].toInt()
-            anchiraData.find { it.id == id }?.url ?: "$baseUrl${manga.url}"
-        } else {
-            "$baseUrl${manga.url}"
-        }
+    override fun getMangaUrl(manga: SManga) = if (preferences.openSource && !manga.url.startsWith("?")) {
+        val id = manga.url.split("/").reversed()[1].toInt()
+        anchiraData.find { it.id == id }?.url ?: "$baseUrl${manga.url}"
+    } else {
+        "$baseUrl${manga.url}"
+    }
 
     // Chapter
 
@@ -309,8 +315,7 @@ class Anchira : HttpSource(), ConfigurableSource {
 
     // Page List
 
-    override fun pageListRequest(chapter: SChapter) =
-        GET("$libraryUrl/${getPathFromUrl(chapter.url)}", headers)
+    override fun pageListRequest(chapter: SChapter) = GET("$libraryUrl/${getPathFromUrl(chapter.url)}", headers)
 
     override fun pageListParse(response: Response): List<Page> {
         val data = json.decodeFromString<Entry>(response.body.string())

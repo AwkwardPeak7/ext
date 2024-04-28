@@ -22,7 +22,6 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 class VizImageInterceptor : Interceptor {
-
     private val json: Json by injectLazy()
 
     override fun intercept(chain: Interceptor.Chain): Response {

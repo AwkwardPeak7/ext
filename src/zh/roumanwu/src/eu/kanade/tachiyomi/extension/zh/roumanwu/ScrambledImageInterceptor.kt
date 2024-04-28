@@ -49,6 +49,8 @@ object ScrambledImageInterceptor : Interceptor {
     }
 
     private val jpegMediaType = "image/jpeg".toMediaType()
+
     private fun Byte.toPositiveInt() = toInt() and 0xFF
+
     const val SCRAMBLED_SUFFIX = "#scrambled"
 }

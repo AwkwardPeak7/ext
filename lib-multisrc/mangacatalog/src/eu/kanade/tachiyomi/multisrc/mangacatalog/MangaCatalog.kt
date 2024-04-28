@@ -32,24 +32,39 @@ abstract class MangaCatalog(
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return Observable.just(MangasPage(sourceList.map { popularMangaFromPair(it.first, it.second) }, false))
     }
-    private fun popularMangaFromPair(name: String, sourceurl: String): SManga = SManga.create().apply {
+
+    private fun popularMangaFromPair(
+        name: String,
+        sourceurl: String,
+    ): SManga = SManga.create().apply {
         title = name
         url = sourceurl
     }
+
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
+
     override fun popularMangaNextPageSelector(): String? = throw UnsupportedOperationException()
+
     override fun popularMangaSelector(): String = throw UnsupportedOperationException()
+
     override fun popularMangaFromElement(element: Element) = throw UnsupportedOperationException()
 
     // Latest
     override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
+
     override fun latestUpdatesNextPageSelector(): String? = throw UnsupportedOperationException()
+
     override fun latestUpdatesSelector(): String = throw UnsupportedOperationException()
+
     override fun latestUpdatesFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         val mangas = mutableListOf<SManga>()
         sourceList.map {
             if (it.first.contains(query)) {
@@ -59,9 +74,16 @@ abstract class MangaCatalog(
         return Observable.just(MangasPage(mangas, false))
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
+
     override fun searchMangaNextPageSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaFromElement(element: Element) = throw UnsupportedOperationException()
 
     // Get Override
@@ -69,9 +91,11 @@ abstract class MangaCatalog(
     override fun mangaDetailsRequest(manga: SManga): Request {
         return GET(manga.url, headers)
     }
+
     override fun chapterListRequest(manga: SManga): Request {
         return GET(manga.url, headers)
     }
+
     override fun pageListRequest(chapter: SChapter): Request {
         return GET(chapter.url, headers)
     }
@@ -87,6 +111,7 @@ abstract class MangaCatalog(
     // Chapters
 
     override fun chapterListSelector(): String = "div.w-full > div.bg-bg-secondary > div.grid"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         val name1 = element.select(".col-span-4 > a").text()
         val name2 = element.select(".text-xs:not(a)").text()

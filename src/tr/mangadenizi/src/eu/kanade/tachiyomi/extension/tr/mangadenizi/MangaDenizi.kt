@@ -66,9 +66,14 @@ class MangaDenizi : ParsedHttpSource() {
 
     override fun searchMangaSelector() = "Unused"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = GET("$baseUrl/search?query=$query", headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = GET("$baseUrl/search?query=$query", headers)
 
     override fun searchMangaNextPageSelector() = "Unused"
+
     override fun searchMangaFromElement(element: Element) = throw UnsupportedOperationException()
 
     override fun searchMangaParse(response: Response): MangasPage {

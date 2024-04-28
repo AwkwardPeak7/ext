@@ -8,8 +8,10 @@ class RavensScansFactory : SourceFactory {
 
     class RavensScans(lang: String) :
         ReaderFront("Ravens Scans", "https://ravens-scans.com", lang) {
-        override fun getImageCDN(path: String, width: Int) =
-            "https://i${(0..2).random()}.wp.com/img-cdn1.ravens-scans.com" +
-                "$path?strip=all&quality=100&w=$width"
+        override fun getImageCDN(
+            path: String,
+            width: Int,
+        ) = "https://i${(0..2).random()}.wp.com/img-cdn1.ravens-scans.com" +
+            "$path?strip=all&quality=100&w=$width"
     }
 }

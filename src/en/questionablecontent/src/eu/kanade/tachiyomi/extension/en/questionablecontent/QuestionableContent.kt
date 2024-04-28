@@ -24,7 +24,6 @@ import uy.kohesive.injekt.api.get
 import java.util.Date
 
 class QuestionableContent : ParsedHttpSource(), ConfigurableSource {
-
     override val name = "Questionable Content"
     override val baseUrl = "https://www.questionablecontent.net"
 
@@ -48,7 +47,11 @@ class QuestionableContent : ParsedHttpSource(), ConfigurableSource {
         return Observable.just(MangasPage(arrayListOf(manga), false))
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
 
     override fun fetchMangaDetails(manga: SManga) = fetchPopularManga(1).map { it.mangas.first() }
 
@@ -70,8 +73,7 @@ class QuestionableContent : ParsedHttpSource(), ConfigurableSource {
         return chapters
     }
 
-    override fun chapterListSelector() =
-        """div#container a[href^="view.php?comic="]"""
+    override fun chapterListSelector() = """div#container a[href^="view.php?comic="]"""
 
     override fun chapterFromElement(element: Element): SChapter {
         val urlregex =
@@ -87,7 +89,9 @@ class QuestionableContent : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun pageListParse(document: Document): List<Page> {
-        val pages = document.select("#strip").mapIndexed { i, element -> Page(i, "", baseUrl + element.attr("src").substring(1)) }.toMutableList()
+        val pages = document.select(
+            "#strip",
+        ).mapIndexed { i, element -> Page(i, "", baseUrl + element.attr("src").substring(1)) }.toMutableList()
         if (showAuthorsNotesPref()) {
             val str = document.selectFirst("#newspost")?.html()
             if (!str.isNullOrEmpty()) {
@@ -106,6 +110,7 @@ class QuestionableContent : ParsedHttpSource(), ConfigurableSource {
 
     // Author's Notes, Based On Implementation In GrrlPower Extension
     private fun showAuthorsNotesPref() = preferences.getBoolean(SHOW_AUTHORS_NOTES_KEY, false)
+
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         val authorsNotesPref = SwitchPreferenceCompat(screen.context).apply {
             key = SHOW_AUTHORS_NOTES_KEY
@@ -128,7 +133,11 @@ class QuestionableContent : ParsedHttpSource(), ConfigurableSource {
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun popularMangaNextPageSelector(): String? = throw UnsupportedOperationException()
 

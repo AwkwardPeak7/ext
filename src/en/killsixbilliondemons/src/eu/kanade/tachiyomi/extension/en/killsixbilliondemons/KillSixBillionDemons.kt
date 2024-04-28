@@ -15,7 +15,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class KillSixBillionDemons : HttpSource() {
-
     override val name = "KillSixBillionDemons"
 
     override val baseUrl = "https://killsixbilliondemons.com"
@@ -215,6 +214,9 @@ class KillSixBillionDemons : HttpSource() {
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 }

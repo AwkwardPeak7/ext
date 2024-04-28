@@ -36,12 +36,17 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
         .build()
 
     override fun popularMangaSelector() = ".gallary_item"
+
     override fun latestUpdatesSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun chapterListSelector() = throw UnsupportedOperationException()
 
     override fun popularMangaNextPageSelector() = "span.thispage + a"
+
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     override fun popularMangaRequest(page: Int): Request {
@@ -50,7 +55,11 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
 
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isBlank()) {
             filters.forEach { filter ->
                 if (filter is CategoryFilter) {
@@ -73,7 +82,9 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
         .set("sec-fetch-site", "cross-site")
 
     override fun popularMangaFromElement(element: Element) = mangaFromElement(element)
+
     override fun latestUpdatesFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun searchMangaFromElement(element: Element) = mangaFromElement(element)
 
     private fun mangaFromElement(element: Element): SManga {
@@ -111,8 +122,7 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
         return manga
     }
 
-    override fun pageListRequest(chapter: SChapter) =
-        GET(baseUrl + chapter.url.replace("-index-", "-gallery-"), headers)
+    override fun pageListRequest(chapter: SChapter) = GET(baseUrl + chapter.url.replace("-index-", "-gallery-"), headers)
 
     override fun pageListParse(document: Document): List<Page> {
         throw UnsupportedOperationException()
@@ -128,6 +138,7 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     // >>> Filters >>>

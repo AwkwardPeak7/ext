@@ -25,7 +25,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class Kuaikanmanhua : HttpSource() {
-
     override val name = "快看漫画"
 
     override val id: Long = 8099870292642776005
@@ -56,7 +55,10 @@ class Kuaikanmanhua : HttpSource() {
         return parseMangaJsonArray(jsonList)
     }
 
-    private fun parseMangaJsonArray(jsonList: JsonArray, isSearch: Boolean = false): MangasPage {
+    private fun parseMangaJsonArray(
+        jsonList: JsonArray,
+        isSearch: Boolean = false,
+    ): MangasPage {
         val mangaList = jsonList.map {
             val mangaObj = it.jsonObject
 
@@ -81,7 +83,11 @@ class Kuaikanmanhua : HttpSource() {
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith(TOPIC_ID_SEARCH_PREFIX)) {
             val newQuery = query.removePrefix(TOPIC_ID_SEARCH_PREFIX)
             return client.newCall(GET("$apiUrl/v1/topics/$newQuery"))
@@ -95,7 +101,11 @@ class Kuaikanmanhua : HttpSource() {
         return super.fetchSearchManga(page, query, filters)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotEmpty()) {
             GET("$apiUrl/v1/search/topic?q=$query&size=18", headers)
         } else {

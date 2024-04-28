@@ -77,7 +77,11 @@ fun launchIO(block: () -> Unit) = scope.launch { block() }
 
 private var fetchGenresAttempts: Int = 0
 
-fun fetchGenres(baseUrl: String, headers: okhttp3.Headers, client: okhttp3.OkHttpClient) {
+fun fetchGenres(
+    baseUrl: String,
+    headers: okhttp3.Headers,
+    client: okhttp3.OkHttpClient,
+) {
     if (fetchGenresAttempts < 3 && genrePairs.isEmpty()) {
         try {
             genrePairs =
@@ -91,7 +95,10 @@ fun fetchGenres(baseUrl: String, headers: okhttp3.Headers, client: okhttp3.OkHtt
     }
 }
 
-private fun genresRequest(baseUrl: String, headers: okhttp3.Headers) = GET("$baseUrl/search", headers)
+private fun genresRequest(
+    baseUrl: String,
+    headers: okhttp3.Headers,
+) = GET("$baseUrl/search", headers)
 
 private const val genresSelector = ".check-genre div div:has(.checkbox-genre)"
 

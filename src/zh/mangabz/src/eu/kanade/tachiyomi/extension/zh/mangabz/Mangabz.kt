@@ -27,7 +27,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class Mangabz : MangabzTheme("Mangabz"), ConfigurableSource {
-
     private val _baseUrl: String
     override val client: OkHttpClient
 
@@ -68,7 +67,11 @@ class Mangabz : MangabzTheme("Mangabz"), ConfigurableSource {
         append(old, 0, old.length - 3).append(urlSuffix)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.isEmpty()) {
             val ids = parseFilterList(filters)
             if (ids.isEmpty()) return fetchPopularManga(page)
@@ -93,9 +96,14 @@ class Mangabz : MangabzTheme("Mangabz"), ConfigurableSource {
     }
 
     override fun mangaDetailsRequest(manga: SManga) = GET(baseUrl + manga.url.toMirror(), headers)
+
     override fun mangaDetailsParse(response: Response) = super.mangaDetailsParse(response).stripMirror()
 
-    override fun parseDescription(element: Element, title: String, details: Elements): String {
+    override fun parseDescription(
+        element: Element,
+        title: String,
+        details: Elements,
+    ): String {
         val text = element.ownText()
         val start = if (text.startsWith(title)) title.length + 4 else 0
         val collapsed = element.selectFirst(Evaluator.Tag("span"))?.ownText()

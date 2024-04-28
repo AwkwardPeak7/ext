@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.multisrc.zeistmanga
 
 class ZeistMangaIntl(lang: String) {
-
     val availableLang: String = if (lang in AVAILABLE_LANGS) lang else ENGLISH
 
     // Status Filter

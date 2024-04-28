@@ -21,7 +21,6 @@ import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
 
 class ZeroScans : HttpSource() {
-
     override val name: String = "Zero Scans"
 
     override val lang: String = "en"
@@ -113,7 +112,10 @@ class ZeroScans : HttpSource() {
         return Observable.just(MangasPage(comics, hasNextPage))
     }
 
-    private fun getRankingsIfNeeded(type: String?, ascending: Boolean): List<SManga>? {
+    private fun getRankingsIfNeeded(
+        type: String?,
+        ascending: Boolean,
+    ): List<SManga>? {
         if (type.isNullOrBlank()) return null
 
         val rankingEntries = when (type) {
@@ -185,7 +187,10 @@ class ZeroScans : HttpSource() {
         }
     }
 
-    private fun zsChapterListRequest(page: Int, manga: SManga): Request {
+    private fun zsChapterListRequest(
+        page: Int,
+        manga: SManga,
+    ): Request {
         val mangaId = "$baseUrl${manga.url}".toHttpUrl().queryParameter("id")
         return GET("$baseUrl/$API_PATH/comic/$mangaId/chapters?sort=desc&page=$page")
     }
@@ -264,11 +269,13 @@ class ZeroScans : HttpSource() {
     }
 
     class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
+
     class Genre(name: String, val id: Int) : Filter.TriState(name)
 
     private var genreList: List<Genre> = emptyList()
 
     class StatusFilter(statuses: List<Status>) : Filter.Group<Status>("Status", statuses)
+
     class Status(name: String, val id: Int) : Filter.TriState(name)
 
     private var statusList: List<Status> = emptyList()
@@ -288,6 +295,7 @@ class ZeroScans : HttpSource() {
 
     class RankingsHeader :
         Filter.Header("Note: Genre, Sort, Status filter and Search query")
+
     class RankingsHeader2 :
         Filter.Header("are not applied to rankings")
 
@@ -337,8 +345,11 @@ class ZeroScans : HttpSource() {
 
     override fun popularMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 

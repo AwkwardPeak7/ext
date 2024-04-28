@@ -22,7 +22,6 @@ class MangaDistrict :
         "en",
     ),
     ConfigurableSource {
-
     override val mangaSubString = "read-scan"
 
     private val preferences: SharedPreferences by lazy {
@@ -67,6 +66,7 @@ class MangaDistrict :
     }
 
     private fun isRemoveTitleVersion() = preferences.getBoolean(REMOVE_TITLE_VERSION_PREF, false)
+
     private fun getImgRes() = preferences.getString(IMG_RES_PREF, IMG_RES_DEFAULT)!!
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {

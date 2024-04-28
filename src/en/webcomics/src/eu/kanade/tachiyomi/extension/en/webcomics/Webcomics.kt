@@ -16,7 +16,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class Webcomics : ParsedHttpSource() {
-
     override val name = "Webcomics"
 
     override val baseUrl = "https://www.webcomicsapp.com"
@@ -80,7 +79,11 @@ class Webcomics : ParsedHttpSource() {
 
     override fun searchMangaSelector() = ".wiki-book-list > .row"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/wiki.html?search=$query&page=$page".toHttpUrl().newBuilder()
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
             when (filter) {

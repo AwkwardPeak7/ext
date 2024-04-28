@@ -21,7 +21,7 @@ private fun String.hexStringToByteArray(): ByteArray {
         data[i / 2] = (
             (Character.digit(this[i], 16) shl 4) +
                 Character.digit(this[i + 1], 16)
-            ).toByte()
+        ).toByte()
         i += 2
     }
     return data
@@ -34,7 +34,10 @@ private fun String.sha256(): String {
         .fold("") { str, it -> str + "%02x".format(it) }
 }
 
-private fun String.aesDecrypt(secretKey: ByteArray, ivString: String): String {
+private fun String.aesDecrypt(
+    secretKey: ByteArray,
+    ivString: String,
+): String {
     val c = Cipher.getInstance("AES/CBC/PKCS5Padding")
     val sk = SecretKeySpec(secretKey, "AES")
     val iv = IvParameterSpec(Base64.decode(ivString.toByteArray(Charsets.UTF_8), Base64.DEFAULT))

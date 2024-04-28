@@ -15,7 +15,6 @@ class ManhwaLatino : Madara(
     "es",
     SimpleDateFormat("dd/MM/yyyy", Locale("es")),
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .addInterceptor { chain ->
             val request = chain.request()

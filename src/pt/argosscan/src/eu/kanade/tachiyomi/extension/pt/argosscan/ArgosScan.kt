@@ -38,7 +38,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class ArgosScan : HttpSource(), ConfigurableSource {
-
     // Website changed from Madara to a custom CMS.
     override val versionId = 2
 
@@ -110,7 +109,11 @@ class ArgosScan : HttpSource(), ConfigurableSource {
 
     override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val payload = buildSearchQueryPayload(query, page)
 
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)
@@ -326,7 +329,10 @@ class ArgosScan : HttpSource(), ConfigurableSource {
         return chain.proceed(chain.request())
     }
 
-    private fun loginRequest(email: String, password: String): Request {
+    private fun loginRequest(
+        email: String,
+        password: String,
+    ): Request {
         val payload = buildLoginMutationQueryPayload(email, password)
 
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)

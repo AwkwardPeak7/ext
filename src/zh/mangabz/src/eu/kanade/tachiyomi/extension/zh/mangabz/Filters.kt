@@ -17,8 +17,7 @@ fun getFilterListInternal(categories: List<CategoryData>): FilterList {
     return FilterList(list)
 }
 
-fun parseFilterList(filters: FilterList): String =
-    filters.filterIsInstance<CategoryFilter>().joinToString("-") { it.id.toString() }
+fun parseFilterList(filters: FilterList): String = filters.filterIsInstance<CategoryFilter>().joinToString("-") { it.id.toString() }
 
 fun parseCategories(document: Document): List<CategoryData> {
     val lines = document.select(Evaluator.Class("class-line")).ifEmpty { return emptyList() }

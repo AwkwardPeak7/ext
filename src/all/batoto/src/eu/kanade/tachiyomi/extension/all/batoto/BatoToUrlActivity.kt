@@ -8,7 +8,6 @@ import android.util.Log
 import kotlin.system.exitProcess
 
 class BatoToUrlActivity : Activity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val host = intent?.data?.host

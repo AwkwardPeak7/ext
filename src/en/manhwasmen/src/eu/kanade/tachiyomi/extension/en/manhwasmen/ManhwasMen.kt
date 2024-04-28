@@ -19,7 +19,9 @@ class ManhwasMen : Madara("Manhwas Men", "https://manhwas.men", "en") {
 
     // popular
     override fun popularMangaSelector() = "div.col-6"
+
     override val popularMangaUrlSelector = ".series-box a"
+
     override fun popularMangaNextPageSelector() = "a[rel=next]"
 
     override fun popularMangaRequest(page: Int): Request {
@@ -41,10 +43,16 @@ class ManhwasMen : Madara("Manhwas Men", "https://manhwas.men", "en") {
 
     // search
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/manga-list".toHttpUrl().newBuilder().apply {
             if (query.isEmpty()) {
                 filters.forEach { filter ->

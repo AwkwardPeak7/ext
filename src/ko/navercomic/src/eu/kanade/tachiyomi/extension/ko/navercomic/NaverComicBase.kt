@@ -36,10 +36,16 @@ abstract class NaverComicBase(protected val mType: String) : ParsedHttpSource() 
         .add("Referer", mobileUrl)
         .build()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = GET("$baseUrl/api/search/$mType?keyword=$query&page=$page")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET("$baseUrl/api/search/$mType?keyword=$query&page=$page")
 
     override fun searchMangaNextPageSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaFromElement(element: Element) = throw UnsupportedOperationException()
 
     override fun searchMangaParse(response: Response): MangasPage {
@@ -57,8 +63,13 @@ abstract class NaverComicBase(protected val mType: String) : ParsedHttpSource() 
     }
 
     override fun chapterListSelector() = throw UnsupportedOperationException()
+
     override fun chapterListRequest(manga: SManga) = chapterListRequest(manga.url, 1)
-    private fun chapterListRequest(mangaUrl: String, page: Int): Request {
+
+    private fun chapterListRequest(
+        mangaUrl: String,
+        page: Int,
+    ): Request {
         val titleId = Uri.parse("$baseUrl$mangaUrl").getQueryParameter("titleId")
         return GET("$baseUrl/api/article/list?titleId=$titleId&page=$page")
     }
@@ -69,14 +80,21 @@ abstract class NaverComicBase(protected val mType: String) : ParsedHttpSource() 
         chapters.addAll(result.articleList.map { createChapter(it, result.titleId) })
 
         while (result.pageInfo.nextPage != 0) {
-            result = json.decodeFromString(client.newCall(chapterListRequest("/$mType/list?titleId=${result.titleId}", result.pageInfo.nextPage)).execute().body.string())
+            result = json.decodeFromString(
+                client.newCall(
+                    chapterListRequest("/$mType/list?titleId=${result.titleId}", result.pageInfo.nextPage),
+                ).execute().body.string(),
+            )
             chapters.addAll(result.articleList.map { createChapter(it, result.titleId) })
         }
 
         return chapters
     }
 
-    private fun createChapter(chapter: MangaChapter, id: Int): SChapter {
+    private fun createChapter(
+        chapter: MangaChapter,
+        id: Int,
+    ): SChapter {
         return SChapter.create().apply {
             url = "/$mType/detail?titleId=$id&no=${chapter.no}"
             name = chapter.subtitle
@@ -155,8 +173,11 @@ abstract class NaverComicBase(protected val mType: String) : ParsedHttpSource() 
 
 abstract class NaverComicChallengeBase(mType: String) : NaverComicBase(mType) {
     override fun popularMangaSelector() = throw UnsupportedOperationException()
+
     override fun popularMangaNextPageSelector() = throw UnsupportedOperationException()
+
     override fun popularMangaFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun popularMangaParse(response: Response): MangasPage {
         val apiMangaResponse = json.decodeFromString<ApiMangaChallengeResponse>(response.body.string())
         val mangas = apiMangaResponse.list.map {
@@ -178,8 +199,11 @@ abstract class NaverComicChallengeBase(mType: String) : NaverComicBase(mType) {
     }
 
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
+
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
     private fun parsePageInfo(response: Response): PageInfo? {

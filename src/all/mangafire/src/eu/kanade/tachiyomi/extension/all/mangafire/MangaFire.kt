@@ -37,13 +37,15 @@ open class MangaFire(
         .addInterceptor(ImageInterceptor)
         .build()
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/filter?sort=recently_updated&language[]=$langCode&page=$page", headers)
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/filter?sort=recently_updated&language[]=$langCode&page=$page", headers)
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/filter?sort=most_viewed&language[]=$langCode&page=$page", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/filter?sort=most_viewed&language[]=$langCode&page=$page", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val urlBuilder = baseUrl.toHttpUrl().newBuilder()
         if (query.isNotBlank()) {
             urlBuilder.addPathSegment("filter").apply {
@@ -88,16 +90,15 @@ open class MangaFire(
 
     override fun searchMangaSelector() = ".original.card-lg .unit .inner"
 
-    override fun searchMangaFromElement(element: Element) =
-        SManga.create().apply {
-            element.selectFirst(".info > a")!!.let {
-                setUrlWithoutDomain(it.attr("href"))
-                title = it.ownText()
-            }
-            element.selectFirst(Evaluator.Tag("img"))!!.let {
-                thumbnail_url = it.attr("src")
-            }
+    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
+        element.selectFirst(".info > a")!!.let {
+            setUrlWithoutDomain(it.attr("href"))
+            title = it.ownText()
         }
+        element.selectFirst(Evaluator.Tag("img"))!!.let {
+            thumbnail_url = it.attr("src")
+        }
+    }
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
         val root = document.selectFirst(".info")!!
@@ -130,12 +131,18 @@ open class MangaFire(
     override val chapterType get() = "chapter"
     override val volumeType get() = "volume"
 
-    override fun chapterListRequest(mangaUrl: String, type: String): Request {
+    override fun chapterListRequest(
+        mangaUrl: String,
+        type: String,
+    ): Request {
         val id = mangaUrl.substringAfterLast('.')
         return GET("$baseUrl/ajax/manga/$id/$type/$langCode", headers)
     }
 
-    override fun parseChapterElements(response: Response, isVolume: Boolean): List<Element> {
+    override fun parseChapterElements(
+        response: Response,
+        isVolume: Boolean,
+    ): List<Element> {
         val result = json.decodeFromString<ResponseDto<String>>(response.body.string()).result
         val document = Jsoup.parse(result)
 
@@ -162,7 +169,10 @@ open class MangaFire(
         val title_format: String,
     )
 
-    override fun updateChapterList(manga: SManga, chapters: List<SChapter>) {
+    override fun updateChapterList(
+        manga: SManga,
+        chapters: List<SChapter>,
+    ) {
         val request = chapterListRequest(manga.url, chapterType)
         val response = client.newCall(request).execute()
         val result = json.decodeFromString<ResponseDto<String>>(response.body.string()).result
@@ -209,6 +219,7 @@ open class MangaFire(
             Image(it[0].content, it[2].int)
         }
     }
+
     class Image(val url: String, val offset: Int)
 
     @Serializable
@@ -217,15 +228,14 @@ open class MangaFire(
         val status: Int,
     )
 
-    override fun getFilterList() =
-        FilterList(
-            Filter.Header("NOTE: Ignored if using text search!"),
-            Filter.Separator(),
-            TypeFilter(),
-            GenresFilter(),
-            StatusFilter(),
-            YearFilter(),
-            ChapterCountFilter(),
-            SortFilter(),
-        )
+    override fun getFilterList() = FilterList(
+        Filter.Header("NOTE: Ignored if using text search!"),
+        Filter.Separator(),
+        TypeFilter(),
+        GenresFilter(),
+        StatusFilter(),
+        YearFilter(),
+        ChapterCountFilter(),
+        SortFilter(),
+    )
 }

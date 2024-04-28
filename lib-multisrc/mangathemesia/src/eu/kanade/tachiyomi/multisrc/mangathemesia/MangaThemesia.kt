@@ -39,7 +39,6 @@ abstract class MangaThemesia(
     val mangaUrlDirectory: String = "/manga",
     val dateFormat: SimpleDateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US),
 ) : ParsedHttpSource() {
-
     protected open val json: Json by injectLazy()
 
     override val supportsLatest = true
@@ -60,14 +59,20 @@ abstract class MangaThemesia(
 
     // Popular (Search with popular order and nothing else)
     override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", popularFilter)
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
     // Latest (Search with update order and nothing else)
     override fun latestUpdatesRequest(page: Int) = searchMangaRequest(page, "", latestFilter)
+
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
     // Search
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith(URL_SEARCH_PREFIX).not()) return super.fetchSearchManga(page, query, filters)
 
         val mangaPath = try {
@@ -88,7 +93,11 @@ abstract class MangaThemesia(
             }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegment(mangaUrlDirectory.substring(1))
             .addQueryParameter("title", query)
@@ -151,7 +160,10 @@ abstract class MangaThemesia(
     override fun searchMangaNextPageSelector() = "div.pagination .next, div.hpage .r"
 
     // Manga details
-    private fun selector(selector: String, contains: List<String>): String {
+    private fun selector(
+        selector: String,
+        contains: List<String>,
+    ): String {
         return contains.joinToString(", ") { selector.replace("%s", it) }
     }
 
@@ -276,17 +288,62 @@ abstract class MangaThemesia(
         this == null -> SManga.UNKNOWN
 
         listOf(
-            "مستمرة", "en curso", "ongoing", "on going", "ativo", "en cours", "en cours de publication",
-            "đang tiến hành", "em lançamento", "онгоінг", "publishing", "devam ediyor", "em andamento",
-            "in corso", "güncel", "berjalan", "продолжается", "updating", "lançando", "in arrivo",
-            "emision", "en emision", "مستمر", "curso", "en marcha", "publicandose", "publicando",
-            "连载中", "devam etmekte", "連載中",
+            "مستمرة",
+            "en curso",
+            "ongoing",
+            "on going",
+            "ativo",
+            "en cours",
+            "en cours de publication",
+            "đang tiến hành",
+            "em lançamento",
+            "онгоінг",
+            "publishing",
+            "devam ediyor",
+            "em andamento",
+            "in corso",
+            "güncel",
+            "berjalan",
+            "продолжается",
+            "updating",
+            "lançando",
+            "in arrivo",
+            "emision",
+            "en emision",
+            "مستمر",
+            "curso",
+            "en marcha",
+            "publicandose",
+            "publicando",
+            "连载中",
+            "devam etmekte",
+            "連載中",
         ).any { this.contains(it, ignoreCase = true) } -> SManga.ONGOING
 
         listOf(
-            "completed", "completo", "complété", "fini", "achevé", "terminé", "tamamlandı", "đã hoàn thành",
-            "hoàn thành", "مكتملة", "завершено", "finished", "finalizado", "completata", "one-shot",
-            "bitti", "tamat", "completado", "concluído", "完結", "concluido", "已完结", "bitmiş",
+            "completed",
+            "completo",
+            "complété",
+            "fini",
+            "achevé",
+            "terminé",
+            "tamamlandı",
+            "đã hoàn thành",
+            "hoàn thành",
+            "مكتملة",
+            "завершено",
+            "finished",
+            "finalizado",
+            "completata",
+            "one-shot",
+            "bitti",
+            "tamat",
+            "completado",
+            "concluído",
+            "完結",
+            "concluido",
+            "已完结",
+            "bitmiş",
         ).any { this.contains(it, ignoreCase = true) } -> SManga.COMPLETED
 
         listOf("canceled", "cancelled", "cancelado", "cancellato", "cancelados", "dropped", "discontinued", "abandonné")
@@ -352,7 +409,9 @@ abstract class MangaThemesia(
             .mapIndexed { i, img -> Page(i, chapterUrl, img.imgAttr()) }
 
         // Some sites also loads pages via javascript
-        if (htmlPages.isNotEmpty()) { return htmlPages }
+        if (htmlPages.isNotEmpty()) {
+            return htmlPages
+        }
 
         val docString = document.toString()
         val imageListJson = JSON_IMAGE_LIST_REGEX.find(docString)?.destructured?.toList()?.get(0).orEmpty()
@@ -415,8 +474,15 @@ abstract class MangaThemesia(
 
         val request = countViewsRequest(document) ?: return
         val callback = object : Callback {
-            override fun onResponse(call: Call, response: Response) = response.close()
-            override fun onFailure(call: Call, e: IOException) = Unit
+            override fun onResponse(
+                call: Call,
+                response: Response,
+            ) = response.close()
+
+            override fun onFailure(
+                call: Call,
+                e: IOException,
+            ) = Unit
         }
 
         client.newCall(request).enqueue(callback)
@@ -432,10 +498,10 @@ abstract class MangaThemesia(
         private val vals: Array<Pair<String, String>>,
         defaultValue: String? = null,
     ) : Filter.Select<String>(
-        displayName,
-        vals.map { it.first }.toTypedArray(),
-        vals.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
-    ) {
+            displayName,
+            vals.map { it.first }.toTypedArray(),
+            vals.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
+        ) {
         fun selectedValue() = vals[state].second
     }
 
@@ -443,9 +509,9 @@ abstract class MangaThemesia(
         name: String,
         options: Array<Pair<String, String>>,
     ) : SelectFilter(
-        name,
-        options,
-    )
+            name,
+            options,
+        )
 
     protected open val statusOptions = arrayOf(
         Pair(intl["status_filter_option_all"], ""),
@@ -459,9 +525,9 @@ abstract class MangaThemesia(
         name: String,
         options: Array<Pair<String, String>>,
     ) : SelectFilter(
-        name,
-        options,
-    )
+            name,
+            options,
+        )
 
     protected open val typeFilterOptions = arrayOf(
         Pair(intl["type_filter_option_all"], ""),
@@ -476,10 +542,10 @@ abstract class MangaThemesia(
         options: Array<Pair<String, String>>,
         defaultOrder: String? = null,
     ) : SelectFilter(
-        name,
-        options,
-        defaultOrder,
-    )
+            name,
+            options,
+            defaultOrder,
+        )
 
     protected open val orderByFilterOptions = arrayOf(
         Pair(intl["order_by_filter_default"], ""),
@@ -497,9 +563,9 @@ abstract class MangaThemesia(
         name: String,
         options: Array<Pair<String, String>>,
     ) : SelectFilter(
-        name,
-        options,
-    )
+            name,
+            options,
+        )
 
     protected open val projectFilterOptions = arrayOf(
         Pair(intl["project_filter_all_manga"], ""),
@@ -563,6 +629,7 @@ abstract class MangaThemesia(
     }
 
     // Helpers
+
     /**
      * Given some string which represents an http urlString, returns path for a manga
      * which can be used to fetch its details at "$baseUrl$mangaUrlDirectory/$mangaPath"
@@ -589,7 +656,12 @@ abstract class MangaThemesia(
                 //  near the top of page: home > manga > current chapter
                 if (links.size == 3) {
                     val newUrl = links[1].attr("href").toHttpUrlOrNull() ?: return null
-                    val isNewMangaUrl = (baseMangaUrl.host == newUrl.host && pathLengthIs(newUrl, 2) && newUrl.pathSegments[0] == baseMangaUrl.pathSegments[0])
+                    val isNewMangaUrl = (
+                        baseMangaUrl.host == newUrl.host && pathLengthIs(
+                            newUrl,
+                            2,
+                        ) && newUrl.pathSegments[0] == baseMangaUrl.pathSegments[0]
+                    )
                     if (isNewMangaUrl) return newUrl.pathSegments[1]
                 }
             }
@@ -598,7 +670,11 @@ abstract class MangaThemesia(
         return null
     }
 
-    private fun pathLengthIs(url: HttpUrl, n: Int, strict: Boolean = false): Boolean {
+    private fun pathLengthIs(
+        url: HttpUrl,
+        n: Int,
+        strict: Boolean = false,
+    ): Boolean {
         return url.pathSegments.size == n && url.pathSegments[n - 1].isNotEmpty() ||
             (!strict && url.pathSegments.size == n + 1 && url.pathSegments[n].isEmpty())
     }
@@ -623,11 +699,15 @@ abstract class MangaThemesia(
 
     // Unused
     override fun popularMangaSelector(): String = throw UnsupportedOperationException()
+
     override fun popularMangaFromElement(element: Element): SManga = throw UnsupportedOperationException()
+
     override fun popularMangaNextPageSelector(): String? = throw UnsupportedOperationException()
 
     override fun latestUpdatesSelector(): String = throw UnsupportedOperationException()
+
     override fun latestUpdatesFromElement(element: Element): SManga = throw UnsupportedOperationException()
+
     override fun latestUpdatesNextPageSelector(): String? = throw UnsupportedOperationException()
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()

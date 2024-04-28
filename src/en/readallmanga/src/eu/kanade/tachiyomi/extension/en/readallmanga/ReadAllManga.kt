@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import org.jsoup.nodes.Document
 
 class ReadAllManga : ReadAllComics("ReadAllManga", "https://readallmanga.com", "en") {
-
     override fun searchType() = "manga"
 
     override fun popularMangaTitleSelector() = "div > center"
@@ -18,6 +17,8 @@ class ReadAllManga : ReadAllComics("ReadAllManga", "https://readallmanga.com", "
     }
 
     override fun mangaDetailsDescriptionSelector() = ".b > span"
+
     override fun mangaDetailsGenreSelector() = ".b > p > strong:nth-child(8)"
+
     override fun mangaDetailsAuthorSelector() = ".b > p > strong:nth-child(5)"
 }

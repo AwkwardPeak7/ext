@@ -9,7 +9,6 @@ class YakshaScans : Madara(
     "https://yakshascans.com",
     "en",
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(1)
         .build()

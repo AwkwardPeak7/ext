@@ -69,7 +69,6 @@ private fun checkBaseUrl(url: String) {
 class UpdateUrlInterceptor(
     private val preferences: SharedPreferences,
 ) : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val url = request.url

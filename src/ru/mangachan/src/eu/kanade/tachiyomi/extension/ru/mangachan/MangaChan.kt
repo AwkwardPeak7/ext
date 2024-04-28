@@ -7,10 +7,13 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import okhttp3.Request
 
 class MangaChan : MultiChan("MangaChan", "https://manga-chan.me", "ru") {
-
     override val id: Long = 7
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var pageNum = 1
         when {
             page < 1 -> pageNum = 1
@@ -84,8 +87,11 @@ class MangaChan : MultiChan("MangaChan", "https://manga-chan.me", "ru") {
     }
 
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Тэги", genres)
+
     private class Genre(name: String, val id: String = name.replace(' ', '_')) : Filter.TriState(name)
+
     private class Status : Filter.Select<String>("Статус", arrayOf("Все", "Перевод завершен", "Выпуск завершен", "Онгоинг", "Новые главы"))
+
     private class OrderBy : Filter.Sort(
         "Сортировка",
         arrayOf("Дата", "Популярность", "Имя", "Главы"),

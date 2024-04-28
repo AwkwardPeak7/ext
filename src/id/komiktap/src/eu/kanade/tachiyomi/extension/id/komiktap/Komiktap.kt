@@ -23,7 +23,10 @@ class Komiktap : MangaThemesia("Komiktap", "https://komiktap.me", "id") {
             val clearHeaders = request.headers.newBuilder().removeAll("Cookie").build()
             chain.proceed(request.newBuilder().headers(clearHeaders).build())
         }
-        if (response.headers["x-sucuri-cache"].isNullOrEmpty() && response.headers["x-sucuri-id"] != null && url.toString().startsWith(baseUrl)) {
+        if (response.headers["x-sucuri-cache"].isNullOrEmpty() && response.headers["x-sucuri-id"] != null && url.toString().startsWith(
+                baseUrl,
+            )
+        ) {
             val script = response.use { it.asJsoup() }.selectFirst("script")?.data()
 
             if (script != null) {

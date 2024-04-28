@@ -17,10 +17,11 @@ abstract class CheckBoxFilterGroup(
     name: String,
     genres: List<Pair<String, String>>,
 ) : UriPartFilter, Filter.Group<CheckBoxFilter>(
-    name,
-    genres.map { CheckBoxFilter(it.first, it.second) },
-) {
+        name,
+        genres.map { CheckBoxFilter(it.first, it.second) },
+    ) {
     abstract val queryParameter: String
+
     override fun addQueryParameter(url: HttpUrl.Builder) {
         state.filter { it.state }.forEach {
             url.addQueryParameter(queryParameter, it.value)
@@ -33,11 +34,12 @@ abstract class SelectFilter(
     private val options: List<Pair<String, String>>,
     defaultValue: String? = null,
 ) : UriPartFilter, Filter.Select<String>(
-    name,
-    options.map { it.first }.toTypedArray(),
-    options.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
-) {
+        name,
+        options.map { it.first }.toTypedArray(),
+        options.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
+    ) {
     abstract val queryParameter: String
+
     override fun addQueryParameter(url: HttpUrl.Builder) {
         url.addQueryParameter(queryParameter, options[state].second)
     }
@@ -45,6 +47,7 @@ abstract class SelectFilter(
 
 class TypeFilter : CheckBoxFilterGroup("タイプ", types) {
     override val queryParameter = "type[]"
+
     companion object {
         private val types = listOf(
             Pair("Manga", "manga"),
@@ -62,6 +65,7 @@ class GenreFilter(genres: List<Pair<String, String>>) : CheckBoxFilterGroup("ジ
 
 class StatusFilter : CheckBoxFilterGroup("ステータス", status) {
     override val queryParameter = "status[]"
+
     companion object {
         private val status = listOf(
             Pair("Ongoing", "ongoing"),
@@ -72,6 +76,7 @@ class StatusFilter : CheckBoxFilterGroup("ステータス", status) {
 
 class ChapterNumFilter : SelectFilter("最小章", minChapNum) {
     override val queryParameter = "minchap"
+
     companion object {
         private val minChapNum = listOf(
             Pair(">= 1 chapters", "1"),
@@ -87,6 +92,7 @@ class ChapterNumFilter : SelectFilter("最小章", minChapNum) {
 
 class SortFilter(default: String? = null) : SelectFilter("並び替え", sorts, default) {
     override val queryParameter = "order_by"
+
     companion object {
         private val sorts = listOf(
             Pair("Recently updated", "updated_at"),

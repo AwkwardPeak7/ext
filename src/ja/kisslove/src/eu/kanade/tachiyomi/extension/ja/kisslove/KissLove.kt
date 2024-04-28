@@ -11,11 +11,9 @@ import org.jsoup.nodes.Element
 import java.util.Calendar
 
 class KissLove : FMReader("KissLove", "https://klz9.com", "ja") {
-
     override val altNameSelector = "li:contains(Other name (s))"
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/manga-list.html?page=$page&sort=last_update")
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/manga-list.html?page=$page&sort=last_update")
 
     override fun chapterListRequest(manga: SManga): Request {
         val mangaId = MID_URL_REGEX.find(manga.url)
@@ -29,7 +27,10 @@ class KissLove : FMReader("KissLove", "https://klz9.com", "ja") {
         return GET(xhrUrl, headers)
     }
 
-    override fun chapterFromElement(element: Element, mangaTitle: String): SChapter {
+    override fun chapterFromElement(
+        element: Element,
+        mangaTitle: String,
+    ): SChapter {
         return SChapter.create().apply {
             element.select(chapterUrlSelector).first()!!.let {
                 setUrlWithoutDomain("$baseUrl/${it.attr("href")}")

@@ -13,7 +13,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class ElanSchool : HttpSource() {
-
     override val name = "Elan School"
 
     override val lang = "en"
@@ -36,7 +35,11 @@ class ElanSchool : HttpSource() {
         return Observable.just(MangasPage(listOf(manga), false))
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) = fetchPopularManga(page)
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = fetchPopularManga(page)
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> = fetchPopularManga(1)
         .map { it.mangas.first().apply { initialized = true } }
@@ -85,27 +88,23 @@ class ElanSchool : HttpSource() {
         }
     }
 
-    override fun latestUpdatesRequest(page: Int) =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun popularMangaRequest(page: Int) =
-        throw UnsupportedOperationException()
+    override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
-    override fun latestUpdatesParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun popularMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun searchMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun mangaDetailsParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 }

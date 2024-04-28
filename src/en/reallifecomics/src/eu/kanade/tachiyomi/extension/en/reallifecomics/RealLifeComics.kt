@@ -46,10 +46,13 @@ class RealLifeComics : ParsedHttpSource() {
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
-        fetchPopularManga(1).map { mangaList ->
-            mangaList.copy(mangaList.mangas.filter { it.title.contains(query) })
-        }
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = fetchPopularManga(1).map { mangaList ->
+        mangaList.copy(mangaList.mangas.filter { it.title.contains(query) })
+    }
 
     // Details
 
@@ -113,7 +116,11 @@ class RealLifeComics : ParsedHttpSource() {
 
     override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     override fun popularMangaNextPageSelector() = throw UnsupportedOperationException()
 

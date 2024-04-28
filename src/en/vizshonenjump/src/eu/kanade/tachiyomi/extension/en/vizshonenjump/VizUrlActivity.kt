@@ -40,7 +40,11 @@ class VizUrlActivity : Activity() {
         exitProcess(0)
     }
 
-    private fun containsAt(haystack: String, startIndex: Int, needle: String): Boolean {
+    private fun containsAt(
+        haystack: String,
+        startIndex: Int,
+        needle: String,
+    ): Boolean {
         for (i in 0 until needle.length) {
             if (needle[i] != haystack[startIndex + i]) {
                 return false
@@ -49,7 +53,10 @@ class VizUrlActivity : Activity() {
         return true
     }
 
-    private fun contains(haystack: String, needle: String): Boolean {
+    private fun contains(
+        haystack: String,
+        needle: String,
+    ): Boolean {
         if (needle.length > haystack.length) {
             return false
         }
@@ -61,7 +68,10 @@ class VizUrlActivity : Activity() {
         return false
     }
 
-    private fun substringBeforeLast(haystack: String, needle: String): String {
+    private fun substringBeforeLast(
+        haystack: String,
+        needle: String,
+    ): String {
         if (needle.length > haystack.length) {
             return haystack
         }

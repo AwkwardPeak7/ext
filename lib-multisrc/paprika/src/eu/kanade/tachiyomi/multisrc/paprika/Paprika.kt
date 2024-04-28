@@ -24,7 +24,6 @@ abstract class Paprika(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient
@@ -63,7 +62,11 @@ abstract class Paprika(
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank()) {
             GET("$baseUrl/search?q=$query&page=$page")
         } else {
@@ -133,7 +136,10 @@ abstract class Paprika(
         throw UnsupportedOperationException()
     }
 
-    open fun chapterFromElement(element: Element, mangaTitle: String): SChapter {
+    open fun chapterFromElement(
+        element: Element,
+        mangaTitle: String,
+    ): SChapter {
         return SChapter.create().apply {
             element.select("a").let {
                 name = it.text().substringAfter("$mangaTitle ")
@@ -149,7 +155,10 @@ abstract class Paprika(
         this ?: return 0L
         return try {
             when {
-                this.contains("yesterday", ignoreCase = true) -> Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, -1) }.timeInMillis
+                this.contains(
+                    "yesterday",
+                    ignoreCase = true,
+                ) -> Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, -1) }.timeInMillis
                 this.contains("ago", ignoreCase = true) -> {
                     val trimmedDate = this.substringBefore(" ago").removeSuffix("s").split(" ")
                     val num = trimmedDate[0].toIntOrNull() ?: 1 // for "an hour ago"

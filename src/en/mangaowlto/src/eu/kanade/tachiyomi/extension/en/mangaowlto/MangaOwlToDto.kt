@@ -98,13 +98,12 @@ class MangaOwlToChapter(
 class MangaOwlToChapterPages(
     @SerialName("results") private val pages: List<MangaOwlToPage> = emptyList(),
 ) {
-    fun toPages() =
-        pages.mapIndexed { idx, page ->
-            Page(
-                index = idx,
-                imageUrl = page.imageUrl,
-            )
-        }
+    fun toPages() = pages.mapIndexed { idx, page ->
+        Page(
+            index = idx,
+            imageUrl = page.imageUrl,
+        )
+    }
 }
 
 @Serializable

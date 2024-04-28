@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class TenkaiScan : ParsedHttpSource() {
-
     // Site change theme from Madara to custom theme
     override val versionId = 3
 
@@ -66,7 +65,11 @@ class TenkaiScan : ParsedHttpSource() {
         thumbnail_url = element.select("img").imgAttr()
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val urlBuilder = "$baseUrl/comics".toHttpUrl().newBuilder()
 
         if (query.isNotBlank()) {

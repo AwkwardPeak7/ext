@@ -23,17 +23,23 @@ abstract class MDB(
     override val baseUrl: String,
     override val lang: String = "zh",
 ) : ParsedHttpSource() {
-
     override val client = network.client.newBuilder().rateLimit(2).build()
 
     override fun headersBuilder() = super.headersBuilder().add("Referer", baseUrl)
 
     protected abstract fun listUrl(params: String): String
+
     protected abstract fun extractParams(listUrl: String): String
-    protected abstract fun searchUrl(page: Int, query: String): String
+
+    protected abstract fun searchUrl(
+        page: Int,
+        query: String,
+    ): String
 
     override fun popularMangaRequest(page: Int) = GET(listUrl("page-$page"), headers)
+
     override fun popularMangaSelector() = "div.comic-main-section > div.comic-book-unit"
+
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
         val link = element.selectFirst("h2 > a")!!
         setUrlWithoutDomain(link.attr("href"))
@@ -49,25 +55,36 @@ abstract class MDB(
         return MangasPage(mangas, hasNextPage)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
-        if (query.isNotEmpty()) {
-            val request = GET(searchUrl(page, query), headers)
-            client.newCall(request).asObservableSuccess().map { searchMangaParse(it) }
-        } else {
-            val params = filters.filterIsInstance<CategoryFilter>().map { it.getParam() }
-                .filterTo(mutableListOf()) { it.isNotEmpty() }.apply { add("page-$page") }
-            val request = GET(listUrl(params.joinToString("-")), headers)
-            client.newCall(request).asObservableSuccess().map { popularMangaParse(it) }
-        }
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = if (query.isNotEmpty()) {
+        val request = GET(searchUrl(page, query), headers)
+        client.newCall(request).asObservableSuccess().map { searchMangaParse(it) }
+    } else {
+        val params = filters.filterIsInstance<CategoryFilter>().map { it.getParam() }
+            .filterTo(mutableListOf()) { it.isNotEmpty() }.apply { add("page-$page") }
+        val request = GET(listUrl(params.joinToString("-")), headers)
+        client.newCall(request).asObservableSuccess().map { popularMangaParse(it) }
+    }
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaSelector() = "div.comic-main-section > div.row > div"
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
-    final override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException()
+
+    final override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     protected open fun transformTitle(title: String) = title
+
     protected abstract val authorSelector: String
+
     protected open fun transformDescription(description: String) = description
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
@@ -95,6 +112,7 @@ abstract class MDB(
     }
 
     override fun chapterListSelector() = "#comic-book-list li > a"
+
     override fun chapterFromElement(element: Element) = SChapter.create().apply {
         setUrlWithoutDomain(element.attr("href"))
         name = element.attr("title")
@@ -112,7 +130,10 @@ abstract class MDB(
         }
     }
 
-    protected abstract fun parseImages(imgData: String, readerConfig: Element): List<String>
+    protected abstract fun parseImages(
+        imgData: String,
+        readerConfig: Element,
+    ): List<String>
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
@@ -169,16 +190,15 @@ abstract class MDB(
         return ""
     }
 
-    override fun getFilterList() =
-        if (::categories.isInitialized) {
-            FilterList(
-                Filter.Header("如果使用文本搜索，将会忽略分类筛选"),
-                *categories.map { it.toFilter() }.toTypedArray(),
-            )
-        } else {
-            FilterList(
-                Filter.Header("点击“重置”即可刷新分类，如果失败，"),
-                Filter.Header("请尝试重新从图源列表点击进入图源"),
-            )
-        }
+    override fun getFilterList() = if (::categories.isInitialized) {
+        FilterList(
+            Filter.Header("如果使用文本搜索，将会忽略分类筛选"),
+            *categories.map { it.toFilter() }.toTypedArray(),
+        )
+    } else {
+        FilterList(
+            Filter.Header("点击“重置”即可刷新分类，如果失败，"),
+            Filter.Header("请尝试重新从图源列表点击进入图源"),
+        )
+    }
 }

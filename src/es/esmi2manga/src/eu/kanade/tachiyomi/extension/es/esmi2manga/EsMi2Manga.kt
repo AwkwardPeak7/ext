@@ -16,6 +16,8 @@ class EsMi2Manga : Madara(
         .rateLimit(2, 1, TimeUnit.SECONDS)
         .build()
 
-    override fun popularMangaSelector() = "div.site-content div.page-item-detail:not(:has(a[href*='bilibilicomics.com']))$mangaEntrySelector"
+    override fun popularMangaSelector() =
+        "div.site-content div.page-item-detail:not(:has(a[href*='bilibilicomics.com']))$mangaEntrySelector"
+
     override fun searchMangaSelector() = "div.site-content div.c-tabs-item__content"
 }

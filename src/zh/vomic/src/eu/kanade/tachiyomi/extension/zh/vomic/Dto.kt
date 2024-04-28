@@ -65,7 +65,10 @@ class ChapterDto(
     private val cid: String,
     private val update_time: String,
 ) {
-    fun toSChapter(mangaId: String, dateFormat: SimpleDateFormat) = SChapter.create().apply {
+    fun toSChapter(
+        mangaId: String,
+        dateFormat: SimpleDateFormat,
+    ) = SChapter.create().apply {
         url = "/m_$cid/chapterimage.ashx?mid=$mangaId"
         name = title
         date_upload = dateFormat.parse(update_time)!!.time

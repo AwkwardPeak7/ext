@@ -15,7 +15,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class ManhwaXXL : ParsedHttpSource() {
-
     override val name = "Manhwa XXL"
 
     override val lang = "en"
@@ -30,8 +29,7 @@ class ManhwaXXL : ParsedHttpSource() {
     override fun headersBuilder() = super.headersBuilder()
         .add("Referer", "$baseUrl/")
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/popular" + (if (page > 1) "/page/$page" else ""))
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/popular" + (if (page > 1) "/page/$page" else ""))
 
     override fun popularMangaSelector() = "section#page ul.row li"
 
@@ -43,8 +41,7 @@ class ManhwaXXL : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = "ul.pagination li.active:not(:last-child)"
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/latest" + (if (page > 1) "/page/$page" else ""))
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/latest" + (if (page > 1) "/page/$page" else ""))
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
@@ -52,7 +49,11 @@ class ManhwaXXL : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (query.isNotEmpty()) {
                 addQueryParameter("s", query)
@@ -117,10 +118,9 @@ class ManhwaXXL : ParsedHttpSource() {
         name = element.text()
     }
 
-    override fun pageListParse(document: Document) =
-        document.select("div#viewer img").mapIndexed { i, it ->
-            Page(i, imageUrl = it.absUrl("src"))
-        }
+    override fun pageListParse(document: Document) = document.select("div#viewer img").mapIndexed { i, it ->
+        Page(i, imageUrl = it.absUrl("src"))
+    }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 

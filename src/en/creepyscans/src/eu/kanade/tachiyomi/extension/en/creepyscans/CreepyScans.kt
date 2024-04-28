@@ -27,7 +27,6 @@ class CreepyScans : Madara(
     "https://creepyscans.com",
     "en",
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(1, 3, TimeUnit.SECONDS)
         .build()
@@ -66,7 +65,11 @@ class CreepyScans : Madara(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/$mangaSubString/".toHttpUrl().newBuilder()
         filters.forEach { filter ->
             when (filter) {
@@ -89,8 +92,7 @@ class CreepyScans : Madara(
         return GET(url.build(), headers)
     }
 
-    override fun searchMangaSelector(): String =
-        super.searchMangaSelector() + ",div.page-content-listing div.page-item-detail"
+    override fun searchMangaSelector(): String = super.searchMangaSelector() + ",div.page-content-listing div.page-item-detail"
 
     override fun searchMangaNextPageSelector(): String? = null
 

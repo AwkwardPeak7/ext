@@ -10,7 +10,6 @@ import okhttp3.Response
 
 // Taken from src/all/akuma.
 class DDoSGuardInterceptor(private val client: OkHttpClient) : Interceptor {
-
     private val cookieManager by lazy { CookieManager.getInstance() }
 
     override fun intercept(chain: Interceptor.Chain): Response {

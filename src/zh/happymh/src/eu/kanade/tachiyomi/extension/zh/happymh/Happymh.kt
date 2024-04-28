@@ -94,7 +94,11 @@ class Happymh : HttpSource(), ConfigurableSource {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val body = FormBody.Builder()
             .addEncoded("searchkey", query)
             .add("v", "v2.13")

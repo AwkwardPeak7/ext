@@ -26,7 +26,6 @@ class MangasNoSekai : Madara(
     "es",
     SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
 ) {
-
     override val useLoadMoreRequest = LoadMoreStrategy.Never
 
     override val client = super.client.newBuilder()
@@ -181,7 +180,12 @@ class MangasNoSekai : Madara(
         intl["order_by_filter_new"] to "new-manga",
     )
 
-    private fun altChapterRequest(url: String, mangaId: String, page: Int, objects: List<Pair<String, String>>): Request {
+    private fun altChapterRequest(
+        url: String,
+        mangaId: String,
+        page: Int,
+        objects: List<Pair<String, String>>,
+    ): Request {
         val form = FormBody.Builder()
             .add("mangaid", mangaId)
             .add("page", page.toString())
@@ -251,7 +255,10 @@ class MangasNoSekai : Madara(
         } ?: 0
     }
 
-    private fun chaptersFromJson(jsonString: String, mangaSlug: String): List<SChapter> {
+    private fun chaptersFromJson(
+        jsonString: String,
+        mangaSlug: String,
+    ): List<SChapter> {
         val result = json.decodeFromString<PayloadDto>(jsonString)
         return result.manga.first().chapters.map { it.toSChapter(mangaSlug) }
     }

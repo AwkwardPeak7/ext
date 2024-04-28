@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit
 // Info - Based of BH3
 // This is the english version of the site
 class Honkaiimpact : ParsedHttpSource() {
-
     override val name = "Honkai Impact 3rd"
 
     override val baseUrl = "https://manga.honkaiimpact3.com"
@@ -66,7 +65,11 @@ class Honkaiimpact : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector(): String? = null
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw Exception("No search")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw Exception("No search")
 
     override fun searchMangaFromElement(element: Element) = mangaFromElement(element)
 

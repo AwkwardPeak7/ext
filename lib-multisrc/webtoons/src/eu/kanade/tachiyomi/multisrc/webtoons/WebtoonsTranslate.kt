@@ -30,7 +30,6 @@ open class WebtoonsTranslate(
     override val lang: String,
     private val translateLangCode: String,
 ) : Webtoons(name, baseUrl, lang) {
-
     // popularMangaRequest already returns manga sorted by latest update
     override val supportsLatest = false
 
@@ -44,7 +43,10 @@ open class WebtoonsTranslate(
         .removeAll("Referer")
         .add("Referer", mobileBaseUrl.toString())
 
-    private fun mangaRequest(page: Int, requeztSize: Int): Request {
+    private fun mangaRequest(
+        page: Int,
+        requeztSize: Int,
+    ): Request {
         val url = apiBaseUrl
             .resolve("/lineWebtoon/ctrans/translatedWebtoons_jsonp.json")!!
             .newBuilder()
@@ -99,7 +101,11 @@ open class WebtoonsTranslate(
         }
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return client.newCall(searchMangaRequest(page, query, filters))
             .asObservableSuccess()
             .map { response ->
@@ -112,9 +118,16 @@ open class WebtoonsTranslate(
      * There's 75 webtoons as of 2019/11/21, a hardcoded request of 200 should be a sufficient request
      * to get all titles, in 1 request, for quite a while
      */
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = mangaRequest(page, 200)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = mangaRequest(page, 200)
 
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         val result = json.parseToJsonElement(response.body.string()).jsonObject
         val responseCode = result["code"]!!.jsonPrimitive.content
 
@@ -134,8 +147,7 @@ open class WebtoonsTranslate(
     }
 
     override fun mangaDetailsParse(document: Document): SManga {
-        val getMetaProp = fun(property: String): String =
-            document.head().select("meta[property=\"$property\"]").attr("content")
+        val getMetaProp = fun(property: String): String = document.head().select("meta[property=\"$property\"]").attr("content")
         var parsedAuthor = getMetaProp("com-linewebtoon:webtoon:author")
         var parsedArtist = parsedAuthor
         val authorSplit = parsedAuthor.split(" / ", limit = 2)

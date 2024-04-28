@@ -21,7 +21,6 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
 class Megatokyo : ParsedHttpSource() {
-
     override val name = "Megatokyo"
 
     override val baseUrl = "https://megatokyo.com"
@@ -54,8 +53,7 @@ class Megatokyo : ParsedHttpSource() {
         return super.chapterListParse(response).reversed()
     }
 
-    override fun chapterListSelector() =
-        "div.content h2:contains(Comics by Date) + div ul li a[name]"
+    override fun chapterListSelector() = "div.content h2:contains(Comics by Date) + div ul li a[name]"
 
     override fun chapterFromElement(element: Element): SChapter {
         val chapter = SChapter.create()
@@ -66,20 +64,26 @@ class Megatokyo : ParsedHttpSource() {
         return chapter
     }
 
-    override fun pageListParse(document: Document) =
-        document.select("#strip img")
-            .mapIndexed { i, element ->
-                Page(i, "", "https://megatokyo.com/" + element.attr("src"))
-            }
+    override fun pageListParse(document: Document) = document.select("#strip img")
+        .mapIndexed { i, element ->
+            Page(i, "", "https://megatokyo.com/" + element.attr("src"))
+        }
 
     // certificate wasn't trusted for some reason so trusted all certificates
     private fun getUnsafeOkHttpClient(): OkHttpClient {
         // Create a trust manager that does not validate certificate chains
         val trustAllCerts = arrayOf<TrustManager>(
             object : X509TrustManager {
-                override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+                override fun checkClientTrusted(
+                    chain: Array<out X509Certificate>?,
+                    authType: String?,
+                ) {
                 }
-                override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+
+                override fun checkServerTrusted(
+                    chain: Array<out X509Certificate>?,
+                    authType: String?,
+                ) {
                 }
 
                 override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
@@ -97,7 +101,11 @@ class Megatokyo : ParsedHttpSource() {
             .hostnameVerifier { _, _ -> true }.build()
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = throw UnsupportedOperationException()
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = throw UnsupportedOperationException()
 
     override fun imageUrlRequest(page: Page) = GET(page.url)
 
@@ -113,8 +121,11 @@ class Megatokyo : ParsedHttpSource() {
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun popularMangaNextPageSelector(): String = throw UnsupportedOperationException()
 

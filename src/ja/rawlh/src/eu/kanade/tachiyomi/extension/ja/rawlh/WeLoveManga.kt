@@ -13,6 +13,7 @@ class WeLoveManga : FMReader("WeLoveManga", "https://weloma.art", "ja") {
     override val id = 7595224096258102519
 
     override val chapterUrlSelector = ""
+
     override fun pageListParse(document: Document): List<Page> {
         fun Element.decoded(): String {
             return this.attr("data-src").trimEnd()

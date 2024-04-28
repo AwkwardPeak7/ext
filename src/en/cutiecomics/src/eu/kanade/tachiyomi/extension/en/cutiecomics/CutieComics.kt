@@ -21,7 +21,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class CutieComics : ParsedHttpSource() {
-
     override val name = "Cutie Comics"
 
     override val baseUrl = "https://cutiecomics.com"
@@ -67,7 +66,11 @@ class CutieComics : ParsedHttpSource() {
     }
 
     // =============================== Search ===============================
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SEARCH)) { // URL intent handler
             val id = query.removePrefix(PREFIX_SEARCH)
             client.newCall(GET("$baseUrl/$id"))
@@ -85,7 +88,11 @@ class CutieComics : ParsedHttpSource() {
         return MangasPage(listOf(details), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         require(query.isNotBlank() && query.length >= 4) { "Invalid search! It should have at least 4 non-blank characters." }
         val body = FormBody.Builder()
             .add("do", "search")

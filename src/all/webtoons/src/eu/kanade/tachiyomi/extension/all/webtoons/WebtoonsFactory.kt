@@ -18,7 +18,9 @@ class WebtoonsFactory : SourceFactory {
         WebtoonsDE(),
     )
 }
+
 class WebtoonsEN : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "en")
+
 class WebtoonsID : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "id") {
     // Override ID as part of the name was removed to be more consiten with other enteries
     override val id: Long = 8749627068478740298
@@ -26,7 +28,18 @@ class WebtoonsID : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "id")
     // Android seems to be unable to parse Indonesian dates; we'll use a short hard-coded table
     // instead.
     private val dateMap: Array<String> = arrayOf(
-        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "Mei",
+        "Jun",
+        "Jul",
+        "Agu",
+        "Sep",
+        "Okt",
+        "Nov",
+        "Des",
     )
 
     override fun chapterParseDate(date: String): Long {
@@ -36,11 +49,24 @@ class WebtoonsID : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "id")
         return GregorianCalendar(year.toInt(), monthIndex, day.toInt()).time.time
     }
 }
+
 class WebtoonsTH : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "th", dateFormat = SimpleDateFormat("d MMM yyyy", Locale("th")))
+
 class WebtoonsES : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "es") {
     // Android seems to be unable to parse es dates like Indonesian; we'll use a short hard-coded table instead.
     private val dateMap: Array<String> = arrayOf(
-        "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic",
+        "ene",
+        "feb",
+        "mar",
+        "abr",
+        "may",
+        "jun",
+        "jul",
+        "ago",
+        "sep",
+        "oct",
+        "nov",
+        "dic",
     )
 
     override fun chapterParseDate(date: String): Long {
@@ -51,7 +77,12 @@ class WebtoonsES : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "es")
     }
 }
 
-class WebtoonsFR : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "fr", dateFormat = SimpleDateFormat("d MMM yyyy", Locale.FRENCH)) {
+class WebtoonsFR : WebtoonsSrc(
+    "Webtoons.com",
+    "https://www.webtoons.com",
+    "fr",
+    dateFormat = SimpleDateFormat("d MMM yyyy", Locale.FRENCH),
+) {
     override fun String.toStatus(): Int = when {
         contains("NOUVEAU") -> SManga.ONGOING
         contains("TERMINÉ") -> SManga.COMPLETED
@@ -59,8 +90,16 @@ class WebtoonsFR : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "fr",
     }
 }
 
-class WebtoonsZH : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "zh-Hant", "zh-hant", "zh_TW", SimpleDateFormat("yyyy/MM/dd", Locale.TRADITIONAL_CHINESE)) {
+class WebtoonsZH : WebtoonsSrc(
+    "Webtoons.com",
+    "https://www.webtoons.com",
+    "zh-Hant",
+    "zh-hant",
+    "zh_TW",
+    SimpleDateFormat("yyyy/MM/dd", Locale.TRADITIONAL_CHINESE),
+) {
     // Due to lang code getting more specific
     override val id: Long = 2959982438613576472
 }
+
 class WebtoonsDE : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "de", dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN))

@@ -39,7 +39,10 @@ class BokugenTranslation : Madara(
                     webview.settings.loadWithOverviewMode = false
 
                     webview.webChromeClient = object : WebChromeClient() {
-                        override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                        override fun onProgressChanged(
+                            view: WebView?,
+                            newProgress: Int,
+                        ) {
                             if (newProgress == 100) {
                                 latch.countDown()
                             }

@@ -15,7 +15,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class MyHentaiComics : ParsedHttpSource() {
-
     override val name = "MyHentaiComics"
 
     override val baseUrl = "https://myhentaicomics.com"
@@ -58,7 +57,11 @@ class MyHentaiComics : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank()) {
             GET("$baseUrl/index.php/search?q=$query&page=$page", headers)
         } else {

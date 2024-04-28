@@ -43,7 +43,6 @@ abstract class LectorTmo(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource(), ConfigurableSource {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -65,7 +64,11 @@ abstract class LectorTmo(
         "https://japanreader.com",
     )
 
-    private fun OkHttpClient.Builder.rateLimitImageCDNs(hosts: Array<String>, permits: Int, period: Long): OkHttpClient.Builder {
+    private fun OkHttpClient.Builder.rateLimitImageCDNs(
+        hosts: Array<String>,
+        permits: Int,
+        period: Long,
+    ): OkHttpClient.Builder {
         hosts.forEach { host ->
             rateLimitHost(host.toHttpUrl(), permits, period)
         }
@@ -73,12 +76,21 @@ abstract class LectorTmo(
     }
 
     private fun OkHttpClient.Builder.ignoreAllSSLErrors(): OkHttpClient.Builder {
-        val naiveTrustManager = @SuppressLint("CustomX509TrustManager")
-        object : X509TrustManager {
-            override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
-            override fun checkClientTrusted(certs: Array<X509Certificate>, authType: String) = Unit
-            override fun checkServerTrusted(certs: Array<X509Certificate>, authType: String) = Unit
-        }
+        val naiveTrustManager =
+            @SuppressLint("CustomX509TrustManager")
+            object : X509TrustManager {
+                override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+
+                override fun checkClientTrusted(
+                    certs: Array<X509Certificate>,
+                    authType: String,
+                ) = Unit
+
+                override fun checkServerTrusted(
+                    certs: Array<X509Certificate>,
+                    authType: String,
+                ) = Unit
+            }
 
         val insecureSocketFactory = SSLContext.getInstance("TLSv1.2").apply {
             val trustAllCerts = arrayOf<TrustManager>(naiveTrustManager)
@@ -135,9 +147,11 @@ abstract class LectorTmo(
     }
 
     // Marks erotic content as false and excludes: Ecchi(6), GirlsLove(17), BoysLove(18), Harem(19), Trap(94) genders
-    private fun getSFWUrlPart(): String = if (getSFWModePref()) "&exclude_genders%5B%5D=6&exclude_genders%5B%5D=17&exclude_genders%5B%5D=18&exclude_genders%5B%5D=19&exclude_genders%5B%5D=94&erotic=false" else ""
+    private fun getSFWUrlPart(): String =
+        if (getSFWModePref()) "&exclude_genders%5B%5D=6&exclude_genders%5B%5D=17&exclude_genders%5B%5D=18&exclude_genders%5B%5D=19&exclude_genders%5B%5D=94&erotic=false" else ""
 
-    override fun popularMangaRequest(page: Int) = GET("$baseUrl/library?order_item=likes_count&order_dir=desc&filter_by=title${getSFWUrlPart()}&_pg=1&page=$page", tmoHeaders)
+    override fun popularMangaRequest(page: Int) =
+        GET("$baseUrl/library?order_item=likes_count&order_dir=desc&filter_by=title${getSFWUrlPart()}&_pg=1&page=$page", tmoHeaders)
 
     override fun popularMangaNextPageSelector() = "a[rel='next']"
 
@@ -151,7 +165,8 @@ abstract class LectorTmo(
         }
     }
 
-    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/library?order_item=creation&order_dir=desc&filter_by=title${getSFWUrlPart()}&_pg=1&page=$page", tmoHeaders)
+    override fun latestUpdatesRequest(page: Int) =
+        GET("$baseUrl/library?order_item=creation&order_dir=desc&filter_by=title${getSFWUrlPart()}&_pg=1&page=$page", tmoHeaders)
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
@@ -159,7 +174,11 @@ abstract class LectorTmo(
 
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SLUG_SEARCH)) {
             val realQuery = query.removePrefix(PREFIX_SLUG_SEARCH)
 
@@ -181,7 +200,11 @@ abstract class LectorTmo(
 
     private fun searchMangaBySlugRequest(slug: String) = GET("$baseUrl/$PREFIX_LIBRARY/$slug", tmoHeaders)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/library".toHttpUrl().newBuilder()
         url.addQueryParameter("title", query)
         if (getSFWModePref()) {
@@ -205,7 +228,11 @@ abstract class LectorTmo(
                         url.addQueryParameter("order_item", SORTABLES[filter.state!!.index].second)
                         url.addQueryParameter(
                             "order_dir",
-                            if (filter.state!!.ascending) { "asc" } else { "desc" },
+                            if (filter.state!!.ascending) {
+                                "asc"
+                            } else {
+                                "desc"
+                            },
                         )
                     }
                 }
@@ -233,6 +260,7 @@ abstract class LectorTmo(
         }
         return GET(url.build(), tmoHeaders)
     }
+
     override fun searchMangaSelector() = popularMangaSelector()
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
@@ -301,7 +329,10 @@ abstract class LectorTmo(
 
     override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
 
-    protected open fun chapterFromElement(element: Element, chName: String) = SChapter.create().apply {
+    protected open fun chapterFromElement(
+        element: Element,
+        chName: String,
+    ) = SChapter.create().apply {
         url = element.select("div.row > .text-right > a").attr("href")
         name = chName
         scanlator = element.select("div.col-md-6.text-truncate").text()

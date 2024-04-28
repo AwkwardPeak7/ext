@@ -36,7 +36,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class Mangaku : ParsedHttpSource() {
-
     override val name = "Mangaku"
 
     override val baseUrl = "https://mangaku.lat"
@@ -49,8 +48,7 @@ class Mangaku : ParsedHttpSource() {
 
     private lateinit var directory: Elements
 
-    override fun headersBuilder(): Headers.Builder =
-        super.headersBuilder().add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder = super.headersBuilder().add("Referer", "$baseUrl/")
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         return if (page == 1) {
@@ -62,12 +60,11 @@ class Mangaku : ParsedHttpSource() {
         }
     }
 
-    override fun popularMangaRequest(page: Int): Request =
-        POST(
-            "$baseUrl/daftar-komik-bahasa-indonesia/",
-            headers,
-            FormBody.Builder().add("ritem", "hot").build(),
-        )
+    override fun popularMangaRequest(page: Int): Request = POST(
+        "$baseUrl/daftar-komik-bahasa-indonesia/",
+        headers,
+        FormBody.Builder().add("ritem", "hot").build(),
+    )
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
@@ -107,8 +104,11 @@ class Mangaku : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        GET("$baseUrl/search/$query/", headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET("$baseUrl/search/$query/", headers)
 
     override fun searchMangaSelector() = ".listupd .bs"
 
@@ -188,7 +188,10 @@ class Mangaku : ParsedHttpSource() {
             webview.addJavascriptInterface(jsInterface, interfaceName)
 
             webview.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView, url: String) {
+                override fun onPageFinished(
+                    view: WebView,
+                    url: String,
+                ) {
                     view.evaluateJavascript(jQueryScript) {}
                     view.evaluateJavascript(cryptoJSScript) {}
                     view.evaluateJavascript(wpRoutineScript) {}
@@ -227,7 +230,6 @@ class Mangaku : ParsedHttpSource() {
     }
 
     internal class JsInterface(private val latch: CountDownLatch) {
-
         private val json: Json by injectLazy()
 
         var images: List<String> = listOf()

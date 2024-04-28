@@ -19,7 +19,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class TeamX : ParsedHttpSource() {
-
     override val name = "Team X"
 
     override val baseUrl = "https://teamxnovel.com"
@@ -101,7 +100,11 @@ class TeamX : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/ajax/search?keyword=$query", headers)
     }
 

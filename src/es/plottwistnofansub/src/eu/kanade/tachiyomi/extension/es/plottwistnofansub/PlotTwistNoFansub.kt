@@ -37,7 +37,6 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
-
     override val name = "Plot Twist No Fansub"
 
     override val baseUrl = "https://www.plotfansub.com"
@@ -92,7 +91,11 @@ class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
 
     override fun latestUpdatesFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/wp-admin/admin-ajax.php"
 
         val body = FormBody.Builder()

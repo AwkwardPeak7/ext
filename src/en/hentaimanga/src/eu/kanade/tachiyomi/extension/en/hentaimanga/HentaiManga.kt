@@ -10,7 +10,6 @@ class HentaiManga : Madara(
     "en",
     dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.US),
 ) {
-
     // The website does not flag the content.
     override val filterNonMangaItems = false
 }

@@ -21,7 +21,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class KomikCast : MangaThemesia("Komik Cast", "https://komikcast.lol", "id", "/daftar-komik") {
-
     // Formerly "Komik Cast (WP Manga Stream)"
     override val id = 972717448578983812
 
@@ -30,7 +29,10 @@ class KomikCast : MangaThemesia("Komik Cast", "https://komikcast.lol", "id", "/d
         .build()
 
     override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+        .add(
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        )
         .add("Accept-language", "en-US,en;q=0.9,id;q=0.8")
 
     override fun imageRequest(page: Page): Request {
@@ -43,9 +45,14 @@ class KomikCast : MangaThemesia("Komik Cast", "https://komikcast.lol", "id", "/d
     }
 
     override fun popularMangaRequest(page: Int) = customPageRequest(page, "orderby", "popular")
+
     override fun latestUpdatesRequest(page: Int) = customPageRequest(page, "sortby", "update")
 
-    private fun customPageRequest(page: Int, filterKey: String, filterValue: String): Request {
+    private fun customPageRequest(
+        page: Int,
+        filterKey: String,
+        filterValue: String,
+    ): Request {
         val pagePath = if (page > 1) "page/$page/" else ""
 
         return GET("$baseUrl$mangaUrlDirectory/$pagePath?$filterKey=$filterValue", headers)
@@ -164,7 +171,11 @@ class KomikCast : MangaThemesia("Komik Cast", "https://komikcast.lol", "id", "/d
     override val hasProjectPage: Boolean = true
     override val projectPageString = "/project-list"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
 
         if (query.isNotEmpty()) {

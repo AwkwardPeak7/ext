@@ -24,7 +24,6 @@ class MdAtHomeReportInterceptor(
     private val client: OkHttpClient,
     private val headers: Headers,
 ) : Interceptor {
-
     private val json: Json by injectLazy()
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -93,11 +92,17 @@ class MdAtHomeReportInterceptor(
             """^https://[\w\d]+\.[\w\d]+\.mangadex(\b-test\b)?\.network.*${'$'}""".toRegex()
 
         private val REPORT_CALLBACK = object : Callback {
-            override fun onFailure(call: Call, e: okio.IOException) {
+            override fun onFailure(
+                call: Call,
+                e: okio.IOException,
+            ) {
                 Log.e("MangaDex", "Error trying to POST report to MD@Home: ${e.message}")
             }
 
-            override fun onResponse(call: Call, response: Response) {
+            override fun onResponse(
+                call: Call,
+                response: Response,
+            ) {
                 if (!response.isSuccessful) {
                     Log.e("MangaDex", "Error trying to POST report to MD@Home: HTTP error ${response.code}")
                 }

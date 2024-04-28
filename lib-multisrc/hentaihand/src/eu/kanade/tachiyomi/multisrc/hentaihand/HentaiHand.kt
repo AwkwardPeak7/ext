@@ -47,14 +47,16 @@ abstract class HentaiHand(
     private val chapters: Boolean,
     private val hhLangId: List<Int> = emptyList(),
 ) : ConfigurableSource, HttpSource() {
-
     override val supportsLatest = true
 
     private val json: Json by injectLazy()
 
     private fun slugToUrl(json: JsonObject) = json["slug"]!!.jsonPrimitive.content.prependIndent("/en/comic/")
 
-    private fun jsonArrayToString(arrayKey: String, obj: JsonObject): String? {
+    private fun jsonArrayToString(
+        arrayKey: String,
+        obj: JsonObject,
+    ): String? {
         val array = obj[arrayKey]!!.jsonArray
         if (array.isEmpty()) return null
         return array.joinToString(", ") {
@@ -111,7 +113,10 @@ abstract class HentaiHand(
 
     override fun searchMangaParse(response: Response): MangasPage = popularMangaParse(response)
 
-    private fun lookupFilterId(query: String, uri: String): Int? {
+    private fun lookupFilterId(
+        query: String,
+        uri: String,
+    ): Int? {
         // filter query needs to be resolved to an ID
         return client.newCall(GET("$baseUrl/api/$uri?q=$query"))
             .asObservableSuccess()
@@ -129,7 +134,11 @@ abstract class HentaiHand(
             }.toBlocking().first()
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/api/comics".toHttpUrl().newBuilder()
             .addQueryParameter("page", page.toString())
             .addQueryParameter("q", query)
@@ -200,8 +209,22 @@ abstract class HentaiHand(
                 Pair("Groups", jsonArrayToString("groups", obj)),
                 Pair("Description", obj["description"]!!.jsonPrimitive.content),
                 Pair("Pages", obj["pages"]!!.jsonPrimitive.content),
-                Pair("Category", try { obj["category"]!!.jsonObject["name"]!!.jsonPrimitive.content } catch (_: Exception) { null }),
-                Pair("Language", try { obj["language"]!!.jsonObject["name"]!!.jsonPrimitive.content } catch (_: Exception) { null }),
+                Pair(
+                    "Category",
+                    try {
+                        obj["category"]!!.jsonObject["name"]!!.jsonPrimitive.content
+                    } catch (_: Exception) {
+                        null
+                    },
+                ),
+                Pair(
+                    "Language",
+                    try {
+                        obj["language"]!!.jsonObject["name"]!!.jsonPrimitive.content
+                    } catch (_: Exception) {
+                        null
+                    },
+                ),
                 Pair("Parodies", jsonArrayToString("parodies", obj)),
                 Pair("Characters", jsonArrayToString("characters", obj)),
             ).filter { !it.second.isNullOrEmpty() }.joinToString("\n\n") { "${it.first}: ${it.second}" }
@@ -293,7 +316,11 @@ abstract class HentaiHand(
         return chain.proceed(authRequest)
     }
 
-    private fun login(chain: Interceptor.Chain, username: String, password: String): String {
+    private fun login(
+        chain: Interceptor.Chain,
+        username: String,
+        password: String,
+    ): String {
         val jsonObject = buildJsonObject {
             put("username", username)
             put("password", password)
@@ -327,7 +354,12 @@ abstract class HentaiHand(
         screen.addPreference(screen.editTextPreference(PASSWORD_TITLE, PASSWORD_DEFAULT, password, true))
     }
 
-    private fun PreferenceScreen.editTextPreference(title: String, default: String, value: String, isPassword: Boolean = false): androidx.preference.EditTextPreference {
+    private fun PreferenceScreen.editTextPreference(
+        title: String,
+        default: String,
+        value: String,
+        isPassword: Boolean = false,
+    ): androidx.preference.EditTextPreference {
         return androidx.preference.EditTextPreference(context).apply {
             key = title
             this.title = title
@@ -354,25 +386,64 @@ abstract class HentaiHand(
     }
 
     private fun getPrefUsername(): String = preferences.getString(USERNAME_TITLE, USERNAME_DEFAULT)!!
+
     private fun getPrefPassword(): String = preferences.getString(PASSWORD_TITLE, PASSWORD_DEFAULT)!!
 
     // Filters
 
-    private class SortFilter(sortPairs: List<Pair<String, String>>) : Filter.Select<String>("Sort By", sortPairs.map { it.first }.toTypedArray())
-    private class OrderFilter(orderPairs: List<Pair<String, String>>) : Filter.Select<String>("Order By", orderPairs.map { it.first }.toTypedArray())
-    private class DurationFilter(durationPairs: List<Pair<String, String>>) : Filter.Select<String>("Duration", durationPairs.map { it.first }.toTypedArray())
+    private class SortFilter(sortPairs: List<Pair<String, String>>) : Filter.Select<String>(
+        "Sort By",
+        sortPairs.map {
+            it.first
+        }.toTypedArray(),
+    )
+
+    private class OrderFilter(orderPairs: List<Pair<String, String>>) : Filter.Select<String>(
+        "Order By",
+        orderPairs.map {
+            it.first
+        }.toTypedArray(),
+    )
+
+    private class DurationFilter(durationPairs: List<Pair<String, String>>) : Filter.Select<String>(
+        "Duration",
+        durationPairs.map {
+            it.first
+        }.toTypedArray(),
+    )
+
     private class AttributeFilter(name: String, val value: String) : Filter.CheckBox(name)
-    private class AttributesGroupFilter(attributePairs: List<Pair<String, String>>) : Filter.Group<AttributeFilter>("Attributes", attributePairs.map { AttributeFilter(it.first, it.second) })
+
+    private class AttributesGroupFilter(attributePairs: List<Pair<String, String>>) : Filter.Group<AttributeFilter>(
+        "Attributes",
+        attributePairs.map {
+            AttributeFilter(it.first, it.second)
+        },
+    )
+
     private class StatusFilter(name: String, val value: String) : Filter.CheckBox(name)
-    private class StatusGroupFilter(attributePairs: List<Pair<String, String>>) : Filter.Group<StatusFilter>("Status", attributePairs.map { StatusFilter(it.first, it.second) })
+
+    private class StatusGroupFilter(attributePairs: List<Pair<String, String>>) : Filter.Group<StatusFilter>(
+        "Status",
+        attributePairs.map {
+            StatusFilter(it.first, it.second)
+        },
+    )
 
     private class CategoriesFilter : LookupFilter("Categories", "categories", "category")
+
     private class TagsFilter : LookupFilter("Tags", "tags", "tag")
+
     private class ArtistsFilter : LookupFilter("Artists", "artists", "artist")
+
     private class GroupsFilter : LookupFilter("Groups", "groups", "group")
+
     private class CharactersFilter : LookupFilter("Characters", "characters", "character")
+
     private class ParodiesFilter : LookupFilter("Parodies", "parodies", "parody")
+
     private class LanguagesFilter : LookupFilter("Other Languages", "languages", "language")
+
     open class LookupFilter(name: String, val uri: String, val singularName: String) : Filter.Text(name)
 
     override fun getFilterList() = FilterList(

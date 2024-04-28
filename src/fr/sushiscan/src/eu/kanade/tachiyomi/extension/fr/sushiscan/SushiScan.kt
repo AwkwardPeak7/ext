@@ -17,8 +17,13 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-class SushiScan : MangaThemesia("Sushi-Scan", "https://sushiscan.net", "fr", mangaUrlDirectory = "/catalogue", dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.FRENCH)) {
-
+class SushiScan : MangaThemesia(
+    "Sushi-Scan",
+    "https://sushiscan.net",
+    "fr",
+    mangaUrlDirectory = "/catalogue",
+    dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.FRENCH),
+) {
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(2, 1, TimeUnit.SECONDS)
         .build()
@@ -29,6 +34,7 @@ class SushiScan : MangaThemesia("Sushi-Scan", "https://sushiscan.net", "fr", man
     override val altNamePrefix = "Nom alternatif : "
     override val seriesAuthorSelector = ".infotable tr:contains(Auteur) td:last-child"
     override val seriesStatusSelector = ".infotable tr:contains(Statut) td:last-child"
+
     override fun String?.parseStatus(): Int = when {
         this == null -> SManga.UNKNOWN
         this.contains("En Cours", ignoreCase = true) -> SManga.ONGOING
@@ -38,7 +44,11 @@ class SushiScan : MangaThemesia("Sushi-Scan", "https://sushiscan.net", "fr", man
         else -> SManga.UNKNOWN
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/page/$page".toHttpUrl().newBuilder()
             .addQueryParameter("s", query)
             .build()
@@ -46,10 +56,9 @@ class SushiScan : MangaThemesia("Sushi-Scan", "https://sushiscan.net", "fr", man
         return GET(url, headers)
     }
 
-    override fun mangaDetailsParse(document: Document): SManga =
-        super.mangaDetailsParse(document).apply {
-            status = document.select(seriesStatusSelector).text().parseStatus()
-        }
+    override fun mangaDetailsParse(document: Document): SManga = super.mangaDetailsParse(document).apply {
+        status = document.select(seriesStatusSelector).text().parseStatus()
+    }
 
     override fun pageListParse(document: Document): List<Page> {
         val scriptContent = document.selectFirst("script:containsData(ts_reader)")?.data()

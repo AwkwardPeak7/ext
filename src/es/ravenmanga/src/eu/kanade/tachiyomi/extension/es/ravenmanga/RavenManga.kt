@@ -26,7 +26,6 @@ import java.lang.IllegalArgumentException
 import java.util.Calendar
 
 class RavenManga : ParsedHttpSource() {
-
     override val name = "RavenManga"
 
     override val baseUrl = "https://ravenseries.lat"
@@ -75,7 +74,11 @@ class RavenManga : ParsedHttpSource() {
         setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             if (query.length > 1) return GET("$baseUrl/comics#$query", headers)
             throw Exception("La búsqueda debe tener al menos 2 caracteres")
@@ -94,7 +97,10 @@ class RavenManga : ParsedHttpSource() {
         return MangasPage(mangas, false)
     }
 
-    private fun parseMangaList(document: Document, query: String): List<SManga> {
+    private fun parseMangaList(
+        document: Document,
+        query: String,
+    ): List<SManga> {
         val docString = document.toString()
         val mangaListJson = JSON_PROJECT_LIST.find(docString)?.destructured?.toList()?.get(0).orEmpty()
 

@@ -13,7 +13,6 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import java.io.ByteArrayOutputStream
 
 object CommentsInterceptor : Interceptor {
-
     class Tag
 
     private const val MAX_HEIGHT = 1920

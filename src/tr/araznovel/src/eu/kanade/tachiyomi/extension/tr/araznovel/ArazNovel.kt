@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class ArazNovel : Madara("ArazNovel", "https://www.araznovel.com", "tr", SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())) {
-
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         val mangaId = document.select("div#manga-chapters-holder").attr("data-id")

@@ -61,13 +61,23 @@ class LoadingArtist : HttpSource() {
     }
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
+
     override fun popularMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
-        throw Exception("Search not available for this source")
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = throw Exception("Search not available for this source")
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
+
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
     // Details
@@ -117,5 +127,6 @@ class LoadingArtist : HttpSource() {
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
+
     override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 }

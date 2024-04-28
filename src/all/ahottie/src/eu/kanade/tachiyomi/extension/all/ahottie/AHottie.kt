@@ -33,6 +33,7 @@ class AHottie() : ParsedHttpSource() {
     }
 
     override fun popularMangaNextPageSelector() = "a[rel=next]"
+
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/?page=$page", headers)
     }
@@ -42,8 +43,14 @@ class AHottie() : ParsedHttpSource() {
     // Search
 
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET(
             baseUrl.toHttpUrl().newBuilder().apply {
                 addPathSegment("search")

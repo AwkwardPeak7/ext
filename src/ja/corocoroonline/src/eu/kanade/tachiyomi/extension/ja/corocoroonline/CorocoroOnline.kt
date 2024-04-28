@@ -17,7 +17,6 @@ class CorocoroOnline : GigaViewer(
     "ja",
     "https://cdn-img.www.corocoro.jp/public/page",
 ) {
-
     override val supportsLatest: Boolean = false
 
     override val client: OkHttpClient = super.client.newBuilder()
@@ -38,7 +37,11 @@ class CorocoroOnline : GigaViewer(
     }
 
     // Site doesn't have a manga search and only returns news in search results.
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return fetchPopularManga(page)
             .map { allManga ->
                 val filteredManga = allManga.mangas.filter { manga ->
@@ -50,13 +53,11 @@ class CorocoroOnline : GigaViewer(
     }
 
     // The chapters only load using the URL with 'www'.
-    override fun mangaDetailsRequest(manga: SManga): Request =
-        GET(BASE_URL_WWW + manga.url, headers)
+    override fun mangaDetailsRequest(manga: SManga): Request = GET(BASE_URL_WWW + manga.url, headers)
 
     override fun chapterListRequest(manga: SManga): Request = mangaDetailsRequest(manga)
 
-    override fun pageListRequest(chapter: SChapter): Request =
-        GET(BASE_URL_WWW + chapter.url, headers)
+    override fun pageListRequest(chapter: SChapter): Request = GET(BASE_URL_WWW + chapter.url, headers)
 
     // All chapters seems to be free.
     override fun chapterListSelector(): String = "li.episode"

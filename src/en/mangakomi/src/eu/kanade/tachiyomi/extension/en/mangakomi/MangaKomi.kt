@@ -10,7 +10,6 @@ class MangaKomi : Madara(
     "https://mangakomi.io",
     "en",
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(1, 1, TimeUnit.SECONDS)
         .build()

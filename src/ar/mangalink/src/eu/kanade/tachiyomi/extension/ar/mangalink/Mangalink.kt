@@ -20,7 +20,6 @@ class Mangalink :
         SimpleDateFormat("MMMM dd, yyyy", Locale("ar")),
     ),
     ConfigurableSource {
-
     override val chapterUrlSuffix = ""
     override val useLoadMoreRequest = LoadMoreStrategy.Always
     private val defaultBaseUrl = "https://manga-link.com"
@@ -53,5 +52,6 @@ class Mangalink :
         }
         screen.addPreference(baseUrlPref)
     }
+
     private fun getPrefBaseUrl(): String = preferences.getString(BASE_URL_PREF, defaultBaseUrl)!!
 }

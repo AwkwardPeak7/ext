@@ -7,7 +7,6 @@ import eu.kanade.tachiyomi.util.asJsoup
 import okhttp3.Response
 
 class ShadowCeviri : ZeistManga("Shadow Çeviri", "https://shadowceviri.blogspot.com", "tr") {
-
     // ============================== Popular ===============================
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.use { it.asJsoup() }

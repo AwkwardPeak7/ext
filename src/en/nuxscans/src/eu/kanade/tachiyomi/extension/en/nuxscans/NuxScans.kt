@@ -13,7 +13,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class NuxScans : ParsedHttpSource() {
-
     override val name = "Nux Scans"
     override val baseUrl = "https://nuxscans.blogspot.com"
     private val baseUrl2 = "https://nuxscans-comics.blogspot.com"
@@ -48,7 +47,11 @@ class NuxScans : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector(): String = throw UnsupportedOperationException()
 
     // search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaSelector(): String = throw UnsupportedOperationException()
 

@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class EarlyManga : HttpSource() {
-
     override val name = "EarlyManga"
 
     override val baseUrl = "https://earlym.org"
@@ -50,20 +49,24 @@ class EarlyManga : HttpSource() {
             .build()
     }
 
-    /* Popular */
-    override fun popularMangaRequest(page: Int) =
-        searchMangaRequest(page, "", OrderByFilter.POPULAR)
+    // Popular
+    override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", OrderByFilter.POPULAR)
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
-    /* latest */
+    // latest
     override fun latestUpdatesRequest(page: Int): Request {
         return GET("$apiUrl/home/show-more?page=$page")
     }
 
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    /* search */
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    // search
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val triFilters = filters.filterIsInstance<TriStateFilterGroup>()
 
         val payload = SearchPayload(
@@ -100,7 +103,7 @@ class EarlyManga : HttpSource() {
         )
     }
 
-    /* Filters */
+    // Filters
     private var genresMap: Map<String, List<String>> = emptyMap()
     private var fetchGenresAttempts = 0
     private var fetchGenresFailed = false
@@ -187,6 +190,7 @@ class EarlyManga : HttpSource() {
     override fun chapterListRequest(manga: SManga): Request {
         return GET("$apiUrl${manga.url}/chapterlist", headers)
     }
+
     override fun chapterListParse(response: Response): List<SChapter> {
         val result = response.parseAs<List<ChapterList>>()
 

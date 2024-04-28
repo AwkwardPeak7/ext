@@ -17,11 +17,12 @@ class DoujinHentai : Madara(
     "es",
     SimpleDateFormat("d MMM. yyyy", Locale.ENGLISH),
 ) {
-
     override val fetchGenres = false
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/lista-manga-hentai?orderby=views&page=$page", headers)
+
     override fun popularMangaSelector() = "div.col-md-3 a"
+
     override fun popularMangaFromElement(element: Element): SManga {
         val manga = SManga.create()
 
@@ -33,8 +34,14 @@ class DoujinHentai : Madara(
     }
 
     override fun popularMangaNextPageSelector() = "a[rel=next]"
+
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/lista-manga-hentai?orderby=last&page=$page", headers)
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
         if (query.isNotBlank()) {
             url.addPathSegment("search")
@@ -56,6 +63,7 @@ class DoujinHentai : Madara(
     }
 
     override fun searchMangaSelector() = "div.c-tabs-item__content > div.c-tabs-item__content, ${popularMangaSelector()}"
+
     override fun searchMangaFromElement(element: Element): SManga {
         return if (element.hasAttr("href")) {
             popularMangaFromElement(element) // genre search results
@@ -65,7 +73,9 @@ class DoujinHentai : Madara(
     }
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun chapterListSelector() = "ul.main.version-chap > li.wp-manga-chapter:not(:last-child)" // removing empty li
+
     override val pageListParseSelector = "div#all > img.img-responsive"
 
     override fun getFilterList() = FilterList(

@@ -34,59 +34,58 @@ class Manga(
         includeMuTags: Boolean = false,
         scorePosition: String = "",
         covers: List<MDcovers>? = null,
-    ) =
-        SManga.create().apply {
-            // appennding # at end as part of migration from slug to hid
-            url = "/comic/${comic.hid}#"
-            title = comic.title
-            description = buildString {
-                if (scorePosition == "top") append(comic.fancyScore)
-                val desc = comic.desc?.beautifyDescription()
-                if (!desc.isNullOrEmpty()) {
-                    if (this.isNotEmpty()) append("\n\n")
-                    append(desc)
-                }
-                if (scorePosition == "middle") {
-                    if (this.isNotEmpty()) append("\n\n")
-                    append(comic.fancyScore)
-                }
-                if (comic.altTitles.isNotEmpty()) {
-                    if (this.isNotEmpty()) append("\n\n")
-                    append("Alternative Titles:\n")
-                    append(
-                        comic.altTitles.mapNotNull { title ->
-                            title.title?.let { "• $it" }
-                        }.joinToString("\n"),
-                    )
-                }
-                if (scorePosition == "bottom") {
-                    if (this.isNotEmpty()) append("\n\n")
-                    append(comic.fancyScore)
-                }
+    ) = SManga.create().apply {
+        // appennding # at end as part of migration from slug to hid
+        url = "/comic/${comic.hid}#"
+        title = comic.title
+        description = buildString {
+            if (scorePosition == "top") append(comic.fancyScore)
+            val desc = comic.desc?.beautifyDescription()
+            if (!desc.isNullOrEmpty()) {
+                if (this.isNotEmpty()) append("\n\n")
+                append(desc)
             }
-
-            status = comic.status.parseStatus(comic.translationComplete)
-            thumbnail_url = parseCover(
-                comic.cover,
-                covers ?: comic.mdCovers,
-            )
-            artist = artists.joinToString { it.name.trim() }
-            author = authors.joinToString { it.name.trim() }
-            genre = buildList {
-                comic.origination?.let(::add)
-                demographic?.let { add(Name(it)) }
-                addAll(genres)
-                addAll(comic.mdGenres.mapNotNull { it.name })
-                if (includeMuTags) {
-                    comic.muGenres.categories.forEach { category ->
-                        category?.category?.title?.let { add(Name(it)) }
-                    }
-                }
+            if (scorePosition == "middle") {
+                if (this.isNotEmpty()) append("\n\n")
+                append(comic.fancyScore)
             }
-                .distinctBy { it.name }
-                .filter { it.name.isNotBlank() }
-                .joinToString { it.name.trim() }
+            if (comic.altTitles.isNotEmpty()) {
+                if (this.isNotEmpty()) append("\n\n")
+                append("Alternative Titles:\n")
+                append(
+                    comic.altTitles.mapNotNull { title ->
+                        title.title?.let { "• $it" }
+                    }.joinToString("\n"),
+                )
+            }
+            if (scorePosition == "bottom") {
+                if (this.isNotEmpty()) append("\n\n")
+                append(comic.fancyScore)
+            }
         }
+
+        status = comic.status.parseStatus(comic.translationComplete)
+        thumbnail_url = parseCover(
+            comic.cover,
+            covers ?: comic.mdCovers,
+        )
+        artist = artists.joinToString { it.name.trim() }
+        author = authors.joinToString { it.name.trim() }
+        genre = buildList {
+            comic.origination?.let(::add)
+            demographic?.let { add(Name(it)) }
+            addAll(genres)
+            addAll(comic.mdGenres.mapNotNull { it.name })
+            if (includeMuTags) {
+                comic.muGenres.categories.forEach { category ->
+                    category?.category?.title?.let { add(Name(it)) }
+                }
+            }
+        }
+            .distinctBy { it.name }
+            .filter { it.name.isNotBlank() }
+            .joinToString { it.name.trim() }
+    }
 }
 
 @Serializable

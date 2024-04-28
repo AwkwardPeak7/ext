@@ -53,20 +53,21 @@ class ClownCorps : ConfigurableSource, HttpSource() {
         url = "/comic"
     }
 
-    override fun fetchPopularManga(page: Int): Observable<MangasPage> =
-        Observable.just(MangasPage(listOf(getManga()), hasNextPage = false))
+    override fun fetchPopularManga(page: Int): Observable<MangasPage> = Observable.just(MangasPage(listOf(getManga()), hasNextPage = false))
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
-        fetchPopularManga(page)
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = fetchPopularManga(page)
 
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> =
-        Observable.just(getManga())
+    override fun fetchMangaDetails(manga: SManga): Observable<SManga> = Observable.just(getManga())
 
     @Serializable
     class SerializableChapter(val fullLink: String, val name: String, val dateUpload: Long) {
         override fun hashCode() = fullLink.hashCode()
-        override fun equals(other: Any?) =
-            other is SerializableChapter && fullLink == other.fullLink
+
+        override fun equals(other: Any?) = other is SerializableChapter && fullLink == other.fullLink
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
@@ -157,45 +158,37 @@ class ClownCorps : ConfigurableSource, HttpSource() {
         return pages
     }
 
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun latestUpdatesParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun latestUpdatesRequest(page: Int) =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun mangaDetailsParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun popularMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun popularMangaRequest(page: Int) =
-        throw UnsupportedOperationException()
+    override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
 
-    override fun searchMangaParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    private fun getShowAuthorsNotesPref() =
-        preferences.getBoolean(SETTING_KEY_SHOW_AUTHORS_NOTES, false)
+    private fun getShowAuthorsNotesPref() = preferences.getBoolean(SETTING_KEY_SHOW_AUTHORS_NOTES, false)
 
-    private fun getChapterCache() =
-        preferences.getString(CACHE_KEY_CHAPTERS, null)
+    private fun getChapterCache() = preferences.getString(CACHE_KEY_CHAPTERS, null)
 
-    private fun setChapterCache(json: String) =
-        preferences.edit().putString(CACHE_KEY_CHAPTERS, json).apply()
+    private fun setChapterCache(json: String) = preferences.edit().putString(CACHE_KEY_CHAPTERS, json).apply()
 
-    private fun clearChapterCache() =
-        preferences.edit().remove(CACHE_KEY_CHAPTERS).apply()
+    private fun clearChapterCache() = preferences.edit().remove(CACHE_KEY_CHAPTERS).apply()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         val authorsNotesPref = SwitchPreferenceCompat(screen.context).apply {

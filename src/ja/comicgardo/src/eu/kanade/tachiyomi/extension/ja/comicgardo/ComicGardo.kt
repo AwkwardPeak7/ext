@@ -11,7 +11,6 @@ class ComicGardo : GigaViewer(
     "ja",
     "https://cdn-img.comic-gardo.com/public/page",
 ) {
-
     override val supportsLatest: Boolean = false
 
     override val client: OkHttpClient = super.client.newBuilder()

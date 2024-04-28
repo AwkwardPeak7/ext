@@ -135,10 +135,10 @@ data class MCEpisode(
         private val LOCAL_FORMAT_LIST = getDateTimeInstance()
 
         private fun SimpleDateFormat.parseJST(date: String) = parse(date.removeSuffix("+09:00"))
-        private fun getJSTFormat() =
-            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH).apply {
-                timeZone = TimeZone.getTimeZone("GMT+09:00")
-            }
+
+        private fun getJSTFormat() = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ENGLISH).apply {
+            timeZone = TimeZone.getTimeZone("GMT+09:00")
+        }
     }
 }
 

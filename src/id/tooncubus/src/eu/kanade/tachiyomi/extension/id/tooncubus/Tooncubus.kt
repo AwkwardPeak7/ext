@@ -7,7 +7,6 @@ import eu.kanade.tachiyomi.util.asJsoup
 import okhttp3.Response
 
 class Tooncubus : ZeistManga("Tooncubus", "https://www.tooncubus.top", "id") {
-
     override val pageListSelector = "div.check-box center"
 
     override fun chapterListParse(response: Response): List<SChapter> {

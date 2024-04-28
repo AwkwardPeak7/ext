@@ -21,7 +21,11 @@ class LunarScans : MangaThemesia(
         .rateLimit(1)
         .build()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isEmpty()) {
             super.searchMangaRequest(page, query, filters)
         } else {

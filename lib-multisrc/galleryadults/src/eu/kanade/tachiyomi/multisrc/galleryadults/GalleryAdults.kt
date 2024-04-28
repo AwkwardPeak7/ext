@@ -48,7 +48,6 @@ abstract class GalleryAdults(
     protected open val mangaLang: String = LANGUAGE_MULTI,
     protected val simpleDateFormat: SimpleDateFormat? = null,
 ) : ConfigurableSource, ParsedHttpSource() {
-
     override val client: OkHttpClient = network.cloudflareClient
 
     protected open val xhrHeaders = headers.newBuilder()
@@ -74,17 +73,15 @@ abstract class GalleryAdults(
         }.also(screen::addPreference)
     }
 
-    protected open fun Element.mangaTitle(selector: String = ".caption"): String? =
-        mangaFullTitle(selector).let {
-            if (preferences.shortTitle) it?.shortenTitle() else it
-        }
+    protected open fun Element.mangaTitle(selector: String = ".caption"): String? = mangaFullTitle(selector).let {
+        if (preferences.shortTitle) it?.shortenTitle() else it
+    }
 
-    protected fun Element.mangaFullTitle(selector: String) =
-        selectFirst(selector)?.text()
+    protected fun Element.mangaFullTitle(selector: String) = selectFirst(selector)?.text()
 
     private fun String.shortenTitle() = this.replace(shortenTitleRegex, "").trim()
 
-    /* List detail */
+    // List detail
     protected class SMangaDto(
         val title: String,
         val url: String,
@@ -92,11 +89,9 @@ abstract class GalleryAdults(
         val lang: String,
     )
 
-    protected open fun Element.mangaUrl() =
-        selectFirst(".inner_thumb a")?.attr("abs:href")
+    protected open fun Element.mangaUrl() = selectFirst(".inner_thumb a")?.attr("abs:href")
 
-    protected open fun Element.mangaThumbnail() =
-        selectFirst(".inner_thumb img")?.imgAttr()
+    protected open fun Element.mangaThumbnail() = selectFirst(".inner_thumb img")?.imgAttr()
 
     // Overwrite this to filter other languages' manga from search result.
     // Default to [mangaLang] won't filter anything
@@ -111,7 +106,7 @@ abstract class GalleryAdults(
         return this
     }
 
-    /* Popular */
+    // Popular
     override fun popularMangaRequest(page: Int): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (mangaLang.isNotBlank()) addPathSegments("language/$mangaLang")
@@ -133,7 +128,7 @@ abstract class GalleryAdults(
 
     override fun popularMangaNextPageSelector() = ".pagination li.active + li:not(.disabled)"
 
-    /* Latest */
+    // Latest
     override fun latestUpdatesRequest(page: Int): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (mangaLang.isNotBlank()) addPathSegments("language/$mangaLang")
@@ -148,8 +143,12 @@ abstract class GalleryAdults(
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    /* Search */
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    // Search
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith(PREFIX_ID_SEARCH) -> {
                 val id = query.removePrefix(PREFIX_ID_SEARCH)
@@ -180,7 +179,10 @@ abstract class GalleryAdults(
         return GET(url.build(), headers)
     }
 
-    protected open fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    protected open fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val details = mangaDetailsParse(response.asJsoup())
         details.url = "/$idPrefixUri/$id/"
         return MangasPage(listOf(details), false)
@@ -192,7 +194,11 @@ abstract class GalleryAdults(
     private val useBasicSearch: Boolean
         get() = !useIntermediateSearch
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Basic search
         val sortOrderFilter = filters.filterIsInstance<SortOrderFilter>().firstOrNull()
         val genresFilter = filters.filterIsInstance<GenresFilter>().firstOrNull()
@@ -228,7 +234,11 @@ abstract class GalleryAdults(
     /**
      * Browsing user's personal favorites saved on site. This requires login in view WebView.
      */
-    protected open fun favoriteFilterSearchRequest(page: Int, query: String, filters: FilterList): Request {
+    protected open fun favoriteFilterSearchRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/$favoritePath".toHttpUrl().newBuilder()
         return POST(
             url.build().toString(),
@@ -243,7 +253,11 @@ abstract class GalleryAdults(
      * Browsing speechless titles. Some sites exclude speechless titles from normal search and
      * allow browsing separately.
      */
-    protected open fun speechlessFilterSearchRequest(page: Int, query: String, filters: FilterList): Request {
+    protected open fun speechlessFilterSearchRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Basic search
         val sortOrderFilter = filters.filterIsInstance<SortOrderFilter>().firstOrNull()
 
@@ -256,7 +270,11 @@ abstract class GalleryAdults(
         return GET(url.build(), headers)
     }
 
-    protected open fun tagBrowsingSearchRequest(page: Int, query: String, filters: FilterList): Request {
+    protected open fun tagBrowsingSearchRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Basic search
         val sortOrderFilter = filters.filterIsInstance<SortOrderFilter>().firstOrNull()
         val genresFilter = filters.filterIsInstance<GenresFilter>().firstOrNull()
@@ -275,7 +293,11 @@ abstract class GalleryAdults(
     /**
      * Basic Search: support query string with multiple-genres filter by adding genres to query string.
      */
-    protected open fun basicSearchRequest(page: Int, query: String, filters: FilterList): Request {
+    protected open fun basicSearchRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Basic search
         val sortOrderFilter = filters.filterIsInstance<SortOrderFilter>().firstOrNull()
         val genresFilter = filters.filterIsInstance<GenresFilter>().firstOrNull()
@@ -295,7 +317,11 @@ abstract class GalleryAdults(
      * This supports filter query search with languages, categories (manga, doujinshi...)
      * with additional sort orders.
      */
-    protected open fun intermediateSearchRequest(page: Int, query: String, filters: FilterList): Request {
+    protected open fun intermediateSearchRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Basic search
         val sortOrderFilter = filters.filterIsInstance<SortOrderFilter>().firstOrNull()
         val genresFilter = filters.filterIsInstance<GenresFilter>().firstOrNull()
@@ -328,7 +354,11 @@ abstract class GalleryAdults(
      * Advanced Search normally won't support search for string but allow include/exclude specific
      * tags/artists/groups/parodies/characters
      */
-    protected open fun advancedSearchRequest(page: Int, query: String, filters: FilterList): Request {
+    protected open fun advancedSearchRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // Basic search
         val sortOrderFilter = filters.filterIsInstance<SortOrderFilter>().firstOrNull()
         val genresFilter = filters.filterIsInstance<GenresFilter>().firstOrNull()
@@ -396,7 +426,10 @@ abstract class GalleryAdults(
      * - use comma(,) for separate terms, as AND condition.
      * Plus(+) after comma(,) doesn't have any effect.
      */
-    protected open fun buildQueryString(tags: List<String>, query: String): String {
+    protected open fun buildQueryString(
+        tags: List<String>,
+        query: String,
+    ): String {
         return (tags + query).filterNot { it.isBlank() }.joinToString(",") {
             // any space except after a comma (we're going to replace spaces only between words)
             it.trim()
@@ -407,11 +440,14 @@ abstract class GalleryAdults(
 
     protected open val favoritePath = "includes/user_favs.php"
 
-    protected open fun loginRequired(document: Document, url: String): Boolean {
+    protected open fun loginRequired(
+        document: Document,
+        url: String,
+    ): Boolean {
         return (
             url.contains("/login/") &&
                 document.select("input[value=Login]").isNotEmpty()
-            )
+        )
     }
 
     override fun searchMangaParse(response: Response): MangasPage {
@@ -452,9 +488,8 @@ abstract class GalleryAdults(
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
-    /* Details */
-    protected open fun Element.getCover() =
-        selectFirst(".cover img")?.imgAttr()
+    // Details
+    protected open fun Element.getCover() = selectFirst(".cover img")?.imgAttr()
 
     protected open fun Element.getInfo(tag: String): String {
         return select("ul.${tag.lowercase()} a")
@@ -470,7 +505,7 @@ abstract class GalleryAdults(
             listOfNotNull(
                 selectFirst(".pages:contains(Pages:)")?.ownText(),
             )
-        )
+    )
         .joinToString("\n\n")
 
     protected open val mangaDetailInfoSelector = ".gallery_top"
@@ -496,7 +531,7 @@ abstract class GalleryAdults(
         }
     }
 
-    /* Chapters */
+    // Chapters
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         return listOf(
@@ -514,7 +549,7 @@ abstract class GalleryAdults(
 
     override fun chapterFromElement(element: Element): SChapter = throw UnsupportedOperationException()
 
-    /* Pages */
+    // Pages
     protected open fun Document.inputIdValueOf(string: String): String {
         return select("input[id=$string]").attr("value")
     }
@@ -530,7 +565,10 @@ abstract class GalleryAdults(
 
     private val jsonFormat: Json by injectLazy()
 
-    protected open fun getServer(document: Document, galleryId: String): String {
+    protected open fun getServer(
+        document: Document,
+        galleryId: String,
+    ): String {
         val cover = document.getCover()
         return cover!!.toHttpUrl().host
     }
@@ -683,23 +721,27 @@ abstract class GalleryAdults(
         }
     }
 
-    protected open fun pageRequestForm(document: Document, totalPages: String): FormBody =
-        FormBody.Builder()
-            .add("u_id", document.inputIdValueOf(galleryIdSelector))
-            .add("g_id", document.inputIdValueOf(loadIdSelector))
-            .add("img_dir", document.inputIdValueOf(loadDirSelector))
-            .add("visible_pages", "10")
-            .add("total_pages", totalPages)
-            .add("type", "2") // 1 would be "more", 2 is "all remaining"
-            .build()
+    protected open fun pageRequestForm(
+        document: Document,
+        totalPages: String,
+    ): FormBody = FormBody.Builder()
+        .add("u_id", document.inputIdValueOf(galleryIdSelector))
+        .add("g_id", document.inputIdValueOf(loadIdSelector))
+        .add("img_dir", document.inputIdValueOf(loadDirSelector))
+        .add("visible_pages", "10")
+        .add("total_pages", totalPages)
+        .add("type", "2") // 1 would be "more", 2 is "all remaining"
+        .build()
 
     override fun imageUrlParse(document: Document): String {
         return document.selectFirst("img#gimg, img#fimg")?.imgAttr()!!
     }
 
-    /* Filters */
+    // Filters
     private val scope = CoroutineScope(Dispatchers.IO)
+
     private fun launchIO(block: () -> Unit) = scope.launch { block() }
+
     private var tagsFetchAttempt = 0
     private var genres = emptyList<Genre>()
 
@@ -778,7 +820,9 @@ abstract class GalleryAdults(
             filters.addAll(
                 listOf(
                     Filter.Separator(),
-                    Filter.Header("Advanced filters will ignore query search. Separate terms by comma (,) and precede term with minus (-) to exclude."),
+                    Filter.Header(
+                        "Advanced filters will ignore query search. Separate terms by comma (,) and precede term with minus (-) to exclude.",
+                    ),
                     TagsFilter(),
                     ParodiesFilter(),
                     ArtistsFilter(),

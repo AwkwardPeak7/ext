@@ -29,7 +29,6 @@ data class MpcPagination(
     val page: Int,
     val maxPage: Int,
 ) {
-
     val hasNextPage: Boolean
         get() = page < maxPage
 }
@@ -40,7 +39,6 @@ data class MpcTitle(
     val title: String,
     val thumbnailUrl: String,
 ) {
-
     fun toSManga(): SManga = SManga.create().apply {
         title = this@MpcTitle.title
         thumbnail_url = thumbnailUrl
@@ -56,7 +54,6 @@ data class MpcEpisode(
     val oneshot: Boolean = false,
     val publishDate: Long,
 ) {
-
     fun toSChapter(): SChapter = SChapter.create().apply {
         name = if (oneshot) "One-shot" else title
         date_upload = publishDate

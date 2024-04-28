@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.multisrc.colamanga
 
 class ColaMangaIntl(private val lang: String) {
-
     val rateLimitPrefTitle = when (lang) {
         "zh" -> "主站连接限制"
         else -> "Rate limit"

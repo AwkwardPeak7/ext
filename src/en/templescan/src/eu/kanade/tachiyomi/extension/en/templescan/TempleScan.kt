@@ -9,7 +9,6 @@ class TempleScan : HeanCms(
     "en",
     apiUrl = "https://templescan.net/apiv1",
 ) {
-
     override val versionId = 3
 
     override val client = super.client.newBuilder()

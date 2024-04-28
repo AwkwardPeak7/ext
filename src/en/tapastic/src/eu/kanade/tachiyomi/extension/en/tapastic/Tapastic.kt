@@ -39,7 +39,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Tapastic : ConfigurableSource, ParsedHttpSource() {
-
     // Originally Tapastic
     override val id = 3825434541981130345
 
@@ -57,11 +56,15 @@ class Tapastic : ConfigurableSource, ParsedHttpSource() {
         .cookieJar(
             // Syncs okhttp with webview cookies, allowing logged-in users do logged-in stuff
             object : CookieJar {
-                override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+                override fun saveFromResponse(
+                    url: HttpUrl,
+                    cookies: List<Cookie>,
+                ) {
                     for (cookie in cookies) {
                         webViewCookieManager.setCookie(url.toString(), cookie.toString())
                     }
                 }
+
                 override fun loadForRequest(url: HttpUrl): MutableList<Cookie> {
                     val cookiesString = webViewCookieManager.getCookie(url.toString())
 
@@ -149,7 +152,9 @@ class Tapastic : ConfigurableSource, ParsedHttpSource() {
     }
 
     private fun showLockedChapterPref() = preferences.getBoolean(CHAPTER_VIS_PREF_KEY, false)
+
     private fun showLockPref() = preferences.getBoolean(SHOW_LOCK_PREF_KEY, false)
+
     private fun showAuthorsNotesPref() = preferences.getBoolean(SHOW_AUTHORS_NOTES_KEY, false)
 
     // Popular
@@ -158,7 +163,9 @@ class Tapastic : ConfigurableSource, ParsedHttpSource() {
         GET("$baseUrl/comics?b=POPULAR&g=0&f=NONE&pageNumber=$page&pageSize=20&", headers)
 
     override fun popularMangaNextPageSelector() = "div[data-has-next=true]"
+
     override fun popularMangaSelector() = "li.js-list-item"
+
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
         url = element.select(".item__thumb a").attr("href")
         title = toTitle(element.select(".item__thumb img").attr("alt"))
@@ -198,17 +205,21 @@ class Tapastic : ConfigurableSource, ParsedHttpSource() {
 
     // Latest
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/comics?b=FRESH&g=0&f=NONE&pageNumber=$page&pageSize=20&", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/comics?b=FRESH&g=0&f=NONE&pageNumber=$page&pageSize=20&", headers)
 
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector(): String = popularMangaSelector()
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val url: HttpUrl.Builder
         // If there is any search text, use text search, ignoring filters
@@ -247,10 +258,10 @@ class Tapastic : ConfigurableSource, ParsedHttpSource() {
         return GET(url.build(), headers)
     }
 
-    override fun searchMangaNextPageSelector() =
-        "${popularMangaNextPageSelector()}, a.paging__button--next"
+    override fun searchMangaNextPageSelector() = "${popularMangaNextPageSelector()}, a.paging__button--next"
 
     override fun searchMangaSelector() = "${popularMangaSelector()}, .search-item-wrap"
+
     override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
         url = element.select(".item__thumb a, .title-section .title a").attr("href")
         title = toTitle(element.select(".item__thumb img").firstOrNull()?.attr("alt") ?: element.select(".title-section .title a").text())
@@ -370,8 +381,7 @@ class Tapastic : ConfigurableSource, ParsedHttpSource() {
         return pages
     }
 
-    override fun imageUrlParse(document: Document) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     // Filters
 
@@ -498,7 +508,7 @@ class Tapastic : ConfigurableSource, ParsedHttpSource() {
         defaultValue: Int = 0,
     ) :
         Filter.Select<String>(displayName, vals.map { it.second }.toTypedArray(), defaultValue),
-        UriFilter {
+            UriFilter {
         override fun addToUri(uri: HttpUrl.Builder) {
             if (state != 0 || !firstIsUnspecified) {
                 uri.addQueryParameter(uriParam, vals[state].first)
@@ -511,6 +521,7 @@ class Tapastic : ConfigurableSource, ParsedHttpSource() {
      */
     private interface UriFilter {
         val isMature: Boolean
+
         fun addToUri(uri: HttpUrl.Builder)
     }
 

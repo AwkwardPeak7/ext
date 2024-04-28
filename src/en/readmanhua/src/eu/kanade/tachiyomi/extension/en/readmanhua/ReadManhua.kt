@@ -13,7 +13,6 @@ class ReadManhua : Madara(
     "en",
     dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.US),
 ) {
-
     override fun chapterFromElement(element: Element): SChapter {
         val chapter = SChapter.create()
         val year = Calendar.getInstance().get(Calendar.YEAR).toLong()

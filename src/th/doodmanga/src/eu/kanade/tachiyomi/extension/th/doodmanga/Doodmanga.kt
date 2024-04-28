@@ -16,6 +16,7 @@ class Doodmanga : Madara("Doodmanga", "https://www.doodmanga.com", "th", SimpleD
         .build()
 
     override val pageListParseSelector = "div.text-center > p > img, div.text-center > img, div.text-center > script"
+
     override fun pageListParse(document: Document): List<Page> {
         launchIO { countViews(document) }
 
@@ -36,7 +37,9 @@ class Doodmanga : Madara("Doodmanga", "https://www.doodmanga.com", "th", SimpleD
                         val segmentWidth = result.substringAfter("width:\"+").substringBefore("+\"px")
                         val segmentHeight = result.substringAfter("height: \"+").substringBefore("+\"px")
 
-                        "$src?sovleImage=${sovleImage.joinToString("::") { (x, y, px, py) -> "$x,$y,$px,$py" }}&segmentWidth=$segmentWidth&segmentHeight=$segmentHeight"
+                        "$src?sovleImage=${sovleImage.joinToString(
+                            "::",
+                        ) { (x, y, px, py) -> "$x,$y,$px,$py" }}&segmentWidth=$segmentWidth&segmentHeight=$segmentHeight"
                     } else {
                         null
                     }

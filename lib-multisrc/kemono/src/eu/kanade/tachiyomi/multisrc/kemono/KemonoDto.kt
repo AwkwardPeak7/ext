@@ -97,8 +97,6 @@ class KemonoAttachmentDto(val name: String, val path: String) {
     override fun toString() = "$path?f=$name"
 }
 
-private fun getApiDateFormat() =
-    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
+private fun getApiDateFormat() = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
 
-private fun getChapterNameDateFormat() =
-    SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss", Locale.ENGLISH)
+private fun getChapterNameDateFormat() = SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss", Locale.ENGLISH)

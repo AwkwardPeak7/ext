@@ -24,7 +24,6 @@ open class NineManga(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest: Boolean = true
 
     private val cookieInterceptor = CookieInterceptor(baseUrl.substringAfter("://"), "ninemanga_list_num" to "1")
@@ -140,7 +139,11 @@ open class NineManga(
 
     override fun imageUrlParse(document: Document) = document.select("div.pic_box img.manga_pic").first()!!.attr("src").orEmpty()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search/".toHttpUrl().newBuilder()
 
         url.addQueryParameter("wd", query)
@@ -180,9 +183,11 @@ open class NineManga(
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     open class Genre(name: String, val id: String) : Filter.TriState(name)
+
     open class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
 
     class AuthorFilter : Filter.Text("Author")
+
     class ArtistFilter : Filter.Text("Artist")
 
     protected open class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
@@ -200,7 +205,9 @@ open class NineManga(
     )
 
     private class QueryCBEFilter : ContainBeginEndFilter("Query")
+
     private class AuthorCBEFilter : ContainBeginEndFilter("Author")
+
     private class ArtistCBEFilter : ContainBeginEndFilter("Artist")
 
     private class CompletedFilter : UriPartFilter(

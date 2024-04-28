@@ -35,7 +35,10 @@ class Mangafreak : ParsedHttpSource() {
         .followRedirects(true)
         .build()
 
-    private fun mangaFromElement(element: Element, urlSelector: String): SManga {
+    private fun mangaFromElement(
+        element: Element,
+        urlSelector: String,
+    ): SManga {
         return SManga.create().apply {
             thumbnail_url = element.select("img").attr("abs:src")
             element.select(urlSelector).apply {
@@ -50,8 +53,11 @@ class Mangafreak : ParsedHttpSource() {
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/Genre/All/$page", headers)
     }
+
     override fun popularMangaNextPageSelector(): String = "a.next_p"
+
     override fun popularMangaSelector(): String = "div.ranking_item"
+
     override fun popularMangaFromElement(element: Element): SManga = mangaFromElement(element, "a")
 
     // Latest
@@ -59,8 +65,11 @@ class Mangafreak : ParsedHttpSource() {
     override fun latestUpdatesRequest(page: Int): Request {
         return GET("$baseUrl/Latest_Releases/$page", headers)
     }
+
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector(): String = "div.latest_releases_item"
+
     override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
         thumbnail_url = element.select("img").attr("abs:src").replace("mini", "manga").substringBeforeLast("/") + ".jpg"
         element.select("a").apply {
@@ -71,7 +80,11 @@ class Mangafreak : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
 
         if (query.isNotBlank()) {
@@ -99,8 +112,11 @@ class Mangafreak : ParsedHttpSource() {
 
         return GET(url.build(), headers)
     }
+
     override fun searchMangaNextPageSelector(): String? = null
+
     override fun searchMangaSelector(): String = "div.manga_search_item , div.mangaka_search_item"
+
     override fun searchMangaFromElement(element: Element): SManga = mangaFromElement(element, "h3 a, h5 a")
 
     // Details
@@ -123,6 +139,7 @@ class Mangafreak : ParsedHttpSource() {
 
     // HTML response does not actually include a tbody tag, must select tr directly
     override fun chapterListSelector(): String = "div.manga_series_list tr:has(a)"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         name = element.select("td:eq(0)").text()
 
@@ -153,9 +170,11 @@ class Mangafreak : ParsedHttpSource() {
         setUrlWithoutDomain(element.select("a").attr("href"))
         date_upload = parseDate(element.select("td:eq(1)").text())
     }
+
     private fun parseDate(date: String): Long {
         return SimpleDateFormat("yyyy/MM/dd", Locale.US).parse(date)?.time ?: 0L
     }
+
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).reversed()
     }
@@ -175,6 +194,7 @@ class Mangafreak : ParsedHttpSource() {
     // Filter
 
     private class Genre(name: String) : Filter.TriState(name)
+
     private class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
 
     override fun getFilterList() = FilterList(
@@ -183,6 +203,7 @@ class Mangafreak : ParsedHttpSource() {
         TypeFilter(),
         StatusFilter(),
     )
+
     private fun getGenreList() = listOf(
         Genre("Act"),
         Genre("Adult"),

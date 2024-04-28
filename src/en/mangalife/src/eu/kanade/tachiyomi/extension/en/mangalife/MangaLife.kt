@@ -6,7 +6,6 @@ import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
 class MangaLife : NepNep("MangaLife", "https://manga4life.com", "en") {
-
     override val client: OkHttpClient = network.cloudflareClient.newBuilder()
         .rateLimit(1, 2)
         .connectTimeout(1, TimeUnit.MINUTES)

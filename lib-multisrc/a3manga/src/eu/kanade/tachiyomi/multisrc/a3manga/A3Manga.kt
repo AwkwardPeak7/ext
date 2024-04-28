@@ -35,7 +35,6 @@ open class A3Manga(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest: Boolean = false
 
     override val client: OkHttpClient = network.cloudflareClient
@@ -64,7 +63,11 @@ open class A3Manga(
 
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith(PREFIX_ID_SEARCH) -> {
                 val id = query.removePrefix(PREFIX_ID_SEARCH).trim()
@@ -82,15 +85,18 @@ open class A3Manga(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        POST(
-            "$baseUrl/wp-admin/admin-ajax.php",
-            headers,
-            FormBody.Builder()
-                .add("action", "searchtax")
-                .add("keyword", query)
-                .build(),
-        )
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = POST(
+        "$baseUrl/wp-admin/admin-ajax.php",
+        headers,
+        FormBody.Builder()
+            .add("action", "searchtax")
+            .add("keyword", query)
+            .build(),
+    )
 
     override fun searchMangaSelector(): String = throw UnsupportedOperationException()
 

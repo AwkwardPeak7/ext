@@ -8,7 +8,6 @@ data class SmaEntry(
     val chapterListUrl: String,
     val thumbnailUrl: String,
 ) {
-
     fun toSManga(index: Int): SManga = SManga.create().apply {
         title = name
         author = "Various artists"

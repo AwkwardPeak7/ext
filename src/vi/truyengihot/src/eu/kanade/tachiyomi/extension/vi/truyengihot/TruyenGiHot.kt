@@ -31,7 +31,6 @@ import rx.schedulers.Schedulers
 import uy.kohesive.injekt.injectLazy
 
 class TruyenGiHot : ParsedHttpSource() {
-
     override val name: String = "TruyenGiHot"
 
     override val baseUrl: String = "https://truyengihotqua.com"
@@ -53,43 +52,39 @@ class TruyenGiHot : ParsedHttpSource() {
         const val PREFIX_ID_SEARCH = "id:"
     }
 
-    override fun popularMangaRequest(page: Int): Request =
-        searchMangaRequest(
-            page,
-            "",
-            FilterList(
-                SortFilter(
-                    getSortItems(),
-                    Filter.Sort.Selection(2, false),
-                ),
-                CategoryFilter(0),
+    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(
+        page,
+        "",
+        FilterList(
+            SortFilter(
+                getSortItems(),
+                Filter.Sort.Selection(2, false),
             ),
-        )
+            CategoryFilter(0),
+        ),
+    )
 
     override fun popularMangaSelector(): String = searchMangaSelector()
 
-    override fun popularMangaFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
 
     override fun popularMangaNextPageSelector(): String = searchMangaNextPageSelector()
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        searchMangaRequest(
-            page,
-            "",
-            FilterList(
-                SortFilter(
-                    getSortItems(),
-                    Filter.Sort.Selection(0, false),
-                ),
-                CategoryFilter(0),
+    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(
+        page,
+        "",
+        FilterList(
+            SortFilter(
+                getSortItems(),
+                Filter.Sort.Selection(0, false),
             ),
-        )
+            CategoryFilter(0),
+        ),
+    )
 
     override fun latestUpdatesSelector(): String = searchMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
     override fun latestUpdatesNextPageSelector(): String = searchMangaNextPageSelector()
 
@@ -119,7 +114,11 @@ class TruyenGiHot : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         runCatching { fetchFilterOptions() }
 
         val url =

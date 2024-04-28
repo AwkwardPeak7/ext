@@ -17,7 +17,6 @@ import org.jsoup.nodes.Element
 import java.util.Calendar
 
 class MangaBTT : ParsedHttpSource() {
-
     override val name = "MangaBTT"
 
     override val baseUrl = "https://mangabtt.com"
@@ -47,14 +46,11 @@ class MangaBTT : ParsedHttpSource() {
         ),
     )
 
-    override fun popularMangaSelector(): String =
-        searchMangaSelector()
+    override fun popularMangaSelector(): String = searchMangaSelector()
 
-    override fun popularMangaFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
 
-    override fun popularMangaNextPageSelector(): String =
-        searchMangaNextPageSelector()
+    override fun popularMangaNextPageSelector(): String = searchMangaNextPageSelector()
 
     // =============================== Latest ===============================
 
@@ -68,18 +64,19 @@ class MangaBTT : ParsedHttpSource() {
         ),
     )
 
-    override fun latestUpdatesSelector(): String =
-        searchMangaSelector()
+    override fun latestUpdatesSelector(): String = searchMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        searchMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
-    override fun latestUpdatesNextPageSelector(): String =
-        searchMangaNextPageSelector()
+    override fun latestUpdatesNextPageSelector(): String = searchMangaNextPageSelector()
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/find-story".toHttpUrl().newBuilder().apply {
             if (query.isNotBlank()) {
                 addQueryParameter("keyword", query)
@@ -111,8 +108,7 @@ class MangaBTT : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaNextPageSelector(): String =
-        "ul.pagination > li.active + li:not(.disabled)"
+    override fun searchMangaNextPageSelector(): String = "ul.pagination > li.active + li:not(.disabled)"
 
     // =============================== Filters ==============================
 

@@ -12,7 +12,6 @@ class Genre(title: String, val id: Int) : Filter.CheckBox(title)
 class GenreFilter(genres: List<Genre>) :
     Filter.Group<Genre>("Gêneros", genres),
     UrlQueryFilter {
-
     override fun addQueryParameter(url: HttpUrl.Builder) {
         val genresParameter = state
             .filter { it.state }
@@ -34,7 +33,6 @@ open class EnhancedSelect<T>(name: String, values: Array<T>) : Filter.Select<T>(
 class CountryFilter(countries: List<Country>) :
     EnhancedSelect<Country>("Nacionalidade", countries.toTypedArray()),
     UrlQueryFilter {
-
     override fun addQueryParameter(url: HttpUrl.Builder) {
         if (state > 0) {
             url.addQueryParameter("country", selected.id.toString())
@@ -49,7 +47,6 @@ data class Status(val name: String, val id: Int) {
 class StatusFilter(statuses: List<Status>) :
     EnhancedSelect<Status>("Status", statuses.toTypedArray()),
     UrlQueryFilter {
-
     override fun addQueryParameter(url: HttpUrl.Builder) {
         if (state > 0) {
             url.addQueryParameter("status", selected.id.toString())
@@ -68,7 +65,6 @@ class SortByFilter(val sortProperties: List<SortProperty>) :
         state = Selection(2, ascending = false),
     ),
     UrlQueryFilter {
-
     override fun addQueryParameter(url: HttpUrl.Builder) {
         val sortProperty = sortProperties[state!!.index]
         val sortDirection = if (state!!.ascending) "asc" else "desc"

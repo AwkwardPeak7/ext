@@ -39,8 +39,7 @@ val SharedPreferences.lang: List<String>
         return lang.split(", ")
     }
 
-fun SharedPreferences.Editor.setLang(value: Iterable<String>): SharedPreferences.Editor =
-    putString(LANG_PREF, value.joinToString())
+fun SharedPreferences.Editor.setLang(value: Iterable<String>): SharedPreferences.Editor = putString(LANG_PREF, value.joinToString())
 
 val SharedPreferences.langData: List<LangData>
     get() {
@@ -50,7 +49,11 @@ val SharedPreferences.langData: List<LangData>
     }
 
 @Synchronized
-fun updateLangData(client: OkHttpClient, headers: Headers, preferences: SharedPreferences) {
+fun updateLangData(
+    client: OkHttpClient,
+    headers: Headers,
+    preferences: SharedPreferences,
+) {
     val lastUpdated = client.newCall(GET("$BASE_URL/0_sources/last_updated.txt", headers))
         .execute().body.string().substringBefore('\n').toLong()
     if (lastUpdated <= preferences.lastUpdated) return
@@ -95,7 +98,10 @@ private fun SharedPreferences.Editor.chooseLang(langs: List<Lang>) {
     setLang(result)
 }
 
-private fun fetchTitles(client: OkHttpClient, headers: Headers): Map<String, String> {
+private fun fetchTitles(
+    client: OkHttpClient,
+    headers: Headers,
+): Map<String, String> {
     val url = "https://framagit.org/search?project_id=76196&search=core/mod-header.php:4"
     val document = client.newCall(GET(url, headers)).execute().asJsoup()
     val result = hashMapOf<String, String>()
@@ -127,11 +133,9 @@ private fun fetchTitles(client: OkHttpClient, headers: Headers): Map<String, Str
 
 private inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 
-private inline fun <reified T> ProtoBuf.decodeFromBase64(base64: String): T =
-    decodeFromByteArray(Base64.decode(base64, Base64.NO_WRAP))
+private inline fun <reified T> ProtoBuf.decodeFromBase64(base64: String): T = decodeFromByteArray(Base64.decode(base64, Base64.NO_WRAP))
 
-private inline fun <reified T> ProtoBuf.encodeToBase64(value: T): String =
-    Base64.encodeToString(encodeToByteArray(value), Base64.NO_WRAP)
+private inline fun <reified T> ProtoBuf.encodeToBase64(value: T): String = Base64.encodeToString(encodeToByteArray(value), Base64.NO_WRAP)
 
 private val json: Json by injectLazy()
 

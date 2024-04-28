@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class HeavenManga : ParsedHttpSource() {
-
     override val name = "HeavenManga"
 
     override val baseUrl = "https://heavenmanga.com"
@@ -85,7 +84,11 @@ class HeavenManga : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
         if (query.isNotBlank()) {
             if (query.length < 3) throw Exception("La búsqueda debe tener al menos 3 caracteres")

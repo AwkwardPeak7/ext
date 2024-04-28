@@ -31,7 +31,6 @@ abstract class Makaru(
     override val baseUrl: String,
     override val lang: String,
 ) : HttpSource() {
-
     override val supportsLatest = false
 
     private val json: Json by injectLazy()
@@ -65,7 +64,11 @@ abstract class Makaru(
 
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = filters.ifEmpty { getFilterList() }
         val searchQuery = buildString(13) {
             append("label:Series")
@@ -196,7 +199,11 @@ abstract class Makaru(
             .parseAs<MakaruDto>()
     }
 
-    private fun apiUrlBuilder(feed: String, page: Int, maxResults: Int) = baseUrl.toHttpUrl().newBuilder().apply {
+    private fun apiUrlBuilder(
+        feed: String,
+        page: Int,
+        maxResults: Int,
+    ) = baseUrl.toHttpUrl().newBuilder().apply {
         // Blogger indices start from 1
         val startIndex = maxResults * (page - 1) + 1
 
@@ -207,8 +214,7 @@ abstract class Makaru(
         addQueryParameter("start-index", startIndex.toString())
     }
 
-    private inline fun <reified T> Response.parseAs(): T =
-        json.decodeFromString(body.string())
+    private inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 
     companion object {
         private const val MAX_MANGA_RESULTS = 20

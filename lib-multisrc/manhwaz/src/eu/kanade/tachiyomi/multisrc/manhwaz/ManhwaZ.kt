@@ -27,7 +27,6 @@ abstract class ManhwaZ(
     private val mangaDetailsAuthorHeading: String = "author(s)",
     private val mangaDetailsStatusHeading: String = "status",
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient
@@ -71,7 +70,11 @@ abstract class ManhwaZ(
 
     override fun latestUpdatesNextPageSelector(): String? = "ul.pager a[rel=next]"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val url = baseUrl.toHttpUrl().newBuilder().apply {
                 addPathSegment("search")
@@ -146,10 +149,9 @@ abstract class ManhwaZ(
         }
     }
 
-    override fun pageListParse(document: Document) =
-        document.select("div.page-break img").mapIndexed { i, it ->
-            Page(i, imageUrl = it.imgAttr())
-        }
+    override fun pageListParse(document: Document) = document.select("div.page-break img").mapIndexed { i, it ->
+        Page(i, imageUrl = it.imgAttr())
+    }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 

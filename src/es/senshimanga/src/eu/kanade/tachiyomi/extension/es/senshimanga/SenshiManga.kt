@@ -19,7 +19,6 @@ import okhttp3.Response
 import uy.kohesive.injekt.injectLazy
 
 class SenshiManga : HttpSource() {
-
     override val name = "Senshi Manga"
 
     override val baseUrl = "https://senshimanga.com"
@@ -54,7 +53,11 @@ class SenshiManga : HttpSource() {
 
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$apiBaseUrl/api/manga-custom".toHttpUrl().newBuilder()
 
         url.setQueryParameter("page", page.toString())
@@ -93,8 +96,7 @@ class SenshiManga : HttpSource() {
 
     override fun getMangaUrl(manga: SManga): String = "$baseUrl/manga/${manga.url}"
 
-    override fun mangaDetailsRequest(manga: SManga): Request =
-        GET("$apiBaseUrl/api/manga-custom/${manga.url}", apiHeaders)
+    override fun mangaDetailsRequest(manga: SManga): Request = GET("$apiBaseUrl/api/manga-custom/${manga.url}", apiHeaders)
 
     override fun mangaDetailsParse(response: Response): SManga {
         val result = json.decodeFromString<Data<SeriesDto>>(response.body.string())

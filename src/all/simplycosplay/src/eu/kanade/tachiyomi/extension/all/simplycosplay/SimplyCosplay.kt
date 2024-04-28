@@ -32,7 +32,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class SimplyCosplay : HttpSource(), ConfigurableSource {
-
     override val name = "Simply Cosplay"
 
     override val lang = "all"
@@ -110,7 +109,11 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
             ?: throw IOException(TOKEN_EXCEPTION)
     }
 
-    private fun browseUrlBuilder(endPoint: String, sort: String, page: Int): HttpUrl.Builder {
+    private fun browseUrlBuilder(
+        endPoint: String,
+        sort: String,
+        page: Int,
+    ): HttpUrl.Builder {
         return apiUrl.newBuilder().apply {
             addPathSegment(endPoint)
             addQueryParameter("sort", sort)
@@ -144,7 +147,11 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(SEARCH_PREFIX)) {
             val url = query.substringAfter(SEARCH_PREFIX)
             val manga = SManga.create().apply { this.url = url }
@@ -156,7 +163,11 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val sort = filters.filterIsInstance<SortFilter>().firstOrNull()?.getSort() ?: "new"
 
         val url = browseUrlBuilder("search", sort, page).apply {
@@ -230,19 +241,16 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
 
     class TagFilter(title: String, tags: List<String>) :
         Filter.Group<Tag>(title, tags.map(::Tag)) {
-
         fun getSelected() = state.filter { it.state }
     }
 
     class TypeFilter(title: String, private val types: List<String>) :
         Filter.Select<String>(title, types.toTypedArray()) {
-
         fun getValue() = types[state].lowercase()
     }
 
     class SortFilter(title: String, private val sorts: List<String>) :
         Filter.Select<String>(title, sorts.toTypedArray()) {
-
         fun getSort() = sorts[state].lowercase()
     }
 
@@ -341,14 +349,11 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
         }.also(screen::addPreference)
     }
 
-    private fun SharedPreferences.getDefaultBrowse() =
-        getString(BROWSE_TYPE_PREF_KEY, "gallery")!!
+    private fun SharedPreferences.getDefaultBrowse() = getString(BROWSE_TYPE_PREF_KEY, "gallery")!!
 
-    private fun SharedPreferences.getToken() =
-        getString(DEFAULT_TOKEN_PREF, DEFAULT_FALLBACK_TOKEN) ?: DEFAULT_FALLBACK_TOKEN
+    private fun SharedPreferences.getToken() = getString(DEFAULT_TOKEN_PREF, DEFAULT_FALLBACK_TOKEN) ?: DEFAULT_FALLBACK_TOKEN
 
-    private fun SharedPreferences.putToken(token: String) =
-        edit().putString(DEFAULT_TOKEN_PREF, token).commit()
+    private fun SharedPreferences.putToken(token: String) = edit().putString(DEFAULT_TOKEN_PREF, token).commit()
 
     private inline fun <reified T> Response.parseAs(): T {
         return json.decodeFromString(body.string())
@@ -374,9 +379,7 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
         private const val BROWSE_TYPE_TITLE = "Default Browse List"
     }
 
-    override fun chapterListParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 }

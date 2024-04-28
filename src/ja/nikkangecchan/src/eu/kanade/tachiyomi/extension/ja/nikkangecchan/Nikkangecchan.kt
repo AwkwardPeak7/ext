@@ -15,7 +15,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class Nikkangecchan : ParsedHttpSource() {
-
     override val name = "Nikkangecchan"
 
     override val baseUrl = "https://nikkangecchan.jp"
@@ -48,7 +47,11 @@ class Nikkangecchan : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector(): String? = null
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return super.fetchSearchManga(page, query, filters)
             .map {
                 val filtered = it.mangas.filter { e -> e.title.contains(query, true) }
@@ -57,8 +60,11 @@ class Nikkangecchan : ParsedHttpSource() {
     }
 
     // Does not have search, use complete list (in popular) instead.
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        popularMangaRequest(page)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = popularMangaRequest(page)
 
     override fun searchMangaSelector() = popularMangaSelector()
 
@@ -80,8 +86,7 @@ class Nikkangecchan : ParsedHttpSource() {
 
     override fun chapterListSelector(): String = ".episodeBox"
 
-    override fun chapterListParse(response: Response): List<SChapter> =
-        super.chapterListParse(response).reversed()
+    override fun chapterListParse(response: Response): List<SChapter> = super.chapterListParse(response).reversed()
 
     override fun chapterFromElement(element: Element): SChapter {
         val episodePage = element.select(".episode-page").first()!!

@@ -23,7 +23,6 @@ import java.util.TimeZone
 import kotlin.concurrent.thread
 
 class IkigaiMangas : HttpSource() {
-
     override val baseUrl: String = "https://ikigaimangas.com"
     private val apiBaseUrl: String = "https://panel.ikigaimangas.com"
 
@@ -72,7 +71,11 @@ class IkigaiMangas : HttpSource() {
         return MangasPage(mangaList, result.hasNextPage())
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val sortByFilter = filters.firstInstanceOrNull<SortByFilter>()
 
         val apiUrl = "$apiBaseUrl/api/swf/series".toHttpUrl().newBuilder()
@@ -146,8 +149,7 @@ class IkigaiMangas : HttpSource() {
         return mangas
     }
 
-    override fun pageListRequest(chapter: SChapter): Request =
-        GET(baseUrl + chapter.url.substringBefore("#"), headers)
+    override fun pageListRequest(chapter: SChapter): Request = GET(baseUrl + chapter.url.substringBefore("#"), headers)
 
     override fun pageListParse(response: Response): List<Page> {
         val document = response.asJsoup()
@@ -189,6 +191,7 @@ class IkigaiMangas : HttpSource() {
     )
 
     private fun getGenreFilters(): List<Genre> = genresList.map { Genre(it.first, it.second) }
+
     private fun getStatusFilters(): List<Status> = statusesList.map { Status(it.first, it.second) }
 
     private var genresList: List<Pair<String, Long>> = emptyList()
@@ -215,8 +218,7 @@ class IkigaiMangas : HttpSource() {
         }
     }
 
-    private inline fun <reified R> List<*>.firstInstanceOrNull(): R? =
-        filterIsInstance<R>().firstOrNull()
+    private inline fun <reified R> List<*>.firstInstanceOrNull(): R? = filterIsInstance<R>().firstOrNull()
 
     private enum class FiltersState { NOT_FETCHED, FETCHING, FETCHED }
 }

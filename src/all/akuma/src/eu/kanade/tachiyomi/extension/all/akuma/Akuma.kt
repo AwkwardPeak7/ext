@@ -23,7 +23,6 @@ import rx.Observable
 import java.io.IOException
 
 class Akuma : ParsedHttpSource() {
-
     override val name = "Akuma"
 
     override val baseUrl = "https://akuma.moe"
@@ -111,6 +110,7 @@ class Akuma : ParsedHttpSource() {
     }
 
     override fun popularMangaSelector() = ".post-loop li"
+
     override fun popularMangaNextPageSelector() = ".page-item a[rel*=next]"
 
     override fun popularMangaParse(response: Response): MangasPage {
@@ -151,7 +151,11 @@ class Akuma : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val request = popularMangaRequest(page)
 
         val url = request.url.newBuilder()
@@ -164,8 +168,11 @@ class Akuma : ParsedHttpSource() {
     }
 
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
@@ -213,9 +220,14 @@ class Akuma : ParsedHttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun latestUpdatesSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun chapterListSelector() = throw UnsupportedOperationException()
 }

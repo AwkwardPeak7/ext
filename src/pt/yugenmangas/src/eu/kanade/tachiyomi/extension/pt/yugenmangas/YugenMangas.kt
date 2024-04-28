@@ -25,7 +25,6 @@ import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
 
 class YugenMangas : HttpSource() {
-
     override val name = "Yugen Mangás"
 
     override val baseUrl = "https://yugenmangas.net.br"
@@ -69,7 +68,11 @@ class YugenMangas : HttpSource() {
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val apiUrl = "$API_BASE_URL/series/list".toHttpUrl().newBuilder()
             .addQueryParameter("query", query)
             .build()

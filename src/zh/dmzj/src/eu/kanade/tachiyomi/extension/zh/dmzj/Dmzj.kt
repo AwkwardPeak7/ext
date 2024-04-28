@@ -86,7 +86,11 @@ class Dmzj : ConfigurableSource, HttpSource() {
         return MangasPage(listOf(sManga), false)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.isEmpty()) {
             val ranking = filters.filterIsInstance<RankingGroup>().firstOrNull()
             if (ranking != null && ranking.isEnabled) {
@@ -119,7 +123,11 @@ class Dmzj : ConfigurableSource, HttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         throw UnsupportedOperationException()
     }
 
@@ -213,8 +221,7 @@ class Dmzj : ConfigurableSource, HttpSource() {
     }
 
     // Unused, we can get image urls directly from the chapter page
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     override fun getFilterList() = getFilterListInternal(preferences.isMultiGenreFilter)
 

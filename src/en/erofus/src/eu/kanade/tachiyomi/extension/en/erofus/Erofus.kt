@@ -12,13 +12,20 @@ import rx.Observable
 
 @ExperimentalStdlibApi
 class Erofus : EroMuse("Erofus", "https://www.erofus.com") {
-
     override val albumSelector = "a.a-click"
     override val topLevelPathSegment = "comics"
 
-    override fun fetchPopularManga(page: Int): Observable<MangasPage> = fetchManga("$baseUrl/comics/various-authors?sort=viewed&page=1", page, "viewed")
-    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> = fetchManga("$baseUrl/comics/various-authors?sort=recent&page=1", page, "recent")
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchPopularManga(page: Int): Observable<MangasPage> =
+        fetchManga("$baseUrl/comics/various-authors?sort=viewed&page=1", page, "viewed")
+
+    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> =
+        fetchManga("$baseUrl/comics/various-authors?sort=recent&page=1", page, "recent")
+
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (page == 1) {
             pageStack.clear()
 

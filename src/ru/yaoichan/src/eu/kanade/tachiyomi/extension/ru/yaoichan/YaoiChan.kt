@@ -7,10 +7,13 @@ import eu.kanade.tachiyomi.source.model.FilterList
 import okhttp3.Request
 
 class YaoiChan : MultiChan("YaoiChan", "https://yaoi-chan.me", "ru") {
-
     override val id: Long = 2466512768990363955
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = if (query.isNotEmpty()) {
             "$baseUrl/?do=search&subaction=search&story=$query&search_start=$page"
         } else {
@@ -79,8 +82,11 @@ class YaoiChan : MultiChan("YaoiChan", "https://yaoi-chan.me", "ru") {
     }
 
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Тэги", genres)
+
     private class Genre(name: String, val id: String = name.replace(' ', '_')) : Filter.TriState(name)
+
     private class Status : Filter.Select<String>("Статус", arrayOf("Все", "Перевод завершен", "Выпуск завершен", "Онгоинг", "Новые главы"))
+
     private class OrderBy : Filter.Sort(
         "Сортировка",
         arrayOf("Дата", "Популярность", "Имя", "Главы"),

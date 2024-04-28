@@ -16,7 +16,6 @@ class DemonSect : Madara(
     "pt-BR",
     SimpleDateFormat("MMMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-
     // Changed their name from Prisma Scans to Demon Sect.
     override val id: Long = 8168108118738519332
 

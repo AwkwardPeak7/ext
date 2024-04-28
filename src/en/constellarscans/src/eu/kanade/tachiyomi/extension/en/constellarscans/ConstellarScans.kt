@@ -30,7 +30,6 @@ class ConstellarScans :
         "en",
     ),
     ConfigurableSource {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -57,18 +56,17 @@ class ConstellarScans :
 
     override val seriesStatusSelector = ".status"
 
-    override fun pageListRequest(chapter: SChapter): Request =
-        super.pageListRequest(chapter).newBuilder()
-            .header(
-                "Accept",
-                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            )
-            .header("Sec-Fetch-Site", "same-origin")
-            .header("Sec-Fetch-Mode", "navigate")
-            .header("Sec-Fetch-Dest", "document")
-            .header("Sec-Fetch-User", "?1")
-            .cacheControl(CacheControl.FORCE_NETWORK)
-            .build()
+    override fun pageListRequest(chapter: SChapter): Request = super.pageListRequest(chapter).newBuilder()
+        .header(
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        )
+        .header("Sec-Fetch-Site", "same-origin")
+        .header("Sec-Fetch-Mode", "navigate")
+        .header("Sec-Fetch-Dest", "document")
+        .header("Sec-Fetch-User", "?1")
+        .cacheControl(CacheControl.FORCE_NETWORK)
+        .build()
 
     override fun pageListParse(document: Document): List<Page> {
         countViews(document)
@@ -92,7 +90,9 @@ class ConstellarScans :
             }
             .joinToString("")
 
-        return json.parseToJsonElement(tsReaderRawData).jsonObject["sources"]!!.jsonArray[0].jsonObject["images"]!!.jsonArray.mapIndexed { idx, it ->
+        return json.parseToJsonElement(
+            tsReaderRawData,
+        ).jsonObject["sources"]!!.jsonArray[0].jsonObject["images"]!!.jsonArray.mapIndexed { idx, it ->
             Page(idx, imageUrl = it.jsonPrimitive.content)
         }
     }

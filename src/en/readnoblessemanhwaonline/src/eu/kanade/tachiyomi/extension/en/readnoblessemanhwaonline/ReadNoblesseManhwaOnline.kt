@@ -21,6 +21,7 @@ class ReadNoblesseManhwaOnline : MangaCatalog("Read Noblesse Manhwa Online", "ht
     }
 
     override fun chapterListSelector(): String = "div.w-full > div > div.flex"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         val name1 = element.select(".flex-col > a:not(.text-xs)").text()
         val name2 = element.select(".text-xs:not(a)").text()

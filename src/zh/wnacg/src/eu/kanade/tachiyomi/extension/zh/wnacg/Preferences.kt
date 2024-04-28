@@ -53,7 +53,10 @@ fun getSharedPreferences(id: Long): SharedPreferences {
     return preferences
 }
 
-fun SharedPreferences.Editor.setUrlList(urlList: String, oldIndex: Int): SharedPreferences.Editor {
+fun SharedPreferences.Editor.setUrlList(
+    urlList: String,
+    oldIndex: Int,
+): SharedPreferences.Editor {
     putString(URL_LIST_PREF, urlList)
     val maxIndex = urlList.count { it == ',' }
     if (oldIndex in 0..maxIndex) return this

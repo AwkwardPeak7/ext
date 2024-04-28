@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MangaLeveling : Madara("Manga Leveling", "https://mangaleveling.com", "en", SimpleDateFormat("MM/dd/yyyy", Locale.US)) {
-
     override fun chapterFromElement(element: Element): SChapter {
         val chapter = SChapter.create()
 

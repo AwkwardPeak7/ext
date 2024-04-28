@@ -15,7 +15,6 @@ import org.jsoup.nodes.Element
 import java.lang.UnsupportedOperationException
 
 class MangaStorm : ParsedHttpSource() {
-
     override val name = "MangaStorm"
 
     override val lang = "ar"
@@ -39,6 +38,7 @@ class MangaStorm : ParsedHttpSource() {
     }
 
     override fun popularMangaSelector() = "div.row div.col"
+
     override fun popularMangaNextPageSelector() = ".page-link[rel=next]"
 
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
@@ -52,10 +52,16 @@ class MangaStorm : ParsedHttpSource() {
     }
 
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesNextPageSelector() = null
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/mangas".toHttpUrl().newBuilder()
             .addQueryParameter("page", page.toString())
             .addQueryParameter("query", query.trim())
@@ -65,7 +71,9 @@ class MangaStorm : ParsedHttpSource() {
     }
 
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
     override fun mangaDetailsParse(document: Document): SManga {

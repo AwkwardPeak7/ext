@@ -27,7 +27,6 @@ abstract class FlixScans(
     protected val apiUrl: String = "$baseUrl/api/v1",
     protected val cdnUrl: String = baseUrl.replace("://", "://media.").plus("/"),
 ) : HttpSource() {
-
     override val supportsLatest = true
 
     protected open val json: Json by injectLazy()
@@ -81,7 +80,10 @@ abstract class FlixScans(
     }
 
     private val fetchGenreCallback = object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
+        override fun onFailure(
+            call: Call,
+            e: IOException,
+        ) {
             fetchGenreAttempt++
             fetchGenreFailed = true
             fetchGenreCallOngoing = false
@@ -89,7 +91,10 @@ abstract class FlixScans(
             e.message?.let { Log.e("$name Filters", it) }
         }
 
-        override fun onResponse(call: Call, response: Response) {
+        override fun onResponse(
+            call: Call,
+            response: Response,
+        ) {
             fetchGenreCallOngoing = false
             fetchGenreAttempt++
 
@@ -144,7 +149,11 @@ abstract class FlixScans(
         return FilterList(filters)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val url = "$apiUrl/search/serie".toHttpUrl().newBuilder()
                 .addPathSegment(query.trim())
@@ -246,6 +255,5 @@ abstract class FlixScans(
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    protected inline fun <reified T> Response.parseAs(): T =
-        use { body.string() }.let(json::decodeFromString)
+    protected inline fun <reified T> Response.parseAs(): T = use { body.string() }.let(json::decodeFromString)
 }

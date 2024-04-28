@@ -33,8 +33,11 @@ open class ComicGamma(
         .build()
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/manga/", headers)
+
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun popularMangaSelector() = ".tab_panel.active .manga_item"
+
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
         url = element.selectFirst(Evaluator.Tag("a"))!!.attr("href")
         title = element.selectFirst(Evaluator.Class("manga_title"))!!.text()
@@ -49,18 +52,30 @@ open class ComicGamma(
     }
 
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesFromElement(element: Element) = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> =
-        fetchPopularManga(page).map { p -> MangasPage(p.mangas.filter { it.title.contains(query) }, false) }
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = fetchPopularManga(page).map { p -> MangasPage(p.mangas.filter { it.title.contains(query) }, false) }
 
     override fun searchMangaNextPageSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaFromElement(element: Element) = throw UnsupportedOperationException()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        throw UnsupportedOperationException()
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     private val reader by lazy { SpeedBinbReader(client, headers, json) }
 
@@ -85,6 +100,7 @@ open class ComicGamma(
     }
 
     override fun chapterListSelector() = ".read__area > .read__outer > a:not([href=#comics])"
+
     override fun chapterFromElement(element: Element) = SChapter.create().apply {
         url = element.attr("href").toOldChapterUrl()
         val number = url.removeSuffix("/").substringAfterLast('/').replace('_', '.')
@@ -95,8 +111,7 @@ open class ComicGamma(
         }
     }
 
-    override fun pageListRequest(chapter: SChapter) =
-        GET(baseUrl + chapter.url.toNewChapterUrl(), headers)
+    override fun pageListRequest(chapter: SChapter) = GET(baseUrl + chapter.url.toNewChapterUrl(), headers)
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
@@ -105,10 +120,9 @@ open class ComicGamma(
             time += 12 * 3600 * 1000 // updates at 12 noon
         }
 
-        private fun getJSTFormat(datePattern: String) =
-            SimpleDateFormat(datePattern, Locale.JAPANESE).apply {
-                timeZone = TimeZone.getTimeZone("GMT+09:00")
-            }
+        private fun getJSTFormat(datePattern: String) = SimpleDateFormat(datePattern, Locale.JAPANESE).apply {
+            timeZone = TimeZone.getTimeZone("GMT+09:00")
+        }
 
         private val dateFormat by lazy { getJSTFormat("yyyy年M月dd日") }
 

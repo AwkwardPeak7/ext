@@ -20,7 +20,6 @@ import rx.Observable
 import java.util.Calendar
 
 class Eggporncomics : ParsedHttpSource() {
-
     override val name = "Eggporncomics"
 
     override val baseUrl = "https://eggporncomics.com"
@@ -66,7 +65,11 @@ class Eggporncomics : ParsedHttpSource() {
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return client.newCall(searchMangaRequest(page, query, filters))
             .asObservable().doOnNext { response ->
                 if (!response.isSuccessful) {
@@ -87,7 +90,11 @@ class Eggporncomics : ParsedHttpSource() {
 
     private val queryRegex = Regex("""[\s']""")
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank()) {
             GET("$baseUrl/search/${query.replace(queryRegex, "-")}?page=$page", headers)
         } else {
@@ -142,7 +149,14 @@ class Eggporncomics : ParsedHttpSource() {
                 setUrlWithoutDomain(response.request.url.toString())
                 name = "Chapter"
                 date_upload = response.asJsoup().select("div.info > div.meta li:contains(days ago)").firstOrNull()
-                    ?.let { Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -(it.text().substringBefore(" ").toIntOrNull() ?: 0)) }.timeInMillis }
+                    ?.let {
+                        Calendar.getInstance().apply {
+                            add(
+                                Calendar.DAY_OF_YEAR,
+                                -(it.text().substringBefore(" ").toIntOrNull() ?: 0),
+                            )
+                        }.timeInMillis
+                    }
                     ?: 0
             },
         )
@@ -176,6 +190,7 @@ class Eggporncomics : ParsedHttpSource() {
     )
 
     private class CategoryFilter(name: String, vals: Array<Pair<String, String?>>) : UriPartFilter(name, vals)
+
     private class ComicsFilter(name: String, vals: Array<Pair<String, String?>>) : UriPartFilter(name, vals)
 
     private val getCategoryList: Array<Pair<String, String?>> = arrayOf(
@@ -261,6 +276,7 @@ class Eggporncomics : ParsedHttpSource() {
     private open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String?>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
         fun toUriPart() = vals[state].second
+
         fun isNotNull(): Boolean = toUriPart() != null
     }
 }

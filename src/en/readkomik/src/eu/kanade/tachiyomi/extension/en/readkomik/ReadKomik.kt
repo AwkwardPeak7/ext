@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import okhttp3.OkHttpClient
 
 class ReadKomik : MangaThemesia("Readkomik", "https://readkomik.com", "en") {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(4)
         .build()

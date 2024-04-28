@@ -12,7 +12,6 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import java.io.ByteArrayOutputStream
 
 class AntiScrapInterceptor : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         if (request.url.fragment != ANTI_SCRAP_FRAGMENT) {

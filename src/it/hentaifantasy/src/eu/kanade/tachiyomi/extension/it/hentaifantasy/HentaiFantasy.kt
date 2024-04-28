@@ -42,8 +42,7 @@ class HentaiFantasy : ParsedHttpSource() {
 
     override fun popularMangaSelector() = "div.list > div.group > div.title > a"
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/most_downloaded/$page/", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/most_downloaded/$page/", headers)
 
     override fun popularMangaFromElement(element: Element): SManga {
         val manga = SManga.create()
@@ -56,8 +55,7 @@ class HentaiFantasy : ParsedHttpSource() {
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/latest/$page/", headers)
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/latest/$page/", headers)
 
     override fun latestUpdatesFromElement(element: Element): SManga {
         return popularMangaFromElement(element)
@@ -67,7 +65,11 @@ class HentaiFantasy : ParsedHttpSource() {
 
     override fun searchMangaSelector() = popularMangaSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val tags = mutableListOf<String>()
         val paths = mutableListOf<String>()
         for (filter in if (filters.isEmpty()) getFilterList() else filters) {
@@ -195,6 +197,7 @@ class HentaiFantasy : ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = ""
 
     private class Tag(name: String, val id: Int) : Filter.CheckBox(name)
+
     private class TagList(title: String, tags: List<Tag>) : Filter.Group<Tag>(title, tags)
 
     override fun getFilterList() = FilterList(

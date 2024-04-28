@@ -35,7 +35,6 @@ data class Status(val name: String, val value: String) {
 class StatusFilter(statusList: List<Status>) :
     EnhancedSelect<Status>("Status", statusList.toTypedArray()),
     UrlQueryFilter {
-
     override fun addQueryParameter(url: HttpUrl.Builder) {
         if (state > 0) {
             url.addQueryParameter("status", selected.value)
@@ -50,7 +49,6 @@ data class Type(val name: String, val value: String) {
 class TypeFilter(typesList: List<Type>) :
     EnhancedSelect<Type>("Tipo", typesList.toTypedArray()),
     UrlQueryFilter {
-
     override fun addQueryParameter(url: HttpUrl.Builder) {
         if (state > 0) {
             url.addQueryParameter("type", selected.value)
@@ -65,7 +63,6 @@ class Genre(name: String, val id: String) : Filter.CheckBox(name) {
 class GenreFilter(genres: List<Genre>) :
     Filter.Group<Genre>("Gêneros", genres),
     UrlQueryFilter {
-
     override fun addQueryParameter(url: HttpUrl.Builder) {
         state.filter(Genre::state)
             .forEach { url.addQueryParameter("genres[]", it.id) }

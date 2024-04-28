@@ -22,7 +22,6 @@ private const val ACCEPT_IMAGE = "image/avif,image/webp,image/*,*/*"
 private const val ARCHIVE_URL = "https://sas.ewanb.me"
 
 class SolarAndSundry : HttpSource() {
-
     override val name = "Solar and Sundry"
 
     override val baseUrl = "https://sas-api.fly.dev"
@@ -88,9 +87,17 @@ class SolarAndSundry : HttpSource() {
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 

@@ -15,7 +15,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class IRovedOut : HttpSource() {
-
     override val name = "I Roved Out"
     override val baseUrl = "https://www.irovedout.com"
     override val lang = "en"
@@ -25,10 +24,11 @@ class IRovedOut : HttpSource() {
     private val seriesTitle = "I Roved Out in Search of Truth and Love"
     private val authorName = "Alexis Flower"
     private val seriesGenre = "Fantasy"
-    private val seriesDescription = """
+    private val seriesDescription =
+        """
         I ROVED OUT IN SEARCH OF TRUTH AND LOVE is written & illustrated by Alexis Flower.
         It updates in chunks anywhere between 3 and 30 pages long at least once a month.
-    """.trimIndent()
+        """.trimIndent()
     private val dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
     private val titleRegex = Regex("Book (?<bookNumber>\\d+): (?<chapterTitle>.+)")
 
@@ -83,7 +83,9 @@ class IRovedOut : HttpSource() {
         val title = match.groups["chapterTitle"]!!.value
         val bookPage = client.newCall(GET(archiveUrl + if (bookNumber != 1) "-book-$bookNumber" else "", headers)).execute().asJsoup()
         val chapterWrap = bookPage.select(".comic-archive-chapter-wrap").find { it.selectFirst(".comic-archive-chapter")!!.text() == title }
-        val pageUrls = chapterWrap?.select(".comic-archive-list-wrap .comic-archive-title > a")?.map { it.attr("href") } ?: return Observable.just(listOf())
+        val pageUrls = chapterWrap?.select(".comic-archive-list-wrap .comic-archive-title > a")?.map {
+            it.attr("href")
+        } ?: return Observable.just(listOf())
         val pages = pageUrls.mapIndexed { pageIndex, pageUrl ->
             Page(pageIndex, pageUrl)
         }
@@ -111,9 +113,17 @@ class IRovedOut : HttpSource() {
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = throw UnsupportedOperationException()
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = throw UnsupportedOperationException()
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 }

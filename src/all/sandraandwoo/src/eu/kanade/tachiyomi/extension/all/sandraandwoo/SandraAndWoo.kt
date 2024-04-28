@@ -47,14 +47,20 @@ abstract class SandraAndWoo(
         return Observable.just(mangasPage)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
-        Observable.just(MangasPage(emptyList(), false))!!
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = Observable.just(MangasPage(emptyList(), false))!!
 
     override fun chapterListSelector() = "#column a"
 
     private fun roundHalfwayUp(x: Float) = (x + floor(x + 1)) / 2
 
-    private fun chapterParse(element: Element, lastChapterNumber: Float): Pair<Float, SChapter> {
+    private fun chapterParse(
+        element: Element,
+        lastChapterNumber: Float,
+    ): Pair<Float, SChapter> {
         val path = URI(element.attr("href")).path
         val dateMatch = CHAPTER_DATE_REGEX.matchEntire(path)!!
         val (_, year, month, day) = dateMatch.groupValues
@@ -130,7 +136,11 @@ abstract class SandraAndWoo(
 
     override fun searchMangaNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     override fun searchMangaSelector() = throw UnsupportedOperationException()
     // </editor-fold>

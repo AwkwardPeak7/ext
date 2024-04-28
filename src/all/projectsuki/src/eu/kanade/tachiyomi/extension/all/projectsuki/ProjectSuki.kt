@@ -155,7 +155,10 @@ internal val reportPrefix: String
 internal class ProjectSukiException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /** Throws a [ProjectSukiException], which will get caught by Tachiyomi: the message will be exposed as a [toast][android.widget.Toast]. */
-internal inline fun reportErrorToUser(locationHint: String? = null, message: () -> String): Nothing {
+internal inline fun reportErrorToUser(
+    locationHint: String? = null,
+    message: () -> String,
+): Nothing {
     throw ProjectSukiException(
         buildString {
             append("[")
@@ -181,7 +184,6 @@ internal const val UNKNOWN_LANGUAGE: String = "unknown"
  */
 @Suppress("unused")
 class ProjectSuki : HttpSource(), ConfigurableSource {
-
     override val name: String = "Project Suki"
     override val baseUrl: String = homepageUri.toASCIIString()
     override val lang: String = "all"
@@ -253,7 +255,11 @@ class ProjectSuki : HttpSource(), ConfigurableSource {
      * Same concept as [popularMangaRequest], but is sent to [https://projectsuki.com/search](https://projectsuki.com/search).
      * This is the [Full-Site][ProjectSukiFilters.SearchMode.FULL_SITE] variant of search, it *will* return results that have no chapters.
      */
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET(
             homepageUrl.newBuilder()
                 .addPathSegment("search")
@@ -351,7 +357,11 @@ class ProjectSuki : HttpSource(), ConfigurableSource {
      * But if you need to replace the default search behaviour (e.g. because of an [Url Activity][ProjectSukiSearchUrlActivity]),
      * you might need to override this function.
      */
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         val searchMode: ProjectSukiFilters.SearchMode = filters.filterIsInstance<ProjectSukiFilters.SearchModeFilter>()
             .singleOrNull()
             ?.state
@@ -481,7 +491,10 @@ class ProjectSuki : HttpSource(), ConfigurableSource {
     override fun searchMangaParse(response: Response): MangasPage = searchMangaParse(response, null)
 
     /** [searchMangaParse] extended with [overrideHasNextPage]. */
-    private fun searchMangaParse(response: Response, overrideHasNextPage: Boolean? = null): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        overrideHasNextPage: Boolean? = null,
+    ): MangasPage {
         val document = response.asJsoup()
 
         val extractor = DataExtractor(document)
@@ -656,7 +669,9 @@ class ProjectSuki : HttpSource(), ConfigurableSource {
             reportErrorToUser { "chapter url ${chapter.url} does not match expected pattern" }
         }
 
-        return client.newCall(ProjectSukiAPI.chapterPagesRequest(json, headers, pathMatch["bookid"]!!.value, pathMatch["chapterid"]!!.value))
+        return client.newCall(
+            ProjectSukiAPI.chapterPagesRequest(json, headers, pathMatch["bookid"]!!.value, pathMatch["chapterid"]!!.value),
+        )
             .asObservableSuccess()
             .map { ProjectSukiAPI.parseChapterPagesResponse(json, it) }
     }

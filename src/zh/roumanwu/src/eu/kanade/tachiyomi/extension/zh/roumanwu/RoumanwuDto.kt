@@ -51,7 +51,9 @@ data class Book(
     }
 
     private val uuid by lazy { UUID.fromString(id) }
+
     override fun hashCode() = uuid.hashCode()
+
     override fun equals(other: Any?) = other is Book && uuid == other.uuid
 
     companion object {

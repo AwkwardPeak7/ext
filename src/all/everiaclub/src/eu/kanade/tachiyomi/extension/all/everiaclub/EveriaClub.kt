@@ -37,6 +37,7 @@ class EveriaClub() : ParsedHttpSource() {
     }
 
     override fun latestUpdatesNextPageSelector() = ".next"
+
     override fun latestUpdatesRequest(page: Int): Request {
         return GET("$baseUrl/page/$page/")
     }
@@ -53,13 +54,21 @@ class EveriaClub() : ParsedHttpSource() {
     }
 
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun popularMangaRequest(page: Int) = latestUpdatesRequest(page)
+
     override fun popularMangaSelector() = ".wli_popular_posts-class li"
 
     // Search
     override fun searchMangaFromElement(element: Element) = latestUpdatesFromElement(element)
+
     override fun searchMangaNextPageSelector() = latestUpdatesNextPageSelector()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val tagFilter = filterList.findInstance<TagFilter>()!!
         val categoryFilter = filterList.findInstance<CategoryFilter>()!!
@@ -111,8 +120,7 @@ class EveriaClub() : ParsedHttpSource() {
         return pages
     }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // Filters
     override fun getFilterList(): FilterList = FilterList(

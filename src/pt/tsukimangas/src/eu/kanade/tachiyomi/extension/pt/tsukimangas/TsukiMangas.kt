@@ -27,7 +27,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class TsukiMangas : HttpSource() {
-
     override val name = "Tsuki Mangás"
 
     override val baseUrl = "https://tsuki-mangas.com"
@@ -78,7 +77,11 @@ class TsukiMangas : HttpSource() {
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
     // =============================== Search ===============================
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SEARCH)) { // URL intent handler
             val id = query.removePrefix(PREFIX_SEARCH)
             client.newCall(GET("$apiUrl/mangas/$id", headers))
@@ -96,7 +99,11 @@ class TsukiMangas : HttpSource() {
 
     override fun getFilterList() = TsukiMangasFilters.FILTER_LIST
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val params = TsukiMangasFilters.getSearchParameters(filters)
         val url = "$apiUrl/mangas".toHttpUrl().newBuilder()
             .addQueryParameter("page", page.toString())
@@ -216,7 +223,10 @@ class TsukiMangas : HttpSource() {
         json.decodeFromStream(it.body.byteStream())
     }
 
-    private fun HttpUrl.Builder.addIfNotBlank(query: String, value: String): HttpUrl.Builder {
+    private fun HttpUrl.Builder.addIfNotBlank(
+        query: String,
+        value: String,
+    ): HttpUrl.Builder {
         if (value.isNotBlank()) addQueryParameter(query, value)
         return this
     }
@@ -262,7 +272,9 @@ class TsukiMangas : HttpSource() {
         }
     }
 
-    private val apiHeadersRegex = Regex("""headers\.common(?:\.(?<key>[0-9A-Za-z_]+)|\[['"](?<key2>[0-9A-Za-z-_]+)['"]])\s*=\s*['"](?<value>[a-zA-Z0-9_ :;.,\\/?!(){}\[\]@<>=\-+*#$&`|~^%]+)['"]""")
+    private val apiHeadersRegex = Regex(
+        """headers\.common(?:\.(?<key>[0-9A-Za-z_]+)|\[['"](?<key2>[0-9A-Za-z-_]+)['"]])\s*=\s*['"](?<value>[a-zA-Z0-9_ :;.,\\/?!(){}\[\]@<>=\-+*#$&`|~^%]+)['"]""",
+    )
 
     private val apiHeaders by lazy {
         val document = client.newCall(GET(baseUrl, headers)).execute().asJsoup()

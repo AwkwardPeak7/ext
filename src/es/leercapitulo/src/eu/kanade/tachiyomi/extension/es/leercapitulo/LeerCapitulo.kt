@@ -52,7 +52,11 @@ class LeerCapitulo : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector(): String? = null
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val urlBuilder = baseUrl.toHttpUrl().newBuilder()
 
         if (query.isNotBlank()) {
@@ -211,8 +215,7 @@ class LeerCapitulo : ParsedHttpSource() {
         else -> attr("abs:src")
     }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     private fun String.toStatus() = when (this) {
         "Ongoing" -> SManga.ONGOING

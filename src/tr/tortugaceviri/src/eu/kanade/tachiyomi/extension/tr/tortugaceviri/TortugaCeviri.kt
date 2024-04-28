@@ -16,6 +16,5 @@ class TortugaCeviri : Madara(
 
     override val useNewChapterEndpoint = true
 
-    override fun chapterListParse(response: Response): List<SChapter> =
-        super.chapterListParse(response).reversed()
+    override fun chapterListParse(response: Response): List<SChapter> = super.chapterListParse(response).reversed()
 }

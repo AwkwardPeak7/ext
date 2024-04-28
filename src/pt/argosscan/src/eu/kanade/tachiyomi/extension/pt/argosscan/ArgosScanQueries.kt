@@ -19,7 +19,10 @@ val LOGIN_MUTATION_QUERY = buildQuery {
     """.trimMargin()
 }
 
-fun buildLoginMutationQueryPayload(email: String, password: String) = buildJsonObject {
+fun buildLoginMutationQueryPayload(
+    email: String,
+    password: String,
+) = buildJsonObject {
     put("operationName", "login")
     put("query", LOGIN_MUTATION_QUERY)
     putJsonObject("variables") {
@@ -93,7 +96,10 @@ fun buildPopularQueryPayload(page: Int) = buildJsonObject {
     }
 }
 
-fun buildSearchQueryPayload(query: String, page: Int) = buildJsonObject {
+fun buildSearchQueryPayload(
+    query: String,
+    page: Int,
+) = buildJsonObject {
     put("operationName", "getProjects")
     put("query", POPULAR_QUERY)
     putJsonObject("variables") {

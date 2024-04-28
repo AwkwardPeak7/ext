@@ -47,7 +47,6 @@ open class BatoTo(
     final override val lang: String,
     private val siteLang: String,
 ) : ConfigurableSource, ParsedHttpSource() {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -93,7 +92,9 @@ open class BatoTo(
     }
 
     private fun getMirrorPref(): String? = preferences.getString("${MIRROR_PREF_KEY}_$lang", MIRROR_PREF_DEFAULT_VALUE)
-    private fun getAltChapterListPref(): Boolean = preferences.getBoolean("${ALT_CHAPTER_LIST_PREF_KEY}_$lang", ALT_CHAPTER_LIST_PREF_DEFAULT_VALUE)
+
+    private fun getAltChapterListPref(): Boolean =
+        preferences.getBoolean("${ALT_CHAPTER_LIST_PREF_KEY}_$lang", ALT_CHAPTER_LIST_PREF_DEFAULT_VALUE)
 
     override val supportsLatest = true
     private val json: Json by injectLazy()
@@ -136,7 +137,11 @@ open class BatoTo(
 
     override fun popularMangaNextPageSelector() = latestUpdatesNextPageSelector()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith("ID:") -> {
                 val id = query.substringAfter("ID:")
@@ -298,9 +303,16 @@ open class BatoTo(
         add("prevPos", "null")
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
+
     override fun searchMangaSelector() = throw UnsupportedOperationException()
+
     override fun searchMangaFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun searchMangaNextPageSelector() = throw UnsupportedOperationException()
 
     override fun mangaDetailsRequest(manga: SManga): Request {
@@ -320,13 +332,18 @@ open class BatoTo(
         manga.artist = infoElement.select("div.attr-item:contains(artist) span").text()
         manga.status = parseStatus(workStatus, uploadStatus)
         manga.genre = infoElement.select(".attr-item b:contains(genres) + span ").joinToString { it.text() }
-        manga.description = infoElement.select("div.limit-html").text() + "\n" + infoElement.select(".episode-list > .alert-warning").text().trim()
+        manga.description = infoElement.select(
+            "div.limit-html",
+        ).text() + "\n" + infoElement.select(".episode-list > .alert-warning").text().trim()
         manga.thumbnail_url = document.select("div.attr-cover img")
             .attr("abs:src")
         return manga
     }
 
-    private fun parseStatus(workStatus: String?, uploadStatus: String?) = when {
+    private fun parseStatus(
+        workStatus: String?,
+        uploadStatus: String?,
+    ) = when {
         workStatus == null -> SManga.UNKNOWN
         workStatus.contains("Ongoing") -> SManga.ONGOING
         workStatus.contains("Cancelled") -> SManga.CANCELLED
@@ -356,19 +373,27 @@ open class BatoTo(
         return super.fetchChapterList(manga)
     }
 
-    private fun altChapterParse(response: Response, title: String): List<SChapter> {
+    private fun altChapterParse(
+        response: Response,
+        title: String,
+    ): List<SChapter> {
         return Jsoup.parse(response.body.string(), response.request.url.toString(), Parser.xmlParser())
             .select("channel > item").map { item ->
                 SChapter.create().apply {
                     url = item.selectFirst("guid")!!.text()
                     name = item.selectFirst("title")!!.text().substringAfter(title).trim()
-                    date_upload = SimpleDateFormat("E, dd MMM yyyy H:m:s Z", Locale.US).parse(item.selectFirst("pubDate")!!.text())?.time ?: 0L
+                    date_upload = SimpleDateFormat(
+                        "E, dd MMM yyyy H:m:s Z",
+                        Locale.US,
+                    ).parse(item.selectFirst("pubDate")!!.text())?.time ?: 0L
                 }
             }
     }
 
     private fun checkChapterLists(document: Document): Boolean {
-        return document.select(".episode-list > .alert-warning").text().contains("This comic has been marked as deleted and the chapter list is not available.")
+        return document.select(
+            ".episode-list > .alert-warning",
+        ).text().contains("This comic has been marked as deleted and the chapter list is not available.")
     }
 
     override fun chapterListRequest(manga: SManga): Request {
@@ -503,21 +528,36 @@ open class BatoTo(
         UtilsFilter(getUtilsFilter(), 0),
         HistoryFilter(getHistoryFilter(), 0),
     )
+
     class SelectFilterOption(val name: String, val value: String)
+
     class CheckboxFilterOption(val value: String, name: String, default: Boolean = false) : Filter.CheckBox(name, default)
+
     class TriStateFilterOption(val value: String, name: String, default: Int = 0) : Filter.TriState(name, default)
 
-    abstract class SelectFilter(name: String, private val options: List<SelectFilterOption>, default: Int = 0) : Filter.Select<String>(name, options.map { it.name }.toTypedArray(), default) {
+    abstract class SelectFilter(name: String, private val options: List<SelectFilterOption>, default: Int = 0) : Filter.Select<String>(
+        name,
+        options.map {
+            it.name
+        }.toTypedArray(),
+        default,
+    ) {
         val selected: String
             get() = options[state].value
     }
 
-    abstract class CheckboxGroupFilter(name: String, options: List<CheckboxFilterOption>) : Filter.Group<CheckboxFilterOption>(name, options) {
+    abstract class CheckboxGroupFilter(name: String, options: List<CheckboxFilterOption>) : Filter.Group<CheckboxFilterOption>(
+        name,
+        options,
+    ) {
         val selected: List<String>
             get() = state.filter { it.state }.map { it.value }
     }
 
-    abstract class TriStateGroupFilter(name: String, options: List<TriStateFilterOption>) : Filter.Group<TriStateFilterOption>(name, options) {
+    abstract class TriStateGroupFilter(name: String, options: List<TriStateFilterOption>) : Filter.Group<TriStateFilterOption>(
+        name,
+        options,
+    ) {
         val included: List<String>
             get() = state.filter { it.isIncluded() }.map { it.value }
 
@@ -528,14 +568,23 @@ open class BatoTo(
     abstract class TextFilter(name: String) : Filter.Text(name)
 
     class SortFilter(sortables: Array<String>) : Filter.Sort("Sort", sortables, Selection(5, false))
+
     class StatusFilter(options: List<SelectFilterOption>, default: Int) : SelectFilter("Status", options, default)
+
     class OriginGroupFilter(options: List<CheckboxFilterOption>) : CheckboxGroupFilter("Origin", options)
+
     class GenreGroupFilter(options: List<TriStateFilterOption>) : TriStateGroupFilter("Genre", options)
+
     class MinChapterTextFilter : TextFilter("Min. Chapters")
+
     class MaxChapterTextFilter : TextFilter("Max. Chapters")
+
     class LangGroupFilter(options: List<CheckboxFilterOption>) : CheckboxGroupFilter("Languages", options)
+
     class LetterFilter(options: List<SelectFilterOption>, default: Int) : SelectFilter("Letter matching mode (Slow)", options, default)
+
     class UtilsFilter(options: List<SelectFilterOption>, default: Int) : SelectFilter("Utils comic list", options, default)
+
     class HistoryFilter(options: List<SelectFilterOption>, default: Int) : SelectFilter("Personal list", options, default)
 
     private fun getLetterFilter() = listOf(
@@ -704,7 +753,6 @@ open class BatoTo(
         TriStateFilterOption("manhwa", "Manhwa"),
         TriStateFilterOption("webtoon", "Webtoon"),
         TriStateFilterOption("western", "Western"),
-
         TriStateFilterOption("shoujo", "Shoujo(G)"),
         TriStateFilterOption("shounen", "Shounen(B)"),
         TriStateFilterOption("josei", "Josei(W)"),
@@ -713,7 +761,6 @@ open class BatoTo(
         TriStateFilterOption("yaoi", "Yaoi(BL)"),
         TriStateFilterOption("futa", "Futa(WL)"),
         TriStateFilterOption("bara", "Bara(ML)"),
-
         TriStateFilterOption("gore", "Gore"),
         TriStateFilterOption("bloody", "Bloody"),
         TriStateFilterOption("violence", "Violence"),
@@ -722,7 +769,6 @@ open class BatoTo(
         TriStateFilterOption("mature", "Mature"),
         TriStateFilterOption("smut", "Smut"),
         TriStateFilterOption("hentai", "Hentai"),
-
         TriStateFilterOption("_4_koma", "4-Koma"),
         TriStateFilterOption("action", "Action"),
         TriStateFilterOption("adaptation", "Adaptation"),

@@ -36,7 +36,6 @@ abstract class GroupLe(
     override val baseUrl: String,
     final override val lang: String,
 ) : ConfigurableSource, ParsedHttpSource() {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -49,17 +48,20 @@ abstract class GroupLe(
             val originalRequest = chain.request()
             val response = chain.proceed(originalRequest)
             if (originalRequest.url.toString().contains(baseUrl) && (
-                originalRequest.url.toString()
-                    .contains("internal/redirect") or (response.code == 301)
+                    originalRequest.url.toString()
+                        .contains("internal/redirect") or (response.code == 301)
                 )
             ) {
-                throw IOException("Ссылка на мангу была изменена. Перемигрируйте мангу на тот же (или смежный с GroupLe) источник или передобавьте из Поисковика/Каталога.")
+                throw IOException(
+                    "Ссылка на мангу была изменена. Перемигрируйте мангу на тот же (или смежный с GroupLe) источник или передобавьте из Поисковика/Каталога.",
+                )
             }
             response
         }
         .build()
 
     private var uagent: String = preferences.getString(UAGENT_TITLE, UAGENT_DEFAULT)!!
+
     override fun headersBuilder() = Headers.Builder().apply {
         add("User-Agent", uagent)
         add("Referer", baseUrl)
@@ -69,11 +71,9 @@ abstract class GroupLe(
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/list?sortType=rate&offset=${70 * (page - 1)}", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/list?sortType=rate&offset=${70 * (page - 1)}", headers)
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/list?sortType=updated&offset=${70 * (page - 1)}", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/list?sortType=updated&offset=${70 * (page - 1)}", headers)
 
     override fun popularMangaFromElement(element: Element): SManga {
         val manga = SManga.create()
@@ -86,8 +86,7 @@ abstract class GroupLe(
         return manga
     }
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun popularMangaNextPageSelector() = "a.nextLink"
 
@@ -99,7 +98,11 @@ abstract class GroupLe(
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url =
             "$baseUrl/search/advancedResults?offset=${50 * (page - 1)}".toHttpUrl()
                 .newBuilder()
@@ -158,7 +161,7 @@ abstract class GroupLe(
         manga.genre = (
             "$category, $rawAgeStop, " + infoElement.select("p:contains(Жанры:) a, p:contains(Теги:) a")
                 .joinToString { it.text() }
-            ).split(", ")
+        ).split(", ")
             .filter { it.isNotEmpty() }.joinToString { it.trim().lowercase() }
         val altName = if (infoElement.select(".another-names").isNotEmpty()) {
             "Альтернативные названия:\n" + infoElement.select(".another-names").text() + "\n\n"
@@ -167,8 +170,8 @@ abstract class GroupLe(
         }
         manga.description =
             "$ratingStar $ratingValue[ⓘ$ratingValueOver] (голосов: $ratingVotes)\n$altName" + document.select(
-            "div#tab-description  .manga-description",
-        ).text()
+                "div#tab-description  .manga-description",
+            ).text()
         manga.status = when {
             infoElement.html()
                 .contains("Запрещена публикация произведения по копирайту") || infoElement.html()
@@ -200,18 +203,36 @@ abstract class GroupLe(
         }
     }
 
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         val document = response.asJsoup()
-        if ((document.select(".expandable.hide-dn").isNotEmpty() && document.select(".user-avatar").isNullOrEmpty() && document.toString().contains("current_user_country_code = 'RU'")) || (document.select("img.logo").first()?.attr("title")?.contains("Allhentai") == true && document.select(".user-avatar").isNullOrEmpty())) {
+        if ((
+                document.select(
+                    ".expandable.hide-dn",
+                ).isNotEmpty() && document.select(
+                    ".user-avatar",
+                ).isNullOrEmpty() && document.toString().contains(
+                    "current_user_country_code = 'RU'",
+                )
+            ) || (
+                document.select(
+                    "img.logo",
+                ).first()?.attr("title")?.contains("Allhentai") == true && document.select(".user-avatar").isNullOrEmpty()
+            )
+        ) {
             throw Exception("Для просмотра контента необходима авторизация через WebView\uD83C\uDF0E")
         }
         return document.select(chapterListSelector()).map { chapterFromElement(it, manga) }
     }
 
-    override fun chapterListSelector() =
-        "tr.item-row:has(td > a):has(td.date:not(.text-info))"
+    override fun chapterListSelector() = "tr.item-row:has(td > a):has(td.date:not(.text-info))"
 
-    private fun chapterFromElement(element: Element, manga: SManga): SChapter {
+    private fun chapterFromElement(
+        element: Element,
+        manga: SManga,
+    ): SChapter {
         val urlElement = element.select("a.chapter-link").first()!!
         val chapterInf = element.select("td.item-title").first()!!
         val urlText = urlElement.text()
@@ -258,7 +279,10 @@ abstract class GroupLe(
         throw UnsupportedOperationException()
     }
 
-    override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
+    override fun prepareNewChapter(
+        chapter: SChapter,
+        manga: SManga,
+    ) {
         val extra = Regex("""\s*([0-9]+\sЭкстра)\s*""")
         val single = Regex("""\s*Сингл\s*""")
         when {
@@ -294,7 +318,14 @@ abstract class GroupLe(
         }
 
         if (!html.contains(readerMark)) {
-            if (document.select(".input-lg").isNotEmpty() || (document.select(".user-avatar").isNullOrEmpty() && document.select("img.logo").first()?.attr("title")?.contains("Allhentai") == true)) {
+            if (document.select(
+                    ".input-lg",
+                ).isNotEmpty() || (
+                    document.select(
+                        ".user-avatar",
+                    ).isNullOrEmpty() && document.select("img.logo").first()?.attr("title")?.contains("Allhentai") == true
+                )
+            ) {
                 throw Exception("Для просмотра контента необходима авторизация через WebView\uD83C\uDF0E")
             }
             if (!response.request.url.toString().contains(baseUrl)) {

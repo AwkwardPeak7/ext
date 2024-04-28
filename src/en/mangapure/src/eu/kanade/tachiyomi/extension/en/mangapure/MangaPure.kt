@@ -25,11 +25,9 @@ class MangaPure : Madara(
 
     override fun searchPage(page: Int): String = "search?page=$page"
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/popular-manga?page=$page", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/popular-manga?page=$page", headers)
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/latest-manga?page=$page", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/latest-manga?page=$page", headers)
 
     // Copied from IsekaiScan.top (unoriginal)
     override fun chapterListParse(response: Response): List<SChapter> {

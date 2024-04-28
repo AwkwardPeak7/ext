@@ -27,7 +27,6 @@ import java.nio.charset.Charset
 import java.util.Calendar
 
 class MangaDoom : HttpSource() {
-
     override val baseUrl = "https://www.mngdoom.com"
     override val lang = "en"
     override val name = "MangaDoom"
@@ -289,10 +288,10 @@ class MangaDoom : HttpSource() {
 
     override fun fetchImageUrl(page: Page) = throw UnsupportedOperationException()
 
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     // search
+
     /**
      * The search functionality of the website is uses javascript to talk to an underlying API.
      * The here implemented search function skips the javascript and talks directly with the API.
@@ -326,7 +325,11 @@ class MangaDoom : HttpSource() {
      * GenreFilter form an exception, since they don't have default values, instead they are just
      * added if they exist, or ignored if they don't exist.
      */
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val currentSearchParameter = LinkedHashMap(defaultSearchParameter)
 
         var potentialGenreGroupFilter: GenreGroupFilterManager.GenreGroupFilter? = null
@@ -426,7 +429,6 @@ class MangaDoom : HttpSource() {
      * made.
      */
     private class GenreGroupFilterManager(val client: OkHttpClient, val baseUrl: String) {
-
         fun getGenreGroupFilterOrPlaceholder(): Filter<*> {
             return when (val potentialGenreGroup = callForGenreGroup()) {
                 null -> GenreNotAvailable()
@@ -455,23 +457,21 @@ class MangaDoom : HttpSource() {
          * Checks if an object (e.g. cached response) isn't older than 15 minutes, by comparing its
          * timestamp with the current time
          */
-        private fun contentUpToDate(compareTimestamp: Long?): Boolean =
-            (
-                compareTimestamp != null &&
-                    (System.currentTimeMillis() - compareTimestamp < 15 * 60 * 1000)
-                )
+        private fun contentUpToDate(compareTimestamp: Long?): Boolean = (
+            compareTimestamp != null &&
+                (System.currentTimeMillis() - compareTimestamp < 15 * 60 * 1000)
+        )
 
         /**
          * Used to generate a GenreGroupFilter from cached Pair objects or (if the cached pairs are
          * unavailable) resorts a fetch approach.
          */
         private fun callForGenreGroup(): GenreGroupFilter? {
-            fun genreContentListToGenreGroup(genreFiltersContent: List<Pair<String, String>>) =
-                GenreGroupFilter(
-                    genreFiltersContent.map { singleGenreContent ->
-                        GenreFilter(singleGenreContent.first, singleGenreContent.second)
-                    },
-                )
+            fun genreContentListToGenreGroup(genreFiltersContent: List<Pair<String, String>>) = GenreGroupFilter(
+                genreFiltersContent.map { singleGenreContent ->
+                    GenreFilter(singleGenreContent.first, singleGenreContent.second)
+                },
+            )
 
             val genreGroupFromVar = genreFiltersContent?.let { genreList ->
                 genreContentListToGenreGroup(genreList)
@@ -524,8 +524,15 @@ class MangaDoom : HttpSource() {
                     ),
                 ).enqueue(
                     object : Callback {
-                        override fun onFailure(call: Call, e: IOException) = e.printStackTrace()
-                        override fun onResponse(call: Call, response: Response) {
+                        override fun onFailure(
+                            call: Call,
+                            e: IOException,
+                        ) = e.printStackTrace()
+
+                        override fun onResponse(
+                            call: Call,
+                            response: Response,
+                        ) {
                             genreFilterContentFrom = response.receivedResponseAtMillis
                             genreFiltersContent = responseToGenreFilterContentPair(response)
                         }
@@ -546,11 +553,11 @@ class MangaDoom : HttpSource() {
         defaultValue: Int = 0,
     ) :
         Filter.Select<String>(
-            displayName,
-            vals.map { it.second }.toTypedArray(),
-            defaultValue,
-        ),
-        FormBodyFilter {
+                displayName,
+                vals.map { it.second }.toTypedArray(),
+                defaultValue,
+            ),
+            FormBodyFilter {
         override fun addToFormParameters(formParameters: MutableMap<String, String>) {
             formParameters[payloadParam] = vals[state].first
         }
@@ -564,6 +571,7 @@ class MangaDoom : HttpSource() {
     }
 
     // common
+
     /**
      * The last step for parsing popular manga and search results (from jsoup element to [SManga]
      */

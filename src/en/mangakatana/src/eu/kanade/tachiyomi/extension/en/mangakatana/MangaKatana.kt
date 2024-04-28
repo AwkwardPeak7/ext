@@ -81,7 +81,11 @@ class MangaKatana : ConfigurableSource, ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
 
         if (query.isNotEmpty()) {
@@ -251,7 +255,9 @@ class MangaKatana : ConfigurableSource, ParsedHttpSource() {
     )
 
     private class Genre(val id: String, name: String) : Filter.TriState(name)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
+
     private val genres = listOf(
         Genre("4-koma", "4 koma"),
         Genre("action", "Action"),

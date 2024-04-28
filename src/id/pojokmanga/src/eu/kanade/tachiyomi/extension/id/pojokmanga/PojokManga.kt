@@ -13,7 +13,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class PojokManga : Madara("Pojok Manga", "https://pojokmanga.net", "id", SimpleDateFormat("MMM dd, yyyy", Locale.US)) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(20, 4, TimeUnit.SECONDS)
         .build()
@@ -22,7 +21,11 @@ class PojokManga : Madara("Pojok Manga", "https://pojokmanga.net", "id", SimpleD
 
     override val mangaSubString = "komik"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var url = "$baseUrl/${searchPage(page)}".toHttpUrl().newBuilder()
         url.addQueryParameter("s", query)
         url.addQueryParameter("post_type", "wp-manga")
@@ -65,7 +68,9 @@ class PojokManga : Madara("Pojok Manga", "https://pojokmanga.net", "id", SimpleD
                     filter.state
                         .filter { it.state }
                         .let { list ->
-                            if (list.isNotEmpty()) { list.forEach { genre -> url.addQueryParameter("genre[]", genre.id) } }
+                            if (list.isNotEmpty()) {
+                                list.forEach { genre -> url.addQueryParameter("genre[]", genre.id) }
+                            }
                         }
                 }
                 is ProjectFilter -> {

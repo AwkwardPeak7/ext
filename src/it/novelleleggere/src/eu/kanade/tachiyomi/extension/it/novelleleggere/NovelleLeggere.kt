@@ -12,7 +12,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class NovelleLeggere : ParsedHttpSource() {
-
     // Info
     override val name: String = "Novelle Leggere"
     override val baseUrl: String = "https://www.novelleleggere.com"
@@ -23,7 +22,9 @@ class NovelleLeggere : ParsedHttpSource() {
     override fun popularMangaRequest(page: Int): Request = GET(baseUrl)
 
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun popularMangaSelector(): String = "table:contains(Manga) tr:gt(0)"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         val a = element.select("a").first()!!
         title = a.text()
@@ -34,18 +35,23 @@ class NovelleLeggere : ParsedHttpSource() {
     override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
 
     override fun latestUpdatesNextPageSelector(): String = throw UnsupportedOperationException()
+
     override fun latestUpdatesSelector(): String = throw UnsupportedOperationException()
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        throw UnsupportedOperationException()
+
+    override fun latestUpdatesFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw Exception("Search Not Supported")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw Exception("Search Not Supported")
 
     override fun searchMangaNextPageSelector(): String = throw Exception("Search Not Supported")
+
     override fun searchMangaSelector(): String = throw Exception("Search Not Supported")
-    override fun searchMangaFromElement(element: Element): SManga =
-        throw Exception("Search Not Supported")
+
+    override fun searchMangaFromElement(element: Element): SManga = throw Exception("Search Not Supported")
 
     // Details
     override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
@@ -57,8 +63,7 @@ class NovelleLeggere : ParsedHttpSource() {
     }
 
     // Chapters
-    override fun chapterListSelector(): String =
-        "div.post-content div:contains(Capitoli) div.su-spoiler-content ul li a"
+    override fun chapterListSelector(): String = "div.post-content div:contains(Capitoli) div.su-spoiler-content ul li a"
 
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         name = element.text().trim()
@@ -76,6 +81,5 @@ class NovelleLeggere : ParsedHttpSource() {
         }
     }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 }

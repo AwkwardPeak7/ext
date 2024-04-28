@@ -23,7 +23,6 @@ abstract class Gattsu(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient
@@ -57,7 +56,11 @@ abstract class Gattsu(
 
     override fun latestUpdatesNextPageSelector(): String = "ul.paginacao li.next > a"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val searchUrl = "$baseUrl/page/$page/".toHttpUrl().newBuilder()
             .addQueryParameter("s", query)
             .addQueryParameter("post_type", "post")
@@ -112,9 +115,8 @@ abstract class Gattsu(
         setUrlWithoutDomain(element.ownerDocument()!!.location())
     }
 
-    protected open fun pageListSelector(): String =
-        "div.meio div.post-box ul.post-fotos li a > img, " +
-            "div.meio div.post-box.listaImagens div.galeriaHtml img"
+    protected open fun pageListSelector(): String = "div.meio div.post-box ul.post-fotos li a > img, " +
+        "div.meio div.post-box.listaImagens div.galeriaHtml img"
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select(pageListSelector())
@@ -134,12 +136,11 @@ abstract class Gattsu(
         return GET(page.imageUrl!!, imageHeaders)
     }
 
-    protected fun Element.imgAttr(): String =
-        if (hasAttr("data-src")) {
-            attr("abs:data-src")
-        } else {
-            attr("abs:src")
-        }
+    protected fun Element.imgAttr(): String = if (hasAttr("data-src")) {
+        attr("abs:data-src")
+    } else {
+        attr("abs:src")
+    }
 
     protected fun String.toDate(): Long {
         return try {

@@ -14,7 +14,6 @@ import org.jsoup.select.Elements
 import rx.Observable
 
 class YanmagaComics : Yanmaga("search-item-category--comics") {
-
     override val name = "ヤンマガ（マンガ）"
 
     override val supportsLatest = true

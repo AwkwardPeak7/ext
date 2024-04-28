@@ -19,7 +19,6 @@ import org.jsoup.select.Evaluator
 abstract class MangabzTheme(
     override val name: String,
 ) : HttpSource() {
-
     override val lang = "zh"
 
     override val supportsLatest = true
@@ -32,15 +31,18 @@ abstract class MangabzTheme(
 
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        if (query.isEmpty()) {
-            popularMangaRequest(page)
-        } else {
-            val url = "$baseUrl/search".toHttpUrl().newBuilder()
-                .addQueryParameter("title", query)
-                .addQueryParameter("page", page.toString())
-            Request.Builder().url(url.build()).headers(headers).build()
-        }
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = if (query.isEmpty()) {
+        popularMangaRequest(page)
+    } else {
+        val url = "$baseUrl/search".toHttpUrl().newBuilder()
+            .addQueryParameter("title", query)
+            .addQueryParameter("page", page.toString())
+        Request.Builder().url(url.build()).headers(headers).build()
+    }
 
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup().also(::parseFilters)
@@ -79,7 +81,11 @@ abstract class MangabzTheme(
         }
     }
 
-    abstract fun parseDescription(element: Element, title: String, details: Elements): String
+    abstract fun parseDescription(
+        element: Element,
+        title: String,
+        details: Elements,
+    ): String
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
@@ -110,8 +116,7 @@ abstract class MangabzTheme(
         return list
     }
 
-    protected open fun getChapterElements(document: Document): Elements =
-        document.selectFirst(Evaluator.Id("chapterlistload"))!!.children()
+    protected open fun getChapterElements(document: Document): Elements = document.selectFirst(Evaluator.Id("chapterlistload"))!!.children()
 
     protected open val needPageCount = true
 

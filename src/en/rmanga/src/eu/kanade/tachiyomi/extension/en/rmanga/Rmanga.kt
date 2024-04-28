@@ -25,7 +25,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class Rmanga : ConfigurableSource, ParsedHttpSource() {
-
     override val name = "Rmanga.app"
 
     override val lang = "en"
@@ -86,7 +85,11 @@ class Rmanga : ConfigurableSource, ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val payload = FormBody.Builder().apply {
             add("manga-name", query.trim())
             filters.forEach { filter ->

@@ -8,10 +8,10 @@ abstract class SelectFilter(
     private val options: List<Pair<String, String>>,
     defaultValue: String? = null,
 ) : Filter.Select<String>(
-    name,
-    options.map { it.first }.toTypedArray(),
-    options.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
-) {
+        name,
+        options.map { it.first }.toTypedArray(),
+        options.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
+    ) {
     val selected get() = options[state].second.takeUnless { it.isEmpty() }
 }
 
@@ -21,9 +21,9 @@ abstract class CheckBoxGroup(
     name: String,
     options: List<Pair<String, String>>,
 ) : Filter.Group<CheckBoxFilter>(
-    name,
-    options.map { CheckBoxFilter(it.first, it.second) },
-) {
+        name,
+        options.map { CheckBoxFilter(it.first, it.second) },
+    ) {
     val checked get() = state.filter { it.state }.map { it.value }.takeUnless { it.isEmpty() }
 }
 
@@ -33,9 +33,9 @@ abstract class TriStateGroup(
     name: String,
     private val options: List<Pair<String, String>>,
 ) : Filter.Group<TriStateFilter>(
-    name,
-    options.map { TriStateFilter(it.first, it.second) },
-) {
+        name,
+        options.map { TriStateFilter(it.first, it.second) },
+    ) {
     val included get() = state.filter { it.isIncluded() }.map { it.value }.takeUnless { it.isEmpty() }
     val excluded get() = state.filter { it.isExcluded() }.map { it.value }.takeUnless { it.isEmpty() }
 }

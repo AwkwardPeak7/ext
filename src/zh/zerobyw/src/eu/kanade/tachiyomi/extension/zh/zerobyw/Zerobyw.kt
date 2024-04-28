@@ -46,8 +46,11 @@ class Zerobyw : ParsedHttpSource(), ConfigurableSource {
     // Website does not provide popular manga, this is actually latest manga
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/plugin.php?id=jameson_manhua&c=index&a=ku&page=$page", headers)
+
     override fun popularMangaNextPageSelector(): String = "div.pg > a.nxt"
+
     override fun popularMangaSelector(): String = "div.uk-card"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         val link = element.selectFirst("p.mt5 > a")!!
         title = getTitle(link.text())
@@ -58,13 +61,20 @@ class Zerobyw : ParsedHttpSource(), ConfigurableSource {
     // Latest
 
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesFromElement(element: Element) = throw UnsupportedOperationException()
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val builder = "$baseUrl/plugin.php".toHttpUrl().newBuilder()
             .addEncodedQueryParameter("id", "jameson_manhua")
         if (query.isNotBlank()) {
@@ -87,7 +97,9 @@ class Zerobyw : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun searchMangaNextPageSelector(): String = "div.pg > a.nxt"
+
     override fun searchMangaSelector(): String = "a.uk-card, div.uk-card"
+
     override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = getTitle(element.selectFirst("p.mt5")!!.text())
         setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
@@ -112,10 +124,12 @@ class Zerobyw : ParsedHttpSource(), ConfigurableSource {
     // Chapters
 
     override fun chapterListSelector(): String = "div.uk-grid-collapse > div.muludiv"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         setUrlWithoutDomain(element.selectFirst("a.uk-button-default")!!.absUrl("href"))
         name = element.selectFirst("a.uk-button-default")!!.text()
     }
+
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).asReversed()
     }

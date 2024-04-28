@@ -28,7 +28,6 @@ class RizzComic : MangaThemesiaAlt(
     mangaUrlDirectory = "/series",
     dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH),
 ) {
-
     override val client = super.client.newBuilder()
         .rateLimit(1, 3)
         .build()
@@ -47,12 +46,18 @@ class RizzComic : MangaThemesiaAlt(
     override fun setupPreferenceScreen(screen: PreferenceScreen) { }
 
     override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", SortFilter.POPULAR)
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
     override fun latestUpdatesRequest(page: Int) = searchMangaRequest(page, "", SortFilter.LATEST)
+
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val form = FormBody.Builder()
                 .add("search_value", query.trim())
@@ -144,8 +149,7 @@ class RizzComic : MangaThemesiaAlt(
         return GET(page.imageUrl!!, newHeaders)
     }
 
-    private inline fun <reified T> Response.parseAs(): T =
-        use { it.body.string() }.let(json::decodeFromString)
+    private inline fun <reified T> Response.parseAs(): T = use { it.body.string() }.let(json::decodeFromString)
 
     private fun String.capitalize() = replaceFirstChar {
         if (it.isLowerCase()) {

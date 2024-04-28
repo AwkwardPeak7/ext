@@ -14,7 +14,6 @@ class SilenceScan : MangaThemesia(
     "pt-BR",
     dateFormat = SimpleDateFormat("MMMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-
     override val versionId: Int = 2
 
     override val client: OkHttpClient = super.client.newBuilder()

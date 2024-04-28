@@ -85,7 +85,10 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
         return Observable.just(chapters.reversed())
     }
 
-    private fun fetchChapterListPageable(manga: SManga, page: Int): ChapterPageDto {
+    private fun fetchChapterListPageable(
+        manga: SManga,
+        page: Int,
+    ): ChapterPageDto {
         val maxResult = 16
         val url = "$apiUrl/api/$langApiInfix/GetChapterListFilter/${manga.slug()}/$maxResult/$page/all/ASC"
         return client.newCall(GET(url, apiHeaders(url))).execute()
@@ -161,7 +164,11 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/${langOption.infix}")
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val maxResult = 6
         val url = "$apiUrl/api/$langApiInfix/searchforms/$maxResult/".toHttpUrl().newBuilder()
             .addPathSegment(query)
@@ -170,7 +177,11 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
         return GET(url, apiHeaders(url.toString()))
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith(slugPrefix)) {
             val mangaUrl = query.substringAfter(slugPrefix)
             return client.newCall(GET("$baseUrl/${langOption.infix}/$mangaUrl", headers))
@@ -214,7 +225,10 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
 
     private fun String.toUrlWithoutDomain() = trim().replace(apiUrl, "")
 
-    private fun mangaParse(dto: MangaDto, query: QueryDto): SManga {
+    private fun mangaParse(
+        dto: MangaDto,
+        query: QueryDto,
+    ): SManga {
         return SManga.create().apply {
             title = dto.title
             thumbnail_url = dto.thumbnailUrl
@@ -224,7 +238,10 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
         }
     }
 
-    private fun mangaUrlParse(slug: String, pathSegment: String) = "/$pathSegment/$slug"
+    private fun mangaUrlParse(
+        slug: String,
+        pathSegment: String,
+    ) = "/$pathSegment/$slug"
 
     companion object {
         val apiUrl = "https://api.unionmanga.xyz"

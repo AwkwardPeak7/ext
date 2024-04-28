@@ -5,7 +5,10 @@ import eu.kanade.tachiyomi.source.model.FilterList
 
 class SearchQuery(val title: String, val category: String)
 
-fun parseSearchQuery(query: String, filters: FilterList): SearchQuery {
+fun parseSearchQuery(
+    query: String,
+    filters: FilterList,
+): SearchQuery {
     for (filter in filters) {
         if (filter is SearchCategoryToggle) {
             if (filter.state) return SearchQuery("", query)

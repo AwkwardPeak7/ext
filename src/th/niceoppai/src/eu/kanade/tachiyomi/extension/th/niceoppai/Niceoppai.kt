@@ -23,7 +23,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class Niceoppai : ParsedHttpSource() {
-
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.US)
     override val baseUrl: String = "https://www.niceoppai.net"
 
@@ -42,7 +41,9 @@ class Niceoppai : ParsedHttpSource() {
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/manga_list/all/any/most-popular-monthly/$page", headers)
     }
+
     override fun popularMangaSelector() = "div.nde"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst("div.det a")!!.text()
         element.select("div.cvr").let {
@@ -50,18 +51,26 @@ class Niceoppai : ParsedHttpSource() {
             thumbnail_url = it.select("img").attr("abs:src")
         }
     }
+
     override fun popularMangaNextPageSelector() = "ul.pgg li a"
 
     // Latest
     override fun latestUpdatesRequest(page: Int): Request {
         return GET("$baseUrl/manga_list/all/any/last-updated/$page", headers)
     }
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val isOrderByFilter = filters.list.first().state != 0
         val orderByState = if (filters.list.first().state != null) filters.first().state.toString().toInt() else 0
         val orderByString = orderByFilterOptionsValues[orderByState]
@@ -72,10 +81,18 @@ class Niceoppai : ParsedHttpSource() {
             GET("$baseUrl/manga_list/search/$query/$orderByString/$page", headers)
         }
     }
+
     override fun searchMangaSelector(): String = popularMangaSelector()
+
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
+
     override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return client.newCall(searchMangaRequest(page, query, filters))
             .asObservableSuccess()
             .map {
@@ -95,6 +112,7 @@ class Niceoppai : ParsedHttpSource() {
         "จบแล้ว" -> SManga.COMPLETED
         else -> SManga.UNKNOWN
     }
+
     override fun mangaDetailsParse(document: Document): SManga {
         val infoElement = document.select("div.det").first()!!
         val titleElement = document.select("h1.ttl").first()!!
@@ -177,9 +195,15 @@ class Niceoppai : ParsedHttpSource() {
         val cal = Calendar.getInstance()
 
         return when {
-            WordSet("hari", "gün", "jour", "día", "dia", "day", "วัน", "ngày", "giorni", "أيام").anyWordIn(date) -> cal.apply { add(Calendar.DAY_OF_MONTH, -number) }.timeInMillis
-            WordSet("jam", "saat", "heure", "hora", "hour", "ชั่วโมง", "giờ", "ore", "ساعة").anyWordIn(date) -> cal.apply { add(Calendar.HOUR, -number) }.timeInMillis
-            WordSet("menit", "dakika", "min", "minute", "minuto", "นาที", "دقائق").anyWordIn(date) -> cal.apply { add(Calendar.MINUTE, -number) }.timeInMillis
+            WordSet("hari", "gün", "jour", "día", "dia", "day", "วัน", "ngày", "giorni", "أيام").anyWordIn(date) -> cal.apply {
+                add(Calendar.DAY_OF_MONTH, -number)
+            }.timeInMillis
+            WordSet("jam", "saat", "heure", "hora", "hour", "ชั่วโมง", "giờ", "ore", "ساعة").anyWordIn(date) -> cal.apply {
+                add(Calendar.HOUR, -number)
+            }.timeInMillis
+            WordSet("menit", "dakika", "min", "minute", "minuto", "นาที", "دقائق").anyWordIn(date) -> cal.apply {
+                add(Calendar.MINUTE, -number)
+            }.timeInMillis
             WordSet("detik", "segundo", "second", "วินาที").anyWordIn(date) -> cal.apply { add(Calendar.SECOND, -number) }.timeInMillis
             WordSet("week").anyWordIn(date) -> cal.apply { add(Calendar.DAY_OF_MONTH, -number * 7) }.timeInMillis
             WordSet("month").anyWordIn(date) -> cal.apply { add(Calendar.MONTH, -number) }.timeInMillis
@@ -187,9 +211,16 @@ class Niceoppai : ParsedHttpSource() {
             else -> 0
         }
     }
+
     override fun chapterListSelector() = "ul.lst li.lng_"
+
     override fun chapterFromElement(element: Element): SChapter = throw UnsupportedOperationException()
-    private fun chapterFromElementWithIndex(element: Element, idx: Int, manga: SManga): SChapter {
+
+    private fun chapterFromElementWithIndex(
+        element: Element,
+        idx: Int,
+        manga: SManga,
+    ): SChapter {
         val chapter = SChapter.create()
 
         val btn = element.select("a.lst")
@@ -260,14 +291,46 @@ class Niceoppai : ParsedHttpSource() {
             }
         }
     }
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // Filter
     private val orderByFilterTitle: String = "Order By เรียกตาม"
-    private val orderByFilterOptions: Array<String> = arrayOf("Name (A-Z)", "Name (Z-A)", "Last Updated", "Oldest Updated", "Most Popular", "Most Popular (Weekly)", "Most Popular (Monthly)", "Least Popular", "Last Added", "Early Added", "Top Rating", "Lowest Rating")
-    private val orderByFilterOptionsValues: Array<String> = arrayOf("name-az", "name-za", "last-updated", "oldest-updated", "most-popular", "most-popular-weekly", "most-popular-monthly", "least-popular", "last-added", "early-added", "top-rating", "lowest-rating")
-    private class OrderByFilter(title: String, options: List<Pair<String, String>>, state: Int = 0) : UriPartFilter(title, options.toTypedArray(), state)
+    private val orderByFilterOptions: Array<String> = arrayOf(
+        "Name (A-Z)",
+        "Name (Z-A)",
+        "Last Updated",
+        "Oldest Updated",
+        "Most Popular",
+        "Most Popular (Weekly)",
+        "Most Popular (Monthly)",
+        "Least Popular",
+        "Last Added",
+        "Early Added",
+        "Top Rating",
+        "Lowest Rating",
+    )
+    private val orderByFilterOptionsValues: Array<String> = arrayOf(
+        "name-az",
+        "name-za",
+        "last-updated",
+        "oldest-updated",
+        "most-popular",
+        "most-popular-weekly",
+        "most-popular-monthly",
+        "least-popular",
+        "last-added",
+        "early-added",
+        "top-rating",
+        "lowest-rating",
+    )
+
+    private class OrderByFilter(title: String, options: List<Pair<String, String>>, state: Int = 0) : UriPartFilter(
+        title,
+        options.toTypedArray(),
+        state,
+    )
+
     override fun getFilterList(): FilterList {
         val filters = mutableListOf(
             OrderByFilter(
@@ -279,16 +342,20 @@ class Niceoppai : ParsedHttpSource() {
 
         return FilterList(filters)
     }
-    open class UriPartFilter(displayName: String, vals: Array<Pair<String, String>>, state: Int = 0) : Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray(), state)
+
+    open class UriPartFilter(displayName: String, vals: Array<Pair<String, String>>, state: Int = 0) : Filter.Select<String>(
+        displayName,
+        vals.map {
+            it.first
+        }.toTypedArray(),
+        state,
+    )
 }
 
 class WordSet(private vararg val words: String) {
-    fun anyWordIn(dateString: String): Boolean =
-        words.any { dateString.contains(it, ignoreCase = true) }
+    fun anyWordIn(dateString: String): Boolean = words.any { dateString.contains(it, ignoreCase = true) }
 
-    fun startsWith(dateString: String): Boolean =
-        words.any { dateString.startsWith(it, ignoreCase = true) }
+    fun startsWith(dateString: String): Boolean = words.any { dateString.startsWith(it, ignoreCase = true) }
 
-    fun endsWith(dateString: String): Boolean =
-        words.any { dateString.endsWith(it, ignoreCase = true) }
+    fun endsWith(dateString: String): Boolean = words.any { dateString.endsWith(it, ignoreCase = true) }
 }

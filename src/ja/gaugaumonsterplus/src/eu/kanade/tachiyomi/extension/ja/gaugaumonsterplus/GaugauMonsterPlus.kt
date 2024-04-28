@@ -17,7 +17,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class GaugauMonsterPlus : ParsedHttpSource() {
-
     override val name = "がうがうモンスター＋"
 
     override val baseUrl = "https://gaugau.futabanet.jp"
@@ -59,7 +58,11 @@ class GaugauMonsterPlus : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val tagFilter = filters.ifEmpty { getFilterList() }.filterIsInstance<TagFilter>().first()
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (query.isNotEmpty()) {
@@ -96,8 +99,7 @@ class GaugauMonsterPlus : ParsedHttpSource() {
 
     override fun chapterListRequest(manga: SManga) = GET("$baseUrl${manga.url}/episodes", headers)
 
-    override fun chapterListSelector() =
-        "#episodes .episode__grid:not(:has(.episode__button-app, .episode__button-complete)) a"
+    override fun chapterListSelector() = "#episodes .episode__grid:not(:has(.episode__button-app, .episode__button-complete)) a"
 
     override fun chapterFromElement(element: Element) = SChapter.create().apply {
         val episodeNum = element.selectFirst(".episode__num")!!.text()

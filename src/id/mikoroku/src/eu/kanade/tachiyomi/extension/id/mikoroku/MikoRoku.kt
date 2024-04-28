@@ -9,7 +9,6 @@ import okhttp3.Response
 import org.jsoup.nodes.Element
 
 class MikoRoku : ZeistManga("MikoRoku", "https://www.mikoroku.web.id", "id") {
-
     // ============================== Popular ===============================
     override val popularMangaSelector = "div.PopularPosts article"
     override val popularMangaSelectorTitle = ".post-title a"

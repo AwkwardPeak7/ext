@@ -10,7 +10,6 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
 class Qinqin : SinMH("亲亲漫画", "http://www.acgwd.com") {
-
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/list/post/?page=$page", headers)
 
     override fun mangaDetailsParse(document: Document) = mangaDetailsParseDMZJStyle(document, hasBreadcrumb = true)

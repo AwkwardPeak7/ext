@@ -9,7 +9,10 @@ class CatTranslator : Madara(
     "https://cats-translator.com/manga",
     "th",
 ) {
-    private fun parseMangaFromElement(element: Element, isSearch: Boolean): SManga {
+    private fun parseMangaFromElement(
+        element: Element,
+        isSearch: Boolean,
+    ): SManga {
         val manga = SManga.create()
 
         with(element) {

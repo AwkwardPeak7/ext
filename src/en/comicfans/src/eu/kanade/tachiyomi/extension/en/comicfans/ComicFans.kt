@@ -24,7 +24,6 @@ import okhttp3.Response
 import uy.kohesive.injekt.injectLazy
 
 class ComicFans : HttpSource() {
-
     override val name = "Comic Fans"
 
     override val baseUrl = "https://comicfans.io"
@@ -100,7 +99,11 @@ class ComicFans : HttpSource() {
     }
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$apiUrl/books".toHttpUrl().newBuilder().apply {
             addQueryParameter("pageNumber", page.toString())
             addQueryParameter("pageSize", "20")
@@ -125,8 +128,7 @@ class ComicFans : HttpSource() {
         return GET(url, apiHeaders)
     }
 
-    override fun searchMangaParse(response: Response): MangasPage =
-        popularMangaParse(response)
+    override fun searchMangaParse(response: Response): MangasPage = popularMangaParse(response)
 
     // =============================== Filters ==============================
 
@@ -194,8 +196,7 @@ class ComicFans : HttpSource() {
         return GET(page.imageUrl!!, imgHeaders)
     }
 
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     // ============================= Utilities ==============================
 

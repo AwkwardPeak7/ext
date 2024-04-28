@@ -74,8 +74,11 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
 
     // Popular
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/rank", headers)
+
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun popularMangaSelector(): String = "#rankList_2 > a"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.attr("title")
         url = element.attr("href")
@@ -84,9 +87,12 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
 
     // Latest
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/getUpdate?page=${page * 15 - 15}&date=", headers)
+
     override fun latestUpdatesParse(response: Response): MangasPage {
         // Get image host
-        val resp = client.newCall(GET("$baseUrl/update?img_host=${preferences.getString(IMAGE_HOST_KEY, IMAGE_HOST_ENTRY_VALUES[0])}")).execute()
+        val resp = client.newCall(
+            GET("$baseUrl/update?img_host=${preferences.getString(IMAGE_HOST_KEY, IMAGE_HOST_ENTRY_VALUES[0])}"),
+        ).execute()
         val document = resp.asJsoup()
         val imgHost = document.selectFirst(".manga-list-2-cover-img")!!.attr(":src").drop(1).substringBefore("'")
 
@@ -106,12 +112,18 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesFromElement(element: Element) = throw UnsupportedOperationException()
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val uri = Uri.parse(baseUrl).buildUpon()
         uri.appendPath("search")
             .appendQueryParameter("keyword", query)
@@ -119,7 +131,9 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun searchMangaNextPageSelector(): String? = null
+
     override fun searchMangaSelector(): String = "ul.book-list > li"
+
     override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst("p.book-list-info-title")!!.text()
         setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
@@ -140,6 +154,7 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
     // Chapters
 
     override fun chapterListSelector(): String = "ul#detail-list-select > li > a"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         url = element.attr("href")
         name = element.text()

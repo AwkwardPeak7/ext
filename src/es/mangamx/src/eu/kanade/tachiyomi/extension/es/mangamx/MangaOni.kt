@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 open class MangaOni : ConfigurableSource, ParsedHttpSource() {
-
     override val name = "MangaOni"
 
     override val id: Long = 2202687009511923782
@@ -81,13 +80,24 @@ open class MangaOni : ConfigurableSource, ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val uri = Uri.parse("$baseUrl/${if (query.isNotBlank()) "buscar" else "directorio"}").buildUpon()
 
         if (query.isNotBlank()) {
             uri.appendQueryParameter("q", query)
         } else {
-            uri.appendQueryParameter("adulto", if (hideNSFWContent()) { "0" } else { "false" })
+            uri.appendQueryParameter(
+                "adulto",
+                if (hideNSFWContent()) {
+                    "0"
+                } else {
+                    "false"
+                },
+            )
 
             for (filter in filters) {
                 when (filter) {
@@ -99,7 +109,11 @@ open class MangaOni : ConfigurableSource, ParsedHttpSource() {
                         uri.appendQueryParameter("filtro", sortables[filter.state!!.index].second)
                         uri.appendQueryParameter(
                             "orden",
-                            if (filter.state!!.ascending) { "asc" } else { "desc" },
+                            if (filter.state!!.ascending) {
+                                "asc"
+                            } else {
+                                "desc"
+                            },
                         )
                     }
                     is TypeFilter -> uri.appendQueryParameter(

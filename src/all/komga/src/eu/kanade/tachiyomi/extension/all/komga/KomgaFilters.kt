@@ -58,14 +58,14 @@ internal class LibraryFilter(
     libraries: List<LibraryDto>,
     defaultLibraries: Set<String>,
 ) : UriMultiSelectFilter(
-    "Libraries",
-    "library_id",
-    libraries.map {
-        UriMultiSelectOption(it.name, it.id).apply {
-            state = defaultLibraries.contains(it.id)
-        }
-    },
-)
+        "Libraries",
+        "library_id",
+        libraries.map {
+            UriMultiSelectOption(it.name, it.id).apply {
+                state = defaultLibraries.contains(it.id)
+            }
+        },
+    )
 
 internal class UriMultiSelectOption(name: String, val id: String = name) : Filter.CheckBox(name, false)
 

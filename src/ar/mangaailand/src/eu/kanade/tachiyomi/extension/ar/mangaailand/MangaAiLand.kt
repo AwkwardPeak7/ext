@@ -4,7 +4,6 @@ import eu.kanade.tachiyomi.multisrc.zeistmanga.Genre
 import eu.kanade.tachiyomi.multisrc.zeistmanga.ZeistManga
 
 class MangaAiLand : ZeistManga("Manga Ai Land", "https://manga-ai-land.blogspot.com", "ar") {
-
     override val hasFilters = true
     override val hasLanguageFilter = false
 

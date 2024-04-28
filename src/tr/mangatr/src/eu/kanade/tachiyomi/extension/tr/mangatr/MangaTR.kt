@@ -34,8 +34,11 @@ class MangaTR : FMReader("Manga-TR", "https://manga-tr.com", "tr") {
     // TODO: genre search possible but a bit of a pain
     override fun getFilterList() = FilterList()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        GET("$baseUrl/arama.html?icerik=$query", headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = GET("$baseUrl/arama.html?icerik=$query", headers)
 
     override fun searchMangaParse(response: Response): MangasPage {
         val mangas = response.use { it.asJsoup() }
@@ -108,6 +111,5 @@ class MangaTR : FMReader("Manga-TR", "https://manga-tr.com", "tr") {
         return chapters
     }
 
-    override fun pageListRequest(chapter: SChapter) =
-        GET("$baseUrl/${chapter.url.substringAfter("cek/")}", headers)
+    override fun pageListRequest(chapter: SChapter) = GET("$baseUrl/${chapter.url.substringAfter("cek/")}", headers)
 }

@@ -46,7 +46,6 @@ abstract class PeachScan(
         timeZone = TimeZone.getTimeZone("America/Sao_Paulo")
     },
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient
@@ -82,7 +81,11 @@ abstract class PeachScan(
 
     override fun latestUpdatesNextPageSelector() = null
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             addPathSegments("auto-complete/")
             addQueryParameter("term", query)

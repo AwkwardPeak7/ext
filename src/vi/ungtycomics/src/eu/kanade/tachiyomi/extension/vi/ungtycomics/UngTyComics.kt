@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class UngTyComics : ParsedHttpSource(), ConfigurableSource {
-
     override val name = "Ưng Tỷ Comics"
 
     override val baseUrl by lazy {
@@ -72,7 +71,11 @@ class UngTyComics : ParsedHttpSource(), ConfigurableSource {
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val genreFilter = filters.ifEmpty { getFilterList() }
             .filterIsInstance<GenreFilter>()
             .firstOrNull()
@@ -153,10 +156,9 @@ class UngTyComics : ParsedHttpSource(), ConfigurableSource {
 
     private fun chapterNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun pageListParse(document: Document) =
-        document.select("img.chapter-img").mapIndexed { i, it ->
-            Page(i, imageUrl = it.absUrl("data-src"))
-        }
+    override fun pageListParse(document: Document) = document.select("img.chapter-img").mapIndexed { i, it ->
+        Page(i, imageUrl = it.absUrl("data-src"))
+    }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 

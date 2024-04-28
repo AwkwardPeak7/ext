@@ -15,7 +15,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class WieManga : ParsedHttpSource() {
-
     override val id: Long = 10
 
     override val name = "Wie Manga!"
@@ -62,7 +61,11 @@ class WieManga : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/search/?wd=$query", headers)
     }
 

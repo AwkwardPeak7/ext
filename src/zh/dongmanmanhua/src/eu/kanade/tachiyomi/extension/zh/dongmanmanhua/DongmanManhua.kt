@@ -14,8 +14,13 @@ import org.jsoup.nodes.Element
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class DongmanManhua : Webtoons("Dongman Manhua", "https://www.dongmanmanhua.cn", "zh", "", dateFormat = SimpleDateFormat("yyyy-M-d", Locale.ENGLISH)) {
-
+class DongmanManhua : Webtoons(
+    "Dongman Manhua",
+    "https://www.dongmanmanhua.cn",
+    "zh",
+    "",
+    dateFormat = SimpleDateFormat("yyyy-M-d", Locale.ENGLISH),
+) {
     override fun headersBuilder(): Headers.Builder = super.headersBuilder()
         .removeAll("Referer")
         .add("Referer", baseUrl)

@@ -22,7 +22,6 @@ import okhttp3.Response
 import rx.Observable
 
 class WarForRayuba : HttpSource() {
-
     override val name = "War For Rayuba"
 
     override val baseUrl = "https://xrabohrok.github.io/WarMap/#/"
@@ -63,9 +62,13 @@ class WarForRayuba : HttpSource() {
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select("#repo-content-pjax-container .Details div[role=row] div[role=rowheader] a[href*='.json']").map { element ->
+        val mangas = document.select(
+            "#repo-content-pjax-container .Details div[role=row] div[role=rowheader] a[href*='.json']",
+        ).map { element ->
             SManga.create().apply {
-                val githubRawUrl = "https://raw.githubusercontent.com/xrabohrok/WarMap/" + element.attr("abs:href").replace(".*(?=main)".toRegex(), "")
+                val githubRawUrl = "https://raw.githubusercontent.com/xrabohrok/WarMap/" + element.attr(
+                    "abs:href",
+                ).replace(".*(?=main)".toRegex(), "")
                 val githubData: RoundDto = json.decodeFromString(
                     client.newCall(GET(githubRawUrl, headers)).execute().body.string(),
                 )
@@ -142,11 +145,19 @@ class WarForRayuba : HttpSource() {
         return pageList
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return Observable.just(MangasPage(emptyList(), false))
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
 

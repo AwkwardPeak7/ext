@@ -39,7 +39,6 @@ abstract class ColaManga(
     final override val baseUrl: String,
     final override val lang: String,
 ) : ParsedHttpSource(), ConfigurableSource {
-
     override val supportsLatest = true
 
     private val json: Json by injectLazy()
@@ -64,8 +63,7 @@ abstract class ColaManga(
         .add("Origin", baseUrl)
         .add("Referer", "$baseUrl/")
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/show?orderBy=dailyCount&page=$page", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/show?orderBy=dailyCount&page=$page", headers)
 
     override fun popularMangaSelector() = "li.fed-list-item"
 
@@ -77,8 +75,7 @@ abstract class ColaManga(
         thumbnail_url = element.selectFirst("a.fed-list-pics")?.absUrl("data-original")
     }
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl/show?orderBy=update&page=$page", headers)
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/show?orderBy=update&page=$page", headers)
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
@@ -86,7 +83,11 @@ abstract class ColaManga(
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = if (query.isNotEmpty()) {
             "$baseUrl/search".toHttpUrl().newBuilder().apply {
                 filters.ifEmpty { getFilterList() }
@@ -276,7 +277,9 @@ abstract class ColaManga(
         }.also(screen::addPreference)
     }
 
-    private val keyMappingRegex = Regex("""[0-9A-Za-z_]+\s*==\s*['"](?<keyType>\d+)['"]\s*&&\s*\([0-9A-Za-z_]+\s*=\s*['"](?<key>[a-zA-Z0-9]+)['"]\)""")
+    private val keyMappingRegex = Regex(
+        """[0-9A-Za-z_]+\s*==\s*['"](?<keyType>\d+)['"]\s*&&\s*\([0-9A-Za-z_]+\s*=\s*['"](?<key>[a-zA-Z0-9]+)['"]\)""",
+    )
 
     private val keyMapping by lazy {
         val obfuscatedReadJs = client.newCall(GET("$baseUrl/js/manga.read.js")).execute().body.string()
@@ -306,7 +309,10 @@ abstract class ColaManga(
             private set
 
         @JavascriptInterface
-        fun passData(rawData: String, keyType: String) {
+        fun passData(
+            rawData: String,
+            keyType: String,
+        ) {
             val data = json.parseToJsonElement(rawData).jsonObject
 
             images = data["images"]!!.jsonArray.map { it.jsonPrimitive.content }

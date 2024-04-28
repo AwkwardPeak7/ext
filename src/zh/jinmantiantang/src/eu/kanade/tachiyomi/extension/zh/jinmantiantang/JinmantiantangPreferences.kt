@@ -12,7 +12,11 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.IOException
 
-internal fun getPreferenceList(context: Context, preferences: SharedPreferences, isUrlUpdated: Boolean) = arrayOf(
+internal fun getPreferenceList(
+    context: Context,
+    preferences: SharedPreferences,
+    isUrlUpdated: Boolean,
+) = arrayOf(
     ListPreference(context).apply {
         key = MAINSITE_RATELIMIT_PREF
         title = "在限制时间内（下个设置项）允许的请求数量。"
@@ -22,7 +26,6 @@ internal fun getPreferenceList(context: Context, preferences: SharedPreferences,
 
         setDefaultValue(MAINSITE_RATELIMIT_PREF_DEFAULT)
     },
-
     ListPreference(context).apply {
         key = MAINSITE_RATELIMIT_PERIOD
         title = "限制持续时间。单位秒"
@@ -32,7 +35,6 @@ internal fun getPreferenceList(context: Context, preferences: SharedPreferences,
 
         setDefaultValue(MAINSITE_RATELIMIT_PERIOD_DEFAULT)
     },
-
     ListPreference(context).apply {
         val urlList = preferences.urlList
         val fullList = SITE_ENTRIES_ARRAY + urlList
@@ -47,7 +49,6 @@ internal fun getPreferenceList(context: Context, preferences: SharedPreferences,
 
         setDefaultValue("0")
     },
-
     EditTextPreference(context).apply {
         key = BLOCK_PREF
         title = "屏蔽词列表"
@@ -110,7 +111,10 @@ fun getSharedPreferences(id: Long): SharedPreferences {
     return preferences
 }
 
-fun SharedPreferences.Editor.setUrlList(urlList: String, oldIndex: Int): SharedPreferences.Editor {
+fun SharedPreferences.Editor.setUrlList(
+    urlList: String,
+    oldIndex: Int,
+): SharedPreferences.Editor {
     putString(URL_LIST_PREF, urlList)
     val maxIndex = SITE_ENTRIES_ARRAY.size + urlList.count { it == ',' }
     if (oldIndex in 0..maxIndex) return this

@@ -48,7 +48,9 @@ class DigitalComicMuseum() : ParsedHttpSource() {
     // Popular
 
     override fun popularMangaFromElement(element: Element) = latestUpdatesFromElement(element)
+
     override fun popularMangaNextPageSelector() = latestUpdatesNextPageSelector()
+
     override fun popularMangaSelector() = latestUpdatesSelector()
 
     override fun popularMangaRequest(page: Int): Request {
@@ -66,9 +68,14 @@ class DigitalComicMuseum() : ParsedHttpSource() {
     }
 
     override fun searchMangaNextPageSelector() = "Not supported"
+
     override fun searchMangaSelector() = "#search-results tbody > tr"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val requestBody: RequestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("terms", query)

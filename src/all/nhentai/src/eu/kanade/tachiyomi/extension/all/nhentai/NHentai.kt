@@ -41,7 +41,6 @@ open class NHentai(
     override val lang: String,
     private val nhLang: String,
 ) : ConfigurableSource, ParsedHttpSource() {
-
     final override val baseUrl = "https://nhentai.net"
 
     override val id by lazy { if (lang == "all") 7309872737163460316 else super.id }
@@ -71,6 +70,7 @@ open class NHentai(
     }
 
     private val shortenTitleRegex = Regex("""(\[[^]]*]|[({][^)}]*[)}])""")
+
     private fun String.shortenTitle() = this.replace(shortenTitleRegex, "").trim()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
@@ -94,7 +94,8 @@ open class NHentai(
         addRandomUAPreferenceToScreen(screen)
     }
 
-    override fun latestUpdatesRequest(page: Int) = GET(if (nhLang.isBlank()) "$baseUrl/?page=$page" else "$baseUrl/language/$nhLang/?page=$page", headers)
+    override fun latestUpdatesRequest(page: Int) =
+        GET(if (nhLang.isBlank()) "$baseUrl/?page=$page" else "$baseUrl/language/$nhLang/?page=$page", headers)
 
     override fun latestUpdatesSelector() = "#content .container:not(.index-popular) .gallery"
 
@@ -110,7 +111,10 @@ open class NHentai(
 
     override fun latestUpdatesNextPageSelector() = "#content > section.pagination > a.next"
 
-    override fun popularMangaRequest(page: Int) = GET(if (nhLang.isBlank()) "$baseUrl/search/?q=\"\"&sort=popular&page=$page" else "$baseUrl/language/$nhLang/popular?page=$page", headers)
+    override fun popularMangaRequest(page: Int) = GET(
+        if (nhLang.isBlank()) "$baseUrl/search/?q=\"\"&sort=popular&page=$page" else "$baseUrl/language/$nhLang/popular?page=$page",
+        headers,
+    )
 
     override fun popularMangaFromElement(element: Element) = latestUpdatesFromElement(element)
 
@@ -118,7 +122,11 @@ open class NHentai(
 
     override fun popularMangaNextPageSelector() = latestUpdatesNextPageSelector()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith(PREFIX_ID_SEARCH) -> {
                 val id = query.removePrefix(PREFIX_ID_SEARCH)
@@ -135,7 +143,11 @@ open class NHentai(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val fixedQuery = query.ifEmpty { "\"\"" }
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val nhLangSearch = if (nhLang.isBlank()) "" else "+$nhLang "
@@ -189,7 +201,10 @@ open class NHentai(
 
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/g/$id", headers)
 
-    private fun searchMangaByIdParse(response: Response, id: String): MangasPage {
+    private fun searchMangaByIdParse(
+        response: Response,
+        id: String,
+    ): MangasPage {
         val details = mangaDetailsParse(response)
         details.url = "/g/$id/"
         return MangasPage(listOf(details), false)
@@ -256,7 +271,11 @@ open class NHentai(
         val mediaServer = Regex("""media_server\s*:\s*(\d+)""").find(script)?.groupValues!![1]
 
         return document.select("div.thumbs a > img").mapIndexed { i, img ->
-            Page(i, "", img.attr("abs:data-src").replace("t.nh", "i.nh").replace("t\\d+.nh".toRegex(), "i$mediaServer.nh").replace("t.", "."))
+            Page(
+                i,
+                "",
+                img.attr("abs:data-src").replace("t.nh", "i.nh").replace("t\\d+.nh".toRegex(), "i$mediaServer.nh").replace("t.", "."),
+            )
         }
     }
 
@@ -274,7 +293,6 @@ open class NHentai(
         UploadedFilter(),
         Filter.Header("Filter by pages, for example: (>20)"),
         PagesFilter(),
-
         Filter.Separator(),
         SortFilter(),
         OffsetPageFilter(),
@@ -283,13 +301,21 @@ open class NHentai(
     )
 
     class TagFilter : AdvSearchEntryFilter("Tags")
+
     class CategoryFilter : AdvSearchEntryFilter("Categories")
+
     class GroupFilter : AdvSearchEntryFilter("Groups")
+
     class ArtistFilter : AdvSearchEntryFilter("Artists")
+
     class ParodyFilter : AdvSearchEntryFilter("Parodies")
+
     class CharactersFilter : AdvSearchEntryFilter("Characters")
+
     class UploadedFilter : AdvSearchEntryFilter("Uploaded")
+
     class PagesFilter : AdvSearchEntryFilter("Pages")
+
     open class AdvSearchEntryFilter(name: String) : Filter.Text(name)
 
     class OffsetPageFilter : Filter.Text("Offset results by # pages")

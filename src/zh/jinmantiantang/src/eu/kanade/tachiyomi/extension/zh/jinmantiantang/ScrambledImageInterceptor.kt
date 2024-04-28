@@ -42,7 +42,10 @@ object ScrambledImageInterceptor : Interceptor {
         return lastByte.toString(16).last().code
     }
 
-    private fun getRows(aid: Int, imgIndex: String): Int {
+    private fun getRows(
+        aid: Int,
+        imgIndex: String,
+    ): Int {
         val modulus = when {
             aid >= 421926 -> 8
             aid >= 268850 -> 10
@@ -52,7 +55,10 @@ object ScrambledImageInterceptor : Interceptor {
     }
 
     // 对被分割的图片进行分割,排序处理
-    private fun decodeImage(img: InputStream, rows: Int): ByteArray {
+    private fun decodeImage(
+        img: InputStream,
+        rows: Int,
+    ): ByteArray {
         // 使用bitmap进行图片处理
         val input = BitmapFactory.decodeStream(img)
         // 漫画高度 and width

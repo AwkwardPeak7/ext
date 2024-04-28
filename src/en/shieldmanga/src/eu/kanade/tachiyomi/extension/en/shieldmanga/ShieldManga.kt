@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import okhttp3.OkHttpClient
 
 class ShieldManga : Madara("Shield Manga", "https://shieldmanga.io", "en") {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(1)
         .build()

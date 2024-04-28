@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.util.asJsoup
 import okhttp3.Response
 
 class AnimeXNovel : ZeistManga("AnimeXNovel", "https://www.animexnovel.com", "pt-BR") {
-
     override val mangaCategory: String = "Manga"
 
     override fun popularMangaParse(response: Response): MangasPage {

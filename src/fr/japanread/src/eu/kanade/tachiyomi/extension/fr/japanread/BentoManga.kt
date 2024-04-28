@@ -34,7 +34,6 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class BentoManga : ParsedHttpSource(), ConfigurableSource {
-
     override val name = "Bento Manga"
 
     override val id: Long = 4697148576707003393
@@ -88,6 +87,7 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
     }
 
     private fun mangaListSelector() = "div#mangas_content div.manga"
+
     private fun mangaListNextPageSelector() = ".paginator button:contains(>)"
 
     // Popular
@@ -96,7 +96,9 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun popularMangaSelector() = mangaListSelector()
+
     override fun popularMangaFromElement(element: Element) = mangaListFromElement(element)
+
     override fun popularMangaNextPageSelector() = mangaListNextPageSelector()
 
     // Latest
@@ -105,11 +107,17 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun latestUpdatesSelector() = mangaListSelector()
+
     override fun latestUpdatesFromElement(element: Element) = mangaListFromElement(element)
+
     override fun latestUpdatesNextPageSelector() = mangaListNextPageSelector()
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         // If there is any search text, use text search, otherwise use filter search
         val uri = if (query.isNotBlank()) {
             Uri.parse("$baseUrl/manga_list?withoutTypes=5")
@@ -131,7 +139,9 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun searchMangaSelector() = mangaListSelector()
+
     override fun searchMangaFromElement(element: Element) = mangaListFromElement(element)
+
     override fun searchMangaNextPageSelector() = mangaListNextPageSelector()
 
     // Details
@@ -212,7 +222,10 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
             }
     }
 
-    private fun chapterListParse(response: Response, requestUrl: String): List<SChapter> {
+    private fun chapterListParse(
+        response: Response,
+        requestUrl: String,
+    ): List<SChapter> {
         val chapters = mutableListOf<SChapter>()
         var document = response.asJsoup()
         var moreChapters = true
@@ -425,7 +438,7 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
         defaultValue: Int = 0,
     ) :
         Filter.Select<String>(displayName, vals.map { it.second }.toTypedArray(), defaultValue),
-        UriFilter {
+            UriFilter {
         override fun addToUri(uri: Uri.Builder) {
             if (state != 0 || !firstIsUnspecified) {
                 uri.appendQueryParameter(uriParam, vals[state].first)

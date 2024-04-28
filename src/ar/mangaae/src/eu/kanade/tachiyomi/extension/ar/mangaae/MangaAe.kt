@@ -22,7 +22,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class MangaAe : ParsedHttpSource(), ConfigurableSource {
-
     override val name = "مانجا العرب"
 
     override val baseUrl by lazy { getPrefBaseUrl() }
@@ -76,7 +75,11 @@ class MangaAe : ParsedHttpSource(), ConfigurableSource {
     override fun latestUpdatesNextPageSelector() = null
 
     // =============================== Search ===============================
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = buildString {
             append("$baseUrl/manga/search:$query|page:$page")
             filters.firstOrNull { it is OrderByFilter }

@@ -40,8 +40,7 @@ class ComicFury(
     /**
      * Archive is on a separate page from manga info
      */
-    override fun chapterListRequest(manga: SManga): Request =
-        GET("$baseUrl/read/${manga.url.substringAfter("?url=")}/archive")
+    override fun chapterListRequest(manga: SManga): Request = GET("$baseUrl/read/${manga.url.substringAfter("?url=")}/archive")
 
     /**
      * Open Archive Url instead of the details page
@@ -171,7 +170,12 @@ class ComicFury(
         }
         return MangasPage(list, (jsp.selectFirst("div.search-next-page") != null))
     }
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val req: HttpUrl.Builder = "$baseUrl/search.php".toHttpUrl().newBuilder()
         req.addQueryParameter("query", query)
         req.addQueryParameter("page", page.toString())
@@ -202,21 +206,27 @@ class ComicFury(
         return Request.Builder().url(req.build()).build()
     }
 
-    private fun Boolean.toInt(): Int = if (this) { 0 } else { 1 }
+    private fun Boolean.toInt(): Int = if (this) {
+        0
+    } else {
+        1
+    }
 
     // START OF AUTHOR NOTES //
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
+
     companion object {
         private const val SHOW_AUTHORS_NOTES_KEY = "showAuthorsNotes"
     }
-    private fun showAuthorsNotesPref() =
-        preferences.getBoolean(SHOW_AUTHORS_NOTES_KEY, false)
+
+    private fun showAuthorsNotesPref() = preferences.getBoolean(SHOW_AUTHORS_NOTES_KEY, false)
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         val authorsNotesPref = SwitchPreferenceCompat(screen.context).apply {
-            key = SHOW_AUTHORS_NOTES_KEY; title = "Show author's notes"
+            key = SHOW_AUTHORS_NOTES_KEY
+            title = "Show author's notes"
             summary = "Enable to see the author's notes at the end of chapters (if they're there)."
             setDefaultValue(false)
         }
@@ -226,6 +236,7 @@ class ComicFury(
 
     // START OF FILTERS //
     override fun getFilterList(): FilterList = getFilterList(0)
+
     private fun getFilterList(sortIndex: Int): FilterList = FilterList(
         TagsFilter(),
         Filter.Separator(),
@@ -246,46 +257,52 @@ class ComicFury(
         arrayOf("Relevance", "Popularity", "Last Update"),
         index,
     )
+
     internal class CompletedComicFilter : Filter.CheckBox("Comic Completed", false)
+
     internal class LastUpdatedFilter : Filter.Select<String>(
         "Last Updated",
         arrayOf("All Time", "This Week", "This Month", "This Year", "Completed Only"),
         0,
     )
+
     internal class ViolenceFilter : Filter.Select<String>(
         "Violence",
         arrayOf("None / Minimal", "Violent Content", "Gore / Graphic"),
         2,
     )
+
     internal class NudityFilter : Filter.Select<String>(
         "Frontal Nudity",
         arrayOf("None", "Occasional", "Frequent"),
         2,
     )
+
     internal class StrongLangFilter : Filter.Select<String>(
         "Strong Language",
         arrayOf("None", "Occasional", "Frequent"),
         2,
     )
+
     internal class SexualFilter : Filter.Select<String>(
         "Sexual Content",
         arrayOf("No Sexual Content", "Sexual Situations", "Strong Sexual Themes"),
         2,
     )
+
     internal class TagsFilter : Filter.Text("Tags")
 
     // END OF FILTERS //
 
-    override fun popularMangaRequest(page: Int): Request =
-        searchMangaRequest(page, "", getFilterList(1))
+    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(page, "", getFilterList(1))
+
     override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        searchMangaRequest(page, "", getFilterList(2))
+    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(page, "", getFilterList(2))
+
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     // Date stuff
 

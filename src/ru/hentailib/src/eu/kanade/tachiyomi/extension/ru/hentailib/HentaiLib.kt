@@ -13,7 +13,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class HentaiLib : LibGroup("HentaiLib", "https://hentailib.me", "ru") {
-
     override val id: Long = 6425650164840473547
 
     private val preferences: SharedPreferences by lazy {
@@ -23,7 +22,11 @@ class HentaiLib : LibGroup("HentaiLib", "https://hentailib.me", "ru") {
     private var domain: String = preferences.getString(DOMAIN_TITLE, DOMAIN_DEFAULT)!!
     override val baseUrl: String = domain
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (csrfToken.isEmpty()) {
             val tokenResponse = client.newCall(popularMangaRequest(page)).execute()
             val resBody = tokenResponse.body.string()

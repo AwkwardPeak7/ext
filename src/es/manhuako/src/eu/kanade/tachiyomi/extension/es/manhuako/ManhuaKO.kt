@@ -18,7 +18,6 @@ import org.jsoup.select.Elements
 import java.util.Calendar
 
 class ManhuaKO : ParsedHttpSource() {
-
     override val baseUrl = "https://manhuako.com"
 
     override val lang = "es"
@@ -58,7 +57,11 @@ class ManhuaKO : ParsedHttpSource() {
 
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val urlBuilder = baseUrl.toHttpUrl().newBuilder()
 
         if (query.isNotBlank()) {

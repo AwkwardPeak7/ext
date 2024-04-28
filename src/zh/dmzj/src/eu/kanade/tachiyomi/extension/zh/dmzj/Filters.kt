@@ -193,9 +193,9 @@ private open class SelectFilter(
     name: String,
     values: Array<Pair<String, String>>,
 ) : UriPartFilter, Filter.Select<String>(
-    name = name,
-    values = Array(values.size) { values[it].first },
-) {
+        name = name,
+        values = Array(values.size) { values[it].first },
+    ) {
     private val uriParts = Array(values.size) { values[it].second }
     override val uriPart get() = uriParts[state]
 }

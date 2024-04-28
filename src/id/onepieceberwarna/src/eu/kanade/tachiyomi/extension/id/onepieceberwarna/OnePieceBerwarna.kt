@@ -14,7 +14,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class OnePieceBerwarna : ParsedHttpSource() {
-
     override val name = "One Piece Berwarna"
 
     override val baseUrl = "https://onepieceberwarna.com"
@@ -121,7 +120,11 @@ class OnePieceBerwarna : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
 
     override fun searchMangaSelector() = throw UnsupportedOperationException()
 }

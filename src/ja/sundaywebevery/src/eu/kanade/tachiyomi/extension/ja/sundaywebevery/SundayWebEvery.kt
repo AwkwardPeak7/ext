@@ -11,7 +11,6 @@ class SundayWebEvery : GigaViewer(
     "ja",
     "https://cdn-img.www.sunday-webry.com/public/page",
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .addInterceptor(::imageIntercept)
         .build()

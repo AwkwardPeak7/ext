@@ -14,7 +14,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class MangaLib : LibGroup("MangaLib", "https://mangalib.me", "ru") {
-
     override val id: Long = 6111047689498497237
 
     private val preferences: SharedPreferences by lazy {
@@ -26,7 +25,11 @@ class MangaLib : LibGroup("MangaLib", "https://mangalib.me", "ru") {
     private var domain: String? = preferences.getString(DOMAIN_PREF, baseOrig)
     override val baseUrl: String = domain.toString()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (csrfToken.isEmpty()) {
             val tokenResponse = client.newCall(popularMangaRequest(page)).execute()
             val resBody = tokenResponse.body.string()
@@ -61,6 +64,7 @@ class MangaLib : LibGroup("MangaLib", "https://mangalib.me", "ru") {
     private class SearchFilter(name: String, val id: String) : Filter.TriState(name)
 
     private class TagList(tags: List<SearchFilter>) : Filter.Group<SearchFilter>("Теги", tags)
+
     private class AgeList(ages: List<SearchFilter>) : Filter.Group<SearchFilter>("Возрастное ограничение", ages)
 
     override fun getFilterList(): FilterList {
@@ -168,7 +172,6 @@ class MangaLib : LibGroup("MangaLib", "https://mangalib.me", "ru") {
         SearchFilter("Эльфы", "216"),
         SearchFilter("Якудза", "164"),
         SearchFilter("Япония", "280"),
-
     )
 
     private fun getAgeList() = listOf(

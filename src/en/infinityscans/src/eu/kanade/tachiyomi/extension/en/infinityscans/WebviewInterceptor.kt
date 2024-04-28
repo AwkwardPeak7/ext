@@ -15,7 +15,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class WebviewInterceptor(private val baseUrl: String) : Interceptor {
-
     private val context: Application by injectLazy()
     private val handler by lazy { Handler(Looper.getMainLooper()) }
 
@@ -54,7 +53,10 @@ class WebviewInterceptor(private val baseUrl: String) : Interceptor {
             }
 
             webview.webViewClient = object : WebViewClient() {
-                override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
+                override fun shouldInterceptRequest(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                ): WebResourceResponse? {
                     if (request?.url.toString().contains("$baseUrl/ajax/turnstile")) {
                         hasSetCookies = true
                     } else if (request?.url.toString().contains(baseUrl) && hasSetCookies) {

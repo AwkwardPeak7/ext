@@ -10,7 +10,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.jsoup.nodes.Document
 
 class SectScans : Madara("SectScans", "https://sectscans.com", "en") {
-
     override val client = super.client.newBuilder()
         .rateLimit(2)
         .build()

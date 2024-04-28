@@ -28,7 +28,6 @@ import java.util.ArrayList
 import java.util.Locale
 
 abstract class DynastyScans : ParsedHttpSource() {
-
     override val baseUrl = "https://dynasty-scans.com"
 
     abstract fun popularMangaInitialUrl(): String
@@ -68,7 +67,11 @@ abstract class DynastyScans : ParsedHttpSource() {
 
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith("manga:")) {
             return if (query.startsWith("manga:$searchPrefix:")) {
                 val newQuery = query.removePrefix("manga:$searchPrefix:")
@@ -105,7 +108,10 @@ abstract class DynastyScans : ParsedHttpSource() {
             .select("div#main").first { it.hasText() }.childNodes()
     }
 
-    protected fun parseHeader(document: Document, manga: SManga): Boolean {
+    protected fun parseHeader(
+        document: Document,
+        manga: SManga,
+    ): Boolean {
         manga.title = document.selectFirst("div.tags > h2.tag-title > b")!!.text()
         val elements = document.selectFirst("div.tags > h2.tag-title")!!.getElementsByTag("a")
         if (elements.isEmpty()) {
@@ -128,14 +134,21 @@ abstract class DynastyScans : ParsedHttpSource() {
         return true
     }
 
-    protected fun parseGenres(document: Document, manga: SManga, select: String = "div.tags > div.tag-tags a") {
+    protected fun parseGenres(
+        document: Document,
+        manga: SManga,
+        select: String = "div.tags > div.tag-tags a",
+    ) {
         val tagElements = document.select(select)
         val doujinElements = document.select("div.tags >  h2.tag-title > small > a[href*=doujins]")
         tagElements.addAll(doujinElements)
         parseGenres(tagElements, manga)
     }
 
-    protected fun parseGenres(elements: Elements, manga: SManga) {
+    protected fun parseGenres(
+        elements: Elements,
+        manga: SManga,
+    ) {
         if (!elements.isEmpty()) {
             val genres = mutableListOf<String>()
             elements.forEach {
@@ -145,7 +158,10 @@ abstract class DynastyScans : ParsedHttpSource() {
         }
     }
 
-    protected fun parseDescription(document: Document, manga: SManga) {
+    protected fun parseDescription(
+        document: Document,
+        manga: SManga,
+    ) {
         manga.description = document.select("div.tags > div.row div.description").text()
     }
 
@@ -211,7 +227,6 @@ abstract class DynastyScans : ParsedHttpSource() {
     }
 
     class InternalList(nodes: List<Node>, type: String) : ArrayList<String>() {
-
         init {
             if (type == "text") {
                 for (node in nodes) {
@@ -219,7 +234,9 @@ abstract class DynastyScans : ParsedHttpSource() {
                         if (node.text() != " " && !node.text().contains("\n")) {
                             this.add(node.text())
                         }
-                    } else if (node is Element) this.add(node.text())
+                    } else if (node is Element) {
+                        this.add(node.text())
+                    }
                 }
             }
             if (type == "src") {
@@ -249,9 +266,13 @@ abstract class DynastyScans : ParsedHttpSource() {
     data class Validate(val _isManga: Boolean, val _pos: Int)
 
     override fun popularMangaNextPageSelector() = searchMangaNextPageSelector()
+
     override fun latestUpdatesSelector() = ""
+
     override fun latestUpdatesNextPageSelector() = ""
+
     override fun imageUrlParse(document: Document): String = ""
+
     override fun latestUpdatesFromElement(element: Element): SManga {
         return popularMangaFromElement(element)
     }

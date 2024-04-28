@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class ZeurelScan : HttpSource() {
-
     override val name = "ZeurelScan"
 
     override val baseUrl = "https://www.zeurelscan.com"
@@ -71,12 +70,21 @@ class ZeurelScan : HttpSource() {
 
     // Search from results retrieved by popularMangaRequest
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.just(
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.just(
         MangasPage(mangaList.filter { it.title.contains(query, true) }, false),
     )
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     // Details
 
@@ -114,17 +122,15 @@ class ZeurelScan : HttpSource() {
         }
     }
 
-    private fun parseChapterDate(date: String): Long =
-        try {
-            SimpleDateFormat("d MMM yyyy", Locale.ITALIAN).parse(date)?.time ?: 0L
-        } catch (e: ParseException) {
-            0L
-        }
+    private fun parseChapterDate(date: String): Long = try {
+        SimpleDateFormat("d MMM yyyy", Locale.ITALIAN).parse(date)?.time ?: 0L
+    } catch (e: ParseException) {
+        0L
+    }
 
-    override fun pageListParse(response: Response): List<Page> =
-        response.asJsoup().select("div.Immag img").mapIndexed { i, element ->
-            Page(i, "", element.attr("abs:src"))
-        }
+    override fun pageListParse(response: Response): List<Page> = response.asJsoup().select("div.Immag img").mapIndexed { i, element ->
+        Page(i, "", element.attr("abs:src"))
+    }
 
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 }

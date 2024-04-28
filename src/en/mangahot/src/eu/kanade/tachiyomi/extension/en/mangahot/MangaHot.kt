@@ -31,7 +31,6 @@ import java.net.URLEncoder
 import kotlin.math.ceil
 
 class MangaHot : HttpSource() {
-
     override val name = "MangaHot"
 
     override val baseUrl = "https://mangahot.to"
@@ -64,23 +63,23 @@ class MangaHot : HttpSource() {
 
     // ============================== Popular ===============================
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/api/list/latest?page=$page#$page", apiHeaders)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/api/list/latest?page=$page#$page", apiHeaders)
 
-    override fun popularMangaParse(response: Response): MangasPage =
-        searchMangaParse(response)
+    override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
 
     // =============================== Latest ===============================
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/api".toHttpUrl().newBuilder()
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val tag = (filterList.find { it is TagFilter } as TagFilter).toUriPart()
@@ -133,7 +132,10 @@ class MangaHot : HttpSource() {
         return MangasPage(mangaList, currentPage < currentTotalNumberOfPages)
     }
 
-    private fun setTotalNumberPages(query: String, tag: String?) {
+    private fun setTotalNumberPages(
+        query: String,
+        tag: String?,
+    ) {
         val request = if (query.isNotBlank()) {
             GET("$baseUrl/search?q=${URLEncoder.encode(query, "UTF-8")}", headers)
         } else if (tag?.isNotBlank() == true) {
@@ -219,11 +221,10 @@ class MangaHot : HttpSource() {
         else -> SManga.UNKNOWN
     }
 
-    private fun Element.getInfo(name: String): String? =
-        selectFirst("li:has(span:contains($name))")
-            ?.ownText()
-            ?.substringAfter(":")
-            ?.trim()
+    private fun Element.getInfo(name: String): String? = selectFirst("li:has(span:contains($name))")
+        ?.ownText()
+        ?.substringAfter(":")
+        ?.trim()
 
     // ============================== Chapters ==============================
 
@@ -258,8 +259,7 @@ class MangaHot : HttpSource() {
         }
     }
 
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
         val pageHeaders = headersBuilder().apply {
@@ -270,8 +270,7 @@ class MangaHot : HttpSource() {
         return GET(page.imageUrl!!, pageHeaders)
     }
 
-    override fun getChapterUrl(chapter: SChapter): String =
-        baseUrl + chapter.url.substringBeforeLast("#")
+    override fun getChapterUrl(chapter: SChapter): String = baseUrl + chapter.url.substringBeforeLast("#")
 
     // ============================= Utilities ==============================
 

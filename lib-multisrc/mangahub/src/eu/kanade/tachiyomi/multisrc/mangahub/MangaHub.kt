@@ -44,7 +44,6 @@ abstract class MangaHub(
     private val mangaSource: String,
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("MM-dd-yyyy", Locale.US),
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     private var baseApiUrl = "https://api.mghcdn.com"
@@ -60,7 +59,10 @@ abstract class MangaHub(
         .build()
 
     override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+        .add(
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        )
         .add("Accept-Language", "en-US,en;q=0.5")
         .add("DNT", "1")
         .add("Referer", "$baseUrl/")
@@ -205,7 +207,11 @@ abstract class MangaHub(
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
     // search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search/page/$page".toHttpUrl().newBuilder()
         url.addQueryParameter("q", query)
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
@@ -280,7 +286,10 @@ abstract class MangaHub(
 
     override fun chapterListSelector() = ".tab-content ul li"
 
-    private fun chapterFromElement(element: Element, head: Element): SChapter {
+    private fun chapterFromElement(
+        element: Element,
+        head: Element,
+    ): SChapter {
         val chapter = SChapter.create()
         val potentialLinks = element.select("a[href*='$baseUrl/chapter/']:not([rel*=nofollow]):not([rel*=noreferrer])")
         var visibleLink = ""
@@ -333,7 +342,9 @@ abstract class MangaHub(
             else -> {
                 try {
                     parsedDate = dateFormat.parse(date)?.time ?: 0L
-                } catch (e: ParseException) { /*nothing to do, parsedDate is initialized with 0L*/ }
+                } catch (e: ParseException) {
+                    // nothing to do, parsedDate is initialized with 0L
+                }
             }
         }
         return parsedDate
@@ -370,12 +381,12 @@ abstract class MangaHub(
         return POST("$baseApiUrl/graphql", newHeaders, body)
     }
 
-    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> =
-        super.fetchPageList(chapter)
-            .doOnError { refreshApiKey(chapter) }
-            .retry(1)
+    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> = super.fetchPageList(chapter)
+        .doOnError { refreshApiKey(chapter) }
+        .retry(1)
 
     override fun pageListParse(document: Document): List<Page> = throw UnsupportedOperationException()
+
     override fun pageListParse(response: Response): List<Page> {
         val chapterObject = json.decodeFromString<ApiChapterPagesResponse>(response.body.string())
 
@@ -423,6 +434,7 @@ abstract class MangaHub(
     }
 
     private class OrderBy(orders: Array<Order>) : Filter.Select<Order>("Order", orders, 0)
+
     private class GenreList(genres: Array<Genre>) : Filter.Select<Genre>("Genres", genres, 0)
 
     override fun getFilterList() = FilterList(

@@ -31,7 +31,6 @@ abstract class MangaThemesiaAlt(
     dateFormat: SimpleDateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US),
     private val randomUrlPrefKey: String = "pref_auto_random_url",
 ) : MangaThemesia(name, baseUrl, lang, mangaUrlDirectory, dateFormat), ConfigurableSource {
-
     protected val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -85,10 +84,9 @@ abstract class MangaThemesiaAlt(
             .let(::getRandomPartFromUrl)
     }
 
-    protected suspend fun getUpdatedRandomPart(): String =
-        client.newCall(GET("$baseUrl$mangaUrlDirectory/", headers))
-            .await()
-            .use(::getRandomPartFromResponse)
+    protected suspend fun getUpdatedRandomPart(): String = client.newCall(GET("$baseUrl$mangaUrlDirectory/", headers))
+        .await()
+        .use(::getRandomPartFromResponse)
 
     override fun searchMangaParse(response: Response): MangasPage {
         val mp = super.searchMangaParse(response)
@@ -218,7 +216,6 @@ internal class SuspendLazy(
     private val initializer: suspend () -> String,
     private val saveCache: (String) -> Unit,
 ) {
-
     private val mutex = Mutex()
     private var cachedValue: SoftReference<String>? = null
     private var fetchTime = 0L

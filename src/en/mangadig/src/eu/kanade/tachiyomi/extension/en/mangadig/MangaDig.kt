@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.multisrc.colamanga.UriPartFilter
 import eu.kanade.tachiyomi.source.model.FilterList
 
 class MangaDig : ColaManga("MangaDig", "https://mangadig.com", "en") {
-
     override fun popularMangaNextPageSelector() = "a:contains(Next):not(.fed-btns-disad)"
 
     override val statusTitle = "Status"

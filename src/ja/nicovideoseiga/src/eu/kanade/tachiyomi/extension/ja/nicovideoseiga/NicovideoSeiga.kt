@@ -71,13 +71,11 @@ class NicovideoSeiga : HttpSource() {
         return MangasPage(mangas, mangaCount - mangaPerPage * currentPage > 0)
     }
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/manga/list?page=$page&sort=manga_updated")
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/manga/list?page=$page&sort=manga_updated")
 
     override fun popularMangaParse(response: Response): MangasPage = latestUpdatesParse(response)
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/manga/list?page=$page&sort=manga_view")
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/manga/list?page=$page&sort=manga_view")
 
     override fun searchMangaParse(response: Response): MangasPage {
         val currentPage = response.request.url.queryParameter("page")!!.toInt()
@@ -114,8 +112,11 @@ class NicovideoSeiga : HttpSource() {
         return MangasPage(mangas, mangaCount - mangaPerPage * currentPage > 0)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        GET("$baseUrl/manga/search/?q=$query&page=$page&sort=score")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET("$baseUrl/manga/search/?q=$query&page=$page&sort=score")
 
     override fun mangaDetailsParse(response: Response): SManga = SManga.create().apply {
         val doc = response.asJsoup()
@@ -219,8 +220,7 @@ class NicovideoSeiga : HttpSource() {
         return GET(page.imageUrl!!, headers)
     }
 
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     private fun imageIntercept(chain: Interceptor.Chain): Response {
         // Intercept requests for paid manga images only
@@ -258,7 +258,10 @@ class NicovideoSeiga : HttpSource() {
      * The result image is then base64 encoded loaded into the page using the data URI scheme
      * There are additional checks to determine the image type, defaults to webp
      */
-    private fun decryptImage(key: String, image: ByteArray): ByteArray {
+    private fun decryptImage(
+        key: String,
+        image: ByteArray,
+    ): ByteArray {
         val keySet = IntArray(8)
         for (i in 0..7)
             keySet[i] = key.substring(2 * i).take(2).toInt(16)

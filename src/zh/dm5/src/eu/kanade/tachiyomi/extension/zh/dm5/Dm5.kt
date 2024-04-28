@@ -40,8 +40,11 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
     override fun headersBuilder() = super.headersBuilder().set("Accept-Language", "zh-TW")
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/manhua-list-p$page/", headers)
+
     override fun popularMangaNextPageSelector(): String = "div.page-pagination a:contains(>)"
+
     override fun popularMangaSelector(): String = "ul.mh-list > li > div.mh-item"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst("h2.title > a")!!.text()
         thumbnail_url = element.selectFirst("p.mh-cover")!!.attr("style")
@@ -50,15 +53,25 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/manhua-list-s2-p$page/", headers)
+
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/search?title=$query&language=1&page=$page", headers)
     }
+
     override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun searchMangaSelector(): String = "ul.mh-list > li, div.banner_detail_form"
+
     override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst(".title > a")!!.text()
         thumbnail_url = element.selectFirst("img")?.attr("src")
@@ -115,7 +128,9 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
             li
         }
     }
+
     override fun chapterListSelector(): String = throw UnsupportedOperationException()
+
     override fun chapterFromElement(element: Element): SChapter = throw UnsupportedOperationException()
 
     override fun pageListParse(document: Document): List<Page> {
@@ -182,6 +197,7 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
         val query = script.substringAfter("pix+pvalue[i]+\"").substringBefore("\"")
         return pix + pvalue + query
     }
+
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {

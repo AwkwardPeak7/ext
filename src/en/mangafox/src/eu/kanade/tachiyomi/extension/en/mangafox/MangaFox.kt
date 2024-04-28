@@ -25,7 +25,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class MangaFox : ParsedHttpSource() {
-
     override val name: String = "MangaFox"
 
     override val baseUrl: String = "https://fanfox.net"
@@ -50,7 +49,10 @@ class MangaFox : ParsedHttpSource() {
                     cookieManager.setCookie(baseUrl.toHttpUrl().host, "isAdult=1")
                 }
 
-                override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+                override fun saveFromResponse(
+                    url: HttpUrl,
+                    cookies: List<Cookie>,
+                ) {
                     val urlString = url.toString()
                     cookies.forEach { cookieManager.setCookie(urlString, it.toString()) }
                 }
@@ -100,7 +102,11 @@ class MangaFox : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val genres = mutableListOf<Int>()
         val genresEx = mutableListOf<Int>()
         val url = baseUrl.toHttpUrl().newBuilder().apply {
@@ -192,10 +198,9 @@ class MangaFox : ParsedHttpSource() {
         return GET("$mobileUrl$mobilePath", headers)
     }
 
-    override fun pageListParse(document: Document): List<Page> =
-        document.select("#viewer img").mapIndexed { idx, it ->
-            Page(idx, imageUrl = it.attr("abs:data-original"))
-        }
+    override fun pageListParse(document: Document): List<Page> = document.select("#viewer img").mapIndexed { idx, it ->
+        Page(idx, imageUrl = it.attr("abs:data-original"))
+    }
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
@@ -313,6 +318,7 @@ class MangaFox : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val id: Int) : Filter.TriState(name)
+
     private class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
 
     // console.log([...document.querySelectorAll(".tag-box a")].map(e => `Genre("${e.innerHTML}", ${e.dataset.val})`).join(",\n"))

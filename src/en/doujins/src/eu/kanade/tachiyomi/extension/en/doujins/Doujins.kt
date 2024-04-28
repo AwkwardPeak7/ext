@@ -27,7 +27,6 @@ import java.util.Locale
 import java.util.TimeZone
 
 class Doujins : HttpSource() {
-
     override val baseUrl: String = "https://doujins.com"
 
     override val lang: String = "en"
@@ -122,7 +121,11 @@ class Doujins : HttpSource() {
 
     override fun searchMangaParse(response: Response) = parseGalleryPage(response.asJsoup())
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val seriesFilter = filterList.findInstance<SeriesFilter>()!!
         val sortFilter = filterList.findInstance<SortFilter>()!!
@@ -165,15 +168,12 @@ class Doujins : HttpSource() {
     override fun getFilterList(): FilterList = FilterList(
         Filter.Header("Text search ignores series and period filters"),
         Filter.Separator(),
-
         Filter.Header("Series filter overrides period filter"),
         SeriesFilter(),
         Filter.Separator(),
-
         Filter.Header("Period filter only applies at initial page"),
         PopularityPeriodFilter(),
         Filter.Separator(),
-
         Filter.Header("Sort only works with text search and series filter"),
         SortFilter(),
     )

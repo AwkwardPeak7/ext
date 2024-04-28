@@ -38,7 +38,6 @@ abstract class HeanCms(
     override val lang: String,
     protected val apiUrl: String = baseUrl.replace("://", "://api."),
 ) : ConfigurableSource, HttpSource() {
-
     protected val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -152,7 +151,11 @@ abstract class HeanCms(
 
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (!query.startsWith(SEARCH_PREFIX)) {
             return super.fetchSearchManga(page, query, filters)
         }
@@ -178,7 +181,11 @@ abstract class HeanCms(
         return result.getOrNull() ?: throw Exception(intl.format("id_not_found_error", slug))
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val sortByFilter = filters.firstInstanceOrNull<SortByFilter>()
         val statusFilter = filters.firstInstanceOrNull<StatusFilter>()
 
@@ -324,8 +331,7 @@ abstract class HeanCms(
 
     override fun getChapterUrl(chapter: SChapter) = baseUrl + chapter.url.substringBeforeLast("#")
 
-    override fun pageListRequest(chapter: SChapter) =
-        GET(apiUrl + chapter.url.replace("/$mangaSubDirectory/", "/chapter/"), authHeaders())
+    override fun pageListRequest(chapter: SChapter) = GET(apiUrl + chapter.url.replace("/$mangaSubDirectory/", "/chapter/"), authHeaders())
 
     override fun pageListParse(response: Response): List<Page> {
         val result = response.parseAs<HeanCmsPagePayloadDto>()
@@ -463,8 +469,7 @@ abstract class HeanCms(
 
     protected inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 
-    protected inline fun <reified R> List<*>.firstInstanceOrNull(): R? =
-        filterIsInstance<R>().firstOrNull()
+    protected inline fun <reified R> List<*>.firstInstanceOrNull(): R? = filterIsInstance<R>().firstOrNull()
 
     private val SharedPreferences.showPaidChapters: Boolean
         get() = getBoolean(SHOW_PAID_CHAPTERS_PREF, SHOW_PAID_CHAPTERS_DEFAULT)

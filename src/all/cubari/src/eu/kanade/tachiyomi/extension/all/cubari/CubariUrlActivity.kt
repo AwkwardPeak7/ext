@@ -8,7 +8,6 @@ import android.util.Log
 import kotlin.system.exitProcess
 
 class CubariUrlActivity : Activity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val host = intent?.data?.host
@@ -48,7 +47,10 @@ class CubariUrlActivity : Activity() {
         exitProcess(0)
     }
 
-    private fun fromSource(source: String, pathSegments: List<String>): String? {
+    private fun fromSource(
+        source: String,
+        pathSegments: List<String>,
+    ): String? {
         if (pathSegments.size >= 2) {
             val id = pathSegments[1]
 

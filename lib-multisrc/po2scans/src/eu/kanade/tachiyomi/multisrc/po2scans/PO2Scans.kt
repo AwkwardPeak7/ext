@@ -21,7 +21,6 @@ abstract class PO2Scans(
     override val lang: String,
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("dd MMMM, yy", Locale.ENGLISH),
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient.newBuilder()
@@ -61,7 +60,11 @@ abstract class PO2Scans(
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
     // search
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (!query.startsWith(SLUG_SEARCH_PREFIX)) {
             return super.fetchSearchManga(page, query, filters)
         }
@@ -74,8 +77,11 @@ abstract class PO2Scans(
             }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        GET("$baseUrl/series?search=$query", headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = GET("$baseUrl/series?search=$query", headers)
 
     override fun searchMangaSelector() = popularMangaSelector()
 
@@ -107,10 +113,9 @@ abstract class PO2Scans(
     }
 
     // page list
-    override fun pageListParse(document: Document) =
-        document.select(".swiper-slide img").mapIndexed { index, img ->
-            Page(index, imageUrl = img.imgAttr())
-        }
+    override fun pageListParse(document: Document) = document.select(".swiper-slide img").mapIndexed { index, img ->
+        Page(index, imageUrl = img.imgAttr())
+    }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
@@ -131,9 +136,8 @@ abstract class PO2Scans(
         else -> dataImageAsUrl("src")
     }
 
-    private fun parseDate(dateStr: String) =
-        runCatching { dateFormat.parse(dateStr)!!.time }
-            .getOrDefault(0L)
+    private fun parseDate(dateStr: String) = runCatching { dateFormat.parse(dateStr)!!.time }
+        .getOrDefault(0L)
 
     companion object {
         const val SLUG_SEARCH_PREFIX = "slug:"

@@ -27,7 +27,6 @@ abstract class GravureBlogger(
     override val baseUrl: String,
     override val lang: String,
 ) : HttpSource() {
-
     override val supportsLatest = false
 
     override val client = network.cloudflareClient
@@ -74,7 +73,11 @@ abstract class GravureBlogger(
 
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = filters.ifEmpty { getFilterList() }
         val searchQuery = buildString {
             filterList.filterIsInstance<LabelFilter>().forEach {

@@ -23,7 +23,6 @@ abstract class MultiChan(
     override val baseUrl: String,
     final override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.client.newBuilder()
@@ -31,11 +30,12 @@ abstract class MultiChan(
         .readTimeout(30, TimeUnit.SECONDS)
         .rateLimit(2)
         .build()
+
     override fun headersBuilder() = Headers.Builder().apply {
         add("Referer", baseUrl)
     }
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/mostfavorites?offset=${20 * (page - 1)}", headers)
+
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/mostfavorites?offset=${20 * (page - 1)}", headers)
 
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/manga/new?offset=${20 * (page - 1)}")
 
@@ -55,8 +55,7 @@ abstract class MultiChan(
         return manga
     }
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
@@ -123,7 +122,9 @@ abstract class MultiChan(
         val chapter = SChapter.create()
         chapter.setUrlWithoutDomain(urlElement.attr("href"))
         chapter.name = urlElement.text()
-        chapter.chapter_number = "(глава\\s|часть\\s)([0-9]+\\.?[0-9]*)".toRegex(RegexOption.IGNORE_CASE).find(chapter.name)?.groupValues?.get(2)?.toFloat() ?: -1F
+        chapter.chapter_number = "(глава\\s|часть\\s)([0-9]+\\.?[0-9]*)".toRegex(
+            RegexOption.IGNORE_CASE,
+        ).find(chapter.name)?.groupValues?.get(2)?.toFloat() ?: -1F
         chapter.date_upload = simpleDateFormat.parse(element.select("div.date").first()!!.text())?.time ?: 0L
         return chapter
     }

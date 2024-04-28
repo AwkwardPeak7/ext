@@ -25,7 +25,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class TMOHentai : ConfigurableSource, ParsedHttpSource() {
-
     override val name = "TMOHentai"
 
     override val baseUrl = "https://tmohentai.com"
@@ -45,7 +44,10 @@ class TMOHentai : ConfigurableSource, ParsedHttpSource() {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    override fun popularMangaRequest(page: Int) = GET("$baseUrl/section/all?view=list&page=$page&order=popularity&order-dir=desc&search[searchText]=&search[searchBy]=name&type=all", headers)
+    override fun popularMangaRequest(page: Int) = GET(
+        "$baseUrl/section/all?view=list&page=$page&order=popularity&order-dir=desc&search[searchText]=&search[searchBy]=name&type=all",
+        headers,
+    )
 
     override fun popularMangaSelector() = "table > tbody > tr[data-toggle=popover]"
 
@@ -60,7 +62,10 @@ class TMOHentai : ConfigurableSource, ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = "a[rel=next]"
 
-    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/section/all?view=list&page=$page&order=publication_date&order-dir=desc&search[searchText]=&search[searchBy]=name&type=all", headers)
+    override fun latestUpdatesRequest(page: Int) = GET(
+        "$baseUrl/section/all?view=list&page=$page&order=publication_date&order-dir=desc&search[searchText]=&search[searchBy]=name&type=all",
+        headers,
+    )
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
@@ -130,9 +135,14 @@ class TMOHentai : ConfigurableSource, ParsedHttpSource() {
         }
     }
 
-    override fun imageUrlParse(document: Document): String = document.select("div#content-images img.content-image").attr("abs:data-original")
+    override fun imageUrlParse(document: Document): String =
+        document.select("div#content-images img.content-image").attr("abs:data-original")
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/section/all?view=list".toHttpUrl().newBuilder()
 
         url.addQueryParameter("search[searchText]", query)
@@ -156,7 +166,11 @@ class TMOHentai : ConfigurableSource, ParsedHttpSource() {
                         url.addQueryParameter("order", SORTABLES[filter.state!!.index].second)
                         url.addQueryParameter(
                             "order-dir",
-                            if (filter.state!!.ascending) { "asc" } else { "desc" },
+                            if (filter.state!!.ascending) {
+                                "asc"
+                            } else {
+                                "desc"
+                            },
                         )
                     }
                 }
@@ -175,7 +189,11 @@ class TMOHentai : ConfigurableSource, ParsedHttpSource() {
 
     private fun searchMangaByIdRequest(id: String) = GET("$baseUrl/$PREFIX_CONTENTS/$id", headers)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {
             val realQuery = query.removePrefix(PREFIX_ID_SEARCH)
 

@@ -15,7 +15,6 @@ import rx.Observable
 import kotlin.math.min
 
 class TwoKinds : HttpSource() {
-
     override val name = "Keenspot TwoKinds"
 
     override val baseUrl = "https://twokinds.keenspot.com"
@@ -92,7 +91,10 @@ class TwoKinds : HttpSource() {
 
     data class TwoKindsPage(val url: String, val name: String)
 
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         val document = response.asJsoup()
 
         val pages = document.select(".chapter-links")
@@ -170,9 +172,17 @@ class TwoKinds : HttpSource() {
         return document.select("#content article img").first()!!.attr("src")
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = throw Exception("Search functionality is not available.")
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = throw Exception("Search functionality is not available.")
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 }

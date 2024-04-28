@@ -36,7 +36,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Taiyo : ParsedHttpSource() {
-
     override val name = "Taiyō"
 
     override val baseUrl = "https://www.taiyo.moe"
@@ -81,7 +80,11 @@ class Taiyo : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector() = null
 
     // =============================== Search ===============================
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SEARCH)) { // URL intent handler
             val id = query.removePrefix(PREFIX_SEARCH)
             client.newCall(GET("$baseUrl/media/$id"))
@@ -97,7 +100,11 @@ class Taiyo : ParsedHttpSource() {
         return MangasPage(listOf(details), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val jsonObj = buildJsonObject {
             putJsonObject("0") {
                 putJsonObject("json") {

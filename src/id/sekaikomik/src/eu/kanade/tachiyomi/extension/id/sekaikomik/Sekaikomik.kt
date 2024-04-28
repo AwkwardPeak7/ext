@@ -12,7 +12,6 @@ class Sekaikomik : MangaThemesia(
     "id",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("id")),
 ) {
-
     private val junkDescriptionPattern = """ Link Download : .*""".toRegex()
 
     override fun mangaDetailsParse(document: Document): SManga {

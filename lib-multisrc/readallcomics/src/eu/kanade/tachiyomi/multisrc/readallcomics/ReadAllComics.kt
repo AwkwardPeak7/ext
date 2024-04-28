@@ -24,7 +24,6 @@ abstract class ReadAllComics(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = false
 
     private lateinit var searchPageElements: Elements
@@ -62,8 +61,7 @@ abstract class ReadAllComics(
 
     protected open fun archivedCategorySelector() = ".description-archive > p > span > a"
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl${if (page > 1)"/page/$page/" else ""}", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl${if (page > 1)"/page/$page/" else ""}", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
@@ -93,11 +91,18 @@ abstract class ReadAllComics(
     }
 
     override fun popularMangaSelector() = "#post-area > div"
+
     override fun popularMangaNextPageSelector() = "div.pagenavi > a.next"
+
     protected open fun popularMangaTitleSelector() = "h2"
+
     protected open fun popularMangaThumbnailSelector() = "img"
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (page == 1) {
             client.newCall(searchMangaRequest(page, query, filters))
                 .asObservableSuccess()
@@ -107,8 +112,11 @@ abstract class ReadAllComics(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        GET("$baseUrl/?story=${query.trim()}&s=&type=${searchType()}", headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = GET("$baseUrl/?story=${query.trim()}&s=&type=${searchType()}", headers)
 
     protected open fun searchType() = "comic"
 
@@ -138,6 +146,7 @@ abstract class ReadAllComics(
     }
 
     override fun searchMangaSelector() = ".categories a"
+
     override fun searchMangaNextPageSelector() = null
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
@@ -149,9 +158,13 @@ abstract class ReadAllComics(
     }
 
     protected open fun mangaDetailsTitleSelector() = "h1"
+
     protected open fun mangaDetailsGenreSelector() = "p strong"
+
     protected open fun mangaDetailsAuthorSelector() = "p > strong"
+
     protected open fun mangaDetailsDescriptionSelector() = ".b > strong"
+
     protected open fun mangaDetailsThumbnailSelector() = "p img"
 
     override fun chapterListSelector() = ".list-story a"
@@ -173,16 +186,15 @@ abstract class ReadAllComics(
         private const val searchCover = "https://fakeimg.pl/200x300/?text=No%20Cover%0AOn%20Search&font_size=62"
     }
 
-    override fun imageUrlParse(document: Document) =
-        throw UnsupportedOperationException()
-    override fun latestUpdatesRequest(page: Int) =
-        throw UnsupportedOperationException()
-    override fun latestUpdatesFromElement(element: Element) =
-        throw UnsupportedOperationException()
-    override fun latestUpdatesSelector() =
-        throw UnsupportedOperationException()
-    override fun latestUpdatesNextPageSelector() =
-        throw UnsupportedOperationException()
-    override fun popularMangaFromElement(element: Element) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
+
+    override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+
+    override fun latestUpdatesFromElement(element: Element) = throw UnsupportedOperationException()
+
+    override fun latestUpdatesSelector() = throw UnsupportedOperationException()
+
+    override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
+
+    override fun popularMangaFromElement(element: Element) = throw UnsupportedOperationException()
 }

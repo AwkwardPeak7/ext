@@ -13,7 +13,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class ReadManga : GroupLe("ReadManga", "https://readmanga.live", "ru") {
-
     override val id: Long = 5
 
     private val preferences: SharedPreferences by lazy {
@@ -22,7 +21,12 @@ class ReadManga : GroupLe("ReadManga", "https://readmanga.live", "ru") {
 
     private var domain: String = preferences.getString(DOMAIN_TITLE, DOMAIN_DEFAULT)!!
     override val baseUrl: String = domain
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = super.searchMangaRequest(page, query, filters).url.newBuilder()
         (if (filters.isEmpty()) getFilterList().reversed() else filters.reversed()).forEach { filter ->
             when (filter) {
@@ -53,7 +57,10 @@ class ReadManga : GroupLe("ReadManga", "https://readmanga.live", "ru") {
                 }
                 is OrderBy -> {
                     if (url.toString().contains("&") && filter.state < 6) {
-                        url.addQueryParameter("sortType", arrayOf("RATING", "POPULARITY", "YEAR", "NAME", "DATE_CREATE", "DATE_UPDATE")[filter.state])
+                        url.addQueryParameter(
+                            "sortType",
+                            arrayOf("RATING", "POPULARITY", "YEAR", "NAME", "DATE_CREATE", "DATE_UPDATE")[filter.state],
+                        )
                     } else {
                         val ord = arrayOf("rate", "popularity", "year", "name", "created", "updated", "votes")[filter.state]
                         return GET("$baseUrl/list?sortType=$ord&offset=${70 * (page - 1)}", headers)
@@ -77,9 +84,13 @@ class ReadManga : GroupLe("ReadManga", "https://readmanga.live", "ru") {
     private class Genre(name: String, val id: String) : Filter.TriState(name)
 
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Жанры", genres)
+
     private class Category(categories: List<Genre>) : Filter.Group<Genre>("Категории", categories)
+
     private class AgeList(ages: List<Genre>) : Filter.Group<Genre>("Возрастная рекомендация", ages)
+
     private class More(moren: List<Genre>) : Filter.Group<Genre>("Прочее", moren)
+
     private class FilList(fils: List<Genre>) : Filter.Group<Genre>("Фильтры", fils)
 
     override fun getFilterList() = FilterList(
@@ -103,6 +114,7 @@ class ReadManga : GroupLe("ReadManga", "https://readmanga.live", "ru") {
         Genre("Продается", "s_sale"),
         Genre("Белые жанры", "s_not_pessimized"),
     )
+
     private fun getMore() = listOf(
         Genre("Анонс", "el_9578"),
         Genre("В цвете", "el_7290"),
@@ -179,7 +191,11 @@ class ReadManga : GroupLe("ReadManga", "https://readmanga.live", "ru") {
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val res = preferences.edit().putString(DOMAIN_TITLE, newValue as String).commit()
-                    Toast.makeText(screen.context, "Для смены домена необходимо перезапустить приложение с полной остановкой.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        screen.context,
+                        "Для смены домена необходимо перезапустить приложение с полной остановкой.",
+                        Toast.LENGTH_LONG,
+                    ).show()
                     res
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -188,6 +204,7 @@ class ReadManga : GroupLe("ReadManga", "https://readmanga.live", "ru") {
             }
         }.let(screen::addPreference)
     }
+
     companion object {
         private const val DOMAIN_TITLE = "Домен"
         private const val DOMAIN_DEFAULT = "https://readmanga.live"

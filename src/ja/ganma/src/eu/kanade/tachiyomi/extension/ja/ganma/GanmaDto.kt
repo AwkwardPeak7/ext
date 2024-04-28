@@ -70,12 +70,13 @@ class Magazine(
 }
 
 fun String.alias() = this.substringBefore('#')
+
 fun String.mangaId() = this.substringAfter('#')
-fun String.chapterDir(): Pair<String, String> =
-    with(this.substringAfter('#')) {
-        // this == [mangaId-UUID]/[chapterId-UUID]
-        Pair(substring(0, 36), substring(37, 37 + 36))
-    }
+
+fun String.chapterDir(): Pair<String, String> = with(this.substringAfter('#')) {
+    // this == [mangaId-UUID]/[chapterId-UUID]
+    Pair(substring(0, 36), substring(37, 37 + 36))
+}
 
 // Chapter
 @Serializable
@@ -120,12 +121,10 @@ class Flags(
     val isFriday: Boolean = false,
     val isSaturday: Boolean = false,
     val isSunday: Boolean = false,
-
     val isWeekly: Boolean = false,
     val isEveryOtherWeek: Boolean = false,
     val isThreeConsecutiveWeeks: Boolean = false,
     val isMonthly: Boolean = false,
-
     val isFinish: Boolean = false,
 //  val isMGAward: Boolean = false,
 //  val isNew: Boolean = false,
@@ -161,8 +160,7 @@ class Directory(
     val token: String,
     val files: List<String>,
 ) {
-    fun toPageList(): MutableList<Page> =
-        files.mapIndexedTo(ArrayList(files.size + 1)) { i, file ->
-            Page(i, imageUrl = "$baseUrl$file?$token")
-        }
+    fun toPageList(): MutableList<Page> = files.mapIndexedTo(ArrayList(files.size + 1)) { i, file ->
+        Page(i, imageUrl = "$baseUrl$file?$token")
+    }
 }

@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class LxHentai : ParsedHttpSource() {
-
     override val name = "LXHentai"
 
     override val baseUrl = "https://lxmanga.cc"
@@ -33,29 +32,27 @@ class LxHentai : ParsedHttpSource() {
 
     override fun headersBuilder(): Headers.Builder = super.headersBuilder().add("Referer", baseUrl)
 
-    override fun popularMangaRequest(page: Int) =
-        searchMangaRequest(page, "", FilterList(SortBy(3)))
+    override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", FilterList(SortBy(3)))
 
     override fun popularMangaSelector() = searchMangaSelector()
 
-    override fun popularMangaFromElement(element: Element) =
-        searchMangaFromElement(element)
+    override fun popularMangaFromElement(element: Element) = searchMangaFromElement(element)
 
-    override fun popularMangaNextPageSelector() =
-        searchMangaNextPageSelector()
+    override fun popularMangaNextPageSelector() = searchMangaNextPageSelector()
 
-    override fun latestUpdatesRequest(page: Int) =
-        searchMangaRequest(page, "", FilterList(SortBy(0)))
+    override fun latestUpdatesRequest(page: Int) = searchMangaRequest(page, "", FilterList(SortBy(0)))
 
     override fun latestUpdatesSelector() = searchMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element) =
-        searchMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element) = searchMangaFromElement(element)
 
-    override fun latestUpdatesNextPageSelector() =
-        searchMangaNextPageSelector()
+    override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith(PREFIX_ID_SEARCH) -> {
                 val id = query.removePrefix(PREFIX_ID_SEARCH).trim()
@@ -70,7 +67,11 @@ class LxHentai : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             var canAddTextFilter = true
 
@@ -212,9 +213,11 @@ class LxHentai : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val id: Int) : Filter.TriState(name)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Thể loại", genres)
 
     private class Author : Filter.Text("Tác giả", "")
+
     private class Doujinshi : Filter.Text("Doujinshi", "")
 
     override fun getFilterList(): FilterList = FilterList(

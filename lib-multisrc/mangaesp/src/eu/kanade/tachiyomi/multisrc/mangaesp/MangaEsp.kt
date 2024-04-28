@@ -30,7 +30,6 @@ abstract class MangaEsp(
     override val lang: String,
     protected val apiBaseUrl: String = baseUrl.replace("://", "://apis."),
 ) : HttpSource() {
-
     override val supportsLatest = true
 
     protected val json: Json by injectLazy()
@@ -89,11 +88,20 @@ abstract class MangaEsp(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = GET("$baseUrl/comics", headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET("$baseUrl/comics", headers)
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    private fun searchMangaParse(response: Response, page: Int, query: String, filters: FilterList): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): MangasPage {
         val document = response.asJsoup()
         val script = document.select("script:containsData(self.__next_f.push)").joinToString { it.data() }
         val jsonString = MANGA_LIST_REGEX.find(script)?.groupValues?.get(1)
@@ -105,7 +113,11 @@ abstract class MangaEsp(
 
     private var filteredList = mutableListOf<SeriesDto>()
 
-    private fun parseComicsList(page: Int, query: String, filterList: FilterList): MangasPage {
+    private fun parseComicsList(
+        page: Int,
+        query: String,
+        filterList: FilterList,
+    ): MangasPage {
         if (page == 1) {
             filteredList.clear()
 
@@ -223,8 +235,7 @@ abstract class MangaEsp(
         fun toUriPart() = vals[state].second
     }
 
-    private inline fun <reified R> List<*>.firstInstanceOrNull(): R? =
-        filterIsInstance<R>().firstOrNull()
+    private inline fun <reified R> List<*>.firstInstanceOrNull(): R? = filterIsInstance<R>().firstOrNull()
 
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 

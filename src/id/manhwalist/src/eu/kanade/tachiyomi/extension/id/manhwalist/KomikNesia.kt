@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import okhttp3.OkHttpClient
 
 class KomikNesia : MangaThemesia("KomikNesia", "https://komiknesia.xyz", "id") {
-
     // ManhwaList -> KomikNesia
     override val id = 4039555433611432280
 

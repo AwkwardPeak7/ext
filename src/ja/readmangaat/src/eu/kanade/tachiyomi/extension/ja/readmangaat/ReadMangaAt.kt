@@ -25,7 +25,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class ReadMangaAt : ParsedHttpSource() {
-
     override val name = "ReadManga.at"
 
     override val baseUrl = "https://readmanga.at"
@@ -117,7 +116,11 @@ class ReadMangaAt : ParsedHttpSource() {
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             val genreFilter = filters.filterIsInstance<GenreFilter>().first()
 
@@ -141,8 +144,7 @@ class ReadMangaAt : ParsedHttpSource() {
 
     override fun searchMangaSelector(): String = ".row > .col-6 > .entry-ma"
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        latestUpdatesFromElement(element)
+    override fun searchMangaFromElement(element: Element): SManga = latestUpdatesFromElement(element)
 
     override fun searchMangaNextPageSelector(): String = ".pagination > span.current + a"
 

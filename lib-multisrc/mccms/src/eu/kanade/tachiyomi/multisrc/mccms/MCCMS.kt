@@ -42,20 +42,22 @@ open class MCCMS(
         .add("User-Agent", System.getProperty("http.agent")!!)
         .add("Referer", baseUrl)
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/api/data/comic?page=$page&size=$PAGE_SIZE&order=hits", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/api/data/comic?page=$page&size=$PAGE_SIZE&order=hits", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val list: List<MangaDto> = response.parseAs()
         return MangasPage(list.map { it.toSManga() }, list.size >= PAGE_SIZE)
     }
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/api/data/comic?page=$page&size=$PAGE_SIZE&order=addtime", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/api/data/comic?page=$page&size=$PAGE_SIZE&order=addtime", headers)
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val queries = buildList {
             add("page=$page")
             add("size=$PAGE_SIZE")

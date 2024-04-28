@@ -6,13 +6,21 @@ import eu.kanade.tachiyomi.source.model.FilterList
 class OffsetPageFilter : Filter.Text("Offset results by # pages")
 
 class TagFilter : AdvSearchEntryFilter("Tags")
+
 class ArtistFilter : AdvSearchEntryFilter("Artists")
+
 class AuthorFilter : AdvSearchEntryFilter("Authors")
+
 class CircleFilter : AdvSearchEntryFilter("Circles")
+
 class EventFilter : AdvSearchEntryFilter("Events")
+
 class ParodyFilter : AdvSearchEntryFilter("Parodies", "parody")
+
 class MagazineFilter : AdvSearchEntryFilter("Magazines")
+
 class PublisherFilter : AdvSearchEntryFilter("Publishers")
+
 open class AdvSearchEntryFilter(
     name: String,
     val key: String = name.lowercase().removeSuffix("s"),

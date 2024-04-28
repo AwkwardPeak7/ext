@@ -29,7 +29,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class MangaTop : ParsedHttpSource() {
-
     override val name = "MangaTop"
 
     override val baseUrl = "https://mangatop.to"
@@ -138,14 +137,17 @@ class MangaTop : ParsedHttpSource() {
 
     override fun latestUpdatesSelector(): String = "div > article.manga-item"
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun latestUpdatesNextPageSelector(): String = "ul.pagination > li.active + li:has(a)"
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = filters.ifEmpty { getFilterList() }
         val url = "$baseUrl/search".toHttpUrl().newBuilder().apply {
             addQueryParameter("q", query)
@@ -158,17 +160,13 @@ class MangaTop : ParsedHttpSource() {
         return GET(url, headers)
     }
 
-    override fun searchMangaParse(response: Response): MangasPage =
-        latestUpdatesParse(response)
+    override fun searchMangaParse(response: Response): MangasPage = latestUpdatesParse(response)
 
-    override fun searchMangaSelector(): String =
-        throw UnsupportedOperationException()
+    override fun searchMangaSelector(): String = throw UnsupportedOperationException()
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        throw UnsupportedOperationException()
+    override fun searchMangaFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
-    override fun searchMangaNextPageSelector(): String =
-        throw UnsupportedOperationException()
+    override fun searchMangaNextPageSelector(): String = throw UnsupportedOperationException()
 
     // =============================== Filters ==============================
 
@@ -315,8 +313,7 @@ class MangaTop : ParsedHttpSource() {
         }
     }
 
-    override fun pageListParse(document: Document): List<Page> =
-        throw UnsupportedOperationException()
+    override fun pageListParse(document: Document): List<Page> = throw UnsupportedOperationException()
 
     override fun imageUrlParse(document: Document) = ""
 

@@ -12,7 +12,6 @@ class VCPVMPFactory : SourceFactory {
 }
 
 class VCP : VCPVMP("VCP", "https://vercomicsporno.com") {
-
     override val urlSuffix = "comics-porno"
     override val genreSuffix = "etiquetas"
     override var genres =
@@ -42,7 +41,6 @@ class VCP : VCPVMP("VCP", "https://vercomicsporno.com") {
 }
 
 class VMP : VCPVMP("VMP", "https://vermangasporno.com") {
-
     override val urlSuffix = "xxx"
     override val genreSuffix = "genero"
 

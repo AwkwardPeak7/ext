@@ -30,7 +30,6 @@ abstract class Gmanga(
     final override val lang: String,
     protected open val cdnUrl: String = baseUrl,
 ) : HttpSource() {
-
     override val supportsLatest = true
 
     protected val json: Json by injectLazy()
@@ -41,6 +40,7 @@ abstract class Gmanga(
         .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", getFilterList())
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
     override fun latestUpdatesRequest(page: Int): Request {
@@ -60,7 +60,11 @@ abstract class Gmanga(
         )
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
 
         val mangaTypeFilter = filterList.findInstance<MangaTypeFilter>()!!
@@ -141,7 +145,9 @@ abstract class Gmanga(
     private var filterAttempts = 0
 
     private enum class FilterState {
-        Fetching, Fetched, Unfetched
+        Fetching,
+        Fetched,
+        Unfetched,
     }
 
     private suspend fun fetchFilters() {
@@ -234,18 +240,19 @@ abstract class Gmanga(
     }
 
     abstract fun chaptersRequest(manga: SManga): Request
+
     abstract fun chaptersParse(response: Response): List<SChapter>
 
     final override fun chapterListRequest(manga: SManga) = chaptersRequest(manga)
+
     final override fun chapterListParse(response: Response) = chaptersParse(response).sortChapters()
 
-    private fun List<SChapter>.sortChapters() =
-        sortedWith(
-            compareBy(
-                { -it.chapter_number },
-                { -it.date_upload },
-            ),
-        )
+    private fun List<SChapter>.sortChapters() = sortedWith(
+        compareBy(
+            { -it.chapter_number },
+            { -it.date_upload },
+        ),
+    )
 
     override fun pageListParse(response: Response): List<Page> {
         val data = response.asJsoup()
@@ -271,11 +278,12 @@ abstract class Gmanga(
     private val pageSort =
         compareBy<String>({ parseNumber(0, it) ?: Double.MAX_VALUE }, { parseNumber(1, it) }, { parseNumber(2, it) })
 
-    private fun parseNumber(index: Int, string: String): Double? =
-        Regex("\\d+").findAll(string).map { it.value }.toList().getOrNull(index)?.toDoubleOrNull()
+    private fun parseNumber(
+        index: Int,
+        string: String,
+    ): Double? = Regex("\\d+").findAll(string).map { it.value }.toList().getOrNull(index)?.toDoubleOrNull()
 
-    protected inline fun <reified T> Response.decryptAs(): T =
-        decrypt(parseAs<EncryptedResponse>().data).parseAs()
+    protected inline fun <reified T> Response.decryptAs(): T = decrypt(parseAs<EncryptedResponse>().data).parseAs()
 
     protected inline fun <reified T> Response.parseAs(): T = body.string().parseAs()
 
@@ -283,14 +291,16 @@ abstract class Gmanga(
 
     protected inline fun <reified T> Iterable<*>.findInstance() = find { it is T } as? T
 
-    protected open fun createThumbnail(mangaId: String, cover: String): String {
+    protected open fun createThumbnail(
+        mangaId: String,
+        cover: String,
+    ): String {
         val thumbnail = "large_${cover.substringBeforeLast(".")}.webp"
 
         return "$cdnUrl/uploads/manga/cover/$mangaId/$thumbnail"
     }
 
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     companion object {
         private val MEDIA_TYPE = "application/json; charset=utf-8".toMediaTypeOrNull()

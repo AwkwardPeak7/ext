@@ -28,7 +28,6 @@ abstract class MyMangaCMS(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     protected open val parseAuthorString = "Tác giả"
     protected open val parseAlternativeNameString = "Tên khác"
     protected open val parseAlternative2ndNameString = "Tên gốc"
@@ -67,8 +66,7 @@ abstract class MyMangaCMS(
         timeZone = TimeZone.getTimeZone(this@MyMangaCMS.timeZone)
     }
 
-    open fun dateUpdatedParser(date: String): Long =
-        runCatching { dateFormatter.parse(date)?.time }.getOrNull() ?: 0L
+    open fun dateUpdatedParser(date: String): Long = runCatching { dateFormatter.parse(date)?.time }.getOrNull() ?: 0L
 
     private val floatingNumberRegex = Regex("""([+-]?(?:[0-9]*[.])?[0-9]+)""")
 
@@ -95,8 +93,7 @@ abstract class MyMangaCMS(
 
     override fun popularMangaSelector(): String = "div.thumb-item-flow.col-6.col-md-2"
 
-    override fun popularMangaNextPageSelector(): String? =
-        "div.pagination_wrap a.paging_item:last-of-type:not(.disabled)"
+    override fun popularMangaNextPageSelector(): String? = "div.pagination_wrap a.paging_item:last-of-type:not(.disabled)"
 
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         setUrlWithoutDomain(element.select("a").first()!!.attr("abs:href"))
@@ -119,13 +116,16 @@ abstract class MyMangaCMS(
 
     override fun latestUpdatesNextPageSelector(): String? = popularMangaNextPageSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
     //endregion
 
     //region Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith(PREFIX_URL_SEARCH) -> {
                 fetchMangaDetails(
@@ -139,50 +139,52 @@ abstract class MyMangaCMS(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        GET(
-            baseUrl.toHttpUrl().newBuilder().apply {
-                val genres = mutableListOf<Int>()
-                val genresEx = mutableListOf<Int>()
-                addPathSegment("tim-kiem")
-                addQueryParameter("page", page.toString())
-                (if (filters.isEmpty()) getFilterList() else filters).forEach {
-                    when (it) {
-                        is GenreList -> it.state.forEach { genre ->
-                            when (genre.state) {
-                                Filter.TriState.STATE_INCLUDE -> genres.add(genre.id)
-                                Filter.TriState.STATE_EXCLUDE -> genresEx.add(genre.id)
-                                else -> {}
-                            }
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = GET(
+        baseUrl.toHttpUrl().newBuilder().apply {
+            val genres = mutableListOf<Int>()
+            val genresEx = mutableListOf<Int>()
+            addPathSegment("tim-kiem")
+            addQueryParameter("page", page.toString())
+            (if (filters.isEmpty()) getFilterList() else filters).forEach {
+                when (it) {
+                    is GenreList -> it.state.forEach { genre ->
+                        when (genre.state) {
+                            Filter.TriState.STATE_INCLUDE -> genres.add(genre.id)
+                            Filter.TriState.STATE_EXCLUDE -> genresEx.add(genre.id)
+                            else -> {}
                         }
-                        is Author -> if (it.state.isNotEmpty()) {
-                            addQueryParameter("artist", it.state)
-                        }
-                        is Sort -> addQueryParameter("sort", it.toUriPart())
-                        is Status -> if (it.state != 0) {
-                            addQueryParameter("status", it.state.toString())
-                        }
-                        else -> {}
                     }
+                    is Author -> if (it.state.isNotEmpty()) {
+                        addQueryParameter("artist", it.state)
+                    }
+                    is Sort -> addQueryParameter("sort", it.toUriPart())
+                    is Status -> if (it.state != 0) {
+                        addQueryParameter("status", it.state.toString())
+                    }
+                    else -> {}
                 }
-                if (genresEx.isNotEmpty()) {
-                    addQueryParameter("reject_genres", genresEx.joinToString(","))
-                }
-                if (genres.isNotEmpty()) {
-                    addQueryParameter("accept_genres", genres.joinToString(","))
-                }
-                if (query.isNotEmpty()) {
-                    addQueryParameter("q", query)
-                }
-            }.build().toString(),
-        )
+            }
+            if (genresEx.isNotEmpty()) {
+                addQueryParameter("reject_genres", genresEx.joinToString(","))
+            }
+            if (genres.isNotEmpty()) {
+                addQueryParameter("accept_genres", genres.joinToString(","))
+            }
+            if (query.isNotEmpty()) {
+                addQueryParameter("q", query)
+            }
+        }.build().toString(),
+    )
 
     override fun searchMangaSelector(): String = popularMangaSelector()
 
     override fun searchMangaNextPageSelector(): String? = popularMangaNextPageSelector()
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
     //endregion
 
     //region Manga details
@@ -264,23 +266,25 @@ abstract class MyMangaCMS(
 
     override fun chapterFromElement(element: Element): SChapter = throw UnsupportedOperationException()
 
-    private fun chapterFromElement(element: Element, scanlator: String?): SChapter =
-        SChapter.create().apply {
-            setUrlWithoutDomain(element.attr("abs:href"))
-            name = element.select("div.chapter-name").first()!!.text()
-            date_upload = dateUpdatedParser(
-                element.select("div.chapter-time").first()!!.text(),
-            )
+    private fun chapterFromElement(
+        element: Element,
+        scanlator: String?,
+    ): SChapter = SChapter.create().apply {
+        setUrlWithoutDomain(element.attr("abs:href"))
+        name = element.select("div.chapter-name").first()!!.text()
+        date_upload = dateUpdatedParser(
+            element.select("div.chapter-time").first()!!.text(),
+        )
 
-            val match = floatingNumberRegex.find(name)
-            chapter_number = if (name.lowercase().startsWith("vol")) {
-                match?.groups?.get(2)
-            } else {
-                match?.groups?.get(1)
-            }?.value?.toFloat() ?: -1f
+        val match = floatingNumberRegex.find(name)
+        chapter_number = if (name.lowercase().startsWith("vol")) {
+            match?.groups?.get(2)
+        } else {
+            match?.groups?.get(1)
+        }?.value?.toFloat() ?: -1f
 
-            this.scanlator = scanlator
-        }
+        this.scanlator = scanlator
+    }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
@@ -301,11 +305,10 @@ abstract class MyMangaCMS(
 
     override fun pageListRequest(chapter: SChapter): Request = GET("$baseUrl${chapter.url}")
 
-    override fun pageListParse(document: Document): List<Page> =
-        document
-            .select("div#chapter-content img")
-            .filterNot { it.attr("abs:data-src").isNullOrEmpty() }
-            .mapIndexed { index, elem -> Page(index, "", elem.attr("abs:data-src")) }
+    override fun pageListParse(document: Document): List<Page> = document
+        .select("div#chapter-content img")
+        .filterNot { it.attr("abs:data-src").isNullOrEmpty() }
+        .mapIndexed { index, elem -> Page(index, "", elem.attr("abs:data-src")) }
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
     //endregion
@@ -318,6 +321,7 @@ abstract class MyMangaCMS(
     ) : Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray(), state) {
         fun toUriPart() = vals[state].second
     }
+
     protected class Status(
         displayName: String = "Tình trạng",
         statusAll: String = "Tất cả",
@@ -325,14 +329,15 @@ abstract class MyMangaCMS(
         statusOnHold: String = "Tạm ngưng",
         statusCompleted: String = "Hoàn thành",
     ) : Filter.Select<String>(
-        displayName,
-        arrayOf(
-            statusAll,
-            statusOngoing,
-            statusOnHold,
-            statusCompleted,
-        ),
-    )
+            displayName,
+            arrayOf(
+                statusAll,
+                statusOngoing,
+                statusOnHold,
+                statusCompleted,
+            ),
+        )
+
     protected class Sort(
         displayName: String = "Sắp xếp",
         sortAZ: String = "A-Z",
@@ -342,19 +347,22 @@ abstract class MyMangaCMS(
         sortPopular: String = "Xem nhiều",
         sortLike: String = "Được thích nhiều",
     ) : UriPartFilter(
-        displayName,
-        arrayOf(
-            Pair(sortAZ, "az"),
-            Pair(sortZA, "za"),
-            Pair(sortUpdate, "update"),
-            Pair(sortNew, "new"),
-            Pair(sortPopular, "top"),
-            Pair(sortLike, "like"),
-        ),
-        4,
-    )
+            displayName,
+            arrayOf(
+                Pair(sortAZ, "az"),
+                Pair(sortZA, "za"),
+                Pair(sortUpdate, "update"),
+                Pair(sortNew, "new"),
+                Pair(sortPopular, "top"),
+                Pair(sortLike, "like"),
+            ),
+            4,
+        )
+
     open class Genre(name: String, val id: Int) : Filter.TriState(name)
+
     protected class Author(displayName: String = "Tác giả") : Filter.Text(displayName)
+
     protected class GenreList(genres: List<Genre>, displayName: String = "Thể loại") : Filter.Group<Genre>(displayName, genres)
 
     override fun getFilterList(): FilterList = FilterList(

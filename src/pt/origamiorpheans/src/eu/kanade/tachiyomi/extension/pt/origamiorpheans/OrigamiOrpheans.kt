@@ -13,7 +13,6 @@ class OrigamiOrpheans : MangaThemesia(
     "pt-BR",
     dateFormat = SimpleDateFormat("MMMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-
     // Scanlator migrated from Madara to WpMangaReader.
     override val versionId = 2
 

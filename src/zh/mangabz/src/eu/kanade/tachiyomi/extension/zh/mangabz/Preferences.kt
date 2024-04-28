@@ -17,7 +17,6 @@ fun getPreferencesInternal(context: Context) = arrayOf(
         entryValues = Array(size) { it.toString() }
         setDefaultValue("0")
     },
-
     SwitchPreferenceCompat(context).apply {
         key = ZH_HANT_PREF
         title = "使用繁体中文"

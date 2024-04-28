@@ -21,7 +21,6 @@ data class VoyceMeComic(
     val thumbnail: String = "",
     val title: String = "",
 ) {
-
     fun toSManga(): SManga = SManga.create().apply {
         title = this@VoyceMeComic.title
         author = this@VoyceMeComic.author?.username.orEmpty()
@@ -61,7 +60,6 @@ data class VoyceMeChapter(
     val images: List<VoyceMePage> = emptyList(),
     val title: String = "",
 ) {
-
     fun toSChapter(comicSlug: String): SChapter = SChapter.create().apply {
         name = title
         date_upload = runCatching { DATE_FORMATTER.parse(createdAt)?.time }

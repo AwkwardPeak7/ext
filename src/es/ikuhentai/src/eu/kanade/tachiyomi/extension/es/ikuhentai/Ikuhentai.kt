@@ -24,22 +24,28 @@ class Ikuhentai : ParsedHttpSource() {
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/page/$page?s&post_type=wp-manga&m_orderby=views", headers)
     }
+
     override fun latestUpdatesRequest(page: Int): Request {
         return GET("$baseUrl/page/$page?s&post_type=wp-manga&m_orderby=latest", headers)
     }
 
     //    LIST SELECTOR
     override fun popularMangaSelector() = "div.c-tabs-item__content"
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun searchMangaSelector() = popularMangaSelector()
 
     //    ELEMENT
     override fun popularMangaFromElement(element: Element): SManga = searchMangaFromElement(element)
+
     override fun latestUpdatesFromElement(element: Element): SManga = searchMangaFromElement(element)
 
     //    NEXT SELECTOR
     override fun popularMangaNextPageSelector() = "a.nextpostslink"
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     override fun searchMangaFromElement(element: Element): SManga {
@@ -52,7 +58,11 @@ class Ikuhentai : ParsedHttpSource() {
         return manga
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/page/$page".toHttpUrl().newBuilder()
         url.addQueryParameter("post_type", "wp-manga")
         val pattern = "\\s+".toRegex()
@@ -150,7 +160,10 @@ class Ikuhentai : ParsedHttpSource() {
         return chapter
     }
 
-    override fun prepareNewChapter(chapter: SChapter, manga: SManga) {
+    override fun prepareNewChapter(
+        chapter: SChapter,
+        manga: SManga,
+    ) {
         val basic = Regex("""Chapter\s([0-9]+)""")
         when {
             basic.containsMatchIn(chapter.name) -> {
@@ -178,7 +191,10 @@ class Ikuhentai : ParsedHttpSource() {
 
     override fun imageRequest(page: Page): Request {
         val imgHeader = Headers.Builder().apply {
-            add("User-Agent", "Mozilla/5.0 (Linux; U; Android 4.1.1; en-gb; Build/KLP) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30")
+            add(
+                "User-Agent",
+                "Mozilla/5.0 (Linux; U; Android 4.1.1; en-gb; Build/KLP) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30",
+            )
             add("Referer", baseUrl)
         }.build()
         return GET(page.imageUrl!!, imgHeader)
@@ -186,6 +202,7 @@ class Ikuhentai : ParsedHttpSource() {
 
     //    private class Status : Filter.TriState("Completed")
     private class TextField(name: String, val key: String) : Filter.Text(name)
+
     private class SortBy : UriPartFilter(
         "Ordenar por",
         arrayOf(
@@ -200,8 +217,11 @@ class Ikuhentai : ParsedHttpSource() {
     )
 
     private class Genre(name: String, val id: String = name) : Filter.TriState(name)
+
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
+
     private class Status(name: String, val id: String = name) : Filter.TriState(name)
+
     private class StatusList(statuses: List<Status>) : Filter.Group<Status>("Estado", statuses)
 
     override fun getFilterList() = FilterList(
@@ -212,12 +232,14 @@ class Ikuhentai : ParsedHttpSource() {
         StatusList(getStatusList()),
         GenreList(getGenreList()),
     )
+
     private fun getStatusList() = listOf(
         Status("Completado", "end"),
         Status("En emisión", "on-going"),
         Status("Cancelado", "canceled"),
         Status("Pausado", "on-hold"),
     )
+
     private fun getGenreList() = listOf(
         Genre("Ahegao", "ahegao"),
         Genre("Anal", "anal"),
@@ -263,6 +285,7 @@ class Ikuhentai : ParsedHttpSource() {
         Genre("Yaoi", "yaoi"),
         Genre("Yuri", "yuri"),
     )
+
     private open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
         fun toUriPart() = vals[state].second

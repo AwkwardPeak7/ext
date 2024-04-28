@@ -30,16 +30,21 @@ class MangaPoisk : ParsedHttpSource() {
     override val supportsLatest = true
 
     override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50")
+        .add(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
+        )
         .add("Referer", baseUrl)
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/manga?sortBy=popular&page=$page", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/manga?sortBy=popular&page=$page", headers)
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/manga?sortBy=-last_chapter_at&page=$page", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/manga?sortBy=-last_chapter_at&page=$page", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = if (query.isNotBlank()) {
             "$baseUrl/search?q=$query&page=$page"
         } else {
@@ -107,6 +112,7 @@ class MangaPoisk : ParsedHttpSource() {
     override fun popularMangaSelector() = ".manga-card"
 
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
+
     override fun popularMangaFromElement(element: Element): SManga {
         return SManga.create().apply {
             thumbnail_url = getImage(element.select("a > img").first()!!)
@@ -122,8 +128,8 @@ class MangaPoisk : ParsedHttpSource() {
     override fun latestUpdatesSelector() = popularMangaSelector()
 
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     private fun getImage(first: Element): String? {
         val image = first.attr("data-src")
@@ -149,6 +155,7 @@ class MangaPoisk : ParsedHttpSource() {
         element.contains("Статус: Выпускается") -> SManga.ONGOING
         else -> SManga.UNKNOWN
     }
+
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         val document = client.newCall(GET("$baseUrl${manga.url}?tab=chapters", headers)).execute().asJsoup()
         if (document.select(".text-md:contains(Главы удалены по требованию правообладателя)").isNotEmpty()) {
@@ -169,21 +176,32 @@ class MangaPoisk : ParsedHttpSource() {
             },
         )
     }
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
+
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         val document = response.asJsoup()
         return document.select(chapterListSelector()).map { chapterFromElement(it, manga) }
     }
+
     override fun chapterListRequest(manga: SManga): Request {
         return GET("$baseUrl${manga.url}/chaptersList", headers)
     }
 
-    private fun chapterPageListRequest(manga: SManga, page: Int): Request {
+    private fun chapterPageListRequest(
+        manga: SManga,
+        page: Int,
+    ): Request {
         return GET("$baseUrl${manga.url}/chaptersList?page=$page", headers)
     }
 
     override fun chapterListSelector() = ".chapter-item"
 
-    private fun chapterFromElement(element: Element, manga: SManga): SChapter {
+    private fun chapterFromElement(
+        element: Element,
+        manga: SManga,
+    ): SChapter {
         val title = element.select("span.chapter-title").first()!!.text()
         val urlElement = element.select("a").first()!!
         val urlText = urlElement.text()
@@ -198,7 +216,11 @@ class MangaPoisk : ParsedHttpSource() {
                 when {
                     it.contains("минут") -> Date(System.currentTimeMillis() - it.split("\\s".toRegex())[0].toLong() * 60 * 1000).time
                     it.contains("час") -> Date(System.currentTimeMillis() - it.split("\\s".toRegex())[0].toLong() * 60 * 60 * 1000).time
-                    it.contains("дня") || it.contains("дней") -> Date(System.currentTimeMillis() - it.split("\\s".toRegex())[0].toLong() * 24 * 60 * 60 * 1000).time
+                    it.contains(
+                        "дня",
+                    ) || it.contains(
+                        "дней",
+                    ) -> Date(System.currentTimeMillis() - it.split("\\s".toRegex())[0].toLong() * 24 * 60 * 60 * 1000).time
                     else -> SimpleDateFormat("dd MMMM yyyy", Locale("ru")).parse(it)?.time ?: 0L
                 }
             } catch (e: Exception) {
@@ -207,6 +229,7 @@ class MangaPoisk : ParsedHttpSource() {
         } ?: 0
         return chapter
     }
+
     override fun pageListParse(document: Document): List<Page> {
         if (document.toString().contains("text-error-500-400-token")) {
             throw Exception("Лицензировано - Глава удалена по требованию правообладателя.")
@@ -219,7 +242,9 @@ class MangaPoisk : ParsedHttpSource() {
     private class CheckFilter(name: String, val id: String) : Filter.CheckBox(name)
 
     private class StatusList(statuses: List<CheckFilter>) : Filter.Group<CheckFilter>("Статус", statuses)
+
     private class GenreList(genres: List<CheckFilter>) : Filter.Group<CheckFilter>("Жанры", genres)
+
     override fun getFilterList() = FilterList(
         OrderBy(),
         StatusList(getStatusList()),

@@ -15,7 +15,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class DragonTranslationNet : Madara("DragonTranslation.net", "https://dragontranslation.net", "es") {
-
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/mangas?page=$page", headers)
     }
@@ -47,7 +46,11 @@ class DragonTranslationNet : Madara("DragonTranslation.net", "https://dragontran
         return MangasPage(mangaList, false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegment("mangas")
             .addQueryParameter("buscar", query)

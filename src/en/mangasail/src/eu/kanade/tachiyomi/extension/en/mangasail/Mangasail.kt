@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Mangasail : ParsedHttpSource() {
-
     override val name = "Mangasail"
 
     override val baseUrl = "https://www.sailmg.com"
@@ -56,11 +55,10 @@ class Mangasail : ParsedHttpSource() {
 
     // Latest
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET(
-            "$baseUrl/sites/all/modules/authcache/modules/authcache_p13n/frontcontroller/authcache.php?r=frag/block/showmanga-lastest_list&o[q]=node",
-            headers,
-        )
+    override fun latestUpdatesRequest(page: Int) = GET(
+        "$baseUrl/sites/all/modules/authcache/modules/authcache_p13n/frontcontroller/authcache.php?r=frag/block/showmanga-lastest_list&o[q]=node",
+        headers,
+    )
 
     override fun latestUpdatesSelector() = "ul#latest-list > li"
 
@@ -77,7 +75,11 @@ class Mangasail : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val genreFilter = filterList.find { it is GenreFilter } as GenreFilter
 
@@ -107,7 +109,10 @@ class Mangasail : ParsedHttpSource() {
     private val json: Json by injectLazy()
 
     // Function to get data fragments from website
-    private fun getNodeDetail(node: String, field: String): String? {
+    private fun getNodeDetail(
+        node: String,
+        field: String,
+    ): String? {
         val requestUrl =
             "$baseUrl/sites/all/modules/authcache/modules/authcache_p13n/frontcontroller/authcache.php?a[field][0]=$node:full:en&r=asm/field/node/$field&o[q]=node/$node"
         val responseString = client.newCall(GET(requestUrl, headers)).execute().body.string()
@@ -124,8 +129,7 @@ class Mangasail : ParsedHttpSource() {
     }
 
     // Get a page's node number so we can get data fragments for that page
-    private fun getNodeNumber(document: Document): String =
-        document.select("[rel=shortlink]").attr("href").substringAfter("/node/")
+    private fun getNodeNumber(document: Document): String = document.select("[rel=shortlink]").attr("href").substringAfter("/node/")
 
     // On source's website most of these details are loaded through JQuery
     override fun mangaDetailsParse(document: Document): SManga {

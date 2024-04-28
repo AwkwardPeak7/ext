@@ -54,11 +54,11 @@ class SortFilter(
     selection: Selection = Selection(0, true),
 ) :
     Filter.Sort(
-        intl["sort_by_filter_title"],
-        sortables.map { it.first }.toTypedArray(),
-        selection,
-    ),
-    UriFilter {
+            intl["sort_by_filter_title"],
+            sortables.map { it.first }.toTypedArray(),
+            selection,
+        ),
+        UriFilter {
     override fun addToUri(builder: HttpUrl.Builder) {
         val state = state ?: return
 

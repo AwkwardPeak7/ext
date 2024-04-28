@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 class ImmortalUpdates : Madara("Immortal Updates", "https://immortalupdates.com", "en") {
-
     override val useNewChapterEndpoint: Boolean = true
 
     override val client = super.client.newBuilder()
@@ -80,7 +79,10 @@ class ImmortalUpdates : Madara("Immortal Updates", "https://immortalupdates.com"
     //
     // I assumed the last argument was to check if versions match or something (since it was 1.0.1)
     // but it was used in some canvas thingy that I didn't bother to check
-    private fun unscrambleImage(image: InputStream, args: List<String>): ByteArray {
+    private fun unscrambleImage(
+        image: InputStream,
+        args: List<String>,
+    ): ByteArray {
         val indexer = args[1].toInt()
         val iterations = args[2].toInt()
         val sectionWidth = args[3].toInt()
@@ -132,10 +134,26 @@ class ImmortalUpdates : Madara("Immortal Updates", "https://immortalupdates.com"
                 colorFilter = ColorMatrixColorFilter(
                     ColorMatrix(
                         floatArrayOf(
-                            -1.0f, 0.0f, 0.0f, 0.0f, 255.0f,
-                            0.0f, -1.0f, 0.0f, 0.0f, 255.0f,
-                            0.0f, 0.0f, -1.0f, 0.0f, 255.0f,
-                            0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+                            -1.0f,
+                            0.0f,
+                            0.0f,
+                            0.0f,
+                            255.0f,
+                            0.0f,
+                            -1.0f,
+                            0.0f,
+                            0.0f,
+                            255.0f,
+                            0.0f,
+                            0.0f,
+                            -1.0f,
+                            0.0f,
+                            255.0f,
+                            0.0f,
+                            0.0f,
+                            0.0f,
+                            1.0f,
+                            0.0f,
                         ),
                     ),
                 )
@@ -151,7 +169,13 @@ class ImmortalUpdates : Madara("Immortal Updates", "https://immortalupdates.com"
 
     // Converted from _0x144afb
     // This should be called a little bit before the drawImage calls
-    private fun createDescramblingArray(indexer: Int, size: Int, key: Int, keyAddition: Int, iterations: Int = 2): List<Int> {
+    private fun createDescramblingArray(
+        indexer: Int,
+        size: Int,
+        key: Int,
+        keyAddition: Int,
+        iterations: Int = 2,
+    ): List<Int> {
         var indexerMut = indexer
         val returnArray = mutableListOf<Int>()
 

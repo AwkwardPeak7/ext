@@ -20,7 +20,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 open class RainOfSnow() : ParsedHttpSource() {
-
     override val name = "Rain Of Snow"
 
     override val baseUrl = "https://rainofsnow.com"
@@ -51,7 +50,11 @@ open class RainOfSnow() : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = ".page-numbers .next"
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val url = "$baseUrl/".toHttpUrl().newBuilder()
             url.addQueryParameter("s", query)
@@ -120,7 +123,9 @@ open class RainOfSnow() : ParsedHttpSource() {
         var parsedDate = 0L
         try {
             parsedDate = SimpleDateFormat("MMM dd, yyyy", Locale.US).parse(date)?.time ?: 0L
-        } catch (e: ParseException) { /*nothing to do, parsedDate is initialized with 0L*/ }
+        } catch (e: ParseException) {
+            // nothing to do, parsedDate is initialized with 0L
+        }
         return parsedDate
     }
 
@@ -143,6 +148,7 @@ open class RainOfSnow() : ParsedHttpSource() {
         Filter.Separator(),
         AlbumTypeSelectFilter(),
     )
+
     private class AlbumTypeSelectFilter() : UriPartFilter(
         "Type",
         arrayOf(
@@ -160,8 +166,12 @@ open class RainOfSnow() : ParsedHttpSource() {
     }
 
     override fun latestUpdatesFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun latestUpdatesSelector() = throw UnsupportedOperationException()
+
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 }

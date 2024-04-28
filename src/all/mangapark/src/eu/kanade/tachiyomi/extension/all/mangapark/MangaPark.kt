@@ -33,7 +33,6 @@ class MangaPark(
     override val lang: String,
     private val siteLang: String = lang,
 ) : HttpSource(), ConfigurableSource {
-
     override val name = "MangaPark"
 
     override val supportsLatest = true
@@ -61,12 +60,18 @@ class MangaPark(
         .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", SortFilter.POPULAR)
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
     override fun latestUpdatesRequest(page: Int) = searchMangaRequest(page, "", SortFilter.LATEST)
+
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val payload = GraphQL(
             SearchVariables(
                 SearchPayload(
@@ -213,14 +218,11 @@ class MangaPark(
         }.also(screen::addPreference)
     }
 
-    private inline fun <reified T> Response.parseAs(): T =
-        use { body.string() }.let(json::decodeFromString)
+    private inline fun <reified T> Response.parseAs(): T = use { body.string() }.let(json::decodeFromString)
 
-    private inline fun <reified T> List<*>.firstInstanceOrNull(): T? =
-        filterIsInstance<T>().firstOrNull()
+    private inline fun <reified T> List<*>.firstInstanceOrNull(): T? = filterIsInstance<T>().firstOrNull()
 
-    private inline fun <reified T : Any> T.toJsonRequestBody() =
-        json.encodeToString(this).toRequestBody(JSON_MEDIA_TYPE)
+    private inline fun <reified T : Any> T.toJsonRequestBody() = json.encodeToString(this).toRequestBody(JSON_MEDIA_TYPE)
 
     override fun imageUrlParse(response: Response): String {
         throw UnsupportedOperationException()

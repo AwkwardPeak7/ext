@@ -13,8 +13,7 @@ object MangaFunUtils {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ROOT)
 
-    private fun String.slugify(): String =
-        this.replace(notAlnumRegex, "").toKebabCase()
+    private fun String.slugify(): String = this.replace(notAlnumRegex, "").toKebabCase()
 
     private fun publishedStatusToStatus(ps: Int) = when (ps) {
         0 -> SManga.ONGOING
@@ -67,7 +66,10 @@ object MangaFunUtils {
         }.joinToString()
     }
 
-    fun ChapterDto.toSChapter(mangaId: Int, mangaName: String) = SChapter.create().apply {
+    fun ChapterDto.toSChapter(
+        mangaId: Int,
+        mangaName: String,
+    ) = SChapter.create().apply {
         url = "/title/$mangaId-${mangaName.slugify()}/$id-${this@toSChapter.name.slugify()}"
         name = this@toSChapter.name
         date_upload = runCatching {

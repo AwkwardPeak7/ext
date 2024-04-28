@@ -14,7 +14,6 @@ import kotlin.system.exitProcess
  * Guya URL whilst on mobile.
  */
 class GuyaUrlActivity : Activity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val host = intent?.data?.host

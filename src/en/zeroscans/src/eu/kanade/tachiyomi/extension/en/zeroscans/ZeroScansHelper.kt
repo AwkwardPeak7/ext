@@ -5,7 +5,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class ZeroScansHelper {
-
     // Search Related
     fun checkStatusFilter(
         filter: ZeroScans.StatusFilter,

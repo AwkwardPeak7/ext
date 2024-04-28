@@ -124,10 +124,13 @@ class GrrlPower(
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
+
     companion object {
         private const val SHOW_AUTHORS_NOTES_KEY = "showAuthorsNotes"
     }
+
     private fun showAuthorsNotesPref() = preferences.getBoolean(SHOW_AUTHORS_NOTES_KEY, false)
+
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         val authorsNotesPref = SwitchPreferenceCompat(screen.context).apply {
             key = SHOW_AUTHORS_NOTES_KEY
@@ -146,20 +149,23 @@ class GrrlPower(
     // This can be called when the user refreshes the comic even if initialized is true
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> = Observable.just(manga)
 
-    override fun popularMangaRequest(page: Int): Request =
-        throw UnsupportedOperationException()
-    override fun searchMangaParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw UnsupportedOperationException()
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
-    override fun latestUpdatesRequest(page: Int): Request =
-        throw UnsupportedOperationException()
-    override fun mangaDetailsParse(response: Response): SManga =
-        throw UnsupportedOperationException()
-    override fun popularMangaParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
+    override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
+
+    override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
+
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
+
+    override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
+
+    override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
+
+    override fun mangaDetailsParse(response: Response): SManga = throw UnsupportedOperationException()
+
+    override fun popularMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 }

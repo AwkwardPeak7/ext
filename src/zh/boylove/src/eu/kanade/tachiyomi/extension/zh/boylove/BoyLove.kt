@@ -52,8 +52,7 @@ class BoyLove : HttpSource(), ConfigurableSource {
         .addInterceptor(UnscramblerInterceptor())
         .build()
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/home/api/getpage/tp/1-topest-${page - 1}", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/home/api/getpage/tp/1-topest-${page - 1}", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val listPage: ListPageDto<MangaDto> = response.parseAs()
@@ -69,10 +68,16 @@ class BoyLove : HttpSource(), ConfigurableSource {
         return MangasPage(mangas, mangas.size >= 10)
     }
 
-    private fun textSearchRequest(page: Int, query: String): Request =
-        GET("$baseUrl/home/api/searchk?keyword=$query&type=1&pageNo=$page", headers)
+    private fun textSearchRequest(
+        page: Int,
+        query: String,
+    ): Request = GET("$baseUrl/home/api/searchk?keyword=$query&type=1&pageNo=$page", headers)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank()) {
             textSearchRequest(page, query)
         } else {
@@ -83,8 +88,7 @@ class BoyLove : HttpSource(), ConfigurableSource {
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
 
     // for WebView
-    override fun mangaDetailsRequest(manga: SManga): Request =
-        GET("$baseUrl/home/book/index/id/${manga.url}")
+    override fun mangaDetailsRequest(manga: SManga): Request = GET("$baseUrl/home/book/index/id/${manga.url}")
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> =
         client.newCall(textSearchRequest(1, manga.title)).asObservableSuccess().map { response ->
@@ -94,8 +98,7 @@ class BoyLove : HttpSource(), ConfigurableSource {
 
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun chapterListRequest(manga: SManga): Request =
-        GET("$baseUrl/home/api/chapter_list/tp/${manga.url}-0-0-10", headers)
+    override fun chapterListRequest(manga: SManga): Request = GET("$baseUrl/home/api/chapter_list/tp/${manga.url}-0-0-10", headers)
 
     override fun chapterListParse(response: Response): List<SChapter> =
         response.parseAs<ListPageDto<ChapterDto>>().list.map { it.toSChapter() }
@@ -150,6 +153,7 @@ class BoyLove : HttpSource(), ConfigurableSource {
     }
 
     override fun pageListParse(response: Response) = throw UnsupportedOperationException()
+
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     private inline fun <reified T> Response.parseAs(): T = use {
@@ -207,7 +211,29 @@ class BoyLove : HttpSource(), ConfigurableSource {
 
         // redirect URL: https://fuhouse.club/bl
         // link source URL: https://boylovepage.github.io/boylove_page
-        private val MIRRORS get() = arrayOf("boylove1.mobi", "boylove3.cc", "boylove.cc", "boyloves.space", "boylove4.xyz", "boyloves.fun", "boylove.today", "fuzai.one", "xxfuzai.xyz", "fuzai.cc")
-        private val MIRRORS_DESC get() = arrayOf("boylove1.mobi", "boylove3.cc", "boylove.cc（非大陆）", "boyloves.space", "boylove4.xyz", "boyloves.fun", "boylove.today", "fuzai.one", "xxfuzai.xyz", "fuzai.cc（非大陆）")
+        private val MIRRORS get() = arrayOf(
+            "boylove1.mobi",
+            "boylove3.cc",
+            "boylove.cc",
+            "boyloves.space",
+            "boylove4.xyz",
+            "boyloves.fun",
+            "boylove.today",
+            "fuzai.one",
+            "xxfuzai.xyz",
+            "fuzai.cc",
+        )
+        private val MIRRORS_DESC get() = arrayOf(
+            "boylove1.mobi",
+            "boylove3.cc",
+            "boylove.cc（非大陆）",
+            "boyloves.space",
+            "boylove4.xyz",
+            "boyloves.fun",
+            "boylove.today",
+            "fuzai.one",
+            "xxfuzai.xyz",
+            "fuzai.cc（非大陆）",
+        )
     }
 }

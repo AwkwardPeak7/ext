@@ -23,7 +23,6 @@ class MangaCrab :
         SimpleDateFormat("dd/MM/yyyy", Locale("es")),
     ),
     ConfigurableSource {
-
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
 
@@ -38,6 +37,7 @@ class MangaCrab :
     override val mangaSubString = "series"
 
     override fun chapterListSelector() = "div.listing-chapters_wrap > ul > li"
+
     override val mangaDetailsSelectorDescription = "div.c-page__content div.modal-contenido"
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {

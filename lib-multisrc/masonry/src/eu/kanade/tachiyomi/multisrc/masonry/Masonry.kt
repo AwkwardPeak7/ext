@@ -23,7 +23,6 @@ abstract class Masonry(
     override val baseUrl: String,
     override val lang: String,
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient
@@ -47,6 +46,7 @@ abstract class Masonry(
     }
 
     override fun popularMangaSelector() = ".list-gallery:not(.static) figure:not(:has(a[href*=/video/]))"
+
     override fun popularMangaNextPageSelector() = ".pagination-a li.next"
 
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
@@ -62,11 +62,18 @@ abstract class Masonry(
     }
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotEmpty()) {
             val url = "$baseUrl/search/post/".toHttpUrl().newBuilder()
                 .addPathSegment(query.trim())
@@ -150,8 +157,11 @@ abstract class Masonry(
     }
 
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
+
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
@@ -177,6 +187,7 @@ abstract class Masonry(
     }
 
     override fun chapterListSelector() = throw UnsupportedOperationException()
+
     override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
 
     override fun pageListParse(document: Document): List<Page> {

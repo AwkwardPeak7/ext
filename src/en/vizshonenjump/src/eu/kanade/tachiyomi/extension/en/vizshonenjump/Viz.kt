@@ -31,7 +31,6 @@ open class Viz(
     final override val name: String,
     private val servicePath: String,
 ) : ParsedHttpSource() {
-
     override val baseUrl = "https://www.viz.com"
 
     override val lang = "en"
@@ -81,8 +80,7 @@ open class Viz(
         return mangasPage
     }
 
-    override fun popularMangaSelector(): String =
-        "section.section_chapters div.o_sort_container div.o_sortable > a.o_chapters-link"
+    override fun popularMangaSelector(): String = "section.section_chapters div.o_sort_container div.o_sortable > a.o_chapters-link"
 
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         title = element.selectFirst("div.pad-x-rg")!!.text()
@@ -109,12 +107,15 @@ open class Viz(
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith(PREFIX_URL_SEARCH)) {
             val url = query.substringAfter(PREFIX_URL_SEARCH)
             val service = url.split("/")[1]
@@ -134,8 +135,11 @@ open class Viz(
             }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        popularMangaRequest(page)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = popularMangaRequest(page)
 
     override fun searchMangaParse(response: Response): MangasPage {
         if (!response.request.url.toString().contains("section/free-chapters")) {
@@ -203,9 +207,8 @@ open class Viz(
             .sortedByDescending { it.chapter_number }
     }
 
-    override fun chapterListSelector() =
-        "section.section_chapters div.o_sortable > a.o_chapter-container, " +
-            "section.section_chapters div.o_sortable div.o_chapter-vol-container tr.o_chapter a.o_chapter-container"
+    override fun chapterListSelector() = "section.section_chapters div.o_sortable > a.o_chapter-container, " +
+        "section.section_chapters div.o_sortable div.o_chapter-vol-container tr.o_chapter a.o_chapter-container"
 
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         val isVolume = element.select("div:nth-child(1) table").first() == null

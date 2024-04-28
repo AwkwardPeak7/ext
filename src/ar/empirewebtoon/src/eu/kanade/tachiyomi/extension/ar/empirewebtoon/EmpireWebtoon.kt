@@ -20,7 +20,6 @@ class EmpireWebtoon :
         SimpleDateFormat("d MMMM، yyyy", Locale("ar")),
     ),
     ConfigurableSource {
-
     private val defaultBaseUrl = "https://webtoonsempireron.com"
 
     override val baseUrl by lazy { getPrefBaseUrl() }

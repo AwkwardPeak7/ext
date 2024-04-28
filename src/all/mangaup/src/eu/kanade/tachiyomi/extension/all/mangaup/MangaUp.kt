@@ -20,7 +20,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class MangaUp(override val lang: String) : HttpSource() {
-
     override val name = "Manga UP!"
 
     override val baseUrl = "https://global.manga-up.com"
@@ -60,7 +59,11 @@ class MangaUp(override val lang: String) : HttpSource() {
 
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.startsWith(PREFIX_ID_SEARCH) && query.matches(ID_SEARCH_PATTERN)) {
             return mangaDetailsRequest(query.removePrefix(PREFIX_ID_SEARCH))
         }

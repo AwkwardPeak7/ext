@@ -16,7 +16,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class MangaLatino : ParsedHttpSource() {
-
     override val name = "MangaLatino"
 
     override val baseUrl = "https://mangalatino.com"
@@ -58,7 +57,11 @@ class MangaLatino : ParsedHttpSource() {
         thumbnail_url = element.selectFirst("div.blog-img img")?.attr("abs:src")
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/mangas".toHttpUrl().newBuilder()
         if (query.isNotEmpty()) {
             url.addQueryParameter("buscar", query)

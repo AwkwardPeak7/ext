@@ -34,19 +34,17 @@ abstract class NewToki(
     private val boardName: String,
     private val preferences: SharedPreferences,
 ) : ParsedHttpSource(), ConfigurableSource {
-
     override val lang: String = "ko"
     override val supportsLatest = true
 
     override val client by lazy { buildClient(withRateLimit = false) }
     private val rateLimitedClient by lazy { buildClient(withRateLimit = true) }
 
-    private fun buildClient(withRateLimit: Boolean) =
-        network.cloudflareClient.newBuilder()
-            .apply { if (withRateLimit) rateLimit(1, preferences.rateLimitPeriod.toLong()) }
-            .addInterceptor(DomainInterceptor) // not rate-limited
-            .connectTimeout(10, TimeUnit.SECONDS) // fail fast
-            .build()
+    private fun buildClient(withRateLimit: Boolean) = network.cloudflareClient.newBuilder()
+        .apply { if (withRateLimit) rateLimit(1, preferences.rateLimitPeriod.toLong()) }
+        .addInterceptor(DomainInterceptor) // not rate-limited
+        .connectTimeout(10, TimeUnit.SECONDS) // fail fast
+        .build()
 
     override fun headersBuilder() = super.headersBuilder()
         .add("Referer", "$baseUrl/")
@@ -69,9 +67,16 @@ abstract class NewToki(
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/$boardName" + if (page > 1) "/p$page" else "", headers)
 
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {
             val realQuery = query.removePrefix(PREFIX_ID_SEARCH)
             val urlPath = "/$boardName/$realQuery"
@@ -87,7 +92,10 @@ abstract class NewToki(
         }
     }
 
-    private fun actualMangaParseById(urlPath: String, response: Response): MangasPage {
+    private fun actualMangaParseById(
+        urlPath: String,
+        response: Response,
+    ): MangasPage {
         val document = response.asJsoup()
 
         // Only exists on detail page.
@@ -179,13 +187,15 @@ abstract class NewToki(
         }
     }
 
-    private fun mangaDetailsParseWithTitleCheck(manga: SManga, document: Document) =
-        mangaDetailsParse(document).apply {
-            // TODO: don't throw when there is download folder rename feature
-            if (manga.description.isNullOrEmpty() && title.removeSuffix("…") !in manga.title) {
-                throw Exception(titleNotMatch(title))
-            }
+    private fun mangaDetailsParseWithTitleCheck(
+        manga: SManga,
+        document: Document,
+    ) = mangaDetailsParse(document).apply {
+        // TODO: don't throw when there is download folder rename feature
+        if (manga.description.isNullOrEmpty() && title.removeSuffix("…") !in manga.title) {
+            throw Exception(titleNotMatch(title))
         }
+    }
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return rateLimitedClient.newCall(mangaDetailsRequest(manga))
@@ -256,8 +266,11 @@ abstract class NewToki(
     }
 
     override fun latestUpdatesSelector() = ".media.post-list"
+
     override fun latestUpdatesFromElement(element: Element) = ManaToki.latestUpdatesElementParse(element)
+
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/page/update?hid=update&page=$page", headers)
+
     override fun latestUpdatesNextPageSelector() = ".pg_end"
 
     // We are able to get the image URL directly from the page list

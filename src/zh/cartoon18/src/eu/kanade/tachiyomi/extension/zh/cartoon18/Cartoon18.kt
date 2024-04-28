@@ -63,7 +63,11 @@ class Cartoon18 : HttpSource(), ConfigurableSource {
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrlWithLang.toHttpUrl().newBuilder()
         if (query.isNotBlank()) {
             url.addQueryParameter("q", query.trim())
@@ -141,8 +145,7 @@ class Cartoon18 : HttpSource(), ConfigurableSource {
         private val queryValues: Array<String>,
         state: Int = 0,
     ) : Filter.Select<String>(name, values, state) {
-        fun addQueryTo(builder: HttpUrl.Builder) =
-            builder.addQueryParameter(queryName, queryValues[state])
+        fun addQueryTo(builder: HttpUrl.Builder) = builder.addQueryParameter(queryName, queryValues[state])
     }
 
     private class SortFilter : QueryFilter(

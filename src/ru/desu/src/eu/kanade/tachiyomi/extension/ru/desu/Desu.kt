@@ -62,7 +62,10 @@ class Desu : ConfigurableSource, HttpSource() {
             .rateLimitHost(baseUrl.toHttpUrl(), 3)
             .build()
 
-    private fun mangaPageFromJSON(jsonStr: String, next: Boolean): MangasPage {
+    private fun mangaPageFromJSON(
+        jsonStr: String,
+        next: Boolean,
+    ): MangasPage {
         val mangaList = json.parseToJsonElement(jsonStr).jsonArray
             .map {
                 SManga.create().apply {
@@ -73,7 +76,10 @@ class Desu : ConfigurableSource, HttpSource() {
         return MangasPage(mangaList, next)
     }
 
-    private fun SManga.mangaFromJSON(obj: JsonObject, chapter: Boolean) {
+    private fun SManga.mangaFromJSON(
+        obj: JsonObject,
+        chapter: Boolean,
+    ) {
         val id = obj["id"]!!.jsonPrimitive.int
 
         url = "/$id"
@@ -162,17 +168,19 @@ class Desu : ConfigurableSource, HttpSource() {
         }
     }
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl$API_URL/?limit=50&order=popular&page=$page")
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl$API_URL/?limit=50&order=popular&page=$page")
 
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
-    override fun latestUpdatesRequest(page: Int) =
-        GET("$baseUrl$API_URL/?limit=50&order=updated&page=$page")
+    override fun latestUpdatesRequest(page: Int) = GET("$baseUrl$API_URL/?limit=50&order=updated&page=$page")
 
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var url = "$baseUrl$API_URL/?limit=20&page=$page"
         val types = mutableListOf<Type>()
         val genres = mutableListOf<Genre>()
@@ -224,6 +232,7 @@ class Desu : ConfigurableSource, HttpSource() {
     override fun mangaDetailsRequest(manga: SManga): Request {
         return GET(baseUrl + "/manga" + manga.url, headers)
     }
+
     override fun mangaDetailsParse(response: Response) = SManga.create().apply {
         val obj = json.parseToJsonElement(response.body.string())
             .jsonObject["response"]!!
@@ -239,7 +248,9 @@ class Desu : ConfigurableSource, HttpSource() {
 
         val cid = obj["id"]!!.jsonPrimitive.int
         val objChapter = obj["chapters"]!!
-        return objChapter.jsonObject["list"]!!.jsonArray.filterNot { it.jsonObject["vol"]!!.jsonPrimitive.floatOrNull!! == objChapter.jsonObject["last"]!!.jsonObject["vol"]!!.jsonPrimitive.float && it.jsonObject["ch"]!!.jsonPrimitive.floatOrNull!! > objChapter.jsonObject["last"]!!.jsonObject["ch"]!!.jsonPrimitive.float }.map {
+        return objChapter.jsonObject["list"]!!.jsonArray.filterNot {
+            it.jsonObject["vol"]!!.jsonPrimitive.floatOrNull!! == objChapter.jsonObject["last"]!!.jsonObject["vol"]!!.jsonPrimitive.float && it.jsonObject["ch"]!!.jsonPrimitive.floatOrNull!! > objChapter.jsonObject["last"]!!.jsonObject["ch"]!!.jsonPrimitive.float
+        }.map {
             val chapterObj = it.jsonObject
             val ch = chapterObj["ch"]!!.jsonPrimitive.content
             val vol = chapterObj["vol"]!!.jsonPrimitive.content
@@ -277,14 +288,17 @@ class Desu : ConfigurableSource, HttpSource() {
             }
     }
 
-    override fun imageUrlParse(response: Response) =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     private fun searchMangaByIdRequest(id: String): Request {
         return GET("$baseUrl$API_URL/$id", headers)
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SLUG_SEARCH)) {
             val realQuery = query.removePrefix(PREFIX_SLUG_SEARCH)
             client.newCall(searchMangaByIdRequest(realQuery))
@@ -379,6 +393,7 @@ class Desu : ConfigurableSource, HttpSource() {
     )
 
     private var isEng: String? = preferences.getString(LANGUAGE_PREF, "eng")
+
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
         val titleLanguagePref = ListPreference(screen.context).apply {
             key = LANGUAGE_PREF
@@ -395,6 +410,7 @@ class Desu : ConfigurableSource, HttpSource() {
         }
         screen.addPreference(titleLanguagePref)
     }
+
     companion object {
         const val PREFIX_SLUG_SEARCH = "slug:"
 

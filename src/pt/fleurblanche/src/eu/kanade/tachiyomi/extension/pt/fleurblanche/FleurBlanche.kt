@@ -14,7 +14,6 @@ class FleurBlanche : Madara(
     "pt-BR",
     SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")),
 ) {
-
     override val client = super.client.newBuilder()
         .addInterceptor(::authWarningIntercept)
         .rateLimit(1, 2)

@@ -19,7 +19,6 @@ data class YugenMangaDto(
     val synopsis: String? = null,
     val status: String? = null,
 ) {
-
     fun toSManga(baseUrl: String): SManga = SManga.create().apply {
         title = name
         author = this@YugenMangaDto.author
@@ -46,7 +45,6 @@ data class YugenChapterDto(
     val slug: String,
     val group: String,
 ) {
-
     fun toSChapter(mangaSlug: String): SChapter = SChapter.create().apply {
         name = this@YugenChapterDto.name
         date_upload = runCatching { DATE_FORMATTER.parse(uploadDate)?.time }

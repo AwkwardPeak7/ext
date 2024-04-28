@@ -38,6 +38,7 @@ class FreleinBooks() : ParsedHttpSource() {
     }
 
     override fun latestUpdatesNextPageSelector() = ".olderLink"
+
     override fun latestUpdatesRequest(page: Int): Request {
         return if (page == 1) {
             GET(baseUrl)
@@ -65,13 +66,21 @@ class FreleinBooks() : ParsedHttpSource() {
     }
 
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun popularMangaRequest(page: Int) = latestUpdatesRequest(page)
+
     override fun popularMangaSelector() = ".itemPopulars article"
 
     // Search
     override fun searchMangaFromElement(element: Element) = latestUpdatesFromElement(element)
+
     override fun searchMangaNextPageSelector() = latestUpdatesNextPageSelector()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val tagFilter = filterList.findInstance<TagFilter>()!!
         val groupFilter = filterList.findInstance<GroupFilter>()!!
@@ -93,7 +102,9 @@ class FreleinBooks() : ParsedHttpSource() {
     override fun mangaDetailsParse(document: Document): SManga {
         val manga = SManga.create()
         manga.title = document.select(".postTitle").text()
-        manga.description = "Read ${document.select(".postTitle").text()} \n \nNote: If you encounters error when opening the magazine, please press the WebView button then leave a comment on our web so we can update it soon."
+        manga.description = "Read ${document.select(
+            ".postTitle",
+        ).text()} \n \nNote: If you encounters error when opening the magazine, please press the WebView button then leave a comment on our web so we can update it soon."
         manga.genre = document.select(".labelLink > a")
             .joinToString(", ") { it.text() }
         manga.status = SManga.COMPLETED
@@ -143,8 +154,7 @@ class FreleinBooks() : ParsedHttpSource() {
         return pages
     }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // Filters
 

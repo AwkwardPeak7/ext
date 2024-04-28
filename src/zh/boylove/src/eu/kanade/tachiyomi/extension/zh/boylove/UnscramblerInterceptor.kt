@@ -34,7 +34,10 @@ class UnscramblerInterceptor : Interceptor {
         }
     }
 
-    private fun descramble(image: InputStream, partsCount: Int): ByteArray {
+    private fun descramble(
+        image: InputStream,
+        partsCount: Int,
+    ): ByteArray {
         val srcBitmap = BitmapFactory.decodeStream(image)
         val width = srcBitmap.width
         val height = srcBitmap.height

@@ -9,7 +9,6 @@ import kotlinx.serialization.json.decodeFromStream
 import okhttp3.Response
 
 class Yokai : ZeistManga("Yokai", "https://yokai-team.blogspot.com", "ar") {
-
     // ============================== Chapters ==============================
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.use { it.asJsoup() }

@@ -17,7 +17,6 @@ import kotlin.system.exitProcess
  * the usual search screen from working.
  */
 class BilibiliUrlActivity : Activity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

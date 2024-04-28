@@ -32,6 +32,7 @@ class Photos18 : HttpSource(), ConfigurableSource {
     override val baseUrl = "https://www.photos18.com"
 
     private val baseUrlWithLang get() = if (useTrad) baseUrl else "$baseUrl/zh-hans"
+
     private fun String.stripLang() = removePrefix("/zh-hans")
 
     override val client = network.client.newBuilder().followRedirects(false).build()
@@ -67,7 +68,11 @@ class Photos18 : HttpSource(), ConfigurableSource {
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrlWithLang.toHttpUrl().newBuilder()
             .addQueryParameter("q", query)
             .addQueryParameter("page", page.toString())
@@ -122,8 +127,7 @@ class Photos18 : HttpSource(), ConfigurableSource {
         private val queryValues: Array<String>,
         state: Int = 0,
     ) : Filter.Select<String>(name, values, state) {
-        fun addQueryTo(builder: HttpUrl.Builder) =
-            builder.addQueryParameter(queryName, queryValues[state])
+        fun addQueryTo(builder: HttpUrl.Builder) = builder.addQueryParameter(queryName, queryValues[state])
     }
 
     private class SortFilter : QueryFilter(

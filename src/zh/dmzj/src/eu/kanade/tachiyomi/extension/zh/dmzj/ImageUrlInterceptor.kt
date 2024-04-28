@@ -6,7 +6,6 @@ import okhttp3.Response
 import java.io.IOException
 
 object ImageUrlInterceptor : Interceptor {
-
     class Tag(val url: String?)
 
     override fun intercept(chain: Interceptor.Chain): Response {

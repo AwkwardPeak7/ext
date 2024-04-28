@@ -19,7 +19,6 @@ import uy.kohesive.injekt.injectLazy
 import java.lang.IllegalArgumentException
 
 class Twicomi : HttpSource() {
-
     override val name = "Twicomi"
 
     override val lang = "all"
@@ -52,7 +51,11 @@ class Twicomi : HttpSource() {
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = apiUrl.toHttpUrl().newBuilder().apply {
             when (filters.find { it is TypeSelect }?.state) {
                 1 -> {
@@ -161,8 +164,10 @@ class Twicomi : HttpSource() {
         }.reversed()
     }
 
-    private fun paginatedChapterListRequest(screenName: String, page: Int) =
-        GET("$apiUrl/author/manga/list?screen_name=$screenName&order_by=create_time&order=asc&page_no=$page&page_limit=500")
+    private fun paginatedChapterListRequest(
+        screenName: String,
+        page: Int,
+    ) = GET("$apiUrl/author/manga/list?screen_name=$screenName&order_by=create_time&order=asc&page_no=$page&page_limit=500")
 
     private fun dummyChapterFromManga(manga: SManga) = SChapter.create().apply {
         url = manga.url

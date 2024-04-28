@@ -16,7 +16,6 @@ import okhttp3.Response
 import uy.kohesive.injekt.injectLazy
 
 class Alandal : HttpSource() {
-
     override val name = "Alandal"
 
     override val baseUrl = "https://alandal.com"
@@ -49,23 +48,23 @@ class Alandal : HttpSource() {
 
     // ============================== Popular ===============================
 
-    override fun popularMangaRequest(page: Int): Request =
-        searchMangaRequest(page, "", FilterList(SortFilter("popular")))
+    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(page, "", FilterList(SortFilter("popular")))
 
-    override fun popularMangaParse(response: Response): MangasPage =
-        searchMangaParse(response)
+    override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
 
     // =============================== Latest ===============================
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        searchMangaRequest(page, "", FilterList(SortFilter("new")))
+    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(page, "", FilterList(SortFilter("new")))
 
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        searchMangaParse(response)
+    override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = apiUrl.toHttpUrl().newBuilder().apply {
             addPathSegment("series")
             if (query.isNotBlank()) {
@@ -101,8 +100,7 @@ class Alandal : HttpSource() {
 
     // =========================== Manga Details ============================
 
-    override fun getMangaUrl(manga: SManga): String =
-        baseUrl + manga.url.replace("series/", "series/comic-")
+    override fun getMangaUrl(manga: SManga): String = baseUrl + manga.url.replace("series/", "series/comic-")
 
     override fun mangaDetailsRequest(manga: SManga): Request {
         val url = apiUrl.toHttpUrl().newBuilder().apply {
@@ -113,8 +111,7 @@ class Alandal : HttpSource() {
         return GET(url, apiHeaders)
     }
 
-    override fun mangaDetailsParse(response: Response): SManga =
-        response.parseAs<ResponseDto<MangaDetailsDto>>().data.series.toSManga()
+    override fun mangaDetailsParse(response: Response): SManga = response.parseAs<ResponseDto<MangaDetailsDto>>().data.series.toSManga()
 
     // ============================== Chapters ==============================
 

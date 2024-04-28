@@ -12,7 +12,6 @@ class MangaKings : MangaThemesia(
     "https://mangakings.com.tr",
     "tr",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("tr")),
-
 ) {
     override val client = network.client.newBuilder()
         .rateLimitHost(baseUrl.toHttpUrl(), 2)

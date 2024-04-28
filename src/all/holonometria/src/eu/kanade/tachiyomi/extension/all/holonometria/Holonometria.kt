@@ -19,7 +19,6 @@ class Holonometria(
     override val lang: String,
     private val langPath: String = "$lang/",
 ) : ParsedHttpSource() {
-
     override val name = "HOLONOMETRIA"
 
     override val baseUrl = "https://alt.hololive.tv"
@@ -33,10 +32,10 @@ class Holonometria(
     override fun headersBuilder() = super.headersBuilder()
         .add("Referer", "$baseUrl/")
 
-    override fun popularMangaRequest(page: Int) =
-        GET("$baseUrl/holonometria/$langPath", headers)
+    override fun popularMangaRequest(page: Int) = GET("$baseUrl/holonometria/$langPath", headers)
 
     override fun popularMangaSelector() = "#Story article:has(a[href*=/manga/])"
+
     override fun popularMangaNextPageSelector() = null
 
     override fun popularMangaFromElement(element: Element) = SManga.create().apply {
@@ -45,8 +44,11 @@ class Holonometria(
         thumbnail_url = element.selectFirst("img")?.attr("abs:src")
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        GET("$baseUrl/holonometria/$langPath#${query.trim()}", headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = GET("$baseUrl/holonometria/$langPath#${query.trim()}", headers)
 
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
@@ -60,7 +62,9 @@ class Holonometria(
     }
 
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {
@@ -80,11 +84,12 @@ class Holonometria(
             ?.replace("&amp;", "&")
     }
 
-    override fun chapterListRequest(manga: SManga) =
-        paginatedChapterListRequest(manga.url, 1)
+    override fun chapterListRequest(manga: SManga) = paginatedChapterListRequest(manga.url, 1)
 
-    private fun paginatedChapterListRequest(mangaUrl: String, page: Int) =
-        GET("$baseUrl$mangaUrl".removeSuffix("/") + if (page == 1) "/" else "/page/$page/", headers)
+    private fun paginatedChapterListRequest(
+        mangaUrl: String,
+        page: Int,
+    ) = GET("$baseUrl$mangaUrl".removeSuffix("/") + if (page == 1) "/" else "/page/$page/", headers)
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
@@ -143,8 +148,12 @@ class Holonometria(
     }
 
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun latestUpdatesFromElement(element: Element) = throw UnsupportedOperationException()
+
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
+
     override fun latestUpdatesSelector() = throw UnsupportedOperationException()
+
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 }

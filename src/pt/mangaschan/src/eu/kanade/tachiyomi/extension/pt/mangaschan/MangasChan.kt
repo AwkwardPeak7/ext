@@ -13,7 +13,6 @@ class MangasChan : MangaThemesia(
     "pt-BR",
     dateFormat = SimpleDateFormat("MMMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .addInterceptor { chain ->
             val request = chain.request()

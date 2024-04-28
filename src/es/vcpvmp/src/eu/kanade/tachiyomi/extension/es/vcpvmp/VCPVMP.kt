@@ -16,7 +16,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 open class VCPVMP(override val name: String, override val baseUrl: String) : ParsedHttpSource() {
-
     override val lang = "es"
 
     override val supportsLatest: Boolean = false
@@ -79,9 +78,11 @@ open class VCPVMP(override val name: String, override val baseUrl: String) : Par
     }
 
     override fun chapterListSelector() = throw UnsupportedOperationException()
+
     override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
 
     protected open val pageListSelector = "div.wp-content p > img:not(noscript img)"
+
     override fun pageListParse(document: Document): List<Page> = document.select(pageListSelector)
         .mapIndexed { i, img -> Page(i, "", img.attr("abs:data-src")) }
 
@@ -90,7 +91,11 @@ open class VCPVMP(override val name: String, override val baseUrl: String) : Par
     protected open val urlSuffix = ""
     protected open val genreSuffix = ""
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var url = baseUrl.toHttpUrl().newBuilder()
 
         if (query.isNotBlank()) {

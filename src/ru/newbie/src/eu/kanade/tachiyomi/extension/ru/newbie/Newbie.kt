@@ -73,7 +73,10 @@ class Newbie : ConfigurableSource, HttpSource() {
     private val userAgentRandomizer = "${Random.nextInt().absoluteValue}"
 
     override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer")
+        .add(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer",
+        )
         .add("Referer", baseUrl)
 
     private fun imageContentTypeIntercept(chain: Interceptor.Chain): Response {
@@ -114,7 +117,8 @@ class Newbie : ConfigurableSource, HttpSource() {
         }
     }
 
-    override fun latestUpdatesRequest(page: Int): Request = GET("$API_URL/projects/updates?only_bookmarks=false&size=$count&page=$page", headers)
+    override fun latestUpdatesRequest(page: Int): Request =
+        GET("$API_URL/projects/updates?only_bookmarks=false&size=$count&page=$page", headers)
 
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
@@ -150,7 +154,11 @@ class Newbie : ConfigurableSource, HttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val mutableGenre = mutableListOf<String>()
         val mutableExGenre = mutableListOf<String>()
         val mutableTag = mutableListOf<String>()
@@ -211,7 +219,9 @@ class Newbie : ConfigurableSource, HttpSource() {
 
         return POST(
             "https://neo.newmanga.org/catalogue",
-            body = """{"query":"$query","sort":{"kind":"$orderBy","dir":"$ascEnd"},"filter":{"hidden_projects":[],"genres":{"excluded":$mutableExGenre,"included":$mutableGenre},"tags":{"excluded":$mutableExTag,"included":$mutableTag},"type":{"allowed":$mutableType},"translation_status":{"allowed":$mutableStatus},"released_year":{"min":null,"max":null},"require_chapters":$requireChapters,"original_status":{"allowed":$mutableTitleStatus},"adult":{"allowed":$mutableAge}},"pagination":{"page":$page,"size":$count}}""".toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull()),
+            body = """{"query":"$query","sort":{"kind":"$orderBy","dir":"$ascEnd"},"filter":{"hidden_projects":[],"genres":{"excluded":$mutableExGenre,"included":$mutableGenre},"tags":{"excluded":$mutableExTag,"included":$mutableTag},"type":{"allowed":$mutableType},"translation_status":{"allowed":$mutableStatus},"released_year":{"min":null,"max":null},"require_chapters":$requireChapters,"original_status":{"allowed":$mutableTitleStatus},"adult":{"allowed":$mutableAge}},"pagination":{"page":$page,"size":$count}}""".toRequestBody(
+                "application/json; charset=utf-8".toMediaTypeOrNull(),
+            ),
             headers = headers,
         )
     }
@@ -235,6 +245,7 @@ class Newbie : ConfigurableSource, HttpSource() {
             else -> type
         }
     }
+
     private fun parseAge(adult: String): String {
         return when (adult) {
             "" -> "0+"
@@ -266,7 +277,9 @@ class Newbie : ConfigurableSource, HttpSource() {
             author = o.author?.name
             artist = o.artist?.name
             val mediaNameLanguage = if (isEng.equals("rus")) o.title.en else o.title.ru
-            description = mediaNameLanguage + "\n" + ratingStar + " " + ratingValue + " [♡" + hearts + "]\n" + Jsoup.parse(o.description).text()
+            description = mediaNameLanguage + "\n" + ratingStar + " " + ratingValue + " [♡" + hearts + "]\n" + Jsoup.parse(
+                o.description,
+            ).text()
             genre = parseType(type) + ", " + adult?.let { parseAge(it) } + ", " + genres.joinToString { it.title.ru.capitalize() }
             status = parseStatus(o.status)
         }
@@ -315,6 +328,7 @@ class Newbie : ConfigurableSource, HttpSource() {
     }
 
     private fun selector(b: BranchesDto): Boolean = b.is_default
+
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         val branch = branches.getOrElse(manga.url) { mangaBranches(manga) }
         return when {
@@ -337,7 +351,11 @@ class Newbie : ConfigurableSource, HttpSource() {
 
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
 
-    private fun chapterListParse(response: Response, manga: SManga, branch: Long): List<SChapter> {
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+        branch: Long,
+    ): List<SChapter> {
         var chapters = json.decodeFromString<SeriesWrapperDto<List<BookDto>>>(response.body.string()).items
         if (!preferences.getBoolean(PAID_PREF, false)) {
             chapters = chapters.filter { it.is_available }
@@ -352,7 +370,9 @@ class Newbie : ConfigurableSource, HttpSource() {
             }
         }
     }
+
     override fun chapterListRequest(manga: SManga): Request = throw UnsupportedOperationException()
+
     private fun chapterListRequest(branch: Long): Request {
         return GET(
             "$API_URL/branches/$branch/chapters?reverse=true&size=1000000",
@@ -369,7 +389,10 @@ class Newbie : ConfigurableSource, HttpSource() {
         return baseUrl + chapter.url
     }
 
-    private fun pageListParse(response: Response, urlRequest: String): List<Page> {
+    private fun pageListParse(
+        response: Response,
+        urlRequest: String,
+    ): List<Page> {
         val pages = json.decodeFromString<List<PageDto>>(response.body.string())
         val result = mutableListOf<Page>()
         pages.forEach { page ->
@@ -381,6 +404,7 @@ class Newbie : ConfigurableSource, HttpSource() {
     }
 
     override fun pageListParse(response: Response): List<Page> = throw UnsupportedOperationException()
+
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return client.newCall(pageListRequest(chapter))
             .asObservableSuccess()
@@ -403,13 +427,19 @@ class Newbie : ConfigurableSource, HttpSource() {
     }
 
     private class CheckFilter(name: String, val id: String) : Filter.CheckBox(name)
+
     private class SearchFilter(name: String) : Filter.TriState(name)
 
     private class TypeList(types: List<CheckFilter>) : Filter.Group<CheckFilter>("Типы", types)
+
     private class StatusList(statuses: List<CheckFilter>) : Filter.Group<CheckFilter>("Статус перевода", statuses)
+
     private class StatusTitleList(titles: List<CheckFilter>) : Filter.Group<CheckFilter>("Статус оригинала", titles)
+
     private class GenreList(genres: List<SearchFilter>) : Filter.Group<SearchFilter>("Жанры", genres)
+
     private class TagsList(tags: List<SearchFilter>) : Filter.Group<SearchFilter>("Теги", tags)
+
     private class AgeList(ages: List<CheckFilter>) : Filter.Group<CheckFilter>("Возрастное ограничение", ages)
 
     override fun getFilterList() = FilterList(
@@ -633,6 +663,7 @@ class Newbie : ConfigurableSource, HttpSource() {
     )
 
     private var isEng: String? = preferences.getString(LANGUAGE_PREF, "eng")
+
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
         val titleLanguagePref = ListPreference(screen.context).apply {
             key = LANGUAGE_PREF

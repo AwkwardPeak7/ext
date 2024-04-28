@@ -19,7 +19,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class TheLibraryOfOhara(override val lang: String, private val siteLang: String) : ParsedHttpSource() {
-
     override val name = "The Library of Ohara"
 
     override val baseUrl = "https://thelibraryofohara.com"
@@ -72,7 +71,11 @@ class TheLibraryOfOhara(override val lang: String, private val siteLang: String)
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return client.newCall(searchMangaRequest(page, query, filters))
             .asObservableSuccess()
             .map { response ->
@@ -80,9 +83,16 @@ class TheLibraryOfOhara(override val lang: String, private val siteLang: String)
             }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = popularMangaRequest(1)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = popularMangaRequest(1)
 
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         return MangasPage(popularMangaParse(response).mangas.filter { it.title.contains(query, ignoreCase = true) }, false)
     }
 
@@ -106,14 +116,21 @@ class TheLibraryOfOhara(override val lang: String, private val siteLang: String)
     // Use one of the chapter thumbnails as manga thumbnail
     // Some thumbnails have a flag on them which indicates the Language.
     // Try to choose a thumbnail with a matching flag
-    private fun chooseChapterThumbnail(document: Document, mangaTitle: String): String? {
+    private fun chooseChapterThumbnail(
+        document: Document,
+        mangaTitle: String,
+    ): String? {
         var imgElement: Element? = null
 
         // Reverie
         if (mangaTitle.contains("Reverie")) {
             imgElement = document.select("article").firstOrNull { element ->
                 val chapterTitle = element.select("h2.entry-title a").text()
-                (chapterTitle.contains(siteLang) || (lang == "en" && !chapterTitle.contains(Regex("""(French|Arabic|Italian|Indonesia|Spanish)"""))))
+                (
+                    chapterTitle.contains(
+                        siteLang,
+                    ) || (lang == "en" && !chapterTitle.contains(Regex("""(French|Arabic|Italian|Indonesia|Spanish)""")))
+                )
             }
         }
         // Chapter Secrets (multilingual)

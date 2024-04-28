@@ -6,7 +6,6 @@ import org.jsoup.nodes.Document
 import java.util.Locale
 
 class SoulScans : MangaThemesia("Soul Scans", "https://soulscans.my.id", "id") {
-
     override val hasProjectPage = true
 
     override fun mangaDetailsParse(document: Document) = SManga.create().apply {

@@ -9,7 +9,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class YanmagaGravures : Yanmaga("search-item-category--gravures", true) {
-
     override val name = "ヤンマガ（グラビア）"
 
     override val supportsLatest = false

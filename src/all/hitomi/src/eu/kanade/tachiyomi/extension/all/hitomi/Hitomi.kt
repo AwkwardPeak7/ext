@@ -36,7 +36,6 @@ class Hitomi(
     override val lang: String,
     private val nozomiLang: String,
 ) : HttpSource() {
-
     override val name = "Hitomi"
 
     private val domain = "hitomi.la"
@@ -75,7 +74,11 @@ class Hitomi(
 
     private lateinit var searchResponse: List<Int>
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.fromCallable {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.fromCallable {
         runBlocking {
             if (page == 1) {
                 searchResponse = hitomiSearch(
@@ -104,7 +107,10 @@ class Hitomi(
         return byteOffset.until(byteOffset + 100)
     }
 
-    private suspend fun getRangedResponse(url: String, range: LongRange?): ByteArray {
+    private suspend fun getRangedResponse(
+        url: String,
+        range: LongRange?,
+    ): ByteArray {
         val rangeHeaders = when (range) {
             null -> headers
             else -> headersBuilder()
@@ -119,73 +125,72 @@ class Hitomi(
         query: String,
         sortByPopularity: Boolean = false,
         language: String = "all",
-    ): Set<Int> =
-        coroutineScope {
-            val terms = query
-                .trim()
-                .replace(Regex("""^\?"""), "")
-                .lowercase()
-                .split(Regex("\\s+"))
-                .map {
-                    it.replace('_', ' ')
-                }
-
-            val positiveTerms = LinkedList<String>()
-            val negativeTerms = LinkedList<String>()
-
-            for (term in terms) {
-                if (term.startsWith("-")) {
-                    negativeTerms.push(term.removePrefix("-"))
-                } else if (term.isNotBlank()) {
-                    positiveTerms.push(term)
-                }
+    ): Set<Int> = coroutineScope {
+        val terms = query
+            .trim()
+            .replace(Regex("""^\?"""), "")
+            .lowercase()
+            .split(Regex("\\s+"))
+            .map {
+                it.replace('_', ' ')
             }
 
-            val positiveResults = positiveTerms.map {
-                async {
-                    runCatching {
-                        getGalleryIDsForQuery(it, language)
-                    }.getOrDefault(emptySet())
-                }
+        val positiveTerms = LinkedList<String>()
+        val negativeTerms = LinkedList<String>()
+
+        for (term in terms) {
+            if (term.startsWith("-")) {
+                negativeTerms.push(term.removePrefix("-"))
+            } else if (term.isNotBlank()) {
+                positiveTerms.push(term)
             }
-
-            val negativeResults = negativeTerms.map {
-                async {
-                    runCatching {
-                        getGalleryIDsForQuery(it, language)
-                    }.getOrDefault(emptySet())
-                }
-            }
-
-            val results = when {
-                sortByPopularity -> getGalleryIDsFromNozomi(null, "popular", language)
-                positiveTerms.isEmpty() -> getGalleryIDsFromNozomi(null, "index", language)
-                else -> emptySet()
-            }.toMutableSet()
-
-            fun filterPositive(newResults: Set<Int>) {
-                when {
-                    results.isEmpty() -> results.addAll(newResults)
-                    else -> results.retainAll(newResults)
-                }
-            }
-
-            fun filterNegative(newResults: Set<Int>) {
-                results.removeAll(newResults)
-            }
-
-            // positive results
-            positiveResults.forEach {
-                filterPositive(it.await())
-            }
-
-            // negative results
-            negativeResults.forEach {
-                filterNegative(it.await())
-            }
-
-            results
         }
+
+        val positiveResults = positiveTerms.map {
+            async {
+                runCatching {
+                    getGalleryIDsForQuery(it, language)
+                }.getOrDefault(emptySet())
+            }
+        }
+
+        val negativeResults = negativeTerms.map {
+            async {
+                runCatching {
+                    getGalleryIDsForQuery(it, language)
+                }.getOrDefault(emptySet())
+            }
+        }
+
+        val results = when {
+            sortByPopularity -> getGalleryIDsFromNozomi(null, "popular", language)
+            positiveTerms.isEmpty() -> getGalleryIDsFromNozomi(null, "index", language)
+            else -> emptySet()
+        }.toMutableSet()
+
+        fun filterPositive(newResults: Set<Int>) {
+            when {
+                results.isEmpty() -> results.addAll(newResults)
+                else -> results.retainAll(newResults)
+            }
+        }
+
+        fun filterNegative(newResults: Set<Int>) {
+            results.removeAll(newResults)
+        }
+
+        // positive results
+        positiveResults.forEach {
+            filterPositive(it.await())
+        }
+
+        // negative results
+        negativeResults.forEach {
+            filterNegative(it.await())
+        }
+
+        results
+    }
 
     // search.js
     private suspend fun getGalleryIDsForQuery(
@@ -527,8 +532,7 @@ class Hitomi(
         return GET(page.imageUrl!!, imageHeaders)
     }
 
-    private inline fun <reified T> Response.parseScriptAs(): T =
-        parseAs<T> { it.substringAfter("var galleryinfo = ") }
+    private inline fun <reified T> Response.parseScriptAs(): T = parseAs<T> { it.substringAfter("var galleryinfo = ") }
 
     private inline fun <reified T> Response.parseAs(transform: (String) -> String = { body -> body }): T {
         val body = use { it.body.string() }
@@ -537,13 +541,12 @@ class Hitomi(
         return json.decodeFromString(transformed)
     }
 
-    private suspend fun Call.awaitSuccess() =
-        await().also {
-            require(it.isSuccessful) {
-                it.close()
-                "HTTP error ${it.code}"
-            }
+    private suspend fun Call.awaitSuccess() = await().also {
+        require(it.isSuccessful) {
+            it.close()
+            "HTTP error ${it.code}"
         }
+    }
 
     // ------------------ gg.js ------------------
     private var scriptLastRetrieval: Long? = null
@@ -597,10 +600,20 @@ class Hitomi(
     }
 
     override fun popularMangaParse(response: Response) = throw UnsupportedOperationException()
+
     override fun popularMangaRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException()
+
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = throw UnsupportedOperationException()
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = throw UnsupportedOperationException()
+
     override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
+
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 }

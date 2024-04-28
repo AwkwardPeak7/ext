@@ -24,7 +24,6 @@ import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
 class Multporn : ParsedHttpSource() {
-
     override val name = "Multporn"
     override val lang: String = "en"
     override val baseUrl = "https://multporn.net"
@@ -38,7 +37,10 @@ class Multporn : ParsedHttpSource() {
 
     // Popular
 
-    private fun buildPopularMangaRequest(page: Int, filters: FilterList = FilterList()): Request {
+    private fun buildPopularMangaRequest(
+        page: Int,
+        filters: FilterList = FilterList(),
+    ): Request {
         val url = "$baseUrl/best".toHttpUrl().newBuilder()
             .addQueryParameter("page", page.toString())
 
@@ -55,8 +57,11 @@ class Multporn : ParsedHttpSource() {
     }
 
     override fun popularMangaRequest(page: Int) = buildPopularMangaRequest(page - 1)
+
     override fun popularMangaSelector() = ".masonry-item"
+
     override fun popularMangaNextPageSelector() = ".pager-next a"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         url = element.select(".views-field-title a").attr("href")
         title = element.select(".views-field-title").text()
@@ -65,7 +70,10 @@ class Multporn : ParsedHttpSource() {
 
     // Latest
 
-    private fun buildLatestMangaRequest(page: Int, filters: FilterList = FilterList()): Request {
+    private fun buildLatestMangaRequest(
+        page: Int,
+        filters: FilterList = FilterList(),
+    ): Request {
         val url = "$baseUrl/new".toHttpUrl().newBuilder()
             .addQueryParameter("page", page.toString())
 
@@ -103,7 +111,11 @@ class Multporn : ParsedHttpSource() {
         return MangasPage(mangas, hasNextPage)
     }
 
-    private fun buildSearchMangaRequest(page: Int, query: String, filtersArg: FilterList = FilterList()): Request {
+    private fun buildSearchMangaRequest(
+        page: Int,
+        query: String,
+        filtersArg: FilterList = FilterList(),
+    ): Request {
         val url = "$baseUrl/search".toHttpUrl().newBuilder()
             .addQueryParameter("page", page.toString())
             .addQueryParameter("views_fulltext", query)
@@ -119,7 +131,10 @@ class Multporn : ParsedHttpSource() {
         return GET(url.build(), headers)
     }
 
-    private fun buildTextSearchFilterRequests(page: Int, filters: List<TextSearchFilter>): List<Request> {
+    private fun buildTextSearchFilterRequests(
+        page: Int,
+        filters: List<TextSearchFilter>,
+    ): List<Request> {
         return filters.map {
             it.stateURIs.map { queryURI ->
                 GET("$baseUrl/${it.uri}/$queryURI?page=0,$page")
@@ -142,7 +157,11 @@ class Multporn : ParsedHttpSource() {
 
     override fun searchMangaSelector() = popularMangaSelector()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         val sortByFilterType = filters.findInstance<SortBySelectFilter>()?.requestType ?: POPULAR_REQUEST_TYPE
         val textSearchFilters = filters.filterIsInstance<TextSearchFilter>().filter { it.state.isNotBlank() }
 
@@ -177,7 +196,11 @@ class Multporn : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val sortByFilterType = filters.findInstance<SortBySelectFilter>()?.requestType ?: POPULAR_REQUEST_TYPE
 
         return when {
@@ -306,7 +329,10 @@ class Multporn : ParsedHttpSource() {
         URISelectFilter(
             "Sort By",
             filters.map { filter ->
-                filter.let { it.name = "[${it.requestType}] ${it.name}"; it }
+                filter.let {
+                    it.name = "[${it.requestType}] ${it.name}"
+                    it
+                }
             },
             state,
         ) {
@@ -389,7 +415,6 @@ class Multporn : ParsedHttpSource() {
     private inline fun <reified T> Iterable<*>.findInstance() = find { it is T } as? T
 
     companion object {
-
         const val LATEST_DEFAULT_SORT_BY_FILTER_STATE = 3
         const val POPULAR_DEFAULT_SORT_BY_FILTER_STATE = 0
         const val SEARCH_DEFAULT_SORT_BY_FILTER_STATE = 5

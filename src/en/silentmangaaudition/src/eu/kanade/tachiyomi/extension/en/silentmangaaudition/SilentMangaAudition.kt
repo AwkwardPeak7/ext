@@ -15,7 +15,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class SilentMangaAudition : HttpSource() {
-
     override val name = "Silent Manga Audition"
 
     override val baseUrl = "https://manga-audition.com"
@@ -33,7 +32,11 @@ class SilentMangaAudition : HttpSource() {
         return Observable.just(MangasPage(entries, false))
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         val filteredEntries = SMA_ENTRIES
             .mapIndexed { i, entry -> entry.toSManga(i) }
             .filter {
@@ -110,7 +113,11 @@ class SilentMangaAudition : HttpSource() {
 
     override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 

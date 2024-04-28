@@ -13,7 +13,6 @@ class KurageBunch : GigaViewer(
     "ja",
     "https://cdn-img.kuragebunch.com",
 ) {
-
     override val supportsLatest: Boolean = false
 
     override val client: OkHttpClient = super.client.newBuilder()

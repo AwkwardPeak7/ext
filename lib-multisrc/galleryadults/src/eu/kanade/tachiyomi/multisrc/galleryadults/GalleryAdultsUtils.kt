@@ -26,6 +26,7 @@ fun Element.imgAttr() = when {
 }!!
 
 fun Element.cleanTag(): String = text().cleanTag()
+
 fun String.cleanTag(): String = replace(regexTagCountNumber, "").trim()
 
 // convert thumbnail URLs to full image URLs
@@ -137,7 +138,9 @@ private fun SimpleDateFormat.tryParse(string: String): Long {
 
 class WordSet(private vararg val words: String) {
     fun anyWordIn(dateString: String): Boolean = words.any { dateString.contains(it, ignoreCase = true) }
+
     fun startsWith(dateString: String): Boolean = words.any { dateString.startsWith(it, ignoreCase = true) }
+
     fun endsWith(dateString: String): Boolean = words.any { dateString.endsWith(it, ignoreCase = true) }
 }
 

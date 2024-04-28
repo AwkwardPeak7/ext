@@ -32,7 +32,6 @@ import uy.kohesive.injekt.injectLazy
 import java.util.Calendar
 
 class NineHentai : HttpSource() {
-
     override val baseUrl = "https://9hentai.com"
 
     override val name = "NineHentai"
@@ -107,7 +106,11 @@ class NineHentai : HttpSource() {
     override fun latestUpdatesParse(response: Response): MangasPage = parseSearchResponse(response)
 
     // Search
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith("id:")) {
             val id = query.substringAfter("id:").toInt()
             return client.newCall(buildDetailRequest(id))
@@ -119,7 +122,11 @@ class NineHentai : HttpSource() {
         return super.fetchSearchManga(page, query, filters)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         var sort = 0
         val range = mutableListOf(0, 2000)
@@ -285,7 +292,10 @@ class NineHentai : HttpSource() {
         }
     }
 
-    private fun getTags(queries: String, type: Int): List<Tag> {
+    private fun getTags(
+        queries: String,
+        type: Int,
+    ): List<Tag> {
         return queries.split(",").map(String::trim)
             .filterNot(String::isBlank).mapNotNull { query ->
                 val jsonString = buildJsonObject {
@@ -335,13 +345,21 @@ class NineHentai : HttpSource() {
     )
 
     private class MinPagesFilter : Filter.Text("Minimum Pages")
+
     private class MaxPagesFilter : Filter.Text("Maximum Pages")
+
     private class IncludedFilter : Filter.Text("Included Tags")
+
     private class ExcludedFilter : Filter.Text("Excluded Tags")
+
     private class ArtistFilter : Filter.Text("Artist")
+
     private class GroupFilter : Filter.Text("Group")
+
     private class ParodyFilter : Filter.Text("Parody")
+
     private class CharacterFilter : Filter.Text("Character")
+
     private class CategoryFilter : Filter.Text("Category")
 
     override fun getFilterList() = FilterList(

@@ -15,7 +15,6 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.math.min
 
 object ImageInterceptor : Interceptor {
-
     private val memo = hashMapOf<Int, IntArray>()
 
     override fun intercept(chain: Interceptor.Chain): Response {

@@ -13,7 +13,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class YaoiLib : LibGroup("YaoiLib", "https://v2.slashlib.me", "ru") {
-
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
@@ -21,7 +20,11 @@ class YaoiLib : LibGroup("YaoiLib", "https://v2.slashlib.me", "ru") {
     private var domain: String = preferences.getString(DOMAIN_TITLE, DOMAIN_DEFAULT)!!
     override val baseUrl: String = domain
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (csrfToken.isEmpty()) {
             val tokenResponse = client.newCall(popularMangaRequest(page)).execute()
             val resBody = tokenResponse.body.string()
@@ -56,6 +59,7 @@ class YaoiLib : LibGroup("YaoiLib", "https://v2.slashlib.me", "ru") {
     private class SearchFilter(name: String, val id: String) : Filter.TriState(name)
 
     private class TagList(tags: List<SearchFilter>) : Filter.Group<SearchFilter>("Теги", tags)
+
     private class AgeList(ages: List<SearchFilter>) : Filter.Group<SearchFilter>("Возрастное ограничение", ages)
 
     override fun getFilterList(): FilterList {
@@ -163,7 +167,6 @@ class YaoiLib : LibGroup("YaoiLib", "https://v2.slashlib.me", "ru") {
         SearchFilter("Эльфы", "216"),
         SearchFilter("Якудза", "164"),
         SearchFilter("Япония", "280"),
-
     )
 
     private fun getAgeList() = listOf(

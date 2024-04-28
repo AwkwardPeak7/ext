@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Hentairead : Madara("HentaiRead", "https://hentairead.com", "en", dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US)) {
-
     override val versionId: Int = 2
 
     override val mangaSubString = "hentai"
@@ -24,7 +23,11 @@ class Hentairead : Madara("HentaiRead", "https://hentairead.com", "en", dateForm
 
     override fun getFilterList() = FilterList()
 
-    override fun searchLoadMoreRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchLoadMoreRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl${searchPage(page)}".toHttpUrl().newBuilder()
             .addQueryParameter("s", query)
             .addQueryParameter("post_type", "wp-manga")

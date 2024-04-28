@@ -39,7 +39,6 @@ open class NineNineNineHentai(
     final override val lang: String,
     private val siteLang: String = lang,
 ) : HttpSource(), ConfigurableSource {
-
     override val name = "999Hentai"
 
     override val baseUrl = "https://999hentai.net"
@@ -90,9 +89,14 @@ open class NineNineNineHentai(
     override fun popularMangaParse(response: Response) = browseMangaParse<PopularResponse>(response)
 
     override fun latestUpdatesRequest(page: Int) = searchMangaRequest(page, "", FilterList())
+
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(SEARCH_PREFIX)) {
             val mangaId = query.substringAfter(SEARCH_PREFIX)
             client.newCall(mangaFromIDRequest(mangaId))
@@ -103,7 +107,11 @@ open class NineNineNineHentai(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val payload = GraphQL(
             SearchVariables(
                 size = size,
@@ -126,6 +134,7 @@ open class NineNineNineHentai(
     }
 
     override fun searchMangaParse(response: Response) = browseMangaParse<SearchResponse>(response)
+
     override fun getFilterList() = getFilters()
 
     private fun mangaFromIDRequest(id: String): Request {
@@ -235,18 +244,14 @@ open class NineNineNineHentai(
         } ?: preference.cdnUrl
     }
 
-    private inline fun <reified T> String.parseAs(): T =
-        json.decodeFromString(this)
+    private inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 
-    private inline fun <reified T> Response.parseAs(): T =
-        use { body.string() }.parseAs()
+    private inline fun <reified T> Response.parseAs(): T = use { body.string() }.parseAs()
 
-    private inline fun <reified T> List<*>.firstInstanceOrNull(): T? =
-        filterIsInstance<T>().firstOrNull()
+    private inline fun <reified T> List<*>.firstInstanceOrNull(): T? = filterIsInstance<T>().firstOrNull()
 
-    private inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody =
-        json.encodeToString(this)
-            .toRequestBody(JSON_MEDIA_TYPE)
+    private inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody = json.encodeToString(this)
+        .toRequestBody(JSON_MEDIA_TYPE)
 
     private fun String?.parseDate(): Long {
         return runCatching {
@@ -313,6 +318,7 @@ open class NineNineNineHentai(
     private val SharedPreferences.shortTitle get() = getBoolean(PREF_SHORT_TITLE, false)
 
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
+
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     companion object {

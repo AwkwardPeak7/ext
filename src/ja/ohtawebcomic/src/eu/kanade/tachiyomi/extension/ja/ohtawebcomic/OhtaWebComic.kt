@@ -20,7 +20,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class OhtaWebComic : ParsedHttpSource() {
-
     override val name = "Ohta Web Comic"
 
     override val baseUrl = "https://webcomic.ohtabooks.com"
@@ -59,7 +58,10 @@ class OhtaWebComic : ParsedHttpSource() {
         return parseDirectory(1, ::popularMangaFromElement)
     }
 
-    private fun parseDirectory(page: Int, parseFn: (element: Element) -> SManga): MangasPage {
+    private fun parseDirectory(
+        page: Int,
+        parseFn: (element: Element) -> SManga,
+    ): MangasPage {
         val endRange = minOf(page * 24, directory.size)
         val manga = directory.subList((page - 1) * 24, endRange).map { parseFn(it) }
         val hasNextPage = endRange < directory.lastIndex
@@ -85,7 +87,11 @@ class OhtaWebComic : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (page == 1) {
             client.newCall(searchMangaRequest(page, query, filters))
                 .asObservableSuccess()
@@ -95,11 +101,18 @@ class OhtaWebComic : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = popularMangaRequest(page)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = popularMangaRequest(page)
 
     override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         val document = response.asJsoup()
 
         directory = document.select(searchMangaSelector())
@@ -170,8 +183,7 @@ class OhtaWebComic : ParsedHttpSource() {
 
     private val reader by lazy { SpeedBinbReader(client, headers, json, true) }
 
-    override fun pageListRequest(chapter: SChapter) =
-        GET("https://www.yondemill.jp${chapter.url}?view=1&u0=1", headers)
+    override fun pageListRequest(chapter: SChapter) = GET("https://www.yondemill.jp${chapter.url}?view=1&u0=1", headers)
 
     override fun pageListParse(document: Document): List<Page> {
         val readerUrl = document.selectFirst("script:containsData(location.href)")!!
@@ -189,7 +201,6 @@ class OhtaWebComic : ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 }
 
-private fun Element.getChapterId(): String =
-    attr("onclick")
-        .substringAfter("openBook('")
-        .substringBefore("')")
+private fun Element.getChapterId(): String = attr("onclick")
+    .substringAfter("openBook('")
+    .substringBefore("')")

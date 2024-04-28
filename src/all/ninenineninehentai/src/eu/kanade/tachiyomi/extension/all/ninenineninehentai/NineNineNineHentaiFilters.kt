@@ -7,9 +7,9 @@ abstract class SelectFilter(
     displayName: String,
     private val options: Array<Pair<String, String>>,
 ) : Filter.Select<String>(
-    displayName,
-    options.map { it.first }.toTypedArray(),
-) {
+        displayName,
+        options.map { it.first }.toTypedArray(),
+    ) {
     val selected get() = options[state].second.takeUnless { it.isEmpty() }
 }
 

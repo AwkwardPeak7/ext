@@ -11,7 +11,6 @@ class MdUserAgentInterceptor(
     private val preferences: SharedPreferences,
     private val dexLang: String,
 ) : Interceptor {
-
     private val SharedPreferences.customUserAgent
         get() = getString(
             MDConstants.getCustomUserAgentPrefKey(dexLang),

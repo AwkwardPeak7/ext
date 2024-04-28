@@ -45,7 +45,10 @@ class RemoteStorageUtils {
         }
 
         @SuppressLint("SetJavaScriptEnabled", "AddJavascriptInterface")
-        private fun proceedWithWebView(request: Request, response: Response): Response {
+        private fun proceedWithWebView(
+            request: Request,
+            response: Response,
+        ): Response {
             val latch = CountDownLatch(1)
 
             var webView: WebView? = null
@@ -71,7 +74,10 @@ class RemoteStorageUtils {
                 webview.addJavascriptInterface(jsInterface, "android")
 
                 webview.webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView, url: String) {
+                    override fun onPageFinished(
+                        view: WebView,
+                        url: String,
+                    ) {
                         view.evaluateJavascript(jsScript) {}
                         if (transparent) {
                             latch.countDown()

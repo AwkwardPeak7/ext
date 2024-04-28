@@ -13,7 +13,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class AllHentai : GroupLe("AllHentai", "https://z.allhen.online", "ru") {
-
     override val id: Long = 1809051393403180443
 
     private val preferences: SharedPreferences by lazy {
@@ -23,7 +22,11 @@ class AllHentai : GroupLe("AllHentai", "https://z.allhen.online", "ru") {
     private var domain: String = preferences.getString(DOMAIN_TITLE, DOMAIN_DEFAULT)!!
     override val baseUrl: String = domain
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = super.searchMangaRequest(page, query, filters).url.newBuilder()
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
             when (filter) {
@@ -72,8 +75,11 @@ class AllHentai : GroupLe("AllHentai", "https://z.allhen.online", "ru") {
     private class Genre(name: String, val id: String) : Filter.TriState(name)
 
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Жанры", genres)
+
     private class Category(categories: List<Genre>) : Filter.Group<Genre>("Категории", categories)
+
     private class FilList(fils: List<Genre>) : Filter.Group<Genre>("Фильтры", fils)
+
     private class Tags(tags: Array<String>) : Filter.Select<String>("Тэг (только)", tags)
 
     private data class Tag(val name: String, val url: String)
@@ -277,7 +283,11 @@ class AllHentai : GroupLe("AllHentai", "https://z.allhen.online", "ru") {
             setOnPreferenceChangeListener { _, newValue ->
                 try {
                     val res = preferences.edit().putString(DOMAIN_TITLE, newValue as String).commit()
-                    Toast.makeText(screen.context, "Для смены домена необходимо перезапустить приложение с полной остановкой.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        screen.context,
+                        "Для смены домена необходимо перезапустить приложение с полной остановкой.",
+                        Toast.LENGTH_LONG,
+                    ).show()
                     res
                 } catch (e: Exception) {
                     e.printStackTrace()

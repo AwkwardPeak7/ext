@@ -13,7 +13,6 @@ class RogMangas : Madara(
     "pt-BR",
     SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")),
 ) {
-
     // Changed their name from Mangás Overall to ROG Mangás.
     override val id: Long = 7865569692125193686
 

@@ -29,7 +29,6 @@ import uy.kohesive.injekt.injectLazy
 import kotlin.math.min
 
 class MangaFun : HttpSource() {
-
     override val name = "Manga Fun"
 
     override val baseUrl = "https://mangafun.me"
@@ -115,12 +114,19 @@ class MangaFun : HttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        popularMangaRequest(page)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = popularMangaRequest(page)
 
     override fun searchMangaParse(response: Response) = throw UnsupportedOperationException()
 
-    private fun searchMangaParse(response: Response, query: String, filters: FilterList): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+        filters: FilterList,
+    ): MangasPage {
         directory = response.parseAs<List<MinifiedMangaDto>>()
             .filter {
                 it.name.contains(query, false) ||
@@ -286,8 +292,7 @@ class MangaFun : HttpSource() {
         return MangasPage(manga, hasNextPage)
     }
 
-    private inline fun <reified T> Response.parseAs(): T =
-        json.decodeFromString(body.string())
+    private inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 
     companion object {
         internal const val PREFIX_ID_SEARCH = "id:"

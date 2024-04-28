@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MangaClub : ParsedHttpSource() {
-
     /** Info **/
     override val name: String = "MangaClub"
     override val baseUrl: String = "https://mangaclub.ru"
@@ -27,8 +26,11 @@ class MangaClub : ParsedHttpSource() {
 
     /** Popular **/
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/f/sort=rating/order=desc/page/$page/", headers)
+
     override fun popularMangaNextPageSelector(): String = "div.pagination-list i.icon-right-open"
+
     override fun popularMangaSelector(): String = "div.shortstory"
+
     override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
         thumbnail_url = element.select("div.content-block div.image img").attr("abs:src")
         element.select("div.content-title h4.title a").apply {
@@ -39,12 +41,19 @@ class MangaClub : ParsedHttpSource() {
 
     /** Latest **/
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/page/$page/", headers)
+
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector(): String = popularMangaSelector()
+
     override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     /** Search **/
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         var url = baseUrl
         if (query.isNotEmpty()) {
             val formData = FormBody.Builder()
@@ -87,8 +96,11 @@ class MangaClub : ParsedHttpSource() {
         }
         return GET(url, headers)
     }
+
     override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
+
     override fun searchMangaSelector(): String = popularMangaSelector()
+
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
     /** Details **/
@@ -97,7 +109,10 @@ class MangaClub : ParsedHttpSource() {
         title = document.select("div.info strong").text().replace("\\'", "'").substringBefore("/").trim()
         author = document.select("div.info a[href*=author]").joinToString(", ") { it.text().trim() }
         artist = author
-        status = if (document.select("div.fullstory").text().contains("Данное произведение лицензировано на территории РФ. Главы удалены.")) {
+        status = if (document.select(
+                "div.fullstory",
+            ).text().contains("Данное произведение лицензировано на территории РФ. Главы удалены.")
+        ) {
             SManga.LICENSED
         } else {
             when (document.select("div.info a[href*=status_translation]").text().trim()) {
@@ -116,7 +131,9 @@ class MangaClub : ParsedHttpSource() {
 
     /** Chapters **/
     private val dateParse = SimpleDateFormat("dd.MM.yyyy", Locale.ROOT)
+
     override fun chapterListSelector(): String = "div.chapters div.chapter-item"
+
     override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
         val chapterLink = element.select("div.chapter-item div.item-left a")
         name = chapterLink.text().replace(",", ".").trim()
@@ -131,20 +148,33 @@ class MangaClub : ParsedHttpSource() {
             add(Page(it.attr("data-p").toInt(), "", it.attr("data-i")))
         }
     }
+
     override fun imageUrlParse(document: Document): String = ""
 
     /** Filters **/
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Жанры", genres)
+
     private class Genre(name: String, val id: String) : Filter.CheckBox(name)
+
     private class CategoryList(categories: List<Category>) : Filter.Group<Category>("Категория", categories)
+
     private class Category(name: String, val id: String) : Filter.CheckBox(name)
+
     private class Status : Filter.Select<String>(
         "Статус",
         arrayOf("Не выбрано", "Завершен", "Продолжается", "Заморожено/Заброшено"),
     )
+
     private class OrderBy : Filter.Sort(
         "Сортировка",
-        arrayOf("По дате добавления", "По дате обновления", "В алфавитном порядке", "По количеству комментариев", "По количеству просмотров", "По рейтингу"),
+        arrayOf(
+            "По дате добавления",
+            "По дате обновления",
+            "В алфавитном порядке",
+            "По количеству комментариев",
+            "По количеству просмотров",
+            "По рейтингу",
+        ),
         Selection(5, false),
     )
 

@@ -40,7 +40,6 @@ abstract class Madara(
     final override val lang: String,
     private val dateFormat: SimpleDateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US),
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client = network.cloudflareClient
@@ -109,7 +108,9 @@ abstract class Madara(
     protected open val useLoadMoreRequest = LoadMoreStrategy.AutoDetect
 
     enum class LoadMoreStrategy {
-        AutoDetect, Always, Never
+        AutoDetect,
+        Always,
+        Never,
     }
 
     /**
@@ -118,7 +119,9 @@ abstract class Madara(
     private var loadMoreRequestDetected = LoadMoreDetection.Pending
 
     private enum class LoadMoreDetection {
-        Pending, True, False
+        Pending,
+        True,
+        False,
     }
 
     protected fun detectLoadMore(document: Document) {
@@ -176,19 +179,17 @@ abstract class Madara(
         return manga
     }
 
-    override fun popularMangaRequest(page: Int): Request =
-        if (useLoadMoreRequest()) {
-            loadMoreRequest(page, popular = true)
-        } else {
-            GET("$baseUrl/$mangaSubString/${searchPage(page)}?m_orderby=views", headers)
-        }
+    override fun popularMangaRequest(page: Int): Request = if (useLoadMoreRequest()) {
+        loadMoreRequest(page, popular = true)
+    } else {
+        GET("$baseUrl/$mangaSubString/${searchPage(page)}?m_orderby=views", headers)
+    }
 
-    override fun popularMangaNextPageSelector(): String? =
-        if (useLoadMoreRequest()) {
-            "body:not(:has(.no-posts))"
-        } else {
-            "div.nav-previous, nav.navigation-ajax, a.nextpostslink"
-        }
+    override fun popularMangaNextPageSelector(): String? = if (useLoadMoreRequest()) {
+        "body:not(:has(.no-posts))"
+    } else {
+        "div.nav-previous, nav.navigation-ajax, a.nextpostslink"
+    }
 
     // Latest Updates
 
@@ -199,12 +200,11 @@ abstract class Madara(
         return popularMangaFromElement(element)
     }
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        if (useLoadMoreRequest()) {
-            loadMoreRequest(page, popular = false)
-        } else {
-            GET("$baseUrl/$mangaSubString/${searchPage(page)}?m_orderby=latest", headers)
-        }
+    override fun latestUpdatesRequest(page: Int): Request = if (useLoadMoreRequest()) {
+        loadMoreRequest(page, popular = false)
+    } else {
+        GET("$baseUrl/$mangaSubString/${searchPage(page)}?m_orderby=latest", headers)
+    }
 
     override fun latestUpdatesNextPageSelector(): String? = popularMangaNextPageSelector()
 
@@ -215,7 +215,10 @@ abstract class Madara(
     }
 
     // load more
-    protected fun loadMoreRequest(page: Int, popular: Boolean): Request {
+    protected fun loadMoreRequest(
+        page: Int,
+        popular: Boolean,
+    ): Request {
         val formBody = FormBody.Builder().apply {
             add("action", "madara_load_more")
             add("page", (page - 1).toString())
@@ -235,7 +238,11 @@ abstract class Madara(
 
     // Search Manga
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith(URL_SEARCH_PREFIX)) {
             val mangaUrl = "/$mangaSubString/${query.substringAfter(URL_SEARCH_PREFIX)}/"
             return client.newCall(GET("$baseUrl$mangaUrl", headers))
@@ -259,7 +266,11 @@ abstract class Madara(
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (useLoadMoreRequest()) {
             searchLoadMoreRequest(page, query, filters)
         } else {
@@ -267,7 +278,11 @@ abstract class Madara(
         }
     }
 
-    protected open fun searchRequest(page: Int, query: String, filters: FilterList): Request {
+    protected open fun searchRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/${searchPage(page)}".toHttpUrl().newBuilder()
         url.addQueryParameter("s", query)
         url.addQueryParameter("post_type", "wp-manga")
@@ -310,7 +325,9 @@ abstract class Madara(
                     filter.state
                         .filter { it.state }
                         .let { list ->
-                            if (list.isNotEmpty()) { list.forEach { genre -> url.addQueryParameter("genre[]", genre.id) } }
+                            if (list.isNotEmpty()) {
+                                list.forEach { genre -> url.addQueryParameter("genre[]", genre.id) }
+                            }
                         }
                 }
                 else -> {}
@@ -319,7 +336,11 @@ abstract class Madara(
         return GET(url.build(), headers)
     }
 
-    protected open fun searchLoadMoreRequest(page: Int, query: String, filters: FilterList): Request {
+    protected open fun searchLoadMoreRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val formBody = FormBody.Builder().apply {
             add("action", "madara_load_more")
             add("page", (page - 1).toString())
@@ -497,8 +518,11 @@ abstract class Madara(
     open class Tag(name: String, val id: String) : Filter.CheckBox(name)
 
     protected class AuthorFilter(title: String) : Filter.Text(title)
+
     protected class ArtistFilter(title: String) : Filter.Text(title)
+
     protected class YearFilter(title: String) : Filter.Text(title)
+
     protected class StatusFilter(title: String, status: List<Tag>) :
         Filter.Group<Tag>(title, status)
 
@@ -515,8 +539,15 @@ abstract class Madara(
         options.toTypedArray(),
     )
 
-    protected class GenreList(title: String, genres: List<Genre>) : Filter.Group<GenreCheckBox>(title, genres.map { GenreCheckBox(it.name, it.id) })
+    protected class GenreList(title: String, genres: List<Genre>) : Filter.Group<GenreCheckBox>(
+        title,
+        genres.map {
+            GenreCheckBox(it.name, it.id)
+        },
+    )
+
     class GenreCheckBox(name: String, val id: String = name) : Filter.CheckBox(name)
+
     class Genre(val name: String, val id: String = name)
 
     override fun getFilterList(): FilterList {
@@ -616,10 +647,35 @@ abstract class Madara(
     )
 
     protected val ongoingStatusList: Array<String> = arrayOf(
-        "OnGoing", "Продолжается", "Updating", "Em Lançamento", "Em lançamento", "Em andamento",
-        "Em Andamento", "En cours", "En Cours", "En cours de publication", "Ativo", "Lançando", "Đang Tiến Hành", "Devam Ediyor",
-        "Devam ediyor", "In Corso", "In Arrivo", "مستمرة", "مستمر", "En Curso", "En curso", "Emision",
-        "Curso", "En marcha", "Publicandose", "En emision", "连载中", "Em Lançamento", "Devam Ediyo",
+        "OnGoing",
+        "Продолжается",
+        "Updating",
+        "Em Lançamento",
+        "Em lançamento",
+        "Em andamento",
+        "Em Andamento",
+        "En cours",
+        "En Cours",
+        "En cours de publication",
+        "Ativo",
+        "Lançando",
+        "Đang Tiến Hành",
+        "Devam Ediyor",
+        "Devam ediyor",
+        "In Corso",
+        "In Arrivo",
+        "مستمرة",
+        "مستمر",
+        "En Curso",
+        "En curso",
+        "Emision",
+        "Curso",
+        "En marcha",
+        "Publicandose",
+        "En emision",
+        "连载中",
+        "Em Lançamento",
+        "Devam Ediyo",
         "Đang làm",
     )
 
@@ -926,9 +982,15 @@ abstract class Madara(
         val cal = Calendar.getInstance()
 
         return when {
-            WordSet("hari", "gün", "jour", "día", "dia", "day", "วัน", "ngày", "giorni", "أيام", "天").anyWordIn(date) -> cal.apply { add(Calendar.DAY_OF_MONTH, -number) }.timeInMillis
-            WordSet("jam", "saat", "heure", "hora", "hour", "ชั่วโมง", "giờ", "ore", "ساعة", "小时").anyWordIn(date) -> cal.apply { add(Calendar.HOUR, -number) }.timeInMillis
-            WordSet("menit", "dakika", "min", "minute", "minuto", "นาที", "دقائق").anyWordIn(date) -> cal.apply { add(Calendar.MINUTE, -number) }.timeInMillis
+            WordSet("hari", "gün", "jour", "día", "dia", "day", "วัน", "ngày", "giorni", "أيام", "天").anyWordIn(date) -> cal.apply {
+                add(Calendar.DAY_OF_MONTH, -number)
+            }.timeInMillis
+            WordSet("jam", "saat", "heure", "hora", "hour", "ชั่วโมง", "giờ", "ore", "ساعة", "小时").anyWordIn(date) -> cal.apply {
+                add(Calendar.HOUR, -number)
+            }.timeInMillis
+            WordSet("menit", "dakika", "min", "minute", "minuto", "นาที", "دقائق").anyWordIn(date) -> cal.apply {
+                add(Calendar.MINUTE, -number)
+            }.timeInMillis
             WordSet("detik", "segundo", "second", "วินาที").anyWordIn(date) -> cal.apply { add(Calendar.SECOND, -number) }.timeInMillis
             WordSet("week", "semana").anyWordIn(date) -> cal.apply { add(Calendar.DAY_OF_MONTH, -number * 7) }.timeInMillis
             WordSet("month", "mes").anyWordIn(date) -> cal.apply { add(Calendar.MONTH, -number) }.timeInMillis
@@ -1040,7 +1102,8 @@ abstract class Madara(
         try {
             val request = countViewsRequest(document) ?: return
             client.newCall(request).execute().close()
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
     }
 
     /**
@@ -1104,6 +1167,8 @@ abstract class Madara(
 
 class WordSet(private vararg val words: String) {
     fun anyWordIn(dateString: String): Boolean = words.any { dateString.contains(it, ignoreCase = true) }
+
     fun startsWith(dateString: String): Boolean = words.any { dateString.startsWith(it, ignoreCase = true) }
+
     fun endsWith(dateString: String): Boolean = words.any { dateString.endsWith(it, ignoreCase = true) }
 }

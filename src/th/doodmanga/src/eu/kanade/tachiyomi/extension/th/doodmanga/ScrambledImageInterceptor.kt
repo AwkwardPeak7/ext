@@ -32,7 +32,13 @@ object ScrambledImageInterceptor : Interceptor {
             val positionX = px.substringBefore(".").toInt()
             val positionY = py.substringBefore(".").toInt()
 
-            val subBitmap = Bitmap.createBitmap(bitmap, positionX, positionY, request.url.queryParameter("segmentWidth")!!.toInt(), request.url.queryParameter("segmentHeight")!!.toInt())
+            val subBitmap = Bitmap.createBitmap(
+                bitmap,
+                positionX,
+                positionY,
+                request.url.queryParameter("segmentWidth")!!.toInt(),
+                request.url.queryParameter("segmentHeight")!!.toInt(),
+            )
             canvas.drawBitmap(subBitmap, segmentX, segmentY, null)
             subBitmap.recycle()
         }

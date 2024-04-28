@@ -5,7 +5,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import org.jsoup.nodes.Element
 
 class ReadAllComicsCom : ReadAllComics("ReadAllComics", "https://readallcomics.com", "en") {
-
     override fun nullablePopularManga(element: Element): SManga? {
         return super.nullablePopularManga(element)?.apply {
             title = title.let {

@@ -15,7 +15,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class REManga : ParsedHttpSource() {
-
     override val name = "RE Manga"
 
     override val baseUrl = "https://re-manga.com"
@@ -26,26 +25,23 @@ class REManga : ParsedHttpSource() {
 
     // Popular
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/manga-list/?title=&order=popular&status=&type=")
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/manga-list/?title=&order=popular&status=&type=")
 
     override fun popularMangaSelector() = "article.animpost"
 
-    override fun popularMangaFromElement(element: Element): SManga =
-        SManga.create().apply {
-            setUrlWithoutDomain(element.select("a").attr("abs:href"))
-            element.select("img").let {
-                thumbnail_url = it.attr("abs:src")
-                title = it.attr("title")
-            }
+    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
+        setUrlWithoutDomain(element.select("a").attr("abs:href"))
+        element.select("img").let {
+            thumbnail_url = it.attr("abs:src")
+            title = it.attr("title")
         }
+    }
 
     override fun popularMangaNextPageSelector(): String? = null
 
     // Latest
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/manga-list/?title=&order=update&status=&type=")
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/manga-list/?title=&order=update&status=&type=")
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
@@ -55,7 +51,11 @@ class REManga : ParsedHttpSource() {
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/manga-list/?".toHttpUrl().newBuilder()
             .addQueryParameter("title", query)
         filters.forEach { filter ->
@@ -158,9 +158,11 @@ class REManga : ParsedHttpSource() {
     private class StatusFilter(vals: Array<Pair<String?, String>>) : UriPartFilter("Status", vals)
 
     class Genre(name: String, val id: String = name) : Filter.TriState(name)
+
     private class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
 
     class Year(name: String, val id: String = name) : Filter.TriState(name)
+
     private class YearFilter(years: List<Year>) : Filter.Group<Year>("Year", years)
 
     private fun getSortFilters(): Array<Pair<String?, String>> = arrayOf(

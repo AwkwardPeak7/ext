@@ -19,7 +19,6 @@ import java.util.Locale
 import kotlin.UnsupportedOperationException
 
 class RawZ : HttpSource() {
-
     override val name = "RawZ"
 
     override val baseUrl = "https://stmanga.com"
@@ -38,12 +37,18 @@ class RawZ : HttpSource() {
         .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", SortFilter.POPULAR)
+
     override fun popularMangaParse(response: Response) = searchMangaParse(response)
 
     override fun latestUpdatesRequest(page: Int) = searchMangaRequest(page, "", SortFilter.LATEST)
+
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$apiUrl/manga".toHttpUrl().newBuilder().apply {
             addQueryParameter("name", query.trim())
             filters.filterIsInstance<UriPartFilter>().forEach {

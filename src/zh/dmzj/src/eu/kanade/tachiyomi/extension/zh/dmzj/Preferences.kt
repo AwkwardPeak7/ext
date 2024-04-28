@@ -12,7 +12,6 @@ import androidx.preference.SwitchPreferenceCompat
 // "hiddenList" -> StringSet of manga ID
 
 fun getPreferencesInternal(context: Context) = arrayOf(
-
     ListPreference(context).apply {
         key = IMAGE_QUALITY_PREF
         title = "图片质量"
@@ -21,14 +20,12 @@ fun getPreferencesInternal(context: Context) = arrayOf(
         entryValues = arrayOf(AUTO_RES, ORIGINAL_RES, LOW_RES)
         setDefaultValue(AUTO_RES)
     },
-
     SwitchPreferenceCompat(context).apply {
         key = CHAPTER_COMMENTS_PREF
         title = "章末吐槽页"
         summary = "修改后，已加载的章节需要清除章节缓存才能生效。"
         setDefaultValue(false)
     },
-
     SwitchPreferenceCompat(context).apply {
         key = MULTI_GENRE_FILTER_PREF
         title = "分类筛选时允许勾选多个题材"

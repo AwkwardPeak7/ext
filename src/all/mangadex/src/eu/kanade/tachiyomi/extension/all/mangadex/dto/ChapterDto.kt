@@ -21,7 +21,6 @@ data class ChapterAttributesDto(
     val publishAt: String,
     val externalUrl: String?,
 ) : AttributesDto() {
-
     /**
      * Returns true if the chapter is from an external website and have no pages.
      */

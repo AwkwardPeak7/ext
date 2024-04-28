@@ -23,7 +23,6 @@ import uy.kohesive.injekt.api.get
 import java.util.Calendar
 
 class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
-
     override val lang = "en"
 
     override val supportsLatest = true
@@ -46,8 +45,7 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
 
     // ============================== Popular ===============================
 
-    override fun popularMangaRequest(page: Int): Request =
-        GET("$baseUrl/popular${page.getPage()}", headers)
+    override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/popular${page.getPage()}", headers)
 
     override fun popularMangaSelector(): String = ".manga-list > .book-item"
 
@@ -63,21 +61,21 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
 
     // =============================== Latest ===============================
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        GET("$baseUrl/latest${page.getPage()}", headers)
+    override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/latest${page.getPage()}", headers)
 
-    override fun latestUpdatesSelector(): String =
-        popularMangaSelector()
+    override fun latestUpdatesSelector(): String = popularMangaSelector()
 
-    override fun latestUpdatesFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun latestUpdatesFromElement(element: Element): SManga = popularMangaFromElement(element)
 
-    override fun latestUpdatesNextPageSelector(): String =
-        popularMangaNextPageSelector()
+    override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
 
     // =============================== Search ===============================
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val genre = filters.firstInstanceOrNull<GenreFilter>()
         val genreInclusion = filters.firstInstanceOrNull<GenreInclusionFilter>()
         val status = filters.firstInstanceOrNull<StatusFilter>()
@@ -108,11 +106,9 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
 
     override fun searchMangaSelector(): String = popularMangaSelector()
 
-    override fun searchMangaFromElement(element: Element): SManga =
-        popularMangaFromElement(element)
+    override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
-    override fun searchMangaNextPageSelector(): String =
-        popularMangaNextPageSelector()
+    override fun searchMangaNextPageSelector(): String = popularMangaNextPageSelector()
 
     // =============================== Filters ==============================
 
@@ -325,8 +321,7 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
         }.also(screen::addPreference)
     }
 
-    private fun getMirror(): String =
-        preferences.getString(MIRROR_PREF_KEY, MIRROR_PREF_DEFAULT_VALUE)!!
+    private fun getMirror(): String = preferences.getString(MIRROR_PREF_KEY, MIRROR_PREF_DEFAULT_VALUE)!!
 
     private val server
         get() = preferences.getString(SERVER_PREF_KEY, SERVER_PREF_DEFAULT_VALUE)!!

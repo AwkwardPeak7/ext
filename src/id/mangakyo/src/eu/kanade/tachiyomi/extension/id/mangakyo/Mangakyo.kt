@@ -13,7 +13,6 @@ class Mangakyo : MangaThemesia(
     "/komik",
     SimpleDateFormat("MMM d, yyyy", Locale("id")),
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(4)
         .build()

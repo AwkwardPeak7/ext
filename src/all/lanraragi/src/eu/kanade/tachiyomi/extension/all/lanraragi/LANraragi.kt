@@ -176,7 +176,11 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
     private var maxResultCount: Int = 0
     private var totalRecords: Int = 0
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val uri = getApiUriBuilder("/api/search")
         var startPageOffset = 0
 
@@ -258,10 +262,15 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
     }
 
     private class DescendingOrder(overrideState: Boolean = false) : Filter.CheckBox("Descending Order", overrideState)
+
     private class NewArchivesOnly(overrideState: Boolean = false) : Filter.CheckBox("New Archives Only", overrideState)
+
     private class UntaggedArchivesOnly : Filter.CheckBox("Untagged Archives Only", false)
+
     private class StartingPage(stats: String) : Filter.Text("Starting Page$stats", "")
+
     private class SortByNamespace(defaultText: String = "") : Filter.Text("Sort by (namespace)", defaultText)
+
     private class CategorySelect(categories: Array<Pair<String?, String>>) : UriPartFilter("Category", categories)
 
     override fun getFilterList() = FilterList(
@@ -289,8 +298,11 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
     }
 
     private fun getPrefBaseUrl(): String = preferences.getString(HOSTNAME_KEY, HOSTNAME_DEFAULT)!!
+
     private fun getPrefAPIKey(): String = preferences.getString(APIKEY_KEY, "")!!
+
     private fun getPrefLatestNS(): String = preferences.getString(SORT_BY_NS_KEY, SORT_BY_NS_DEFAULT)!!
+
     private fun getPrefCustomLabel(): String = preferences.getString(CUSTOM_LABEL_KEY, suffix)!!.ifBlank { suffix }
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
@@ -317,14 +329,42 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
         }
         screen.addPreference(screen.editTextPreference(HOSTNAME_KEY, "Hostname", HOSTNAME_DEFAULT, baseUrl, refreshSummary = true))
         screen.addPreference(screen.editTextPreference(APIKEY_KEY, "API Key", "", "Required if No-Fun Mode is enabled.", true))
-        screen.addPreference(screen.editTextPreference(CUSTOM_LABEL_KEY, "Custom Label", "", "Show the given label for the source instead of the default."))
-        screen.addPreference(screen.checkBoxPreference(CLEAR_NEW_KEY, "Clear New status", CLEAR_NEW_DEFAULT, "Clear an entry's New status when its details are viewed."))
+        screen.addPreference(
+            screen.editTextPreference(CUSTOM_LABEL_KEY, "Custom Label", "", "Show the given label for the source instead of the default."),
+        )
+        screen.addPreference(
+            screen.checkBoxPreference(
+                CLEAR_NEW_KEY,
+                "Clear New status",
+                CLEAR_NEW_DEFAULT,
+                "Clear an entry's New status when its details are viewed.",
+            ),
+        )
         screen.addPreference(screen.checkBoxPreference(NEW_ONLY_KEY, "Latest - New Only", NEW_ONLY_DEFAULT))
-        screen.addPreference(screen.editTextPreference(SORT_BY_NS_KEY, "Latest - Sort by Namespace", SORT_BY_NS_DEFAULT, "Sort by the given namespace for Latest, such as date_added."))
-        screen.addPreference(screen.editTextPreference(URL_TAG_PREFIX_KEY, "Set tag prefix to get WebView URL", URL_TAG_PREFIX_DEFAULT, "Example: 'source:' will try to get the URL from the first tag starting with 'source:' and it will open it in the WebView. Leave empty for the default behavior."))
+        screen.addPreference(
+            screen.editTextPreference(
+                SORT_BY_NS_KEY,
+                "Latest - Sort by Namespace",
+                SORT_BY_NS_DEFAULT,
+                "Sort by the given namespace for Latest, such as date_added.",
+            ),
+        )
+        screen.addPreference(
+            screen.editTextPreference(
+                URL_TAG_PREFIX_KEY,
+                "Set tag prefix to get WebView URL",
+                URL_TAG_PREFIX_DEFAULT,
+                "Example: 'source:' will try to get the URL from the first tag starting with 'source:' and it will open it in the WebView. Leave empty for the default behavior.",
+            ),
+        )
     }
 
-    private fun androidx.preference.PreferenceScreen.checkBoxPreference(key: String, title: String, default: Boolean, summary: String = ""): androidx.preference.CheckBoxPreference {
+    private fun androidx.preference.PreferenceScreen.checkBoxPreference(
+        key: String,
+        title: String,
+        default: Boolean,
+        summary: String = "",
+    ): androidx.preference.CheckBoxPreference {
         return androidx.preference.CheckBoxPreference(context).apply {
             this.key = key
             this.title = title
@@ -337,7 +377,14 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
         }
     }
 
-    private fun androidx.preference.PreferenceScreen.editTextPreference(key: String, title: String, default: String, summary: String, isPassword: Boolean = false, refreshSummary: Boolean = false): androidx.preference.EditTextPreference {
+    private fun androidx.preference.PreferenceScreen.editTextPreference(
+        key: String,
+        title: String,
+        default: String,
+        summary: String,
+        isPassword: Boolean = false,
+        refreshSummary: Boolean = false,
+    ): androidx.preference.EditTextPreference {
         return androidx.preference.EditTextPreference(context).apply {
             this.key = key
             this.title = title
@@ -456,7 +503,10 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
         return Regex("""/(\w{40})/thumbnail""").find(url)?.groupValues?.get(1) ?: ""
     }
 
-    private fun getNSTag(tags: String?, tag: String): List<String>? {
+    private fun getNSTag(
+        tags: String?,
+        tag: String,
+    ): List<String>? {
         tags?.split(',')?.forEach {
             if (it.contains(':')) {
                 val temp = it.trim().split(":", limit = 2)

@@ -18,7 +18,6 @@ class ChapterRelease(
     private val title: String,
     @SerialName("team_name") private val teamName: String,
     @SerialName("time_stamp") private val timestamp: Long,
-
     @SerialName("has_rev_link") private val hasRevLink: Boolean,
     @SerialName("support_link") private val supportLink: String,
 ) {

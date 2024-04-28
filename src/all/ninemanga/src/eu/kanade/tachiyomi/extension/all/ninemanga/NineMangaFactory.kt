@@ -35,7 +35,11 @@ class NineMangaEn : NineManga("NineMangaEn", "https://en.ninemanga.com", "en") {
 
 class NineMangaEs : NineManga("NineMangaEs", "https://es.ninemanga.com", "es") {
     // ES, FR, RU don't return results for searches with an apostrophe
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return super.searchMangaRequest(page, query.substringBefore("\'"), filters)
     }
 
@@ -183,7 +187,6 @@ class NineMangaEs : NineManga("NineMangaEs", "https://es.ninemanga.com", "es") {
 }
 
 class NineMangaBr : NineManga("NineMangaBr", "https://br.ninemanga.com", "pt-BR") {
-
     // Hardcode the id because the language wasn't specific.
     override val id: Long = 7162569729467394726
 
@@ -266,7 +269,11 @@ class NineMangaBr : NineManga("NineMangaBr", "https://br.ninemanga.com", "pt-BR"
 
 class NineMangaRu : NineManga("NineMangaRu", "https://ru.ninemanga.com", "ru") {
     // ES, FR, RU don't return results for searches with an apostrophe
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return super.searchMangaRequest(page, query.substringBefore("\'"), filters)
     }
 
@@ -453,7 +460,11 @@ class NineMangaIt : NineManga("NineMangaIt", "https://it.ninemanga.com", "it") {
 
 class NineMangaFr : NineManga("NineMangaFr", "https://fr.ninemanga.com", "fr") {
     // ES, FR, RU don't return results for searches with an apostrophe
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return super.searchMangaRequest(page, query.substringBefore("\'"), filters)
     }
 

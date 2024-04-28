@@ -15,7 +15,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Aurora : HttpSource() {
-
     override val name = "Aurora"
     override val baseUrl = "https://comicaurora.com"
     override val lang = "en"
@@ -104,13 +103,14 @@ class Aurora : HttpSource() {
         return if (chapter >= chapterOfNewestPage) SManga.UNKNOWN else SManga.COMPLETED
     }
 
-    private val auroraDescription = """
-    Aurora is a fantasy webcomic (updates M/W/F) written and illustrated by Red, better known for her work on the YouTube channel “Overly Sarcastic Productions.” It’s been in the works for over a decade, and she’s finally decided to stop putting it off.
+    private val auroraDescription =
+        """
+        Aurora is a fantasy webcomic (updates M/W/F) written and illustrated by Red, better known for her work on the YouTube channel “Overly Sarcastic Productions.” It’s been in the works for over a decade, and she’s finally decided to stop putting it off.
 
-    If you’d like to discuss the comic, it now has a subreddit, as well as a dedicated twitter and a tumblr where you can ask questions. There’s also a dedicated room on the channel discord for conversations about it!
+        If you’d like to discuss the comic, it now has a subreddit, as well as a dedicated twitter and a tumblr where you can ask questions. There’s also a dedicated room on the channel discord for conversations about it!
 
-    Find Red’s general ramblings on Twitter, alongside her cohost Blue, at OSPYouTube.
-    """.trimIndent()
+        Find Red’s general ramblings on Twitter, alongside her cohost Blue, at OSPYouTube.
+        """.trimIndent()
 
     override fun mangaDetailsParse(response: Response): SManga = throw UnsupportedOperationException()
 
@@ -188,9 +188,17 @@ class Aurora : HttpSource() {
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = throw UnsupportedOperationException()
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = throw UnsupportedOperationException()
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 }

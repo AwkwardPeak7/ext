@@ -21,7 +21,6 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class ManhwasNet : ParsedHttpSource() {
-
     override val baseUrl: String = "https://manhwas.net"
     override val lang: String = "es"
     override val name: String = "Manhwas.net"
@@ -45,7 +44,10 @@ class ManhwasNet : ParsedHttpSource() {
             val clearHeaders = request.headers.newBuilder().removeAll("Cookie").build()
             chain.proceed(request.newBuilder().headers(clearHeaders).build())
         }
-        if (response.headers["x-sucuri-cache"].isNullOrEmpty() && response.headers["x-sucuri-id"] != null && url.toString().startsWith(baseUrl)) {
+        if (response.headers["x-sucuri-cache"].isNullOrEmpty() && response.headers["x-sucuri-id"] != null && url.toString().startsWith(
+                baseUrl,
+            )
+        ) {
             val script = response.use { it.asJsoup() }.selectFirst("script")?.data()
             if (script != null) {
                 val patchedScript = script.split("(r)")[0].dropLast(1) + "r=r.replace('document.cookie','cookie');"
@@ -99,7 +101,11 @@ class ManhwasNet : ParsedHttpSource() {
         thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/biblioteca".toHttpUrl().newBuilder()
         if (query.isNotEmpty()) {
             url.addQueryParameter("buscar", query)

@@ -24,7 +24,6 @@ class StarlightScan : MangaThemesia(
     mangaUrlDirectory = "/mangas",
     dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")),
 ) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(1, 2, TimeUnit.SECONDS)
         .build()
@@ -49,7 +48,11 @@ class StarlightScan : MangaThemesia(
         setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
             .addPathSegment(if (query.isEmpty()) mangaUrlDirectory.substring(1) else "buscar")
             .addQueryParameter("search", query)

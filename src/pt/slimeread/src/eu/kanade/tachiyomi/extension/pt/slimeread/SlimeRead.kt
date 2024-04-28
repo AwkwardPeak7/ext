@@ -26,7 +26,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class SlimeRead : HttpSource() {
-
     override val name = "SlimeRead"
 
     override val baseUrl = "https://slimeread.com"
@@ -71,7 +70,11 @@ class SlimeRead : HttpSource() {
     }
 
     // =============================== Search ===============================
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SEARCH)) { // URL intent handler
             val id = query.removePrefix(PREFIX_SEARCH)
             client.newCall(GET("$apiUrl/book/$id", headers))
@@ -89,7 +92,11 @@ class SlimeRead : HttpSource() {
 
     override fun getFilterList() = SlimeReadFilters.FILTER_LIST
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val params = SlimeReadFilters.getSearchParameters(filters)
 
         val url = "$apiUrl/book_search".toHttpUrl().newBuilder()
@@ -187,7 +194,10 @@ class SlimeRead : HttpSource() {
         json.decodeFromStream(it.body.byteStream())
     }
 
-    private fun HttpUrl.Builder.addIfNotBlank(query: String, value: String): HttpUrl.Builder {
+    private fun HttpUrl.Builder.addIfNotBlank(
+        query: String,
+        value: String,
+    ): HttpUrl.Builder {
         if (value.isNotBlank()) addQueryParameter(query, value)
         return this
     }

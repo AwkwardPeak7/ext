@@ -8,11 +8,9 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Response
 
 object ApiSearch {
-
-    fun textSearchUrl(query: String) =
-        "http://sacg.idmzj.com/comicsum/search.php".toHttpUrl().newBuilder()
-            .addQueryParameter("s", query)
-            .toString()
+    fun textSearchUrl(query: String) = "http://sacg.idmzj.com/comicsum/search.php".toHttpUrl().newBuilder()
+        .addQueryParameter("s", query)
+        .toString()
 
     fun parsePage(response: Response): MangasPage {
         if (!response.isSuccessful) {

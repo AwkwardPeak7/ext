@@ -53,7 +53,11 @@ class MeituaTop : HttpSource() {
 
     override fun latestUpdatesParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val url = "$baseUrl/artsearch/-------.html".toHttpUrl().newBuilder()
                 .addQueryParameter("wd", query)

@@ -29,7 +29,6 @@ import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
 
 open class Cubari(override val lang: String) : HttpSource() {
-
     final override val name = "Cubari"
 
     final override val baseUrl = "https://cubari.moe"
@@ -109,7 +108,10 @@ open class Cubari(override val lang: String) : HttpSource() {
         throw UnsupportedOperationException()
     }
 
-    private fun mangaDetailsParse(response: Response, manga: SManga): SManga {
+    private fun mangaDetailsParse(
+        response: Response,
+        manga: SManga,
+    ): SManga {
         val result = json.parseToJsonElement(response.body.string()).jsonObject
         return parseManga(result, manga)
     }
@@ -134,7 +136,10 @@ open class Cubari(override val lang: String) : HttpSource() {
     }
 
     // Called after the request
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         val res = response.body.string()
         return parseChapterList(res, manga)
     }
@@ -188,7 +193,10 @@ open class Cubari(override val lang: String) : HttpSource() {
         }
     }
 
-    private fun seriesJsonPageListParse(response: Response, chapter: SChapter): List<Page> {
+    private fun seriesJsonPageListParse(
+        response: Response,
+        chapter: SChapter,
+    ): List<Page> {
         val jsonObj = json.parseToJsonElement(response.body.string()).jsonObject
         val groups = jsonObj["groups"]!!.jsonObject
         val groupMap = groups.entries.associateBy({ it.value.jsonPrimitive.content.ifEmpty { "default" } }, { it.key })
@@ -227,7 +235,11 @@ open class Cubari(override val lang: String) : HttpSource() {
         throw Exception("Unused")
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return when {
             query.startsWith(PROXY_PREFIX) -> {
                 val trimmedQuery = query.removePrefix(PROXY_PREFIX)
@@ -258,7 +270,11 @@ open class Cubari(override val lang: String) : HttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return GET("$baseUrl/", headers)
     }
 
@@ -278,7 +294,10 @@ open class Cubari(override val lang: String) : HttpSource() {
         throw UnsupportedOperationException()
     }
 
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         val result = json.parseToJsonElement(response.body.string()).jsonArray
 
         val filterList = result.asSequence()
@@ -289,7 +308,10 @@ open class Cubari(override val lang: String) : HttpSource() {
         return parseMangaList(JsonArray(filterList), SortType.ALL)
     }
 
-    private fun proxySearchParse(response: Response, query: String): MangasPage {
+    private fun proxySearchParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         val result = json.parseToJsonElement(response.body.string()).jsonObject
         return parseSearchList(result, query)
     }
@@ -298,7 +320,10 @@ open class Cubari(override val lang: String) : HttpSource() {
 
     private val volumeNotSpecifiedTerms = setOf("Uncategorized", "null", "")
 
-    private fun parseChapterList(payload: String, manga: SManga): List<SChapter> {
+    private fun parseChapterList(
+        payload: String,
+        manga: SManga,
+    ): List<SChapter> {
         val jsonObj = json.parseToJsonElement(payload).jsonObject
         val groups = jsonObj["groups"]!!.jsonObject
         val chapters = jsonObj["chapters"]!!.jsonObject
@@ -356,7 +381,10 @@ open class Cubari(override val lang: String) : HttpSource() {
         return chapterList.sortedByDescending { it.chapter_number }
     }
 
-    private fun parseMangaList(payload: JsonArray, sortType: SortType): MangasPage {
+    private fun parseMangaList(
+        payload: JsonArray,
+        sortType: SortType,
+    ): MangasPage {
         val mangaList = payload.mapNotNull { jsonEl ->
             val jsonObj = jsonEl.jsonObject
             val pinned = jsonObj["pinned"]!!.jsonPrimitive.boolean
@@ -375,7 +403,10 @@ open class Cubari(override val lang: String) : HttpSource() {
         return MangasPage(mangaList, false)
     }
 
-    private fun parseSearchList(payload: JsonObject, query: String): MangasPage {
+    private fun parseSearchList(
+        payload: JsonObject,
+        query: String,
+    ): MangasPage {
         val tempManga = SManga.create().apply {
             url = "/read/$query"
         }
@@ -385,26 +416,28 @@ open class Cubari(override val lang: String) : HttpSource() {
         return MangasPage(mangaList, false)
     }
 
-    private fun parseManga(jsonObj: JsonObject, mangaReference: SManga? = null): SManga =
-        SManga.create().apply {
-            title = jsonObj["title"]!!.jsonPrimitive.content
-            artist = jsonObj["artist"]?.jsonPrimitive?.content ?: ARTIST_FALLBACK
-            author = jsonObj["author"]?.jsonPrimitive?.content ?: AUTHOR_FALLBACK
+    private fun parseManga(
+        jsonObj: JsonObject,
+        mangaReference: SManga? = null,
+    ): SManga = SManga.create().apply {
+        title = jsonObj["title"]!!.jsonPrimitive.content
+        artist = jsonObj["artist"]?.jsonPrimitive?.content ?: ARTIST_FALLBACK
+        author = jsonObj["author"]?.jsonPrimitive?.content ?: AUTHOR_FALLBACK
 
-            val descriptionFull = jsonObj["description"]?.jsonPrimitive?.content
-            description = descriptionFull?.substringBefore("Tags: ") ?: DESCRIPTION_FALLBACK
-            genre = descriptionFull?.let {
-                if (it.contains("Tags: ")) {
-                    it.substringAfter("Tags: ")
-                } else {
-                    ""
-                }
-            } ?: ""
+        val descriptionFull = jsonObj["description"]?.jsonPrimitive?.content
+        description = descriptionFull?.substringBefore("Tags: ") ?: DESCRIPTION_FALLBACK
+        genre = descriptionFull?.let {
+            if (it.contains("Tags: ")) {
+                it.substringAfter("Tags: ")
+            } else {
+                ""
+            }
+        } ?: ""
 
-            url = mangaReference?.url ?: jsonObj["url"]!!.jsonPrimitive.content
-            thumbnail_url = jsonObj["coverUrl"]?.jsonPrimitive?.content
-                ?: jsonObj["cover"]?.jsonPrimitive?.content ?: ""
-        }
+        url = mangaReference?.url ?: jsonObj["url"]!!.jsonPrimitive.content
+        thumbnail_url = jsonObj["coverUrl"]?.jsonPrimitive?.content
+            ?: jsonObj["cover"]?.jsonPrimitive?.content ?: ""
+    }
 
     // ----------------- Things we aren't supporting -----------------
 

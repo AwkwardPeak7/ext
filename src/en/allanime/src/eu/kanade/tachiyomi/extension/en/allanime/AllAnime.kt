@@ -27,7 +27,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class AllAnime : ConfigurableSource, HttpSource() {
-
     override val name = "AllAnime"
 
     override val baseUrl = "https://allanime.ai"
@@ -67,7 +66,7 @@ class AllAnime : ConfigurableSource, HttpSource() {
     override fun headersBuilder() = super.headersBuilder()
         .add("Referer", "$baseUrl/")
 
-    /* Popular */
+    // Popular
     override fun popularMangaRequest(page: Int): Request {
         val payload = GraphQL(
             PopularVariables(
@@ -99,13 +98,17 @@ class AllAnime : ConfigurableSource, HttpSource() {
         return MangasPage(mangaList, hasNextPage)
     }
 
-    /* Latest */
+    // Latest
     override fun latestUpdatesRequest(page: Int) = searchMangaRequest(page, "", FilterList())
 
     override fun latestUpdatesParse(response: Response) = searchMangaParse(response)
 
-    /* Search */
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    // Search
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (!query.startsWith(SEARCH_PREFIX)) {
             return super.fetchSearchManga(page, query, filters)
         }
@@ -116,7 +119,11 @@ class AllAnime : ConfigurableSource, HttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val payload = GraphQL(
             SearchVariables(
                 search = SearchPayload(
@@ -156,7 +163,7 @@ class AllAnime : ConfigurableSource, HttpSource() {
 
     override fun getFilterList() = getFilters()
 
-    /* Details */
+    // Details
     override fun mangaDetailsRequest(manga: SManga): Request {
         val mangaId = manga.url.split("/")[2]
 
@@ -182,7 +189,7 @@ class AllAnime : ConfigurableSource, HttpSource() {
         return "$baseUrl${manga.url}"
     }
 
-    /* Chapters */
+    // Chapters
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return client.newCall(chapterListRequest(manga))
             .asObservableSuccess()
@@ -210,7 +217,10 @@ class AllAnime : ConfigurableSource, HttpSource() {
         return POST(apiUrl, apiHeaders, requestBody)
     }
 
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
+    private fun chapterListParse(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         val result = response.parseAs<ApiChapterListResponse>()
 
         val chapters = result.data.chapterList?.sortedByDescending { it.chapterNum.float }
@@ -229,7 +239,7 @@ class AllAnime : ConfigurableSource, HttpSource() {
         return "$baseUrl${chapter.url}"
     }
 
-    /* Pages */
+    // Pages
     override fun pageListRequest(chapter: SChapter): Request {
         val chapterUrl = chapter.url.split("/")
         val mangaId = chapterUrl[2]

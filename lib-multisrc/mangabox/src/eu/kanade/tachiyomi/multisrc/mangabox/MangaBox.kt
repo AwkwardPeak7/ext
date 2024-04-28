@@ -29,7 +29,6 @@ abstract class MangaBox(
     override val lang: String,
     private val dateformat: SimpleDateFormat = SimpleDateFormat("MMM-dd-yy", Locale.ENGLISH),
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     override val client: OkHttpClient = network.cloudflareClient.newBuilder()
@@ -58,7 +57,10 @@ abstract class MangaBox(
         return GET("$baseUrl/$latestUrlPath$page", headers)
     }
 
-    protected fun mangaFromElement(element: Element, urlSelector: String = "h3 a"): SManga {
+    protected fun mangaFromElement(
+        element: Element,
+        urlSelector: String = "h3 a",
+    ): SManga {
         return SManga.create().apply {
             element.select(urlSelector).first()!!.let {
                 url = it.attr("abs:href").substringAfter(baseUrl) // intentionally not using setUrlWithoutDomain
@@ -76,7 +78,11 @@ abstract class MangaBox(
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         return if (query.isNotBlank() && getAdvancedGenreFilters().isEmpty()) {
             GET("$baseUrl/$simpleQueryPath${normalizeSearchQuery(query)}?page=$page", headers)
         } else {
@@ -216,7 +222,10 @@ abstract class MangaBox(
         }
     }
 
-    private fun parseChapterDate(date: String, host: String): Long? {
+    private fun parseChapterDate(
+        date: String,
+        host: String,
+    ): Long? {
         return if ("ago" in date) {
             val value = date.split(' ')[0].toIntOrNull()
             val cal = Calendar.getInstance()
@@ -306,12 +315,16 @@ abstract class MangaBox(
     }
 
     private class KeywordFilter(vals: Array<Pair<String?, String>>) : UriPartFilter("Keyword search ", vals)
+
     private class SortFilter(vals: Array<Pair<String?, String>>) : UriPartFilter("Order by", vals)
+
     private class StatusFilter(vals: Array<Pair<String?, String>>) : UriPartFilter("Status", vals)
+
     private class GenreFilter(vals: Array<Pair<String?, String>>) : UriPartFilter("Category", vals)
 
     // For advanced search, specifically tri-state genres
     private class AdvGenreFilter(vals: List<AdvGenre>) : Filter.Group<AdvGenre>("Category", vals)
+
     class AdvGenre(val id: String?, name: String) : Filter.TriState(name)
 
     // keyt query parameter

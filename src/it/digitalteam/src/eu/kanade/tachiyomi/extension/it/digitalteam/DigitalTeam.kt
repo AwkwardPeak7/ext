@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class DigitalTeam : ParsedHttpSource() {
-
     override val name = "DigitalTeam"
 
     override val baseUrl = "https://dgtread.com"
@@ -43,8 +42,11 @@ class DigitalTeam : ParsedHttpSource() {
 
     override fun latestUpdatesRequest(page: Int): Request = popularMangaRequest(page)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request =
-        throw Exception("La ricerca è momentaneamente disabilitata.")
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw Exception("La ricerca è momentaneamente disabilitata.")
 
     // LIST SELECTOR
     override fun popularMangaSelector() = "ul li.manga_block"
@@ -107,7 +109,11 @@ class DigitalTeam : ParsedHttpSource() {
             } ?: 0
     }
 
-    private fun getXhrPages(script_content: String, title: String, external: Boolean): String {
+    private fun getXhrPages(
+        script_content: String,
+        title: String,
+        external: Boolean,
+    ): String {
         val infoManga = script_content.substringAfter("m='").substringBefore("'")
         val infoChapter = script_content.substringAfter("ch='").substringBefore("'")
         val infoChSub = script_content.substringAfter("chs='").substringBefore("'")

@@ -40,7 +40,10 @@ internal fun Int?.parseStatus(translationComplete: Boolean?): Int {
     }
 }
 
-internal fun parseCover(thumbnailUrl: String?, mdCovers: List<MDcovers>): String? {
+internal fun parseCover(
+    thumbnailUrl: String?,
+    mdCovers: List<MDcovers>,
+): String? {
     val b2key = mdCovers.firstOrNull()?.b2key
         ?: return thumbnailUrl
     val vol = mdCovers.firstOrNull()?.vol.orEmpty()
@@ -48,7 +51,11 @@ internal fun parseCover(thumbnailUrl: String?, mdCovers: List<MDcovers>): String
     return thumbnailUrl?.replaceAfterLast("/", "$b2key#$vol")
 }
 
-internal fun beautifyChapterName(vol: String, chap: String, title: String): String {
+internal fun beautifyChapterName(
+    vol: String,
+    chap: String,
+    title: String,
+): String {
     return buildString {
         if (vol.isNotEmpty()) {
             if (chap.isEmpty()) append("Volume $vol") else append("Vol. $vol")

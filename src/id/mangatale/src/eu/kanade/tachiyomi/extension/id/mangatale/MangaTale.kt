@@ -6,7 +6,6 @@ import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 
 class MangaTale : MangaThemesia("MangaTale", "https://mangatale.co", "id") {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(20, 5)
         .build()

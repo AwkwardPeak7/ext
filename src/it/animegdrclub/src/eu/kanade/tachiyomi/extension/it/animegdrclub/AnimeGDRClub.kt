@@ -27,8 +27,14 @@ class AnimeGDRClub : ParsedHttpSource() {
     //region REQUESTS
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/serie.php", headers)
+
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/", headers)
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/".toHttpUrl().newBuilder()
 
         if (query.isNotEmpty()) {
@@ -71,7 +77,11 @@ class AnimeGDRClub : ParsedHttpSource() {
     //endregion
 
     //region CONTENTS INFO
-    private fun mangasParse(response: Response, selector: String, num: Int): MangasPage {
+    private fun mangasParse(
+        response: Response,
+        selector: String,
+        num: Int,
+    ): MangasPage {
         val document = response.asJsoup()
         var sele = selector
         var nume = num
@@ -98,12 +108,17 @@ class AnimeGDRClub : ParsedHttpSource() {
         }
         return MangasPage(mangas, false)
     }
+
     override fun popularMangaParse(response: Response): MangasPage = mangasParse(response, popularMangaSelector(), 1)
+
     override fun latestUpdatesParse(response: Response): MangasPage = mangasParse(response, latestUpdatesSelector(), 2)
+
     override fun searchMangaParse(response: Response): MangasPage = mangasParse(response, searchMangaSelector(), 3)
 
     override fun popularMangaSelector() = "div.manga"
+
     override fun latestUpdatesSelector() = ".containernews > a"
+
     override fun searchMangaSelector() = ".listonegen > a"
 
     override fun popularMangaFromElement(element: Element): SManga {
@@ -115,15 +130,19 @@ class AnimeGDRClub : ParsedHttpSource() {
 
         return manga
     }
+
     override fun latestUpdatesFromElement(element: Element): SManga {
         val manga = SManga.create()
 
-        manga.setUrlWithoutDomain("http://www.agcscanlation.it/progetto.php?nome=${element.attr("href").toHttpUrl().queryParameter("nome")}")
+        manga.setUrlWithoutDomain(
+            "http://www.agcscanlation.it/progetto.php?nome=${element.attr("href").toHttpUrl().queryParameter("nome")}",
+        )
         manga.title = element.selectFirst(".titolo")!!.text()
         manga.thumbnail_url = "$baseUrl/${element.selectFirst("img")!!.attr("src")}"
 
         return manga
     }
+
     override fun searchMangaFromElement(element: Element): SManga = latestUpdatesFromElement(element)
 
     override fun mangaDetailsParse(document: Document): SManga {
@@ -148,7 +167,9 @@ class AnimeGDRClub : ParsedHttpSource() {
     //region NEXT SELECTOR  -  Not used
 
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
     //endregion
 
@@ -173,6 +194,7 @@ class AnimeGDRClub : ParsedHttpSource() {
     }
 
     override fun chapterListSelector() = ".capitoli_cont > a"
+
     override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
     //endregion
 
@@ -188,6 +210,7 @@ class AnimeGDRClub : ParsedHttpSource() {
     }
 
     override fun imageUrlParse(document: Document) = ""
+
     override fun imageRequest(page: Page): Request {
         val imgHeader = Headers.Builder().apply {
             add("Referer", baseUrl)
@@ -198,8 +221,11 @@ class AnimeGDRClub : ParsedHttpSource() {
 
     //region FILTERS
     private class SelezType(options: List<String>) : Filter.Select<String>("Scegli quale usare", options.toTypedArray(), 1)
+
     private class GenreSelez(genres: List<String>) : Filter.Select<String>("Genere", genres.toTypedArray(), 0)
+
     private class Status(name: String, val id: String = name) : Filter.CheckBox(name, true)
+
     private class StatusList(statuses: List<Status>) : Filter.Group<Status>("Stato", statuses)
 
     override fun getFilterList() = FilterList(
@@ -214,6 +240,31 @@ class AnimeGDRClub : ParsedHttpSource() {
         Status("Finito", "progetticonclusi-progettioneshot"),
         Status("Interrotto", "progettiinterrotti"),
     )
-    private fun getGenreList() = listOf("Avventura", "Azione", "Comico", "Commedia", "Drammatico", "Ecchi", "Fantascienza", "Fantasy", "Guerra", "Harem", "Horror", "Isekai", "Mecha", "Mistero", "Musica", "Psicologico", "Scolastico", "Sentimentale", "Slice of Life", "Sovrannaturale", "Sperimentale", "Storico", "Thriller")
+
+    private fun getGenreList() = listOf(
+        "Avventura",
+        "Azione",
+        "Comico",
+        "Commedia",
+        "Drammatico",
+        "Ecchi",
+        "Fantascienza",
+        "Fantasy",
+        "Guerra",
+        "Harem",
+        "Horror",
+        "Isekai",
+        "Mecha",
+        "Mistero",
+        "Musica",
+        "Psicologico",
+        "Scolastico",
+        "Sentimentale",
+        "Slice of Life",
+        "Sovrannaturale",
+        "Sperimentale",
+        "Storico",
+        "Thriller",
+    )
     //endregion
 }

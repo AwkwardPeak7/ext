@@ -103,7 +103,11 @@ class MangaTerra : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (query.startsWith(slugPrefix)) {
             val slug = query.substringAfter(slugPrefix)
             return client.newCall(GET("$baseUrl/manga/$slug", headers))
@@ -114,7 +118,11 @@ class MangaTerra : ParsedHttpSource() {
         return super.fetchSearchManga(page, query, filters)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder()
 
         if (query.isNotBlank()) {
@@ -209,7 +217,11 @@ class MangaTerra : ParsedHttpSource() {
         else -> absUrl("src")
     }
 
-    private fun String.toDate() = try { dateFormat.parse(trim())!!.time } catch (_: Exception) { 0L }
+    private fun String.toDate() = try {
+        dateFormat.parse(trim())!!.time
+    } catch (_: Exception) {
+        0L
+    }
 
     private fun fetchGenres() {
         if (fetchGenresAttempts < 3 && genresList.isEmpty()) {

@@ -19,7 +19,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class HentaiCafe : ParsedHttpSource() {
-
     override val name = "Hentai Cafe"
 
     override val baseUrl = "https://hentaicafe.xxx"
@@ -63,7 +62,11 @@ class HentaiCafe : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector() = "section.pagination > a.last:not(.disabled)"
 
     // =============================== Search ===============================
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_SEARCH)) { // URL intent handler
             val id = query.removePrefix(PREFIX_SEARCH)
             client.newCall(GET("$baseUrl/g/$id"))
@@ -79,7 +82,11 @@ class HentaiCafe : ParsedHttpSource() {
         return MangasPage(listOf(details), false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/search".toHttpUrl().newBuilder()
             .addQueryParameter("q", query)
             .addQueryParameter("page", page.toString())
@@ -119,11 +126,10 @@ class HentaiCafe : ParsedHttpSource() {
         update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
     }
 
-    private fun Element.getInfo(item: String) =
-        select("div.field-name:containsOwn($item) a.tag > span.name")
-            .eachText()
-            .takeUnless { it.isEmpty() }
-            ?.joinToString()
+    private fun Element.getInfo(item: String) = select("div.field-name:containsOwn($item) a.tag > span.name")
+        .eachText()
+        .takeUnless { it.isEmpty() }
+        ?.joinToString()
 
     // ============================== Chapters ==============================
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {

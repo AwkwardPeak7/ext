@@ -22,7 +22,6 @@ data class BruttalComicBookDto(
     val title: String,
     val url: String,
 ) {
-
     fun toSManga(): SManga = SManga.create().apply {
         title = this@BruttalComicBookDto.title
         description = synopsis + (if (soonText.isEmpty()) "" else "\n\n$soonText")
@@ -53,7 +52,6 @@ data class BruttalChapterDto(
     val title: String,
     val url: String,
 ) {
-
     fun toSChapter(): SChapter = SChapter.create().apply {
         name = title
         chapter_number = shareTitle

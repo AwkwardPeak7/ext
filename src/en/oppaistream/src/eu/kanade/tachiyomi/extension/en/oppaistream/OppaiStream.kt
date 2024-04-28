@@ -19,7 +19,6 @@ import rx.Observable
 import java.util.Calendar
 
 class OppaiStream : ParsedHttpSource() {
-
     override val name = "Oppai Stream"
 
     override val baseUrl = "https://read.oppai.stream"
@@ -62,7 +61,11 @@ class OppaiStream : ParsedHttpSource() {
     override fun latestUpdatesFromElement(element: Element) = searchMangaFromElement(element)
 
     // search
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (!query.startsWith(SLUG_SEARCH_PREFIX)) {
             return super.fetchSearchManga(page, query, filters)
         }
@@ -74,7 +77,11 @@ class OppaiStream : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = "$baseUrl/api-search.php".toHttpUrl().newBuilder().apply {
             addQueryParameter("text", query)
             filters.forEach { filter ->
@@ -173,10 +180,10 @@ class OppaiStream : ParsedHttpSource() {
         private val vals: Array<Pair<String, String>>,
         defaultValue: String? = null,
     ) : Filter.Select<String>(
-        displayName,
-        vals.map { it.first }.toTypedArray(),
-        vals.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
-    ) {
+            displayName,
+            vals.map { it.first }.toTypedArray(),
+            vals.indexOfFirst { it.second == defaultValue }.takeIf { it != -1 } ?: 0,
+        ) {
         fun selectedValue() = vals[state].second
     }
 

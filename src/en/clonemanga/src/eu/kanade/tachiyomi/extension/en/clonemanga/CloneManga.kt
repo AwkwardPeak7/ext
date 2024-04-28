@@ -15,7 +15,6 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class CloneManga : ParsedHttpSource() {
-
     override val name = "Clone Manga"
     override val baseUrl = "https://manga.clone-army.org/"
     override val lang = "en"
@@ -54,7 +53,11 @@ class CloneManga : ParsedHttpSource() {
         }
     }
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = fetchPopularManga(1)
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = fetchPopularManga(1)
         .map { mp -> MangasPage(mp.mangas.filter { it.title.contains(query, ignoreCase = true) }, false) }
 
     override fun mangaDetailsParse(document: Document): SManga {
@@ -99,29 +102,59 @@ class CloneManga : ParsedHttpSource() {
         return listOf(Page(1, "", imgAbsoluteUrl))
     }
 
-    override fun imageUrlParse(document: Document): String { throw UnsupportedOperationException() }
+    override fun imageUrlParse(document: Document): String {
+        throw UnsupportedOperationException()
+    }
 
-    override fun pageListParse(document: Document): List<Page> { throw Exception("Not used") }
+    override fun pageListParse(document: Document): List<Page> {
+        throw Exception("Not used")
+    }
 
-    override fun chapterListSelector(): String { throw Exception("Not used") }
+    override fun chapterListSelector(): String {
+        throw Exception("Not used")
+    }
 
-    override fun chapterFromElement(element: Element): SChapter { throw UnsupportedOperationException() }
+    override fun chapterFromElement(element: Element): SChapter {
+        throw UnsupportedOperationException()
+    }
 
-    override fun latestUpdatesFromElement(element: Element): SManga { throw UnsupportedOperationException() }
+    override fun latestUpdatesFromElement(element: Element): SManga {
+        throw UnsupportedOperationException()
+    }
 
-    override fun latestUpdatesNextPageSelector(): String? { throw Exception("Not used") }
+    override fun latestUpdatesNextPageSelector(): String? {
+        throw Exception("Not used")
+    }
 
-    override fun latestUpdatesRequest(page: Int): Request { throw UnsupportedOperationException() }
+    override fun latestUpdatesRequest(page: Int): Request {
+        throw UnsupportedOperationException()
+    }
 
-    override fun latestUpdatesSelector(): String { throw Exception("Not used") }
+    override fun latestUpdatesSelector(): String {
+        throw Exception("Not used")
+    }
 
-    override fun popularMangaNextPageSelector(): String? { throw Exception("Not used") }
+    override fun popularMangaNextPageSelector(): String? {
+        throw Exception("Not used")
+    }
 
-    override fun searchMangaFromElement(element: Element): SManga { throw UnsupportedOperationException() }
+    override fun searchMangaFromElement(element: Element): SManga {
+        throw UnsupportedOperationException()
+    }
 
-    override fun searchMangaNextPageSelector(): String? { throw Exception("Not used") }
+    override fun searchMangaNextPageSelector(): String? {
+        throw Exception("Not used")
+    }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request { throw UnsupportedOperationException() }
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
+        throw UnsupportedOperationException()
+    }
 
-    override fun searchMangaSelector(): String { throw Exception("Not used") }
+    override fun searchMangaSelector(): String {
+        throw Exception("Not used")
+    }
 }

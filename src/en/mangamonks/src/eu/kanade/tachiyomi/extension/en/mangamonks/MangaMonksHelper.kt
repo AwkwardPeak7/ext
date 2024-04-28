@@ -13,12 +13,14 @@ object MangaMonksHelper {
         .add("Accept", "application/json")
         .add("X-Requested-With", "XMLHttpRequest")
         .build()
+
     inline fun <reified T : Any> T.toFormRequestBody(): RequestBody {
         return FormBody.Builder()
             .add("dataType", "json")
             .add("phrase", this.toString())
             .build()
     }
+
     fun String?.toStatus(): Int {
         return when {
             this == null -> SManga.UNKNOWN
@@ -27,6 +29,7 @@ object MangaMonksHelper {
             else -> SManga.UNKNOWN
         }
     }
+
     fun String?.toDate(): Long {
         val trimmedDate = this!!.substringBefore(" ago").removeSuffix("s").split(" ")
         val calendar = Calendar.getInstance()

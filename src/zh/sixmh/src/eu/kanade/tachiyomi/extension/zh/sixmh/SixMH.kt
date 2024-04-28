@@ -9,7 +9,6 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class SixMH : MCCMS("六漫画", "https://www.liumanhua.com") {
-
     override val versionId get() = 2
 
     init {
@@ -20,5 +19,6 @@ class SixMH : MCCMS("六漫画", "https://www.liumanhua.com") {
     }
 
     override fun getMangaUrl(manga: SManga) = "https://m.liumanhua.com" + manga.url
+
     override fun getChapterUrl(chapter: SChapter) = "https://m.liumanhua.com" + chapter.url
 }

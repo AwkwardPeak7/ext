@@ -27,7 +27,6 @@ open class WebtoonsSrc(
     override val localeForCookie: String = lang,
     dateFormat: SimpleDateFormat = SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH),
 ) : ConfigurableSource, Webtoons(name, baseUrl, lang, langCode, localeForCookie, dateFormat) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .addInterceptor(TextInterceptor())
         .build()
@@ -70,7 +69,9 @@ open class WebtoonsSrc(
             }
         }
 
-        if (pages.isNotEmpty()) { return pages }
+        if (pages.isNotEmpty()) {
+            return pages
+        }
 
         val docString = document.toString()
 

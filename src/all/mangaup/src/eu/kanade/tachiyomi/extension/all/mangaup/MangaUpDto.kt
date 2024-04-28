@@ -29,7 +29,6 @@ data class MangaUpTitle(
     val genres: List<MangaUpGenre> = emptyList(),
     val chapters: List<MangaUpChapter> = emptyList(),
 ) {
-
     private val fullDescription: String
         get() = buildString {
             description?.let { append(it) }
@@ -69,7 +68,6 @@ data class MangaUpChapter(
     val badge: MangaUpBadge = MangaUpBadge.FREE,
     val available: Boolean = false,
 ) {
-
     val isReadable: Boolean
         get() = badge == MangaUpBadge.FREE && available
 

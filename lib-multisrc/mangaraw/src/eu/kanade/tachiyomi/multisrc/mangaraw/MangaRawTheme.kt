@@ -15,7 +15,6 @@ abstract class MangaRawTheme(
     override val baseUrl: String,
     override val lang: String = "ja",
 ) : ParsedHttpSource() {
-
     override fun headersBuilder() = super.headersBuilder().add("Referer", "$baseUrl/")
 
     override val client = network.cloudflareClient
@@ -33,12 +32,17 @@ abstract class MangaRawTheme(
     }
 
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/page/$page", headers)
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesFromElement(element: Element) = popularMangaFromElement(element)
 
     override fun searchMangaSelector() = popularMangaSelector()
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
     /** Other recommended manga must be removed. Make sure the last `<p>` is description. */

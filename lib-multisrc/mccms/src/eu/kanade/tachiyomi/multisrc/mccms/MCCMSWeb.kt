@@ -61,25 +61,28 @@ open class MCCMSWeb(
 
     override fun latestUpdatesParse(response: Response) = parseListing(response.asJsoup())
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) =
-        if (query.isNotBlank()) {
-            val url = if (config.textSearchOnlyPageOne) {
-                "$baseUrl/search".toHttpUrl().newBuilder()
-                    .addQueryParameter("key", query)
-                    .toString()
-            } else {
-                "$baseUrl/search/$query/$page"
-            }
-            GET(url, pcHeaders)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = if (query.isNotBlank()) {
+        val url = if (config.textSearchOnlyPageOne) {
+            "$baseUrl/search".toHttpUrl().newBuilder()
+                .addQueryParameter("key", query)
+                .toString()
         } else {
-            val url = buildString {
-                append(baseUrl).append("/category/")
-                filters.filterIsInstance<MCCMSFilter>().map { it.query }.filter { it.isNotEmpty() }
-                    .joinTo(this, "/")
-                append("/page/").append(page)
-            }
-            GET(url, pcHeaders)
+            "$baseUrl/search/$query/$page"
         }
+        GET(url, pcHeaders)
+    } else {
+        val url = buildString {
+            append(baseUrl).append("/category/")
+            filters.filterIsInstance<MCCMSFilter>().map { it.query }.filter { it.isNotEmpty() }
+                .joinTo(this, "/")
+            append("/page/").append(page)
+        }
+        GET(url, pcHeaders)
+    }
 
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()

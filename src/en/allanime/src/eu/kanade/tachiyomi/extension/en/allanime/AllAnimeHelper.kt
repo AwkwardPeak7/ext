@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 object AllAnimeHelper {
-
     val json: Json = Json {
         ignoreUnknownKeys = true
         explicitNulls = false
@@ -60,12 +59,10 @@ object AllAnimeHelper {
 
     inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 
-    inline fun <reified T> List<*>.firstInstanceOrNull(): T? =
-        filterIsInstance<T>().firstOrNull()
+    inline fun <reified T> List<*>.firstInstanceOrNull(): T? = filterIsInstance<T>().firstOrNull()
 
-    inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody =
-        json.encodeToString(this)
-            .toRequestBody(JSON_MEDIA_TYPE)
+    inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody = json.encodeToString(this)
+        .toRequestBody(JSON_MEDIA_TYPE)
 
     fun Headers.Builder.buildApiHeaders(requestBody: RequestBody) = this
         .add("Content-Length", requestBody.contentLength().toString())

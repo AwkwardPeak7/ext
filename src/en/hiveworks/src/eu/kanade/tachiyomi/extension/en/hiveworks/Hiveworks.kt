@@ -24,7 +24,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class Hiveworks : ParsedHttpSource() {
-
     // Info
 
     override val name = "Hiveworks Comics"
@@ -44,9 +43,13 @@ class Hiveworks : ParsedHttpSource() {
     // Popular
 
     override fun popularMangaRequest(page: Int) = GET(baseUrl, headers)
+
     override fun popularMangaNextPageSelector(): String? = null
+
     override fun popularMangaSelector() = "div.comicblock"
+
     override fun popularMangaFromElement(element: Element) = mangaFromElement(element)
+
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
@@ -72,8 +75,11 @@ class Hiveworks : ParsedHttpSource() {
     }
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
+
     override fun latestUpdatesSelector() = popularMangaSelector()
+
     override fun latestUpdatesFromElement(element: Element) = mangaFromElement(element)
+
     override fun latestUpdatesParse(response: Response): MangasPage = popularMangaParse(response)
 
     // Search
@@ -81,7 +87,11 @@ class Hiveworks : ParsedHttpSource() {
 
     private lateinit var searchQuery: String
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val uri = Uri.parse(baseUrl).buildUpon()
         if (filters.isNotEmpty()) uri.appendPath("home")
         // Append uri filters
@@ -103,7 +113,9 @@ class Hiveworks : ParsedHttpSource() {
     }
 
     override fun searchMangaSelector() = popularMangaSelector() + ", div.originalsblock"
+
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
+
     override fun searchMangaParse(response: Response): MangasPage {
         val url = response.request.url.toString()
         val document = response.asJsoup()
@@ -129,6 +141,7 @@ class Hiveworks : ParsedHttpSource() {
     }
 
     override fun searchMangaFromElement(element: Element) = mangaFromElement(element)
+
     private fun searchOriginalMangaFromElement(element: Element): SManga = SManga.create().apply {
         thumbnail_url = element.select("img")[1].attr("abs:src")
         title = element.select("div.header").text().substringBefore("by").trim()
@@ -165,8 +178,13 @@ class Hiveworks : ParsedHttpSource() {
     }
 
     override fun mangaDetailsRequest(manga: SManga) = GET(manga.url, headers) // Used to open proper page in webview
+
     override fun mangaDetailsParse(document: Document): SManga = throw UnsupportedOperationException()
-    private fun mangaDetailsParse(response: Response, url: String): SManga {
+
+    private fun mangaDetailsParse(
+        response: Response,
+        url: String,
+    ): SManga {
         val document = response.asJsoup()
         return document.select(popularMangaSelector())
             .firstOrNull { url == it.select("a.comiclink").first()!!.attr("abs:href") }
@@ -189,6 +207,7 @@ class Hiveworks : ParsedHttpSource() {
     }
 
     override fun chapterListSelector() = "select[name=comic] option"
+
     override fun chapterListRequest(manga: SManga): Request {
         val uri = Uri.parse(manga.url).buildUpon()
         when {
@@ -224,7 +243,10 @@ class Hiveworks : ParsedHttpSource() {
         return chapters
     }
 
-    private fun createChapter(element: Element, baseUrl: String?) = SChapter.create().apply {
+    private fun createChapter(
+        element: Element,
+        baseUrl: String?,
+    ) = SChapter.create().apply {
         name = element.text().substringAfter("-").trim()
         url = baseUrl + element.attr("value")
         date_upload = parseDate(element.text().substringBefore("-").trim(), DATE_FORMATTER)
@@ -235,6 +257,7 @@ class Hiveworks : ParsedHttpSource() {
     // Pages
 
     override fun pageListRequest(chapter: SChapter) = GET(chapter.url, headers)
+
     override fun pageListParse(response: Response): List<Page> {
         val url = response.request.url.toString()
         val document = response.asJsoup()
@@ -262,7 +285,9 @@ class Hiveworks : ParsedHttpSource() {
     }
 
     override fun pageListParse(document: Document): List<Page> = throw UnsupportedOperationException()
+
     override fun imageUrlRequest(page: Page) = throw UnsupportedOperationException()
+
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     // Filters
@@ -284,8 +309,11 @@ class Hiveworks : ParsedHttpSource() {
     )
 
     private class OriginalsFilter : Filter.CheckBox("Original Comics")
+
     private class KidsFilter : Filter.CheckBox("Kids Comics")
+
     private class CompletedFilter : Filter.CheckBox("Completed Comics")
+
     private class HiatusFilter : Filter.CheckBox("On Hiatus Comics")
 
     private open class UriSelectFilter(
@@ -522,7 +550,10 @@ class Hiveworks : ParsedHttpSource() {
         }
     }
 
-    private fun parseDate(dateStr: String, format: SimpleDateFormat): Long {
+    private fun parseDate(
+        dateStr: String,
+        format: SimpleDateFormat,
+    ): Long {
         return runCatching { format.parse(dateStr)?.time }
             .getOrNull() ?: 0L
     }

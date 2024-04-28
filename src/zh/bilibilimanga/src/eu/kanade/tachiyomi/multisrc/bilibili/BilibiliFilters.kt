@@ -8,7 +8,6 @@ data class BilibiliTag(val name: String, val id: Int) {
 
 open class EnhancedSelect<T>(name: String, values: Array<T>, state: Int = 0) :
     Filter.Select<T>(name, values, state) {
-
     val selected: T?
         get() = values.getOrNull(state)
 }

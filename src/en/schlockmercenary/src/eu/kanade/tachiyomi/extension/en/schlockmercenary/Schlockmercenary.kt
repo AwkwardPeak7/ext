@@ -22,7 +22,6 @@ import java.util.GregorianCalendar
 import java.util.Locale
 
 class Schlockmercenary : ParsedHttpSource() {
-
     override val name = "Schlock Mercenary"
 
     override val baseUrl = "https://www.schlockmercenary.com"
@@ -45,8 +44,8 @@ class Schlockmercenary : ParsedHttpSource() {
             baseUrl + (
                 element.select("img").first()?.attr("src")
                     ?: defaultThumbnailUrl
-                )
-            ).substringBefore("?")
+            )
+        ).substringBefore("?")
         return SManga.create().apply {
             url = book.attr("href")
             title = book.text()
@@ -72,7 +71,10 @@ class Schlockmercenary : ParsedHttpSource() {
             }
     }
 
-    private fun getChaptersForBook(response: Response, manga: SManga): List<SChapter> {
+    private fun getChaptersForBook(
+        response: Response,
+        manga: SManga,
+    ): List<SChapter> {
         val document = response.asJsoup()
         val sanitizedTitle = manga.title.replace("""([",'])""".toRegex(), "\\\\$1")
         val book = document.select(popularMangaSelector() + ":contains($sanitizedTitle)")
@@ -104,7 +106,10 @@ class Schlockmercenary : ParsedHttpSource() {
             }
     }
 
-    private fun getPagesForChapter(response: Response, chapter: SChapter): List<Page> {
+    private fun getPagesForChapter(
+        response: Response,
+        chapter: SChapter,
+    ): List<Page> {
         val document = response.asJsoup()
 
         /**
@@ -132,7 +137,10 @@ class Schlockmercenary : ParsedHttpSource() {
         return generatePageListBetweenDates(start, end)
     }
 
-    private fun generatePageListBetweenDates(start: Long, end: Long): List<Page> {
+    private fun generatePageListBetweenDates(
+        start: Long,
+        end: Long,
+    ): List<Page> {
         val pages = mutableListOf<Page>()
         val calendar = GregorianCalendar()
         calendar.time = Date(start)
@@ -156,7 +164,11 @@ class Schlockmercenary : ParsedHttpSource() {
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> = Observable.just(manga)
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> = Observable.just(MangasPage(emptyList(), false))
 
     override fun searchMangaFromElement(element: Element): SManga = throw UnsupportedOperationException()
 
@@ -168,7 +180,11 @@ class Schlockmercenary : ParsedHttpSource() {
 
     override fun searchMangaSelector(): String = throw UnsupportedOperationException()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
 
     override fun mangaDetailsParse(document: Document): SManga = throw UnsupportedOperationException()
 

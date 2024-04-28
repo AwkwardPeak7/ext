@@ -4,7 +4,6 @@ import eu.kanade.tachiyomi.multisrc.mymangacms.MyMangaCMS
 import eu.kanade.tachiyomi.source.model.FilterList
 
 class Manhwa18 : MyMangaCMS("Manhwa18", "https://manhwa18.com", "en") {
-
     // Migrated from FMReader to MyMangaCMS.
     override val versionId = 2
 

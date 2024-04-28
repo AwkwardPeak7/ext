@@ -32,7 +32,6 @@ abstract class FansubsCat(
     override val lang: String,
     val isHentaiSite: Boolean,
 ) : HttpSource() {
-
     private val apiBaseUrl = "https://api.fansubs.cat"
 
     override val supportsLatest = true
@@ -106,7 +105,11 @@ abstract class FansubsCat(
 
     // Search
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
         val mangaTypeFilter = filterList.find { it is MangaTypeFilter } as MangaTypeFilter
         val stateFilter = filterList.find { it is StateFilter } as StateFilter
@@ -171,8 +174,7 @@ abstract class FansubsCat(
         )
     }
 
-    override fun chapterListParse(response: Response): List<SChapter> =
-        parseChapterListFromJson(response)
+    override fun chapterListParse(response: Response): List<SChapter> = parseChapterListFromJson(response)
 
     // Pages
 
@@ -189,8 +191,7 @@ abstract class FansubsCat(
 
     override fun pageListParse(response: Response): List<Page> = parsePageListFromJson(response)
 
-    override fun imageUrlParse(response: Response): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     // Filter
     override fun getFilterList() = FilterList(
@@ -317,14 +318,16 @@ abstract class FansubsCat(
     }
 
     internal class MangaType(val id: String, name: String) : Filter.CheckBox(name)
+
     internal class State(val id: Int, name: String) : Filter.CheckBox(name)
+
     internal class Tag(val id: Int, name: String) : Filter.TriState(name)
+
     internal class Demography(val id: Int, name: String) : Filter.CheckBox(name)
 
     private class MangaTypeFilter(collection: String, mangaTypes: List<MangaType>) :
         Filter.Group<MangaType>(collection, mangaTypes),
         UrlQueryFilter {
-
         override fun addQueryParameter(url: HttpUrl.Builder) {
             var oneShotSelected = false
             var serializedSelected = false
@@ -348,7 +351,6 @@ abstract class FansubsCat(
     private class StateFilter(collection: String, states: List<State>) :
         Filter.Group<State>(collection, states),
         UrlQueryFilter {
-
         override fun addQueryParameter(url: HttpUrl.Builder) {
             state.forEach { state ->
                 if (state.state) {
@@ -361,7 +363,6 @@ abstract class FansubsCat(
     private class DemographyFilter(collection: String, demographies: List<Demography>) :
         Filter.Group<Demography>(collection, demographies),
         UrlQueryFilter {
-
         override fun addQueryParameter(url: HttpUrl.Builder) {
             state.forEach { demography ->
                 if (demography.state) {
@@ -374,7 +375,6 @@ abstract class FansubsCat(
     private class GenreTagFilter(collection: String, tags: List<Tag>) :
         Filter.Group<Tag>(collection, tags),
         UrlQueryFilter {
-
         override fun addQueryParameter(url: HttpUrl.Builder) {
             state.forEach { tag ->
                 if (tag.isIncluded()) {
@@ -389,7 +389,6 @@ abstract class FansubsCat(
     private class ThemeTagFilter(collection: String, tags: List<Tag>) :
         Filter.Group<Tag>(collection, tags),
         UrlQueryFilter {
-
         override fun addQueryParameter(url: HttpUrl.Builder) {
             state.forEach { tag ->
                 if (tag.isIncluded()) {

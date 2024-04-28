@@ -43,7 +43,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class Japscan : ConfigurableSource, ParsedHttpSource() {
-
     override val id: Long = 11
 
     override val name = "Japscan"
@@ -104,7 +103,9 @@ class Japscan : ConfigurableSource, ParsedHttpSource() {
         element.select("a").first()!!.let {
             manga.setUrlWithoutDomain(it.attr("href"))
             manga.title = it.text()
-            manga.thumbnail_url = "$baseUrl/imgs/${it.attr("href").replace(Regex("/$"),".jpg").replace("manga","mangas")}".lowercase(Locale.ROOT)
+            manga.thumbnail_url = "$baseUrl/imgs/${it.attr(
+                "href",
+            ).replace(Regex("/$"),".jpg").replace("manga","mangas")}".lowercase(Locale.ROOT)
         }
         return manga
     }
@@ -153,7 +154,11 @@ class Japscan : ConfigurableSource, ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector(): String = throw UnsupportedOperationException()
 
     // Search
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isEmpty()) {
             val url = baseUrl.toHttpUrl().newBuilder().apply {
                 addPathSegment("mangas")
@@ -250,7 +255,11 @@ class Japscan : ConfigurableSource, ParsedHttpSource() {
     }
 
     override fun chapterListSelector() = "#chapters_list > div.collapse > div.chapters_list" +
-        if (chapterListPref() == "hide") { ":not(:has(.badge:contains(SPOILER),.badge:contains(RAW),.badge:contains(VUS)))" } else { "" }
+        if (chapterListPref() == "hide") {
+            ":not(:has(.badge:contains(SPOILER),.badge:contains(RAW),.badge:contains(VUS)))"
+        } else {
+            ""
+        }
     // JapScan sometimes uploads some "spoiler preview" chapters, containing 2 or 3 untranslated pictures taken from a raw. Sometimes they also upload full RAWs/US versions and replace them with a translation as soon as available.
     // Those have a span.badge "SPOILER" or "RAW". The additional pseudo selector makes sure to exclude these from the chapter list.
 

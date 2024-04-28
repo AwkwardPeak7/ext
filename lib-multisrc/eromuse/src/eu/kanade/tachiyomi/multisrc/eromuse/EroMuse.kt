@@ -20,7 +20,6 @@ import rx.Observable
 
 @ExperimentalStdlibApi
 open class EroMuse(override val name: String, override val baseUrl: String) : HttpSource() {
-
     override val lang = "en"
 
     override val supportsLatest = true
@@ -36,13 +35,16 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
 
     // the stack - shouldn't need to touch these except for visibility
     protected data class StackItem(val url: String, val pageType: Int)
+
     private lateinit var stackItem: StackItem
     protected val pageStack = ArrayDeque<StackItem>()
+
     companion object {
         const val VARIOUS_AUTHORS = 0
         const val AUTHOR = 1
         const val SEARCH_RESULTS_OR_BASE = 2
     }
+
     protected lateinit var currentSortingMode: String
 
     private val albums = getAlbumList()
@@ -84,7 +86,10 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
         }
     }
 
-    protected fun getAlbumType(url: String, default: Int = AUTHOR): Int {
+    protected fun getAlbumType(
+        url: String,
+        default: Int = AUTHOR,
+    ): Int {
         return albums.filter { it.third != SEARCH_RESULTS_OR_BASE && url.contains(it.second, true) }
             .getOrElse(0) { Triple(null, null, default) }.third
     }
@@ -128,11 +133,23 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
                                 when (depth) {
                                     1 -> { // eg. /comics/album/Fakku-Comics
                                         pageStack.addLast(StackItem(url, VARIOUS_AUTHORS))
-                                        if (searchMangas.isEmpty()) searchMangas += internalParse(client.newCall(stackRequest()).execute().asJsoup()) else null
+                                        if (searchMangas.isEmpty()) {
+                                            searchMangas += internalParse(
+                                                client.newCall(stackRequest()).execute().asJsoup(),
+                                            )
+                                        } else {
+                                            null
+                                        }
                                     }
                                     2 -> { // eg. /comics/album/Fakku-Comics/Bosshi
                                         pageStack.addLast(StackItem(url, AUTHOR))
-                                        if (searchMangas.isEmpty()) searchMangas += internalParse(client.newCall(stackRequest()).execute().asJsoup()) else null
+                                        if (searchMangas.isEmpty()) {
+                                            searchMangas += internalParse(
+                                                client.newCall(stackRequest()).execute().asJsoup(),
+                                            )
+                                        } else {
+                                            null
+                                        }
                                     }
                                     else -> {
                                         // eg. 3 -> /comics/album/Fakku-Comics/Bosshi/After-Summer-After
@@ -145,7 +162,13 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
                             AUTHOR -> {
                                 if (depth == 1) { // eg. /comics/album/ShadBase-Comics
                                     pageStack.addLast(StackItem(url, AUTHOR))
-                                    if (searchMangas.isEmpty()) searchMangas += internalParse(client.newCall(stackRequest()).execute().asJsoup()) else null
+                                    if (searchMangas.isEmpty()) {
+                                        searchMangas += internalParse(
+                                            client.newCall(stackRequest()).execute().asJsoup(),
+                                        )
+                                    } else {
+                                        null
+                                    }
                                 } else {
                                     // eg. 2 -> /comics/album/ShadBase-Comics/RickMorty
                                     // eg. 3 -> /comics/album/Incase-Comics/Comic/Alfie
@@ -174,7 +197,11 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
 
     // Popular
 
-    protected fun fetchManga(url: String, page: Int, sortingMode: String): Observable<MangasPage> {
+    protected fun fetchManga(
+        url: String,
+        page: Int,
+        sortingMode: String,
+    ): Observable<MangasPage> {
         if (page == 1) {
             pageStack.clear()
             pageStack.addLast(StackItem(url, VARIOUS_AUTHORS))
@@ -189,18 +216,25 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
     override fun fetchPopularManga(page: Int): Observable<MangasPage> = fetchManga("$baseUrl/comics/album/Various-Authors", page, "")
 
     override fun popularMangaRequest(page: Int): Request = throw UnsupportedOperationException()
+
     override fun popularMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
     // Latest
 
-    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> = fetchManga("$baseUrl/comics/album/Various-Authors?sort=date", page, "date")
+    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> =
+        fetchManga("$baseUrl/comics/album/Various-Authors?sort=date", page, "date")
 
     override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
+
     override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         if (page == 1) {
             pageStack.clear()
 
@@ -228,7 +262,12 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
             .map { response -> parseManga(response.asJsoup()) }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = throw UnsupportedOperationException()
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = throw UnsupportedOperationException()
+
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
     // Details
@@ -260,7 +299,11 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
     protected open val pageThumbnailSelector = "a.c-tile:has(img)[href*=/comics/picture/] img"
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        fun parseChapters(document: Document, isFirstPage: Boolean, chapters: ArrayDeque<SChapter>): List<SChapter> {
+        fun parseChapters(
+            document: Document,
+            isFirstPage: Boolean,
+            chapters: ArrayDeque<SChapter>,
+        ): List<SChapter> {
             // Linked chapters
             document.select(linkedChapterSelector)
                 .mapNotNull {
@@ -345,10 +388,17 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
         )
     }
 
-    protected class AlbumFilter(private val vals: Array<Triple<String, String, Int>>) : Filter.Select<String>("Album", vals.map { it.first }.toTypedArray()) {
+    protected class AlbumFilter(private val vals: Array<Triple<String, String, Int>>) : Filter.Select<String>(
+        "Album",
+        vals.map {
+            it.first
+        }.toTypedArray(),
+    ) {
         fun selection() = AlbumFilterData(vals[state].second, vals[state].third)
+
         data class AlbumFilterData(val pathSegments: String, val pageType: Int)
     }
+
     protected open fun getAlbumList() = arrayOf(
         Triple("All Authors", "", SEARCH_RESULTS_OR_BASE),
         Triple("Various Authors", "album/Various-Authors", VARIOUS_AUTHORS),
@@ -425,9 +475,15 @@ open class EroMuse(override val name: String, override val baseUrl: String) : Ht
         Triple("Blacknwhitecomics.com Comix", "album/Blacknwhitecomics_com-Comix", AUTHOR),
     )
 
-    protected class SortFilter(private val vals: Array<Pair<String, String>>) : Filter.Select<String>("Sort Order", vals.map { it.first }.toTypedArray()) {
+    protected class SortFilter(private val vals: Array<Pair<String, String>>) : Filter.Select<String>(
+        "Sort Order",
+        vals.map {
+            it.first
+        }.toTypedArray(),
+    ) {
         fun toQueryValue() = vals[state].second
     }
+
     protected open fun getSortList() = arrayOf(
         Pair("Views", ""),
         Pair("Likes", "like"),

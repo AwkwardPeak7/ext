@@ -52,6 +52,7 @@ class CosplayTele : ParsedHttpSource() {
     }
 
     override fun latestUpdatesNextPageSelector() = ".next.page-number"
+
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/page/$page/")
 
     override fun latestUpdatesSelector() = "div.box"
@@ -66,7 +67,11 @@ class CosplayTele : ParsedHttpSource() {
     }
 
     private val popularPageLimit = 20
-    override fun popularMangaRequest(page: Int) = GET("$baseUrl/wp-json/wordpress-popular-posts/v1/popular-posts?offset=${page * popularPageLimit}&limit=$popularPageLimit&range=last7days")
+
+    override fun popularMangaRequest(page: Int) = GET(
+        "$baseUrl/wp-json/wordpress-popular-posts/v1/popular-posts?offset=${page * popularPageLimit}&limit=$popularPageLimit&range=last7days",
+    )
+
     override fun popularMangaSelector(): String = ""
 
     override fun popularMangaParse(response: Response): MangasPage {
@@ -84,8 +89,14 @@ class CosplayTele : ParsedHttpSource() {
 
     // Search
     override fun searchMangaFromElement(element: Element) = latestUpdatesFromElement(element)
+
     override fun searchMangaNextPageSelector() = latestUpdatesNextPageSelector()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val filterList = if (filters.isEmpty()) getFilterList() else filters
 
         val categoryFilter = filterList.findInstance<UriPartFilter>()
@@ -153,8 +164,7 @@ class CosplayTele : ParsedHttpSource() {
         return pages
     }
 
-    override fun imageUrlParse(document: Document): String =
-        throw UnsupportedOperationException()
+    override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // Filters
     override fun getFilterList(): FilterList {
@@ -189,7 +199,9 @@ class CosplayTele : ParsedHttpSource() {
     private var filterAttempts = 0
 
     private enum class FilterState {
-        Fetching, Fetched, Unfetched
+        Fetching,
+        Fetched,
+        Unfetched,
     }
 
     private suspend fun fetchFilters() {

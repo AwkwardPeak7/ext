@@ -39,17 +39,26 @@ class BuonDua() : ParsedHttpSource() {
 
     // Popular
     override fun popularMangaFromElement(element: Element) = latestUpdatesFromElement(element)
+
     override fun popularMangaNextPageSelector() = latestUpdatesNextPageSelector()
+
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/hot?start=${20 * (page - 1)}")
     }
+
     override fun popularMangaSelector() = latestUpdatesSelector()
 
     // Search
 
     override fun searchMangaFromElement(element: Element) = latestUpdatesFromElement(element)
+
     override fun searchMangaNextPageSelector() = latestUpdatesNextPageSelector()
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val tagFilter = filters.findInstance<TagFilter>()!!
         return when {
             query.isNotEmpty() -> GET("$baseUrl/?search=$query&start=${20 * (page - 1)}")
@@ -57,6 +66,7 @@ class BuonDua() : ParsedHttpSource() {
             else -> popularMangaRequest(page)
         }
     }
+
     override fun searchMangaSelector() = latestUpdatesSelector()
 
     // Details
@@ -77,7 +87,10 @@ class BuonDua() : ParsedHttpSource() {
         chapter.setUrlWithoutDomain(element.select(".is-current").first()!!.attr("abs:href"))
         chapter.chapter_number = 0F
         chapter.name = element.select(".article-header").text()
-        chapter.date_upload = SimpleDateFormat("H:m DD-MM-yyyy", Locale.US).parse(element.select(".article-info > small").text())?.time ?: 0L
+        chapter.date_upload = SimpleDateFormat(
+            "H:m DD-MM-yyyy",
+            Locale.US,
+        ).parse(element.select(".article-info > small").text())?.time ?: 0L
         return chapter
     }
 

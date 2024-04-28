@@ -27,7 +27,6 @@ import java.util.Locale
 
 // Uses WPManga + GeneratePress/Blocksy Child
 class BaozimhOrg : HttpSource(), ConfigurableSource {
-
     override val name get() = "包子漫画导航"
     override val lang get() = "zh"
     override val supportsLatest get() = true
@@ -79,7 +78,11 @@ class BaozimhOrg : HttpSource(), ConfigurableSource {
 
     override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val url = "$baseUrl/page/$page/".toHttpUrl().newBuilder()
                 .addQueryParameter("s", query)
@@ -167,18 +170,17 @@ class BaozimhOrg : HttpSource(), ConfigurableSource {
         }.toTypedArray()
     }
 
-    override fun getFilterList(): FilterList =
-        if (!enableGenres) {
-            FilterList()
-        } else if (genres.isEmpty()) {
-            FilterList(listOf(Filter.Header("点击“重置”刷新分类")))
-        } else {
-            val list = listOf(
-                Filter.Header("分类（搜索文本时无效）"),
-                UriPartFilter("分类", genres),
-            )
-            FilterList(list)
-        }
+    override fun getFilterList(): FilterList = if (!enableGenres) {
+        FilterList()
+    } else if (genres.isEmpty()) {
+        FilterList(listOf(Filter.Header("点击“重置”刷新分类")))
+    } else {
+        val list = listOf(
+            Filter.Header("分类（搜索文本时无效）"),
+            UriPartFilter("分类", genres),
+        )
+        FilterList(list)
+    }
 
     class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {

@@ -62,7 +62,11 @@ class SeriManga : ParsedHttpSource() {
 
     override fun searchMangaSelector() = popularMangaSelector()
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList) = GET("$baseUrl/mangalar?search=$query&page=$page", headers)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ) = GET("$baseUrl/mangalar?search=$query&page=$page", headers)
 
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 

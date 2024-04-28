@@ -21,7 +21,6 @@ import uy.kohesive.injekt.injectLazy
 import java.util.concurrent.TimeUnit
 
 class Bruttal : HttpSource() {
-
     override val name = "Bruttal"
 
     override val baseUrl = BRUTTAL_URL
@@ -55,7 +54,11 @@ class Bruttal : HttpSource() {
         return MangasPage(titles, false)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val newHeaders = headersBuilder()
             .add("Accept", "application/json, text/plain, */*")
             .build()
@@ -172,11 +175,9 @@ class Bruttal : HttpSource() {
         return GET(page.imageUrl!!, newHeaders)
     }
 
-    override fun latestUpdatesRequest(page: Int): Request =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
 
-    override fun latestUpdatesParse(response: Response): MangasPage =
-        throw UnsupportedOperationException()
+    override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
     private inline fun <reified T> Response.parseAs(): T = use {
         json.decodeFromString(body.string())

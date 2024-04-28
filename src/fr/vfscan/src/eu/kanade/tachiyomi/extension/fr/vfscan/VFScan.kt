@@ -16,6 +16,7 @@ class VFScan : MangaThemesia("VF Scan", "https://www.vfscan.cc", "fr", dateForma
 
     override val seriesAuthorSelector = ".imptdt:contains(Mangaka) i, .fmed b:contains(Mangaka)+span"
     override val seriesStatusSelector = ".imptdt:contains(Statut) i"
+
     override fun String?.parseStatus(): Int = when {
         this == null -> SManga.UNKNOWN
         this.contains("En Cours", ignoreCase = true) -> SManga.ONGOING
@@ -23,8 +24,7 @@ class VFScan : MangaThemesia("VF Scan", "https://www.vfscan.cc", "fr", dateForma
         else -> SManga.UNKNOWN
     }
 
-    override fun mangaDetailsParse(document: Document): SManga =
-        super.mangaDetailsParse(document).apply {
-            status = document.select(seriesStatusSelector).text().parseStatus()
-        }
+    override fun mangaDetailsParse(document: Document): SManga = super.mangaDetailsParse(document).apply {
+        status = document.select(seriesStatusSelector).text().parseStatus()
+    }
 }

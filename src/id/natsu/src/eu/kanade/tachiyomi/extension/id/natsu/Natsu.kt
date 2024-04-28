@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Natsu : MangaThemesia("Natsu", "https://natsu.id", "id", dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("id"))) {
-
     override val client: OkHttpClient = super.client.newBuilder()
         .rateLimit(4)
         .build()

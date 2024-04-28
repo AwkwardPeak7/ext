@@ -46,7 +46,6 @@ abstract class GigaViewer(
     override val lang: String,
     private val cdnUrl: String = "",
 ) : ParsedHttpSource() {
-
     override val supportsLatest = true
 
     protected val dayOfWeek: String by lazy {
@@ -85,13 +84,21 @@ abstract class GigaViewer(
     override fun latestUpdatesNextPageSelector(): String? = null
 
     // The search returns 404 when there's no results.
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return client.newCall(searchMangaRequest(page, query, filters))
             .asObservableIgnoreCode(404)
             .map(::searchMangaParse)
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         if (query.isNotEmpty()) {
             val url = "$baseUrl/search".toHttpUrl().newBuilder()
                 .addQueryParameter("q", query)
@@ -274,7 +281,11 @@ abstract class GigaViewer(
         return response.newBuilder().body(body).build()
     }
 
-    protected open fun decodeImage(image: InputStream, width: Int, height: Int): ByteArray {
+    protected open fun decodeImage(
+        image: InputStream,
+        width: Int,
+        height: Int,
+    ): ByteArray {
         val input = BitmapFactory.decodeStream(image)
         val cWidth = (floor(width.toDouble() / (DIVIDE_NUM * MULTIPLE)) * MULTIPLE).toInt()
         val cHeight = (floor(height.toDouble() / (DIVIDE_NUM * MULTIPLE)) * MULTIPLE).toInt()

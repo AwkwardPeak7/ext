@@ -13,5 +13,6 @@ class DidaManhua : MCCMS(
 ) {
     // Details and chapter pages are broken
     override fun getMangaUrl(manga: SManga) = baseUrl
+
     override fun getChapterUrl(chapter: SChapter) = baseUrl
 }

@@ -22,7 +22,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class FuryoSquad : ParsedHttpSource() {
-
     override val name = "FuryoSquad"
 
     override val baseUrl = "https://www.furyosociety.com/"
@@ -94,7 +93,11 @@ class FuryoSquad : ParsedHttpSource() {
 
     // Search
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return client.newCall(searchMangaRequest(page, query, filters))
             .asObservableSuccess()
             .map { response ->
@@ -102,9 +105,16 @@ class FuryoSquad : ParsedHttpSource() {
             }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request = popularMangaRequest(1)
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request = popularMangaRequest(1)
 
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
+    private fun searchMangaParse(
+        response: Response,
+        query: String,
+    ): MangasPage {
         return MangasPage(popularMangaParse(response).mangas.filter { it.title.contains(query, ignoreCase = true) }, false)
     }
 

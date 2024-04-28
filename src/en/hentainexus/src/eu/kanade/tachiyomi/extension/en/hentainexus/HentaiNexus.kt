@@ -23,7 +23,6 @@ import rx.Observable
 import uy.kohesive.injekt.injectLazy
 
 class HentaiNexus : ParsedHttpSource() {
-
     override val name = "HentaiNexus"
 
     override val lang = "en"
@@ -65,7 +64,11 @@ class HentaiNexus : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+    override fun fetchSearchManga(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Observable<MangasPage> {
         return if (query.startsWith(PREFIX_ID_SEARCH)) {
             val id = query.removePrefix(PREFIX_ID_SEARCH)
             client.newCall(GET("$baseUrl/view/$id", headers)).asObservableSuccess()
@@ -75,7 +78,11 @@ class HentaiNexus : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+    override fun searchMangaRequest(
+        page: Int,
+        query: String,
+        filters: FilterList,
+    ): Request {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             val actualPage = page + (filters.filterIsInstance<OffsetPageFilter>().firstOrNull()?.state?.toIntOrNull() ?: 0)
             if (actualPage > 1) {
@@ -169,7 +176,6 @@ class HentaiNexus : ParsedHttpSource() {
         ParodyFilter(),
         MagazineFilter(),
         PublisherFilter(),
-
         Filter.Separator(),
         OffsetPageFilter(),
     )

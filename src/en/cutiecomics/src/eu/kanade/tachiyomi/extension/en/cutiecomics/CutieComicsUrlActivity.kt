@@ -12,7 +12,6 @@ import kotlin.system.exitProcess
  * and redirects them to the main Tachiyomi process.
  */
 class CutieComicsUrlActivity : Activity() {
-
     private val tag = javaClass.simpleName
 
     override fun onCreate(savedInstanceState: Bundle?) {

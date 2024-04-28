@@ -37,7 +37,10 @@ class Nicomanga : FMReader("Nicomanga", "https://nicomanga.com", "ja") {
         return GET("$baseUrl/app/manga/controllers/cont.Listchapterapi.php?slug=$slug", headers)
     }
 
-    override fun chapterFromElement(element: Element, mangaTitle: String): SChapter = SChapter.create().apply {
+    override fun chapterFromElement(
+        element: Element,
+        mangaTitle: String,
+    ): SChapter = SChapter.create().apply {
         element.select(chapterUrlSelector).first()!!.let {
             setUrlWithoutDomain("$baseUrl/${it.attr("href")}")
             name = it.attr("title")
