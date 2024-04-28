@@ -14,15 +14,16 @@ class CubariUrlActivity : Activity() {
         val pathSegments = intent?.data?.pathSegments
 
         if (host != null && pathSegments != null) {
-            val query = with(host) {
-                when {
-                    equals("m.imgur.com") || equals("imgur.com") -> fromSource("imgur", pathSegments)
-                    equals("m.reddit.com") || equals("reddit.com") || equals("www.reddit.com") -> fromSource("reddit", pathSegments)
-                    equals("imgchest.com") -> fromSource("imgchest", pathSegments)
-                    equals("catbox.moe") || equals("www.catbox.moe") -> fromSource("catbox", pathSegments)
-                    else -> fromCubari(pathSegments)
+            val query =
+                with(host) {
+                    when {
+                        equals("m.imgur.com") || equals("imgur.com") -> fromSource("imgur", pathSegments)
+                        equals("m.reddit.com") || equals("reddit.com") || equals("www.reddit.com") -> fromSource("reddit", pathSegments)
+                        equals("imgchest.com") -> fromSource("imgchest", pathSegments)
+                        equals("catbox.moe") || equals("www.catbox.moe") -> fromSource("catbox", pathSegments)
+                        else -> fromCubari(pathSegments)
+                    }
                 }
-            }
 
             if (query == null) {
                 Log.e("CubariUrlActivity", "Unable to parse URI from intent $intent")
@@ -30,11 +31,12 @@ class CubariUrlActivity : Activity() {
                 exitProcess(1)
             }
 
-            val mainIntent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", query)
-                putExtra("filter", packageName)
-            }
+            val mainIntent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra("query", query)
+                    putExtra("filter", packageName)
+                }
 
             try {
                 startActivity(mainIntent)

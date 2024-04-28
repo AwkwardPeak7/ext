@@ -102,9 +102,10 @@ class Collectedcurios : ParsedHttpSource() {
 
     override fun chapterListSelector() = throw UnsupportedOperationException()
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        name = element.selectFirst(".w3-round")?.attr("value") ?: "Chapter"
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            name = element.selectFirst(".w3-round")?.attr("value") ?: "Chapter"
+        }
 
     override fun pageListParse(document: Document): List<Page> = throw UnsupportedOperationException()
 

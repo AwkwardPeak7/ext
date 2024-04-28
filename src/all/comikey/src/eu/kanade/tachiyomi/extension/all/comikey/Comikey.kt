@@ -50,29 +50,33 @@ open class Comikey(
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(3)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(3)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val dateFormat by lazy {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ROOT)
     }
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        explicitNulls = false
-        isLenient = true
-    }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+            isLenient = true
+        }
 
-    private val intl = Intl(
-        language = lang,
-        baseLanguage = "en",
-        availableLanguages = setOf("en", "pt-BR"),
-        classLoader = this::class.java.classLoader!!,
-    )
+    private val intl =
+        Intl(
+            language = lang,
+            baseLanguage = "en",
+            availableLanguages = setOf("en", "pt-BR"),
+            classLoader = this::class.java.classLoader!!,
+        )
 
     private val preferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
@@ -115,44 +119,47 @@ open class Comikey(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/comics/".toHttpUrl().newBuilder().apply {
-            if (page > 1) {
-                addQueryParameter("page", page.toString())
-            }
+        val url =
+            "$baseUrl/comics/".toHttpUrl().newBuilder().apply {
+                if (page > 1) {
+                    addQueryParameter("page", page.toString())
+                }
 
-            if (query.length >= 2) {
-                addQueryParameter("q", query)
-            }
+                if (query.length >= 2) {
+                    addQueryParameter("q", query)
+                }
 
-            filters.ifEmpty { getFilterList() }
-                .filterIsInstance<UriFilter>()
-                .forEach { it.addToUri(this) }
-        }.build()
+                filters.ifEmpty { getFilterList() }
+                    .filterIsInstance<UriFilter>()
+                    .forEach { it.addToUri(this) }
+            }.build()
 
         return GET(url, headers)
     }
 
     override fun searchMangaSelector() = "div.series-listing[data-view=list] > ul > li"
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        element.selectFirst("div.series-data span.title a")!!.let {
-            setUrlWithoutDomain(it.attr("href"))
-            title = it.text()
-        }
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            element.selectFirst("div.series-data span.title a")!!.let {
+                setUrlWithoutDomain(it.attr("href"))
+                title = it.text()
+            }
 
-        description = element.select("div.excerpt p").text() +
-            "\n\n" +
-            element.select("div.desc p").text()
-        genre = element.select("ul.category-listing li a").joinToString { it.text() }
-        thumbnail_url = element.selectFirst("div.image picture img")?.absUrl("src")
-    }
+            description = element.select("div.excerpt p").text() +
+                "\n\n" +
+                element.select("div.desc p").text()
+            genre = element.select("ul.category-listing li a").joinToString { it.text() }
+            thumbnail_url = element.selectFirst("div.image picture img")?.absUrl("src")
+        }
 
     override fun searchMangaNextPageSelector() = "ul.pagination li.next-page:not(.disabled)"
 
     override fun mangaDetailsParse(document: Document): SManga {
-        val data = json.decodeFromString<ComikeyComic>(
-            document.selectFirst("script#comic")!!.data(),
-        )
+        val data =
+            json.decodeFromString<ComikeyComic>(
+                document.selectFirst("script#comic")!!.data(),
+            )
 
         return SManga.create().apply {
             url = data.link
@@ -161,63 +168,70 @@ open class Comikey(
             artist = data.artist.joinToString { it.name }
             description = "\"${data.excerpt}\"\n\n${data.description}"
             thumbnail_url = "$baseUrl${data.fullCover}"
-            status = when (data.updateStatus) {
-                // HACK: Comikey Brasil
-                0 -> when {
-                    data.updateText.startsWith("toda", true) -> SManga.ONGOING
-                    listOf("em pausa", "hiato").any { data.updateText.startsWith(it, true) } -> SManga.ON_HIATUS
+            status =
+                when (data.updateStatus) {
+                    // HACK: Comikey Brasil
+                    0 ->
+                        when {
+                            data.updateText.startsWith("toda", true) -> SManga.ONGOING
+                            listOf("em pausa", "hiato").any { data.updateText.startsWith(it, true) } -> SManga.ON_HIATUS
+                            else -> SManga.UNKNOWN
+                        }
+                    1 -> SManga.COMPLETED
+                    3 -> SManga.ON_HIATUS
+                    in (4..14) -> SManga.ONGOING // daily, weekly, bi-weekly, monthly, every day of the week
                     else -> SManga.UNKNOWN
                 }
-                1 -> SManga.COMPLETED
-                3 -> SManga.ON_HIATUS
-                in (4..14) -> SManga.ONGOING // daily, weekly, bi-weekly, monthly, every day of the week
-                else -> SManga.UNKNOWN
-            }
-            genre = buildList(data.tags.size + 1) {
-                addAll(data.tags.map { it.name })
+            genre =
+                buildList(data.tags.size + 1) {
+                    addAll(data.tags.map { it.name })
 
-                when (data.format) {
-                    0 -> add("Comic")
-                    1 -> add("Manga")
-                    2 -> add("Webtoon")
-                    else -> {}
-                }
-            }.joinToString()
+                    when (data.format) {
+                        0 -> add("Comic")
+                        1 -> add("Manga")
+                        2 -> add("Webtoon")
+                        else -> {}
+                    }
+                }.joinToString()
         }
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         val mangaSlug = response.request.url.pathSegments[1]
-        val mangaData = json.decodeFromString<ComikeyComic>(
-            document.selectFirst("script#comic")!!.data(),
-        )
+        val mangaData =
+            json.decodeFromString<ComikeyComic>(
+                document.selectFirst("script#comic")!!.data(),
+            )
         val defaultChapterPrefix = if (mangaData.format == 2) "episode" else "chapter"
 
-        val chapterUrl = gundamUrl.toHttpUrl().newBuilder().apply {
-            val mangaId = response.request.url.pathSegments[2]
-            val gundamToken = document.selectFirst("script:containsData(GUNDAM.token)")
-                ?.data()
-                ?.substringAfter("= \"")
-                ?.substringBefore("\";")
+        val chapterUrl =
+            gundamUrl.toHttpUrl().newBuilder().apply {
+                val mangaId = response.request.url.pathSegments[2]
+                val gundamToken =
+                    document.selectFirst("script:containsData(GUNDAM.token)")
+                        ?.data()
+                        ?.substringAfter("= \"")
+                        ?.substringBefore("\";")
 
-            if (gundamToken != null) {
-                addPathSegment("comic")
-            } else {
-                addPathSegment("comic.public")
-            }
+                if (gundamToken != null) {
+                    addPathSegment("comic")
+                } else {
+                    addPathSegment("comic.public")
+                }
 
-            addPathSegment(mangaId)
-            addPathSegment("episodes")
-            addQueryParameter("language", lang.lowercase())
-            gundamToken?.let { addQueryParameter("token", gundamToken) }
-        }.build()
-        val data = json.decodeFromString<ComikeyEpisodeListResponse>(
-            client.newCall(GET(chapterUrl, headers))
-                .execute()
-                .body
-                .string(),
-        )
+                addPathSegment(mangaId)
+                addPathSegment("episodes")
+                addQueryParameter("language", lang.lowercase())
+                gundamToken?.let { addQueryParameter("token", gundamToken) }
+            }.build()
+        val data =
+            json.decodeFromString<ComikeyEpisodeListResponse>(
+                client.newCall(GET(chapterUrl, headers))
+                    .execute()
+                    .body
+                    .string(),
+            )
         val currentTime = System.currentTimeMillis()
 
         return data.episodes
@@ -225,20 +239,22 @@ open class Comikey(
             .map {
                 SChapter.create().apply {
                     url = "/read/$mangaSlug/${makeEpisodeSlug(it, defaultChapterPrefix)}/"
-                    name = buildString {
-                        append(it.title)
+                    name =
+                        buildString {
+                            append(it.title)
 
-                        if (it.subtitle != null) {
-                            append(": ")
-                            append(it.subtitle)
+                            if (it.subtitle != null) {
+                                append(": ")
+                                append(it.subtitle)
+                            }
                         }
-                    }
                     chapter_number = it.number
-                    date_upload = try {
-                        dateFormat.parse(it.releasedAt)!!.time
-                    } catch (e: Exception) {
-                        0L
-                    }
+                    date_upload =
+                        try {
+                            dateFormat.parse(it.releasedAt)!!.time
+                        } catch (e: Exception) {
+                            0L
+                        }
                 }
             }
             .filter { it.date_upload <= currentTime }
@@ -296,53 +312,56 @@ open class Comikey(
                 }
             }*/
 
-            innerWv.webViewClient = object : WebViewClient() {
-                override fun onPageStarted(
-                    view: WebView?,
-                    url: String?,
-                    favicon: Bitmap?,
-                ) {
-                    super.onPageStarted(view, url, favicon)
-                    view?.evaluateJavascript(webviewScript.replace("__interface__", interfaceName)) {}
-                }
-
-                // If you're logged in, the manifest URL sent to the client is not a direct link;
-                // it only redirects to the real one when you call it.
-                //
-                // In order to avoid a later call and remove an avenue for sniffing out users,
-                // we intercept said request so we can grab the real manifest URL.
-                override fun shouldInterceptRequest(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                ): WebResourceResponse? {
-                    val url = request?.url
-                        ?: return super.shouldInterceptRequest(view, request)
-
-                    if (url.host != "relay-us.epub.rocks" || url.path?.endsWith("/manifest") != true) {
-                        return super.shouldInterceptRequest(view, request)
+            innerWv.webViewClient =
+                object : WebViewClient() {
+                    override fun onPageStarted(
+                        view: WebView?,
+                        url: String?,
+                        favicon: Bitmap?,
+                    ) {
+                        super.onPageStarted(view, url, favicon)
+                        view?.evaluateJavascript(webviewScript.replace("__interface__", interfaceName)) {}
                     }
 
-                    val requestHeaders = headers.newBuilder().apply {
-                        request.requestHeaders.entries.forEach {
-                            set(it.key, it.value)
+                    // If you're logged in, the manifest URL sent to the client is not a direct link;
+                    // it only redirects to the real one when you call it.
+                    //
+                    // In order to avoid a later call and remove an avenue for sniffing out users,
+                    // we intercept said request so we can grab the real manifest URL.
+                    override fun shouldInterceptRequest(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                    ): WebResourceResponse? {
+                        val url =
+                            request?.url
+                                ?: return super.shouldInterceptRequest(view, request)
+
+                        if (url.host != "relay-us.epub.rocks" || url.path?.endsWith("/manifest") != true) {
+                            return super.shouldInterceptRequest(view, request)
                         }
 
-                        removeAll("X-Requested-With")
-                    }.build()
-                    val response = client.newCall(GET(url.toString(), requestHeaders)).execute()
+                        val requestHeaders =
+                            headers.newBuilder().apply {
+                                request.requestHeaders.entries.forEach {
+                                    set(it.key, it.value)
+                                }
 
-                    jsInterface.manifestUrl = response.request.url
+                                removeAll("X-Requested-With")
+                            }.build()
+                        val response = client.newCall(GET(url.toString(), requestHeaders)).execute()
 
-                    return WebResourceResponse(
-                        response.headers["Content-Type"] ?: "application/divina+json+vnd.e4p.drm",
-                        null,
-                        response.code,
-                        response.message,
-                        response.headers.toMap(),
-                        response.body.byteStream(),
-                    )
+                        jsInterface.manifestUrl = response.request.url
+
+                        return WebResourceResponse(
+                            response.headers["Content-Type"] ?: "application/divina+json+vnd.e4p.drm",
+                            null,
+                            response.code,
+                            response.message,
+                            response.headers.toMap(),
+                            response.body.byteStream(),
+                        )
+                    }
                 }
-            }
 
             innerWv.loadUrl(
                 "$baseUrl${chapter.url}",
@@ -369,23 +388,24 @@ open class Comikey(
         val webtoon = manifest.metadata.readingProgression == "ttb"
 
         return manifest.readingOrder.mapIndexed { i, it ->
-            val url = manifestUrl.newBuilder().apply {
-                removePathSegment(manifestUrl.pathSize - 1)
+            val url =
+                manifestUrl.newBuilder().apply {
+                    removePathSegment(manifestUrl.pathSize - 1)
 
-                if (it.alternate.isNotEmpty() && it.height == 2048 && it.type == "image/jpeg") {
-                    addPathSegments(
-                        it.alternate.first {
-                            val dimension = if (webtoon) it.width else it.height
+                    if (it.alternate.isNotEmpty() && it.height == 2048 && it.type == "image/jpeg") {
+                        addPathSegments(
+                            it.alternate.first {
+                                val dimension = if (webtoon) it.width else it.height
 
-                            dimension <= 1536 && it.type == "image/webp"
-                        }.href,
-                    )
-                } else {
-                    addPathSegments(it.href)
-                }
+                                dimension <= 1536 && it.type == "image/webp"
+                            }.href,
+                        )
+                    } else {
+                        addPathSegments(it.href)
+                    }
 
-                addQueryParameter("act", jsInterface.act)
-            }.toString()
+                    addQueryParameter("act", jsInterface.act)
+                }.toString()
 
             Page(i, imageUrl = url)
         }
@@ -434,17 +454,18 @@ open class Comikey(
         defaultChapterPrefix: String,
     ): String {
         val e4pid = episode.id.split("-", limit = 2).last()
-        val chapterPrefix = if (defaultChapterPrefix == "chapter" && lang != defaultLanguage) {
-            when (lang) {
-                "es" -> "capitulo-espanol"
-                "pt-br" -> "capitulo-portugues"
-                "fr" -> "chapitre-francais"
-                "id" -> "bab-bahasa"
-                else -> "chapter"
+        val chapterPrefix =
+            if (defaultChapterPrefix == "chapter" && lang != defaultLanguage) {
+                when (lang) {
+                    "es" -> "capitulo-espanol"
+                    "pt-br" -> "capitulo-portugues"
+                    "fr" -> "chapitre-francais"
+                    "id" -> "bab-bahasa"
+                    else -> "chapter"
+                }
+            } else {
+                defaultChapterPrefix
             }
-        } else {
-            defaultChapterPrefix
-        }
 
         return "$e4pid/$chapterPrefix-${episode.number.toString().removeSuffix(".0").replace(".", "-")}"
     }

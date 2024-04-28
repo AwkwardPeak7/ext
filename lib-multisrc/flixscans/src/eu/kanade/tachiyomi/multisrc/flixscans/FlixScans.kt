@@ -31,12 +31,14 @@ abstract class FlixScans(
 
     protected open val json: Json by injectLazy()
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int): Request {
         return GET("$apiUrl/webtoon/pages/home/romance", headers)
@@ -45,9 +47,10 @@ abstract class FlixScans(
     override fun popularMangaParse(response: Response): MangasPage {
         val result = response.parseAs<HomeDto>()
 
-        val entries = (result.hot + result.topAll + result.topMonth + result.topWeek)
-            .distinctBy { it.id }
-            .map { it.toSManga(cdnUrl) }
+        val entries =
+            (result.hot + result.topAll + result.topMonth + result.topWeek)
+                .distinctBy { it.id }
+                .map { it.toSManga(cdnUrl) }
 
         return MangasPage(entries, false)
     }
@@ -79,43 +82,46 @@ abstract class FlixScans(
         }
     }
 
-    private val fetchGenreCallback = object : Callback {
-        override fun onFailure(
-            call: Call,
-            e: IOException,
-        ) {
-            fetchGenreAttempt++
-            fetchGenreFailed = true
-            fetchGenreCallOngoing = false
-
-            e.message?.let { Log.e("$name Filters", it) }
-        }
-
-        override fun onResponse(
-            call: Call,
-            response: Response,
-        ) {
-            fetchGenreCallOngoing = false
-            fetchGenreAttempt++
-
-            if (!response.isSuccessful) {
+    private val fetchGenreCallback =
+        object : Callback {
+            override fun onFailure(
+                call: Call,
+                e: IOException,
+            ) {
+                fetchGenreAttempt++
                 fetchGenreFailed = true
-                response.close()
+                fetchGenreCallOngoing = false
 
-                return
+                e.message?.let { Log.e("$name Filters", it) }
             }
 
-            val parsed = runCatching {
-                response.use(::fetchGenreParse)
-            }
+            override fun onResponse(
+                call: Call,
+                response: Response,
+            ) {
+                fetchGenreCallOngoing = false
+                fetchGenreAttempt++
 
-            fetchGenreFailed = parsed.isFailure
-            fetchGenreList = parsed.getOrElse {
-                Log.e("$name Filters", it.stackTraceToString())
-                emptyList()
+                if (!response.isSuccessful) {
+                    fetchGenreFailed = true
+                    response.close()
+
+                    return
+                }
+
+                val parsed =
+                    runCatching {
+                        response.use(::fetchGenreParse)
+                    }
+
+                fetchGenreFailed = parsed.isFailure
+                fetchGenreList =
+                    parsed.getOrElse {
+                        Log.e("$name Filters", it.stackTraceToString())
+                        emptyList()
+                    }
             }
         }
-    }
 
     private fun fetchGenreRequest(): Request {
         return GET("$apiUrl/search/genres", headers)
@@ -128,23 +134,25 @@ abstract class FlixScans(
     override fun getFilterList(): FilterList {
         fetchGenre()
 
-        val filters: MutableList<Filter<*>> = mutableListOf(
-            Filter.Header("Ignored when using Text Search"),
-            MainGenreFilter(),
-            TypeFilter(),
-            StatusFilter(),
-        )
+        val filters: MutableList<Filter<*>> =
+            mutableListOf(
+                Filter.Header("Ignored when using Text Search"),
+                MainGenreFilter(),
+                TypeFilter(),
+                StatusFilter(),
+            )
 
-        filters += if (fetchGenreList.isNotEmpty()) {
-            listOf(
-                GenreFilter("Genre", fetchGenreList),
-            )
-        } else {
-            listOf(
-                Filter.Separator(),
-                Filter.Header("Press 'reset' to attempt to show Genres"),
-            )
-        }
+        filters +=
+            if (fetchGenreList.isNotEmpty()) {
+                listOf(
+                    GenreFilter("Genre", fetchGenreList),
+                )
+            } else {
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Press 'reset' to attempt to show Genres"),
+                )
+            }
 
         return FilterList(filters)
     }
@@ -155,47 +163,49 @@ abstract class FlixScans(
         filters: FilterList,
     ): Request {
         if (query.isNotEmpty()) {
-            val url = "$apiUrl/search/serie".toHttpUrl().newBuilder()
-                .addPathSegment(query.trim())
-                .addQueryParameter("page", page.toString())
-                .build()
+            val url =
+                "$apiUrl/search/serie".toHttpUrl().newBuilder()
+                    .addPathSegment(query.trim())
+                    .addQueryParameter("page", page.toString())
+                    .build()
 
             return GET(url, headers)
         }
 
-        val advSearchUrl = apiUrl.toHttpUrl().newBuilder().apply {
-            addPathSegments("search/advance")
-            addQueryParameter("page", page.toString())
-            addQueryParameter("serie_type", "webtoon")
+        val advSearchUrl =
+            apiUrl.toHttpUrl().newBuilder().apply {
+                addPathSegments("search/advance")
+                addQueryParameter("page", page.toString())
+                addQueryParameter("serie_type", "webtoon")
 
-            filters.forEach { filter ->
-                when (filter) {
-                    is GenreFilter -> {
-                        filter.checked.let {
-                            if (it.isNotEmpty()) {
-                                addQueryParameter("genres", it.joinToString(","))
+                filters.forEach { filter ->
+                    when (filter) {
+                        is GenreFilter -> {
+                            filter.checked.let {
+                                if (it.isNotEmpty()) {
+                                    addQueryParameter("genres", it.joinToString(","))
+                                }
                             }
                         }
-                    }
-                    is MainGenreFilter -> {
-                        if (filter.state > 0) {
-                            addQueryParameter("main_genres", filter.selected)
+                        is MainGenreFilter -> {
+                            if (filter.state > 0) {
+                                addQueryParameter("main_genres", filter.selected)
+                            }
                         }
-                    }
-                    is TypeFilter -> {
-                        if (filter.state > 0) {
-                            addQueryParameter("type", filter.selected)
+                        is TypeFilter -> {
+                            if (filter.state > 0) {
+                                addQueryParameter("type", filter.selected)
+                            }
                         }
-                    }
-                    is StatusFilter -> {
-                        if (filter.state > 0) {
-                            addQueryParameter("status", filter.selected)
+                        is StatusFilter -> {
+                            if (filter.state > 0) {
+                                addQueryParameter("status", filter.selected)
+                            }
                         }
+                        else -> {}
                     }
-                    else -> {}
                 }
-            }
-        }.build()
+            }.build()
 
         return GET(advSearchUrl, headers)
     }

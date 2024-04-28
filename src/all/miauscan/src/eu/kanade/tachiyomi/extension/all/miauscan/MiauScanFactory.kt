@@ -12,10 +12,11 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MiauScanFactory : SourceFactory {
-    override fun createSources() = listOf(
-        MiauScan("es"),
-        MiauScan("pt-BR"),
-    )
+    override fun createSources() =
+        listOf(
+            MiauScan("es"),
+            MiauScan("pt-BR"),
+        )
 }
 
 open class MiauScan(lang: String) : MangaThemesia(
@@ -35,23 +36,27 @@ open class MiauScan(lang: String) : MangaThemesia(
         filters: FilterList,
     ): Request {
         val genreFilterIndex = filters.indexOfFirst { it is GenreListFilter }
-        val genreFilter = filters.getOrNull(genreFilterIndex) as? GenreListFilter
-            ?: GenreListFilter("", emptyList())
+        val genreFilter =
+            filters.getOrNull(genreFilterIndex) as? GenreListFilter
+                ?: GenreListFilter("", emptyList())
 
-        val overloadedGenreFilter = GenreListFilter(
-            genreFilter.name,
-            genreFilter.state + listOf(
-                Genre("", PORTUGUESE_GENRE_ID, portugueseMode),
-            ),
-        )
+        val overloadedGenreFilter =
+            GenreListFilter(
+                genreFilter.name,
+                genreFilter.state +
+                    listOf(
+                        Genre("", PORTUGUESE_GENRE_ID, portugueseMode),
+                    ),
+            )
 
-        val overloadedFilters = filters.toMutableList().apply {
-            if (genreFilterIndex != -1) {
-                removeAt(genreFilterIndex)
+        val overloadedFilters =
+            filters.toMutableList().apply {
+                if (genreFilterIndex != -1) {
+                    removeAt(genreFilterIndex)
+                }
+
+                add(overloadedGenreFilter)
             }
-
-            add(overloadedGenreFilter)
-        }
 
         return super.searchMangaRequest(page, query, FilterList(overloadedFilters))
     }

@@ -50,20 +50,22 @@ class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x000)
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .setRandomUserAgent(
-            preferences.getPrefUAType(),
-            preferences.getPrefCustomUA(),
-        )
-        .rateLimitHost(baseUrl.toHttpUrl(), 1)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .setRandomUserAgent(
+                preferences.getPrefUAType(),
+                preferences.getPrefCustomUA(),
+            )
+            .rateLimitHost(baseUrl.toHttpUrl(), 1)
+            .build()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         addRandomUAPreferenceToScreen(screen)
     }
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int): Request = GET(baseUrl, headers)
 
@@ -71,17 +73,19 @@ class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
 
     override fun popularMangaNextPageSelector(): String? = null
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        with(element.selectFirst("div.panel-body div.mangaThumbnail")!!) {
-            val mangaUrl = selectFirst("a")!!.attr("href")
-                .removeSuffix("/")
-                .substringBeforeLast("/")
-                .replaceFirst("/reader/", "/plot/manga/")
-            setUrlWithoutDomain(mangaUrl)
-            thumbnail_url = select("img").imgAttr()
-            title = select("img").attr("title")
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            with(element.selectFirst("div.panel-body div.mangaThumbnail")!!) {
+                val mangaUrl =
+                    selectFirst("a")!!.attr("href")
+                        .removeSuffix("/")
+                        .substringBeforeLast("/")
+                        .replaceFirst("/reader/", "/plot/manga/")
+                setUrlWithoutDomain(mangaUrl)
+                thumbnail_url = select("img").imgAttr()
+                title = select("img").attr("title")
+            }
         }
-    }
 
     override fun latestUpdatesRequest(page: Int): Request = throw UnsupportedOperationException()
 
@@ -98,11 +102,12 @@ class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
     ): Request {
         val url = "$baseUrl/wp-admin/admin-ajax.php"
 
-        val body = FormBody.Builder()
-            .add("action", "td_ajax_search")
-            .add("td_string", query)
-            .add("limit", MAX_MANGA_RESULTS.toString())
-            .build()
+        val body =
+            FormBody.Builder()
+                .add("action", "td_ajax_search")
+                .add("td_string", query)
+                .add("limit", MAX_MANGA_RESULTS.toString())
+                .build()
 
         return POST(url, headers, body)
     }
@@ -110,8 +115,9 @@ class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
     override fun searchMangaParse(response: Response): MangasPage {
         val result = json.decodeFromString<SearchResultDto>(response.body.string())
         val unescapedHtml = result.data.unescape()
-        val mangas = Jsoup.parse(unescapedHtml).select(searchMangaSelector())
-            .map { searchMangaFromElement(it) }
+        val mangas =
+            Jsoup.parse(unescapedHtml).select(searchMangaSelector())
+                .map { searchMangaFromElement(it) }
         return MangasPage(mangas, false)
     }
 
@@ -119,25 +125,28 @@ class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
 
     override fun searchMangaNextPageSelector(): String? = null
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst(".entry-title a")!!.attr("href"))
-        title = element.selectFirst(".entry-title a")!!.text()
-        thumbnail_url = element.select("span.entry-thumb").attr("style")
-            .substringAfter("url(")
-            .substringBeforeLast(")")
-            .removeSurrounding("'")
-    }
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst(".entry-title a")!!.attr("href"))
+            title = element.selectFirst(".entry-title a")!!.text()
+            thumbnail_url =
+                element.select("span.entry-thumb").attr("style")
+                    .substringAfter("url(")
+                    .substringBeforeLast(")")
+                    .removeSurrounding("'")
+        }
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        with(document.selectFirst("div.td-ss-main-content")!!) {
-            title = selectFirst("div.td-post-header .entry-title p")!!.text()
-            with(selectFirst("div.td-post-content")!!) {
-                thumbnail_url = selectFirst("img.entry-thumb")?.imgAttr()
-                description = select("> p").joinToString("\n") { it.text() }
-                genre = select("div.mangaInfo > a.tagElement").joinToString { it.text() }
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            with(document.selectFirst("div.td-ss-main-content")!!) {
+                title = selectFirst("div.td-post-header .entry-title p")!!.text()
+                with(selectFirst("div.td-post-content")!!) {
+                    thumbnail_url = selectFirst("img.entry-thumb")?.imgAttr()
+                    description = select("> p").joinToString("\n") { it.text() }
+                    genre = select("div.mangaInfo > a.tagElement").joinToString { it.text() }
+                }
             }
         }
-    }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
@@ -145,17 +154,19 @@ class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
 
         val key = getKey(document)
         val url = "$baseUrl/wp-admin/admin-ajax.php"
-        val formBody = FormBody.Builder()
-            .add("action", key)
-            .add("manga_id", mangaId)
+        val formBody =
+            FormBody.Builder()
+                .add("action", key)
+                .add("manga_id", mangaId)
 
         var page = 1
         val chapterList = mutableListOf<SChapter>()
 
         do {
-            val body = formBody
-                .add("pageNumber", page.toString())
-                .build()
+            val body =
+                formBody
+                    .add("pageNumber", page.toString())
+                    .build()
 
             val result = client.newCall(POST(url, headers, body)).execute().body.string()
 
@@ -240,12 +251,13 @@ class PlotTwistNoFansub : ParsedHttpSource(), ConfigurableSource {
                 },
             ).forEach { url ->
                 val script = client.newCall(GET(url, headers)).execute().body.string()
-                val actions = ACTION_REGEX.findAll(script)
-                    .groupBy { it.groupValues[2] }
-                    .map { it.key to it.value.size }
-                    .sortedBy { it.second }
-                    .map { it.first }
-                    .filterNot { it == "set_readed" }
+                val actions =
+                    ACTION_REGEX.findAll(script)
+                        .groupBy { it.groupValues[2] }
+                        .map { it.key to it.value.size }
+                        .sortedBy { it.second }
+                        .map { it.first }
+                        .filterNot { it == "set_readed" }
                 if (actions.size > 1) {
                     throw Exception("Couldn't find action key, found ${actions.size}")
                 } else if (actions.size == 1) {

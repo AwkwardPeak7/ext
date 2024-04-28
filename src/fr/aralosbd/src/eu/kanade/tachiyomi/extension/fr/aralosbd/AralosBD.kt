@@ -113,9 +113,10 @@ class AralosBD : HttpSource() {
     }
 
     override fun mangaDetailsParse(response: Response): SManga {
-        val responseBody = client.newCall(
-            GET(response.request.url.toString().replace("display?", "api?get=manga&"), headers),
-        ).execute().body
+        val responseBody =
+            client.newCall(
+                GET(response.request.url.toString().replace("display?", "api?get=manga&"), headers),
+            ).execute().body
 
         val manga = json.decodeFromString<AralosBDManga>(responseBody.string())
 
@@ -149,9 +150,10 @@ class AralosBD : HttpSource() {
     }
 
     override fun pageListParse(response: Response): List<Page> {
-        val responseBody = client.newCall(
-            GET(response.request.url.toString().replace("chapter?id", "api?get=pages&chapter"), headers),
-        ).execute().body
+        val responseBody =
+            client.newCall(
+                GET(response.request.url.toString().replace("chapter?id", "api?get=pages&chapter"), headers),
+            ).execute().body
 
         val pageResult = json.decodeFromString<AralosBDPages>(responseBody.string())
 
@@ -187,11 +189,12 @@ class AralosBD : HttpSource() {
         return SChapter.create().apply {
             url = "$baseUrl/manga/chapter?id=${chapter.chapter_id}"
             name = chapter.chapter_number + " - " + chapter.chapter_title
-            date_upload = try {
-                DATE_FORMAT.parse(chapter.chapter_release_time)!!.time
-            } catch (e: Exception) {
-                System.currentTimeMillis()
-            }
+            date_upload =
+                try {
+                    DATE_FORMAT.parse(chapter.chapter_release_time)!!.time
+                } catch (e: Exception) {
+                    System.currentTimeMillis()
+                }
             // chapter_number = // This is a string and it can be 2.5.1 for example
             scanlator = chapter.chapter_translator
         }

@@ -17,8 +17,9 @@ class SkyMangas : MangaThemesia(
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
 ) {
     override fun pageListParse(document: Document): List<Page> {
-        val script = document.selectFirst("div.readercontent > div.wrapper > script")
-            ?: return super.pageListParse(document)
+        val script =
+            document.selectFirst("div.readercontent > div.wrapper > script")
+                ?: return super.pageListParse(document)
 
         val scriptSrc = script.attr("src")
 
@@ -27,11 +28,12 @@ class SkyMangas : MangaThemesia(
             val decodedData = Base64.decode(encodedData, Base64.DEFAULT).toString(Charsets.UTF_8)
 
             val imageListJson = JSON_IMAGE_LIST_REGEX.find(decodedData)?.destructured?.toList()?.get(0).orEmpty()
-            val imageList = try {
-                json.parseToJsonElement(imageListJson).jsonArray
-            } catch (_: IllegalArgumentException) {
-                emptyList()
-            }
+            val imageList =
+                try {
+                    json.parseToJsonElement(imageListJson).jsonArray
+                } catch (_: IllegalArgumentException) {
+                    emptyList()
+                }
 
             return imageList.mapIndexed { i, jsonEl ->
                 Page(i, document.location(), jsonEl.jsonPrimitive.content)

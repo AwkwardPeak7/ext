@@ -21,9 +21,10 @@ class LuminousScans : MangaThemesiaAlt(
         }
     }
 
-    override val client = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 
     override fun searchMangaRequest(
         page: Int,
@@ -33,12 +34,13 @@ class LuminousScans : MangaThemesiaAlt(
         val request = super.searchMangaRequest(page, query, filters)
         if (query.isBlank()) return request
 
-        val url = request.url.newBuilder()
-            .addPathSegment("page/$page/")
-            .removeAllQueryParameters("page")
-            .removeAllQueryParameters("title")
-            .addQueryParameter("s", query)
-            .build()
+        val url =
+            request.url.newBuilder()
+                .addPathSegment("page/$page/")
+                .removeAllQueryParameters("page")
+                .removeAllQueryParameters("title")
+                .addQueryParameter("s", query)
+                .build()
 
         return request.newBuilder()
             .url(url)

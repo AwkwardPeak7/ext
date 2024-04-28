@@ -28,9 +28,10 @@ class RizzComic : MangaThemesiaAlt(
     mangaUrlDirectory = "/series",
     dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(1, 3)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1, 3)
+            .build()
 
     private val apiHeaders by lazy {
         headersBuilder()
@@ -59,18 +60,20 @@ class RizzComic : MangaThemesiaAlt(
         filters: FilterList,
     ): Request {
         if (query.isNotEmpty()) {
-            val form = FormBody.Builder()
-                .add("search_value", query.trim())
-                .build()
+            val form =
+                FormBody.Builder()
+                    .add("search_value", query.trim())
+                    .build()
 
             return POST("$baseUrl/Index/live_search", apiHeaders, form)
         }
 
-        val form = FormBody.Builder().apply {
-            filters.filterIsInstance<FormBodyFilter>().forEach {
-                it.addFormParameter(this)
-            }
-        }.build()
+        val form =
+            FormBody.Builder().apply {
+                filters.filterIsInstance<FormBodyFilter>().forEach {
+                    it.addFormParameter(this)
+                }
+            }.build()
 
         return POST("$baseUrl/Index/filter_series", apiHeaders, form)
     }
@@ -97,10 +100,11 @@ class RizzComic : MangaThemesiaAlt(
         val serialization: String? = null,
         @SerialName("genre_id") val genres: String? = null,
     ) {
-        val slug get() = title.trim().lowercase()
-            .replace(slugRegex, "-")
-            .replace("-s-", "s-")
-            .replace("-ll-", "ll-")
+        val slug get() =
+            title.trim().lowercase()
+                .replace(slugRegex, "-")
+                .replace("-s-", "s-")
+                .replace("-ll-", "ll-")
 
         val genreIds get() = genres?.split(",")?.map(String::trim)
 
@@ -112,24 +116,26 @@ class RizzComic : MangaThemesiaAlt(
     override fun searchMangaParse(response: Response): MangasPage {
         val result = response.parseAs<List<Comic>>()
 
-        val entries = result.map { comic ->
-            SManga.create().apply {
-                url = "$mangaUrlDirectory/${comic.slug}/"
-                title = comic.title
-                description = comic.synopsis
-                author = listOfNotNull(comic.author, comic.serialization).joinToString()
-                artist = comic.artist
-                status = comic.status.parseStatus()
-                thumbnail_url = comic.cover?.let { "$baseUrl/assets/images/$it" }
-                genre = buildList {
-                    add(comic.type?.capitalize())
-                    comic.genreIds?.onEach { gId ->
-                        add(genres.firstOrNull { it.second == gId }?.first)
-                    }
-                }.filterNotNull().joinToString()
-                initialized = true
+        val entries =
+            result.map { comic ->
+                SManga.create().apply {
+                    url = "$mangaUrlDirectory/${comic.slug}/"
+                    title = comic.title
+                    description = comic.synopsis
+                    author = listOfNotNull(comic.author, comic.serialization).joinToString()
+                    artist = comic.artist
+                    status = comic.status.parseStatus()
+                    thumbnail_url = comic.cover?.let { "$baseUrl/assets/images/$it" }
+                    genre =
+                        buildList {
+                            add(comic.type?.capitalize())
+                            comic.genreIds?.onEach { gId ->
+                                add(genres.firstOrNull { it.second == gId }?.first)
+                            }
+                        }.filterNotNull().joinToString()
+                    initialized = true
+                }
             }
-        }
 
         return MangasPage(entries, false)
     }
@@ -141,21 +147,23 @@ class RizzComic : MangaThemesiaAlt(
     }
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Accept", "image/avif,image/webp,image/png,image/jpeg,*/*")
-            .set("Referer", "$baseUrl/")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Accept", "image/avif,image/webp,image/png,image/jpeg,*/*")
+                .set("Referer", "$baseUrl/")
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
 
     private inline fun <reified T> Response.parseAs(): T = use { it.body.string() }.let(json::decodeFromString)
 
-    private fun String.capitalize() = replaceFirstChar {
-        if (it.isLowerCase()) {
-            it.titlecase(Locale.ROOT)
-        } else {
-            it.toString()
+    private fun String.capitalize() =
+        replaceFirstChar {
+            if (it.isLowerCase()) {
+                it.titlecase(Locale.ROOT)
+            } else {
+                it.toString()
+            }
         }
-    }
 }

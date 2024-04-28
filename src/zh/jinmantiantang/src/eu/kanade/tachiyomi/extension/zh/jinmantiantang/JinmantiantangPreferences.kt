@@ -78,20 +78,22 @@ internal const val MAINSITE_RATELIMIT_PERIOD_DEFAULT = 3.toString()
 
 private const val USE_MIRROR_URL_PREF = "useMirrorWebsitePreference"
 
-private val SITE_ENTRIES_ARRAY_DESCRIPTION get() = arrayOf(
-    "主站",
-    "海外分流",
-    "东南亚线路1",
-    "东南亚线路2",
-)
+private val SITE_ENTRIES_ARRAY_DESCRIPTION get() =
+    arrayOf(
+        "主站",
+        "海外分流",
+        "东南亚线路1",
+        "东南亚线路2",
+    )
 
 // Please also update AndroidManifest
-private val SITE_ENTRIES_ARRAY get() = arrayOf(
-    "18comic.vip",
-    "18comic.org",
-    "jmcomic.me",
-    "jmcomic1.me",
-)
+private val SITE_ENTRIES_ARRAY get() =
+    arrayOf(
+        "18comic.vip",
+        "18comic.org",
+        "jmcomic.me",
+        "jmcomic1.me",
+    )
 
 private const val DEFAULT_LIST = "18comic-cn.vip,18comic-c.xyz,18comic-c.art"
 private const val DEFAULT_LIST_PREF = "defaultBaseUrlList"
@@ -129,15 +131,16 @@ class UpdateUrlInterceptor(private val preferences: SharedPreferences) : Interce
         val request = chain.request()
         if (!request.url.toString().startsWith(baseUrl)) return chain.proceed(request)
 
-        val failedResponse = try {
-            val response = chain.proceed(request)
-            if (response.isSuccessful) return response
-            response.close()
-            Result.success(response)
-        } catch (e: Throwable) {
-            if (chain.call().isCanceled() || e.message?.contains("Cloudflare") == true) throw e
-            Result.failure(e)
-        }
+        val failedResponse =
+            try {
+                val response = chain.proceed(request)
+                if (response.isSuccessful) return response
+                response.close()
+                Result.success(response)
+            } catch (e: Throwable) {
+                if (chain.call().isCanceled() || e.message?.contains("Cloudflare") == true) throw e
+                Result.failure(e)
+            }
 
         if (isUpdated || updateUrl(chain)) {
             throw IOException("镜像网址已自动更新，请在插件设置中选择合适的镜像网址并重启应用（如果反复提示，可能是服务器故障）")
@@ -148,11 +151,12 @@ class UpdateUrlInterceptor(private val preferences: SharedPreferences) : Interce
     @Synchronized
     private fun updateUrl(chain: Interceptor.Chain): Boolean {
         if (isUpdated) return true
-        val response = try {
-            chain.proceed(GET("https://stevenyomi.github.io/source-domains/jmcomic.txt"))
-        } catch (_: Throwable) {
-            return false
-        }
+        val response =
+            try {
+                chain.proceed(GET("https://stevenyomi.github.io/source-domains/jmcomic.txt"))
+            } catch (_: Throwable) {
+                return false
+            }
         if (!response.isSuccessful) {
             response.close()
             return false

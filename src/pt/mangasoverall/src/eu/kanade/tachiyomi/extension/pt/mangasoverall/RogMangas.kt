@@ -16,7 +16,8 @@ class RogMangas : Madara(
     // Changed their name from Mangás Overall to ROG Mangás.
     override val id: Long = 7865569692125193686
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 }

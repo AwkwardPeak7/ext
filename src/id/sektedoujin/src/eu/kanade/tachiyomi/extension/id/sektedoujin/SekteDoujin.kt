@@ -12,7 +12,8 @@ class SekteDoujin : MangaThemesia(
     "id",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.forLanguageTag("id")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 }

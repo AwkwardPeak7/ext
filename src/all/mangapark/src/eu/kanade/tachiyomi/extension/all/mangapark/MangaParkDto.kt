@@ -41,44 +41,48 @@ data class MangaParkComic(
     @SerialName("urlCoverOri") val cover: String? = null,
     val urlPath: String,
 ) {
-    fun toSManga() = SManga.create().apply {
-        url = "$urlPath#$id"
-        title = name
-        thumbnail_url = cover
-        author = authors?.joinToString()
-        artist = artists?.joinToString()
-        description = buildString {
-            val desc = summary?.let { Jsoup.parse(it).text() }
-            val names = altNames?.takeUnless { it.isEmpty() }
-                ?.joinToString("\n") { "• ${it.trim()}" }
+    fun toSManga() =
+        SManga.create().apply {
+            url = "$urlPath#$id"
+            title = name
+            thumbnail_url = cover
+            author = authors?.joinToString()
+            artist = artists?.joinToString()
+            description =
+                buildString {
+                    val desc = summary?.let { Jsoup.parse(it).text() }
+                    val names =
+                        altNames?.takeUnless { it.isEmpty() }
+                            ?.joinToString("\n") { "• ${it.trim()}" }
 
-            if (desc.isNullOrEmpty()) {
-                if (!names.isNullOrEmpty()) {
-                    append("Alternative Names:\n", names)
+                    if (desc.isNullOrEmpty()) {
+                        if (!names.isNullOrEmpty()) {
+                            append("Alternative Names:\n", names)
+                        }
+                    } else {
+                        append(desc)
+                        if (!names.isNullOrEmpty()) {
+                            append("\n\nAlternative Names:\n", names)
+                        }
+                    }
                 }
-            } else {
-                append(desc)
-                if (!names.isNullOrEmpty()) {
-                    append("\n\nAlternative Names:\n", names)
+            genre = genres?.joinToString { it.replace("_", " ").toCamelCase() }
+            status =
+                when (originalStatus) {
+                    "ongoing" -> SManga.ONGOING
+                    "completed" -> {
+                        if (uploadStatus == "ongoing") {
+                            SManga.PUBLISHING_FINISHED
+                        } else {
+                            SManga.COMPLETED
+                        }
+                    }
+                    "hiatus" -> SManga.ON_HIATUS
+                    "cancelled" -> SManga.CANCELLED
+                    else -> SManga.UNKNOWN
                 }
-            }
+            initialized = true
         }
-        genre = genres?.joinToString { it.replace("_", " ").toCamelCase() }
-        status = when (originalStatus) {
-            "ongoing" -> SManga.ONGOING
-            "completed" -> {
-                if (uploadStatus == "ongoing") {
-                    SManga.PUBLISHING_FINISHED
-                } else {
-                    SManga.COMPLETED
-                }
-            }
-            "hiatus" -> SManga.ON_HIATUS
-            "cancelled" -> SManga.CANCELLED
-            else -> SManga.UNKNOWN
-        }
-        initialized = true
-    }
 
     companion object {
         private fun String.toCamelCase(): String {
@@ -113,14 +117,16 @@ data class MangaParkChapter(
     val dateModify: Long? = null,
     val urlPath: String,
 ) {
-    fun toSChapter() = SChapter.create().apply {
-        url = "$urlPath#$id"
-        name = buildString {
-            append(displayName)
-            title?.let { append(": ", it) }
+    fun toSChapter() =
+        SChapter.create().apply {
+            url = "$urlPath#$id"
+            name =
+                buildString {
+                    append(displayName)
+                    title?.let { append(": ", it) }
+                }
+            date_upload = dateModify ?: dateCreate ?: 0L
         }
-        date_upload = dateModify ?: dateCreate ?: 0L
-    }
 }
 
 @Serializable

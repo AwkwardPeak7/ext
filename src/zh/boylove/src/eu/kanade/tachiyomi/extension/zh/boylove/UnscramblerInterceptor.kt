@@ -22,9 +22,10 @@ class UnscramblerInterceptor : Interceptor {
         return if (parts == null) {
             chain.proceed(request)
         } else {
-            val newRequest = request.newBuilder()
-                .url(request.url.newBuilder().removeAllQueryParameters(PARTS_COUNT_PARAM).build())
-                .build()
+            val newRequest =
+                request.newBuilder()
+                    .url(request.url.newBuilder().removeAllQueryParameters(PARTS_COUNT_PARAM).build())
+                    .build()
             val response = chain.proceed(newRequest)
 
             val image = response.body.byteStream().use { descramble(it, parts) }

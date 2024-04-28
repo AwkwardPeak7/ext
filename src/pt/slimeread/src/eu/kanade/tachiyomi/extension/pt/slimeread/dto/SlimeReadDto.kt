@@ -18,13 +18,14 @@ data class LatestResponseDto(
     val data: List<PopularMangaDto>,
 )
 
-fun List<PopularMangaDto>.toSMangaList(): List<SManga> = map { item ->
-    SManga.create().apply {
-        thumbnail_url = item.thumbnail_url
-        title = item.name
-        url = "/book/${item.id}"
+fun List<PopularMangaDto>.toSMangaList(): List<SManga> =
+    map { item ->
+        SManga.create().apply {
+            thumbnail_url = item.thumbnail_url
+            title = item.name
+            url = "/book/${item.id}"
+        }
     }
-}
 
 @Serializable
 data class MangaInfoDto(
@@ -38,7 +39,9 @@ data class MangaInfoDto(
     data class CategoryDto(val categories: CatDto)
 
     @Serializable
-    data class CatDto(@SerialName("cat_name_ptBR") val name: String)
+    data class CatDto(
+        @SerialName("cat_name_ptBR") val name: String,
+    )
 
     val categories = _categories.map { it.categories.name }
 }
@@ -53,7 +56,9 @@ data class ChapterDto(
 }
 
 @Serializable
-data class PageListDto(@SerialName("book_temp_cap_unit") val pages: List<PageDto>)
+data class PageListDto(
+    @SerialName("book_temp_cap_unit") val pages: List<PageDto>,
+)
 
 @Serializable
 data class PageDto(
@@ -61,11 +66,12 @@ data class PageDto(
     @SerialName("btcu_provider_host") private val hostId: Int?,
 ) {
     val url by lazy {
-        val baseUrl = when (hostId) {
-            2 -> "https://cdn.slimeread.com/"
-            5 -> "https://black.slimeread.com/"
-            else -> "https://objects.slimeread.com/"
-        }
+        val baseUrl =
+            when (hostId) {
+                2 -> "https://cdn.slimeread.com/"
+                5 -> "https://black.slimeread.com/"
+                else -> "https://objects.slimeread.com/"
+            }
 
         baseUrl + path
     }

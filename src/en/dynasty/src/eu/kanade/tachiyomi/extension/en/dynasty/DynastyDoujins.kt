@@ -22,13 +22,14 @@ class DynastyDoujins : DynastyScans() {
 
     override fun popularMangaFromElement(element: Element): SManga {
         return super.popularMangaFromElement(element).apply {
-            thumbnail_url = element.select("img").attr("abs:src").let {
-                if (it.contains("cover_missing")) {
-                    null
-                } else {
-                    it
+            thumbnail_url =
+                element.select("img").attr("abs:src").let {
+                    if (it.contains("cover_missing")) {
+                        null
+                    } else {
+                        it
+                    }
                 }
-            }
         }
     }
 
@@ -41,12 +42,14 @@ class DynastyDoujins : DynastyScans() {
     }
 
     override fun mangaDetailsParse(document: Document): SManga {
-        val manga = SManga.create().apply {
-            title = document.selectFirst("div#main > h2 > b")!!.text().substringAfter("Doujins › ")
-            description = document.select("div#main > div.description").text()
-            thumbnail_url = document.select("a.thumbnail img").firstOrNull()?.attr("abs:src")
-                ?.replace("/thumb/", "/medium/")
-        }
+        val manga =
+            SManga.create().apply {
+                title = document.selectFirst("div#main > h2 > b")!!.text().substringAfter("Doujins › ")
+                description = document.select("div#main > div.description").text()
+                thumbnail_url =
+                    document.select("a.thumbnail img").firstOrNull()?.attr("abs:src")
+                        ?.replace("/thumb/", "/medium/")
+            }
         parseGenres(document, manga)
         return manga
     }
@@ -78,9 +81,10 @@ class DynastyDoujins : DynastyScans() {
         }
         chapters.addAll(doujinChapterParse(document))
 
-        var hasNextPage = popularMangaNextPageSelector().let { selector ->
-            document.select(selector).first()
-        } != null
+        var hasNextPage =
+            popularMangaNextPageSelector().let { selector ->
+                document.select(selector).first()
+            } != null
 
         while (hasNextPage) {
             page += 1

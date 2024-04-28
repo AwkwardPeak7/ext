@@ -33,8 +33,9 @@ data class SearchVariables(
     )
 }
 
-val SEARCH_QUERY: String = buildQuery {
-    """
+val SEARCH_QUERY: String =
+    buildQuery {
+        """
         query searchTachiyomiManga(
             %query: String,
             %type: MangaTachiyomiSearchTypeFilter,
@@ -81,15 +82,16 @@ val SEARCH_QUERY: String = buildQuery {
             }
         }
     """
-}
+    }
 
 @Serializable
 data class FetchDetailsVariables(
     val mangaId: String? = null,
 )
 
-val DETAILS_QUERY: String = buildQuery {
-    """
+val DETAILS_QUERY: String =
+    buildQuery {
+        """
         query fetchTachiyomiManga(%mangaId: ID!) {
             mangaTachiyomiInfo(mangaId: %mangaId) {
                 id
@@ -143,10 +145,11 @@ val DETAILS_QUERY: String = buildQuery {
             }
         }
     """
-}
+    }
 
-val CHAPTERS_QUERY: String = buildQuery {
-    """
+val CHAPTERS_QUERY: String =
+    buildQuery {
+        """
         query fetchTachiyomiChapters(%mangaId: ID!) {
             mangaTachiyomiChapters(mangaId: %mangaId) {
                 message
@@ -169,7 +172,7 @@ val CHAPTERS_QUERY: String = buildQuery {
         }
 
     """
-}
+    }
 
 @Serializable
 data class FetchChapterPagesVariables(
@@ -177,8 +180,9 @@ data class FetchChapterPagesVariables(
     val chapterId: String? = null,
 )
 
-val CHAPTERS_PAGES_QUERY: String = buildQuery {
-    """
+val CHAPTERS_PAGES_QUERY: String =
+    buildQuery {
+        """
         query fetchTachiyomiChapterPages(
              %mangaId: ID!,
              %chapterId: ID!
@@ -193,7 +197,7 @@ val CHAPTERS_PAGES_QUERY: String = buildQuery {
             }
         }
     """
-}
+    }
 
 @Serializable
 data class MangaTachiyomiSearchFilters(
@@ -218,8 +222,9 @@ data class MangaTachiyomiSearchFilters(
     }
 }
 
-val FILTERS_QUERY: String = buildQuery {
-    """
+val FILTERS_QUERY: String =
+    buildQuery {
+        """
         query fetchTachiyomiSearchFilters {
             mangaTachiyomiSearchFilters {
                 genres {
@@ -241,4 +246,4 @@ val FILTERS_QUERY: String = buildQuery {
             }
         }
     """
-}
+    }

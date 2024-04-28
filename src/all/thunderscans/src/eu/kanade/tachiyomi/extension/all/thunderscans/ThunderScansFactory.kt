@@ -7,10 +7,11 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class ThunderScansFactory : SourceFactory {
-    override fun createSources() = listOf(
-        ThunderScansAR(),
-        ThunderScansEN(),
-    )
+    override fun createSources() =
+        listOf(
+            ThunderScansAR(),
+            ThunderScansEN(),
+        )
 }
 
 class ThunderScansAR : MangaThemesiaAlt(

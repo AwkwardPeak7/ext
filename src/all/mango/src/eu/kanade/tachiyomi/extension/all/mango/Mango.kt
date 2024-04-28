@@ -44,12 +44,13 @@ class Mango : ConfigurableSource, UnmeteredSource, HttpSource() {
 
     // Our popular manga are just our library of manga
     override fun popularMangaParse(response: Response): MangasPage {
-        val result = try {
-            json.decodeFromString<JsonObject>(response.body.string())
-        } catch (e: Exception) {
-            apiCookies = ""
-            throw Exception("Login Likely Failed. Try Refreshing.")
-        }
+        val result =
+            try {
+                json.decodeFromString<JsonObject>(response.body.string())
+            } catch (e: Exception) {
+                apiCookies = ""
+                throw Exception("Login Likely Failed. Try Refreshing.")
+            }
         val mangas = result["titles"]!!.jsonArray
         return MangasPage(
             mangas.jsonArray.map {
@@ -104,15 +105,17 @@ class Mango : ConfigurableSource, UnmeteredSource, HttpSource() {
         val textDistance2 = JaroWinkler()
 
         // Take results that potentially start the same
-        val results = mangas.filter {
-            val title = it.title.lowercase()
-            val query2 = queryLower.take(7)
-            (title.startsWith(query2, true) || title.contains(query2, true))
-        }.sortedBy { textDistance.distance(queryLower, it.title.lowercase()) }
+        val results =
+            mangas.filter {
+                val title = it.title.lowercase()
+                val query2 = queryLower.take(7)
+                (title.startsWith(query2, true) || title.contains(query2, true))
+            }.sortedBy { textDistance.distance(queryLower, it.title.lowercase()) }
 
         // Take similar results
-        val results2 = mangas.map { Pair(textDistance2.distance(it.title.lowercase(), query), it) }
-            .filter { it.first < 0.3 }.sortedBy { it.first }.map { it.second }
+        val results2 =
+            mangas.map { Pair(textDistance2.distance(it.title.lowercase(), query), it) }
+                .filter { it.first < 0.3 }.sortedBy { it.first }.map { it.second }
         val combinedResults = results.union(results2)
 
         // Finally return the list
@@ -126,12 +129,13 @@ class Mango : ConfigurableSource, UnmeteredSource, HttpSource() {
 
     // This will just return the same thing as the main library endpoint
     override fun mangaDetailsParse(response: Response): SManga {
-        val result = try {
-            json.decodeFromString<JsonObject>(response.body.string())
-        } catch (e: Exception) {
-            apiCookies = ""
-            throw Exception("Login Likely Failed. Try Refreshing.")
-        }
+        val result =
+            try {
+                json.decodeFromString<JsonObject>(response.body.string())
+            } catch (e: Exception) {
+                apiCookies = ""
+                throw Exception("Login Likely Failed. Try Refreshing.")
+            }
         return SManga.create().apply {
             url = "/book/" + result.jsonObject["id"]!!.jsonPrimitive.content
             title = result.jsonObject["display_name"]!!.jsonPrimitive.content
@@ -143,33 +147,36 @@ class Mango : ConfigurableSource, UnmeteredSource, HttpSource() {
 
     // The chapter url will contain how many pages the chapter contains for our page list endpoint
     override fun chapterListParse(response: Response): List<SChapter> {
-        val result = try {
-            json.decodeFromString<JsonObject>(response.body.string())
-        } catch (e: Exception) {
-            apiCookies = ""
-            throw Exception("Login Likely Failed. Try Refreshing.")
-        }
+        val result =
+            try {
+                json.decodeFromString<JsonObject>(response.body.string())
+            } catch (e: Exception) {
+                apiCookies = ""
+                throw Exception("Login Likely Failed. Try Refreshing.")
+            }
         return listChapters(result)
     }
 
     // Helper function for listing chapters and chapters in nested titles recursively
     private fun listChapters(titleObj: JsonObject): List<SChapter> {
         val chapters = mutableListOf<SChapter>()
-        val topChapters = titleObj["entries"]?.jsonArray?.map { obj ->
-            SChapter.create().apply {
-                name = obj.jsonObject["display_name"]!!.jsonPrimitive.content
-                url =
-                    "/page/${obj.jsonObject["title_id"]!!.jsonPrimitive.content}/${obj.jsonObject["id"]!!.jsonPrimitive.content}/${obj.jsonObject["pages"]!!.jsonPrimitive.content}/"
-                date_upload = 1000L * obj.jsonObject["mtime"]!!.jsonPrimitive.long
+        val topChapters =
+            titleObj["entries"]?.jsonArray?.map { obj ->
+                SChapter.create().apply {
+                    name = obj.jsonObject["display_name"]!!.jsonPrimitive.content
+                    url =
+                        "/page/${obj.jsonObject["title_id"]!!.jsonPrimitive.content}/${obj.jsonObject["id"]!!.jsonPrimitive.content}/${obj.jsonObject["pages"]!!.jsonPrimitive.content}/"
+                    date_upload = 1000L * obj.jsonObject["mtime"]!!.jsonPrimitive.long
+                }
             }
-        }
-        val subChapters = titleObj["titles"]?.jsonArray?.map { obj ->
-            val name = obj.jsonObject["display_name"]!!.jsonPrimitive.content
-            listChapters(obj.jsonObject).map { chp ->
-                chp.name = "$name / ${chp.name}"
-                chp
-            }
-        }?.flatten()
+        val subChapters =
+            titleObj["titles"]?.jsonArray?.map { obj ->
+                val name = obj.jsonObject["display_name"]!!.jsonPrimitive.content
+                listChapters(obj.jsonObject).map { chp ->
+                    chp.name = "$name / ${chp.name}"
+                    chp
+                }
+            }?.flatten()
         if (topChapters !== null) chapters += topChapters
         if (subChapters !== null) chapters += subChapters
         return chapters
@@ -213,8 +220,9 @@ class Mango : ConfigurableSource, UnmeteredSource, HttpSource() {
     private val password by lazy { getPrefPassword() }
     private var apiCookies: String = ""
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", "Tachiyomi Mango v${AppInfo.getVersionName()}")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("User-Agent", "Tachiyomi Mango v${AppInfo.getVersionName()}")
 
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
@@ -239,22 +247,25 @@ class Mango : ConfigurableSource, UnmeteredSource, HttpSource() {
         }
 
         // Append the new cookie from the api
-        val authRequest = request.newBuilder()
-            .addHeader("Cookie", apiCookies)
-            .build()
+        val authRequest =
+            request.newBuilder()
+                .addHeader("Cookie", apiCookies)
+                .build()
 
         return chain.proceed(authRequest)
     }
 
     private fun doLogin(chain: Interceptor.Chain) {
         // Try to login
-        val formHeaders: Headers = headersBuilder()
-            .add("ContentType", "application/x-www-form-urlencoded")
-            .build()
-        val formBody: RequestBody = FormBody.Builder()
-            .addEncoded("username", username)
-            .addEncoded("password", password)
-            .build()
+        val formHeaders: Headers =
+            headersBuilder()
+                .add("ContentType", "application/x-www-form-urlencoded")
+                .build()
+        val formBody: RequestBody =
+            FormBody.Builder()
+                .addEncoded("username", username)
+                .addEncoded("password", password)
+                .build()
         val loginRequest = POST("$baseUrl/login", formHeaders, formBody)
         val response = chain.proceed(loginRequest)
         if (response.code != 200 || response.header("Set-Cookie") == null) {

@@ -24,24 +24,27 @@ abstract class NoiseManga(override val lang: String) : ParsedHttpSource() {
 
     override val supportsLatest = false
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", USER_AGENT)
-        .add("Origin", baseUrl)
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("User-Agent", USER_AGENT)
+            .add("Origin", baseUrl)
+            .add("Referer", baseUrl)
 
     override fun popularMangaRequest(page: Int): Request = GET(baseUrl, headers)
 
     override fun popularMangaSelector(): String = "ul#menu-home li a[title=\"Séries\"] + ul li a"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.text()
-        setUrlWithoutDomain(element.attr("href"))
-        thumbnail_url = baseUrl + SLUG_TO_DETAILS_MAP[url]?.thumbnail_url
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.text()
+            setUrlWithoutDomain(element.attr("href"))
+            thumbnail_url = baseUrl + SLUG_TO_DETAILS_MAP[url]?.thumbnail_url
+        }
 
     override fun popularMangaNextPageSelector(): String? = null
 
@@ -102,20 +105,22 @@ abstract class NoiseManga(override val lang: String) : ParsedHttpSource() {
         return "div.entry-content div table tr td:nth-child($columnSelector) a"
     }
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        name = element.text()
-        scanlator = "NOISE Manga"
-        setUrlWithoutDomain(element.attr("href"))
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            name = element.text()
+            scanlator = "NOISE Manga"
+            setUrlWithoutDomain(element.attr("href"))
+        }
 
     override fun pageListRequest(chapter: SChapter): Request = GET(baseUrl + chapter.url, headers)
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("div.single-content div.single-entry-summary img.aligncenter")
             .mapIndexed { i, element ->
-                val imgUrl = element.attr("srcset")
-                    .substringAfterLast(", ")
-                    .substringBeforeLast(" ")
+                val imgUrl =
+                    element.attr("srcset")
+                        .substringAfterLast(", ")
+                        .substringBeforeLast(" ")
                 Page(i, "", imgUrl)
             }
     }
@@ -138,22 +143,26 @@ abstract class NoiseManga(override val lang: String) : ParsedHttpSource() {
          * Since the service does only have three series, it's worth to manually
          * add the missing information, such as artist, author, and thumbnail.
          */
-        private val SLUG_TO_DETAILS_MAP = mapOf(
-            "/quack/" to SManga.create().apply {
-                artist = "Kaji Pato"
-                author = "Kaji Pato"
-                thumbnail_url = "/wp-content/uploads/2019/11/quack1.jpg"
-            },
-            "/japow/" to SManga.create().apply {
-                artist = "Eduardo Capelo"
-                author = "Jun Sugiyama"
-                thumbnail_url = "/wp-content/uploads/2019/11/JAPOW_000_NOISE_0000.jpg"
-            },
-            "/tools-challenge/" to SManga.create().apply {
-                artist = "Max Andrade"
-                author = "Max Andrade"
-                thumbnail_url = "/wp-content/uploads/2019/11/TC_001_NOISE_0000-1.jpg"
-            },
-        )
+        private val SLUG_TO_DETAILS_MAP =
+            mapOf(
+                "/quack/" to
+                    SManga.create().apply {
+                        artist = "Kaji Pato"
+                        author = "Kaji Pato"
+                        thumbnail_url = "/wp-content/uploads/2019/11/quack1.jpg"
+                    },
+                "/japow/" to
+                    SManga.create().apply {
+                        artist = "Eduardo Capelo"
+                        author = "Jun Sugiyama"
+                        thumbnail_url = "/wp-content/uploads/2019/11/JAPOW_000_NOISE_0000.jpg"
+                    },
+                "/tools-challenge/" to
+                    SManga.create().apply {
+                        artist = "Max Andrade"
+                        author = "Max Andrade"
+                        thumbnail_url = "/wp-content/uploads/2019/11/TC_001_NOISE_0000-1.jpg"
+                    },
+            )
     }
 }

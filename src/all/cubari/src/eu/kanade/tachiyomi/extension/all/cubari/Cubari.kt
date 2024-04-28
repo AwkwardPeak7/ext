@@ -37,25 +37,28 @@ open class Cubari(override val lang: String) : HttpSource() {
 
     private val json: Json by injectLazy()
 
-    override val client = super.client.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val headers = request.headers.newBuilder()
-                .removeAll("Accept-Encoding")
-                .build()
-            chain.proceed(request.newBuilder().headers(headers).build())
-        }
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val headers =
+                    request.headers.newBuilder()
+                        .removeAll("Accept-Encoding")
+                        .build()
+                chain.proceed(request.newBuilder().headers(headers).build())
+            }
+            .build()
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add(
-            "User-Agent",
-            "(Android ${Build.VERSION.RELEASE}; " +
-                "${Build.MANUFACTURER} ${Build.MODEL}) " +
-                "Tachiyomi/${AppInfo.getVersionName()} " +
-                Build.ID,
-        )
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add(
+                "User-Agent",
+                "(Android ${Build.VERSION.RELEASE}; " +
+                    "${Build.MANUFACTURER} ${Build.MODEL}) " +
+                    "Tachiyomi/${AppInfo.getVersionName()} " +
+                    Build.ID,
+            )
+        }
 
     override fun latestUpdatesRequest(page: Int): Request {
         return GET("$baseUrl/", headers)
@@ -183,11 +186,12 @@ open class Cubari(override val lang: String) : HttpSource() {
         val pages = json.parseToJsonElement(res).jsonArray
 
         return pages.mapIndexed { i, jsonEl ->
-            val page = if (jsonEl is JsonObject) {
-                jsonEl.jsonObject["src"]!!.jsonPrimitive.content
-            } else {
-                jsonEl.jsonPrimitive.content
-            }
+            val page =
+                if (jsonEl is JsonObject) {
+                    jsonEl.jsonObject["src"]!!.jsonPrimitive.content
+                } else {
+                    jsonEl.jsonPrimitive.content
+                }
 
             Page(i, "", page)
         }
@@ -203,28 +207,31 @@ open class Cubari(override val lang: String) : HttpSource() {
         val chapterScanlator = chapter.scanlator ?: "default" // workaround for "" as group causing NullPointerException (#13772)
 
         // prevent NullPointerException when chapters.key is 084 and chapter.chapter_number is 84
-        val chapters = jsonObj["chapters"]!!.jsonObject.mapKeys {
-            it.key.replace(Regex("^0+(?!$)"), "")
-        }
+        val chapters =
+            jsonObj["chapters"]!!.jsonObject.mapKeys {
+                it.key.replace(Regex("^0+(?!$)"), "")
+            }
 
-        val pages = if (chapters[chapter.chapter_number.toString()] != null) {
-            chapters[chapter.chapter_number.toString()]!!
-                .jsonObject["groups"]!!
-                .jsonObject[groupMap[chapterScanlator]]!!
-                .jsonArray
-        } else {
-            chapters[chapter.chapter_number.toInt().toString()]!!
-                .jsonObject["groups"]!!
-                .jsonObject[groupMap[chapterScanlator]]!!
-                .jsonArray
-        }
+        val pages =
+            if (chapters[chapter.chapter_number.toString()] != null) {
+                chapters[chapter.chapter_number.toString()]!!
+                    .jsonObject["groups"]!!
+                    .jsonObject[groupMap[chapterScanlator]]!!
+                    .jsonArray
+            } else {
+                chapters[chapter.chapter_number.toInt().toString()]!!
+                    .jsonObject["groups"]!!
+                    .jsonObject[groupMap[chapterScanlator]]!!
+                    .jsonArray
+            }
 
         return pages.mapIndexed { i, jsonEl ->
-            val page = if (jsonEl is JsonObject) {
-                jsonEl.jsonObject["src"]!!.jsonPrimitive.content
-            } else {
-                jsonEl.jsonPrimitive.content
-            }
+            val page =
+                if (jsonEl is JsonObject) {
+                    jsonEl.jsonObject["src"]!!.jsonPrimitive.content
+                } else {
+                    jsonEl.jsonPrimitive.content
+                }
 
             Page(i, "", page)
         }
@@ -300,10 +307,11 @@ open class Cubari(override val lang: String) : HttpSource() {
     ): MangasPage {
         val result = json.parseToJsonElement(response.body.string()).jsonArray
 
-        val filterList = result.asSequence()
-            .map { it as JsonObject }
-            .filter { it["title"].toString().contains(query.trim(), true) }
-            .toList()
+        val filterList =
+            result.asSequence()
+                .map { it as JsonObject }
+                .filter { it["title"].toString().contains(query.trim(), true) }
+                .toList()
 
         return parseMangaList(JsonArray(filterList), SortType.ALL)
     }
@@ -332,49 +340,54 @@ open class Cubari(override val lang: String) : HttpSource() {
         val seriesPrefs = Injekt.get<Application>().getSharedPreferences("source_${id}_updateTime:$seriesSlug", 0)
         val seriesPrefsEditor = seriesPrefs.edit()
 
-        val chapterList = chapters.entries.flatMap { chapterEntry ->
-            val chapterNum = chapterEntry.key
-            val chapterObj = chapterEntry.value.jsonObject
-            val chapterGroups = chapterObj["groups"]!!.jsonObject
-            val volume = chapterObj["volume"]!!.jsonPrimitive.content.let {
-                if (volumeNotSpecifiedTerms.contains(it)) null else it
-            }
-            val title = chapterObj["title"]!!.jsonPrimitive.content
-
-            chapterGroups.entries.map { groupEntry ->
-                val groupNum = groupEntry.key
-                val releaseDate = chapterObj["release_date"]?.jsonObject?.get(groupNum)
-
-                SChapter.create().apply {
-                    scanlator = groups[groupNum]!!.jsonPrimitive.content
-                    chapter_number = chapterNum.toFloatOrNull() ?: -1f
-
-                    date_upload = if (releaseDate != null) {
-                        releaseDate.jsonPrimitive.double.toLong() * 1000
-                    } else {
-                        val currentTimeMillis = System.currentTimeMillis()
-
-                        if (!seriesPrefs.contains(chapterNum)) {
-                            seriesPrefsEditor.putLong(chapterNum, currentTimeMillis)
-                        }
-
-                        seriesPrefs.getLong(chapterNum, currentTimeMillis)
+        val chapterList =
+            chapters.entries.flatMap { chapterEntry ->
+                val chapterNum = chapterEntry.key
+                val chapterObj = chapterEntry.value.jsonObject
+                val chapterGroups = chapterObj["groups"]!!.jsonObject
+                val volume =
+                    chapterObj["volume"]!!.jsonPrimitive.content.let {
+                        if (volumeNotSpecifiedTerms.contains(it)) null else it
                     }
+                val title = chapterObj["title"]!!.jsonPrimitive.content
 
-                    name = buildString {
-                        if (!volume.isNullOrBlank()) append("Vol.$volume ")
-                        append("Ch.$chapterNum")
-                        if (title.isNotBlank()) append(" - $title")
-                    }
+                chapterGroups.entries.map { groupEntry ->
+                    val groupNum = groupEntry.key
+                    val releaseDate = chapterObj["release_date"]?.jsonObject?.get(groupNum)
 
-                    url = if (chapterGroups[groupNum] is JsonArray) {
-                        "${manga.url}/$chapterNum/$groupNum"
-                    } else {
-                        chapterGroups[groupNum]!!.jsonPrimitive.content
+                    SChapter.create().apply {
+                        scanlator = groups[groupNum]!!.jsonPrimitive.content
+                        chapter_number = chapterNum.toFloatOrNull() ?: -1f
+
+                        date_upload =
+                            if (releaseDate != null) {
+                                releaseDate.jsonPrimitive.double.toLong() * 1000
+                            } else {
+                                val currentTimeMillis = System.currentTimeMillis()
+
+                                if (!seriesPrefs.contains(chapterNum)) {
+                                    seriesPrefsEditor.putLong(chapterNum, currentTimeMillis)
+                                }
+
+                                seriesPrefs.getLong(chapterNum, currentTimeMillis)
+                            }
+
+                        name =
+                            buildString {
+                                if (!volume.isNullOrBlank()) append("Vol.$volume ")
+                                append("Ch.$chapterNum")
+                                if (title.isNotBlank()) append(" - $title")
+                            }
+
+                        url =
+                            if (chapterGroups[groupNum] is JsonArray) {
+                                "${manga.url}/$chapterNum/$groupNum"
+                            } else {
+                                chapterGroups[groupNum]!!.jsonPrimitive.content
+                            }
                     }
                 }
             }
-        }
 
         seriesPrefsEditor.apply()
 
@@ -385,20 +398,21 @@ open class Cubari(override val lang: String) : HttpSource() {
         payload: JsonArray,
         sortType: SortType,
     ): MangasPage {
-        val mangaList = payload.mapNotNull { jsonEl ->
-            val jsonObj = jsonEl.jsonObject
-            val pinned = jsonObj["pinned"]!!.jsonPrimitive.boolean
+        val mangaList =
+            payload.mapNotNull { jsonEl ->
+                val jsonObj = jsonEl.jsonObject
+                val pinned = jsonObj["pinned"]!!.jsonPrimitive.boolean
 
-            if (sortType == SortType.PINNED && pinned) {
-                parseManga(jsonObj)
-            } else if (sortType == SortType.UNPINNED && !pinned) {
-                parseManga(jsonObj)
-            } else if (sortType == SortType.ALL) {
-                parseManga(jsonObj)
-            } else {
-                null
+                if (sortType == SortType.PINNED && pinned) {
+                    parseManga(jsonObj)
+                } else if (sortType == SortType.UNPINNED && !pinned) {
+                    parseManga(jsonObj)
+                } else if (sortType == SortType.ALL) {
+                    parseManga(jsonObj)
+                } else {
+                    null
+                }
             }
-        }
 
         return MangasPage(mangaList, false)
     }
@@ -407,9 +421,10 @@ open class Cubari(override val lang: String) : HttpSource() {
         payload: JsonObject,
         query: String,
     ): MangasPage {
-        val tempManga = SManga.create().apply {
-            url = "/read/$query"
-        }
+        val tempManga =
+            SManga.create().apply {
+                url = "/read/$query"
+            }
 
         val mangaList = listOf(parseManga(payload, tempManga))
 
@@ -419,25 +434,26 @@ open class Cubari(override val lang: String) : HttpSource() {
     private fun parseManga(
         jsonObj: JsonObject,
         mangaReference: SManga? = null,
-    ): SManga = SManga.create().apply {
-        title = jsonObj["title"]!!.jsonPrimitive.content
-        artist = jsonObj["artist"]?.jsonPrimitive?.content ?: ARTIST_FALLBACK
-        author = jsonObj["author"]?.jsonPrimitive?.content ?: AUTHOR_FALLBACK
+    ): SManga =
+        SManga.create().apply {
+            title = jsonObj["title"]!!.jsonPrimitive.content
+            artist = jsonObj["artist"]?.jsonPrimitive?.content ?: ARTIST_FALLBACK
+            author = jsonObj["author"]?.jsonPrimitive?.content ?: AUTHOR_FALLBACK
 
-        val descriptionFull = jsonObj["description"]?.jsonPrimitive?.content
-        description = descriptionFull?.substringBefore("Tags: ") ?: DESCRIPTION_FALLBACK
-        genre = descriptionFull?.let {
-            if (it.contains("Tags: ")) {
-                it.substringAfter("Tags: ")
-            } else {
-                ""
-            }
-        } ?: ""
+            val descriptionFull = jsonObj["description"]?.jsonPrimitive?.content
+            description = descriptionFull?.substringBefore("Tags: ") ?: DESCRIPTION_FALLBACK
+            genre = descriptionFull?.let {
+                if (it.contains("Tags: ")) {
+                    it.substringAfter("Tags: ")
+                } else {
+                    ""
+                }
+            } ?: ""
 
-        url = mangaReference?.url ?: jsonObj["url"]!!.jsonPrimitive.content
-        thumbnail_url = jsonObj["coverUrl"]?.jsonPrimitive?.content
-            ?: jsonObj["cover"]?.jsonPrimitive?.content ?: ""
-    }
+            url = mangaReference?.url ?: jsonObj["url"]!!.jsonPrimitive.content
+            thumbnail_url = jsonObj["coverUrl"]?.jsonPrimitive?.content
+                ?: jsonObj["cover"]?.jsonPrimitive?.content ?: ""
+        }
 
     // ----------------- Things we aren't supporting -----------------
 

@@ -35,13 +35,15 @@ class Hentaidexy : HttpSource() {
 
     private val json: Json by injectLazy()
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimitHost(apiUrl.toHttpUrl(), 1)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimitHost(apiUrl.toHttpUrl(), 1)
+            .build()
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("Referer", "$baseUrl/")
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("Referer", "$baseUrl/")
+        }
 
     // popular
     override fun popularMangaRequest(page: Int): Request {
@@ -124,9 +126,10 @@ class Hentaidexy : HttpSource() {
     override fun chapterListParse(response: Response): List<SChapter> {
         val chapterListResponse = json.decodeFromString<ApiChapterResponse>(response.body.string())
 
-        val mangaId = response.request.url.toString()
-            .substringAfter("/mangas/")
-            .substringBefore("/chapters")
+        val mangaId =
+            response.request.url.toString()
+                .substringAfter("/mangas/")
+                .substringBefore("/chapters")
 
         val totalPages = chapterListResponse.totalPages
         var currentPage = 1

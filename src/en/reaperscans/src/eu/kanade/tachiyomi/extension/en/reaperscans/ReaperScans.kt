@@ -50,9 +50,10 @@ class ReaperScans : ParsedHttpSource() {
 
     private val json: Json by injectLazy()
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
     // Popular
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/comics?page=$page", headers)
@@ -99,37 +100,41 @@ class ReaperScans : ParsedHttpSource() {
 
         val csrfToken = soup.selectFirst("meta[name=csrf-token]")?.attr("content")
 
-        val livewareData = soup.selectFirst("div[wire:initial-data*=comics]")
-            ?.attr("wire:initial-data")
-            ?.parseJson<LiveWireDataDto>()
+        val livewareData =
+            soup.selectFirst("div[wire:initial-data*=comics]")
+                ?.attr("wire:initial-data")
+                ?.parseJson<LiveWireDataDto>()
 
         if (csrfToken == null) error("Couldn't find csrf-token")
         if (livewareData == null) error("Couldn't find LiveWireData")
 
-        val routeName = livewareData.fingerprint["name"]?.jsonPrimitive?.contentOrNull
-            ?: error("Couldn't find routeName")
+        val routeName =
+            livewareData.fingerprint["name"]?.jsonPrimitive?.contentOrNull
+                ?: error("Couldn't find routeName")
 
         //  Javascript: (Math.random() + 1).toString(36).substring(8)
         val generateId = { -> "1.${Random.nextLong().toString(36)}".substring(10) } // Not exactly the same, but results in a 3-5 character string
-        val payload = buildJsonObject {
-            put("fingerprint", livewareData.fingerprint)
-            put("serverMemo", livewareData.serverMemo)
-            putJsonArray("updates") {
-                addJsonObject {
-                    put("type", "syncInput")
-                    putJsonObject("payload") {
-                        put("id", generateId())
-                        put("name", "query")
-                        put("value", query)
+        val payload =
+            buildJsonObject {
+                put("fingerprint", livewareData.fingerprint)
+                put("serverMemo", livewareData.serverMemo)
+                putJsonArray("updates") {
+                    addJsonObject {
+                        put("type", "syncInput")
+                        putJsonObject("payload") {
+                            put("id", generateId())
+                            put("name", "query")
+                            put("value", query)
+                        }
                     }
                 }
-            }
-        }.toString().toRequestBody(JSON_MEDIA_TYPE)
+            }.toString().toRequestBody(JSON_MEDIA_TYPE)
 
-        val headers = Headers.Builder()
-            .add("x-csrf-token", csrfToken)
-            .add("x-livewire", "true")
-            .build()
+        val headers =
+            Headers.Builder()
+                .add("x-csrf-token", csrfToken)
+                .add("x-livewire", "true")
+                .build()
 
         return POST("$baseUrl/livewire/message/$routeName", headers, payload)
     }
@@ -138,9 +143,10 @@ class ReaperScans : ParsedHttpSource() {
 
     override fun searchMangaParse(response: Response): MangasPage {
         val html = response.parseJson<LiveWireResponseDto>().effects.html
-        val mangas = Jsoup.parse(html, baseUrl).select(searchMangaSelector()).map { element ->
-            searchMangaFromElement(element)
-        }
+        val mangas =
+            Jsoup.parse(html, baseUrl).select(searchMangaSelector()).map { element ->
+                searchMangaFromElement(element)
+            }
         return MangasPage(mangas, false)
     }
 
@@ -161,9 +167,10 @@ class ReaperScans : ParsedHttpSource() {
     ): Observable<MangasPage> {
         if (query.startsWith(PREFIX_ID_SEARCH)) {
             val realUrl = "/comics/" + query.removePrefix(PREFIX_ID_SEARCH)
-            val manga = SManga.create().apply {
-                url = realUrl
-            }
+            val manga =
+                SManga.create().apply {
+                    url = realUrl
+                }
             return fetchMangaDetails(manga).map {
                 MangasPage(listOf(it.apply { url = realUrl }), false)
             }
@@ -177,22 +184,24 @@ class ReaperScans : ParsedHttpSource() {
             thumbnail_url = document.select("div > img").first()!!.imgAttr()
             title = document.select("h1").first()!!.text()
 
-            status = when (document.select("dt:contains(Release Status)").next().first()!!.text()) {
-                "On hold" -> SManga.ON_HIATUS
-                "Complete" -> SManga.COMPLETED
-                "Ongoing" -> SManga.ONGOING
-                "Dropped" -> SManga.CANCELLED
-                else -> SManga.UNKNOWN
-            }
+            status =
+                when (document.select("dt:contains(Release Status)").next().first()!!.text()) {
+                    "On hold" -> SManga.ON_HIATUS
+                    "Complete" -> SManga.COMPLETED
+                    "Ongoing" -> SManga.ONGOING
+                    "Dropped" -> SManga.CANCELLED
+                    else -> SManga.UNKNOWN
+                }
 
-            genre = mutableListOf<String>().apply {
-                when (document.select("dt:contains(Source Language)").next().first()!!.text()) {
-                    "Korean" -> "Manhwa"
-                    "Chinese" -> "Manhua"
-                    "Japanese" -> "Manga"
-                    else -> null
-                }?.let { add(it) }
-            }.takeIf { it.isNotEmpty() }?.joinToString(",")
+            genre =
+                mutableListOf<String>().apply {
+                    when (document.select("dt:contains(Source Language)").next().first()!!.text()) {
+                        "Korean" -> "Manhwa"
+                        "Chinese" -> "Manhua"
+                        "Japanese" -> "Manga"
+                        else -> null
+                    }?.let { add(it) }
+                }.takeIf { it.isNotEmpty() }?.joinToString(",")
 
             description = document.select("section > div:nth-child(1) > div > p").first()!!.text()
         }
@@ -213,16 +222,19 @@ class ReaperScans : ParsedHttpSource() {
             return chapters
         }
 
-        val csrfToken = document.selectFirst("meta[name=csrf-token]")?.attr("content")
-            ?: error("Couldn't find csrf-token")
+        val csrfToken =
+            document.selectFirst("meta[name=csrf-token]")?.attr("content")
+                ?: error("Couldn't find csrf-token")
 
-        val livewareData = document.selectFirst("div[wire:initial-data*=Models\\\\Comic]")
-            ?.attr("wire:initial-data")
-            ?.parseJson<LiveWireDataDto>()
-            ?: error("Couldn't find LiveWireData")
+        val livewareData =
+            document.selectFirst("div[wire:initial-data*=Models\\\\Comic]")
+                ?.attr("wire:initial-data")
+                ?.parseJson<LiveWireDataDto>()
+                ?: error("Couldn't find LiveWireData")
 
-        val routeName = livewareData.fingerprint["name"]?.jsonPrimitive?.contentOrNull
-            ?: error("Couldn't find routeName")
+        val routeName =
+            livewareData.fingerprint["name"]?.jsonPrimitive?.contentOrNull
+                ?: error("Couldn't find routeName")
 
         val fingerprint = livewareData.fingerprint
         var serverMemo = livewareData.serverMemo
@@ -232,28 +244,30 @@ class ReaperScans : ParsedHttpSource() {
         //  Javascript: (Math.random() + 1).toString(36).substring(8)
         val generateId = { "1.${Random.nextLong().toString(36)}".substring(10) } // Not exactly the same, but results in a 3-5 character string
         while (hasNextPage) {
-            val payload = buildJsonObject {
-                put("fingerprint", fingerprint)
-                put("serverMemo", serverMemo)
-                putJsonArray("updates") {
-                    addJsonObject {
-                        put("type", "callMethod")
-                        putJsonObject("payload") {
-                            put("id", generateId())
-                            put("method", "gotoPage")
-                            putJsonArray("params") {
-                                add(pageToQuery)
-                                add("page")
+            val payload =
+                buildJsonObject {
+                    put("fingerprint", fingerprint)
+                    put("serverMemo", serverMemo)
+                    putJsonArray("updates") {
+                        addJsonObject {
+                            put("type", "callMethod")
+                            putJsonObject("payload") {
+                                put("id", generateId())
+                                put("method", "gotoPage")
+                                putJsonArray("params") {
+                                    add(pageToQuery)
+                                    add("page")
+                                }
                             }
                         }
                     }
-                }
-            }.toString().toRequestBody(JSON_MEDIA_TYPE)
+                }.toString().toRequestBody(JSON_MEDIA_TYPE)
 
-            val headers = Headers.Builder()
-                .add("x-csrf-token", csrfToken)
-                .add("x-livewire", "true")
-                .build()
+            val headers =
+                Headers.Builder()
+                    .add("x-csrf-token", csrfToken)
+                    .add("x-livewire", "true")
+                    .build()
 
             val request = POST("$baseUrl/livewire/message/$routeName", headers, payload)
 
@@ -291,9 +305,10 @@ class ReaperScans : ParsedHttpSource() {
     }
 
     // Helpers
-    private inline fun <reified T> Response.parseJson(): T = use {
-        it.body.string().parseJson()
-    }
+    private inline fun <reified T> Response.parseJson(): T =
+        use {
+            it.body.string().parseJson()
+        }
 
     private inline fun <reified T> String.parseJson(): T = json.decodeFromString(this)
 
@@ -302,17 +317,18 @@ class ReaperScans : ParsedHttpSource() {
      * If j1 and j2 both contain keys whose values aren't both jsonObjects, j2's value overwrites j1's
      *
      */
-    private fun JsonObject.mergeLeft(j2: JsonObject): JsonObject = buildJsonObject {
-        val j1 = this@mergeLeft
-        j1.entries.forEach { (key, value) -> put(key, value) }
-        j2.entries.forEach { (key, value) ->
-            val j1Value = j1[key]
-            when {
-                j1Value !is JsonObject -> put(key, value)
-                value is JsonObject -> put(key, j1Value.mergeLeft(value))
+    private fun JsonObject.mergeLeft(j2: JsonObject): JsonObject =
+        buildJsonObject {
+            val j1 = this@mergeLeft
+            j1.entries.forEach { (key, value) -> put(key, value) }
+            j2.entries.forEach { (key, value) ->
+                val j1Value = j1[key]
+                when {
+                    j1Value !is JsonObject -> put(key, value)
+                    value is JsonObject -> put(key, j1Value.mergeLeft(value))
+                }
             }
         }
-    }
 
     /**
      * Parses dates in this form: 21 hours ago
@@ -334,12 +350,13 @@ class ReaperScans : ParsedHttpSource() {
         }
     }
 
-    private fun Element.imgAttr(): String = when {
-        hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
-        hasAttr("data-src") -> attr("abs:data-src")
-        hasAttr("data-cfsrc") -> attr("abs:data-cfsrc")
-        else -> attr("abs:src")
-    }
+    private fun Element.imgAttr(): String =
+        when {
+            hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
+            hasAttr("data-src") -> attr("abs:data-src")
+            hasAttr("data-cfsrc") -> attr("abs:data-cfsrc")
+            else -> attr("abs:src")
+        }
 
     private fun Elements.imgAttr(): String = this.first()!!.imgAttr()
 

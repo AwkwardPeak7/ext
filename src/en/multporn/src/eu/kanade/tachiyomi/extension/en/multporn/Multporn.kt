@@ -31,9 +31,10 @@ class Multporn : ParsedHttpSource() {
 
     private val json: Json by injectLazy()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", HEADER_USER_AGENT)
-        .add("Content-Type", HEADER_CONTENT_TYPE)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("User-Agent", HEADER_USER_AGENT)
+            .add("Content-Type", HEADER_CONTENT_TYPE)
 
     // Popular
 
@@ -41,8 +42,9 @@ class Multporn : ParsedHttpSource() {
         page: Int,
         filters: FilterList = FilterList(),
     ): Request {
-        val url = "$baseUrl/best".toHttpUrl().newBuilder()
-            .addQueryParameter("page", page.toString())
+        val url =
+            "$baseUrl/best".toHttpUrl().newBuilder()
+                .addQueryParameter("page", page.toString())
 
         (if (filters.isEmpty()) getFilterList(POPULAR_DEFAULT_SORT_BY_FILTER_STATE) else filters).forEach {
             when (it) {
@@ -62,11 +64,12 @@ class Multporn : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = ".pager-next a"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        url = element.select(".views-field-title a").attr("href")
-        title = element.select(".views-field-title").text()
-        thumbnail_url = element.select("img").attr("abs:src")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            url = element.select(".views-field-title a").attr("href")
+            title = element.select(".views-field-title").text()
+            thumbnail_url = element.select("img").attr("abs:src")
+        }
 
     // Latest
 
@@ -74,8 +77,9 @@ class Multporn : ParsedHttpSource() {
         page: Int,
         filters: FilterList = FilterList(),
     ): Request {
-        val url = "$baseUrl/new".toHttpUrl().newBuilder()
-            .addQueryParameter("page", page.toString())
+        val url =
+            "$baseUrl/new".toHttpUrl().newBuilder()
+                .addQueryParameter("page", page.toString())
 
         (if (filters.isEmpty()) getFilterList(LATEST_DEFAULT_SORT_BY_FILTER_STATE) else filters).forEach {
             when (it) {
@@ -101,12 +105,14 @@ class Multporn : ParsedHttpSource() {
 
     private fun textSearchFilterParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val mangas = document.select("#content .col-1:contains(Views:),.col-2:contains(Views:)")
-            .map { popularMangaFromElement(it) }
+        val mangas =
+            document.select("#content .col-1:contains(Views:),.col-2:contains(Views:)")
+                .map { popularMangaFromElement(it) }
 
-        val hasNextPage = popularMangaNextPageSelector().let {
-            document.select(it).firstOrNull()
-        } != null
+        val hasNextPage =
+            popularMangaNextPageSelector().let {
+                document.select(it).firstOrNull()
+            } != null
 
         return MangasPage(mangas, hasNextPage)
     }
@@ -116,9 +122,10 @@ class Multporn : ParsedHttpSource() {
         query: String,
         filtersArg: FilterList = FilterList(),
     ): Request {
-        val url = "$baseUrl/search".toHttpUrl().newBuilder()
-            .addQueryParameter("page", page.toString())
-            .addQueryParameter("views_fulltext", query)
+        val url =
+            "$baseUrl/search".toHttpUrl().newBuilder()
+                .addQueryParameter("page", page.toString())
+                .addQueryParameter("views_fulltext", query)
 
         (if (filtersArg.isEmpty()) getFilterList(SEARCH_DEFAULT_SORT_BY_FILTER_STATE) else filtersArg).forEach {
             when (it) {
@@ -216,48 +223,54 @@ class Multporn : ParsedHttpSource() {
 
     // Details
 
-    private fun parseUnlabelledAuthorNames(document: Document): List<String> = listOf(
-        "field-name-field-author",
-        "field-name-field-authors-gr",
-        "field-name-field-img-group",
-        "field-name-field-hentai-img-group",
-        "field-name-field-rule-63-section",
-    ).map { document.select(".$it a").map { a -> a.text().trim() } }.flatten()
+    private fun parseUnlabelledAuthorNames(document: Document): List<String> =
+        listOf(
+            "field-name-field-author",
+            "field-name-field-authors-gr",
+            "field-name-field-img-group",
+            "field-name-field-hentai-img-group",
+            "field-name-field-rule-63-section",
+        ).map { document.select(".$it a").map { a -> a.text().trim() } }.flatten()
 
     override fun mangaDetailsParse(document: Document): SManga {
         return SManga.create().apply {
             title = document.select("h1#page-title").text()
 
-            val infoMap = listOf(
-                "Section",
-                "Characters",
-                "Tags",
-                "Author",
-            ).map {
-                it to document.select(".field:has(.field-label:contains($it:)) .links a").map { t -> t.text().trim() }
-            }.toMap()
+            val infoMap =
+                listOf(
+                    "Section",
+                    "Characters",
+                    "Tags",
+                    "Author",
+                ).map {
+                    it to document.select(".field:has(.field-label:contains($it:)) .links a").map { t -> t.text().trim() }
+                }.toMap()
 
-            artist = (infoMap.getValue("Author") + parseUnlabelledAuthorNames(document))
-                .distinct().joinToString()
+            artist =
+                (infoMap.getValue("Author") + parseUnlabelledAuthorNames(document))
+                    .distinct().joinToString()
             author = artist
 
-            genre = listOf("Tags", "Section", "Characters")
-                .map { infoMap.getValue(it) }.flatten().distinct().joinToString()
+            genre =
+                listOf("Tags", "Section", "Characters")
+                    .map { infoMap.getValue(it) }.flatten().distinct().joinToString()
 
             status = infoMap["Section"]?.firstOrNull { it == "Ongoings" }?.let { SManga.ONGOING } ?: SManga.COMPLETED
 
             val pageCount = document.select(".jb-image img").size
 
-            description = infoMap
-                .filter { it.key in arrayOf("Section", "Characters") }
-                .filter { it.value.isNotEmpty() }
-                .map { "${it.key}:\n${it.value.joinToString()}" }
-                .let {
-                    it + listOf(
-                        "Pages:\n$pageCount",
-                    )
-                }
-                .joinToString("\n\n")
+            description =
+                infoMap
+                    .filter { it.key in arrayOf("Section", "Characters") }
+                    .filter { it.value.isNotEmpty() }
+                    .map { "${it.key}:\n${it.value.joinToString()}" }
+                    .let {
+                        it +
+                            listOf(
+                                "Pages:\n$pageCount",
+                            )
+                    }
+                    .joinToString("\n\n")
         }
     }
 
@@ -269,15 +282,16 @@ class Multporn : ParsedHttpSource() {
 
     override fun chapterListParse(response: Response): List<SChapter> = throw UnsupportedOperationException()
 
-    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> = Observable.just(
-        listOf(
-            SChapter.create().apply {
-                url = manga.url
-                name = "Chapter"
-                chapter_number = 1f
-            },
-        ),
-    )
+    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> =
+        Observable.just(
+            listOf(
+                SChapter.create().apply {
+                    url = manga.url
+                    name = "Chapter"
+                    chapter_number = 1f
+                },
+            ),
+        )
 
     // Pages
 
@@ -342,75 +356,81 @@ class Multporn : ParsedHttpSource() {
 
     private class SortOrderSelectFilter(filters: List<URIFilter>) : URISelectFilter("Order By", filters)
 
-    private fun getFilterList(sortByFilterState: Int) = FilterList(
-        Filter.Header("Text search only works with Relevance and Author"),
-        SortBySelectFilter(getSortByFilters(), sortByFilterState),
-        Filter.Header("Order By only works with Popular and Latest"),
-        SortOrderSelectFilter(getSortOrderFilters()),
-        Filter.Header("Type filters apply based on selected Sort By option"),
-        PopularTypeSelectFilter(getPopularTypeFilters()),
-        LatestTypeSelectFilter(getLatestTypeFilters()),
-        SearchTypeSelectFilter(getSearchTypeFilters()),
-        Filter.Separator(),
-        Filter.Header("Filters below ignore text search and all options above"),
-        Filter.Header("Query must match title's non-special characters"),
-        Filter.Header("Separate queries with comma (,)"),
-        TextSearchFilter("Comic Tags", "category"),
-        TextSearchFilter("Comic Characters", "characters"),
-        TextSearchFilter("Comic Authors", "authors_comics"),
-        TextSearchFilter("Comic Sections", "comics"),
-        TextSearchFilter("Manga Categories", "category_hentai"),
-        TextSearchFilter("Manga Characters", "characters_hentai"),
-        TextSearchFilter("Manga Authors", "authors_hentai_comics"),
-        TextSearchFilter("Manga Sections", "hentai_manga"),
-        TextSearchFilter("Picture Authors", "authors_albums"),
-        TextSearchFilter("Picture Sections", "pictures"),
-        TextSearchFilter("Hentai Sections", "hentai"),
-        TextSearchFilter("Rule 63 Sections", "rule_63"),
-        TextSearchFilter("Gay Tags", "category_gay"),
-    )
+    private fun getFilterList(sortByFilterState: Int) =
+        FilterList(
+            Filter.Header("Text search only works with Relevance and Author"),
+            SortBySelectFilter(getSortByFilters(), sortByFilterState),
+            Filter.Header("Order By only works with Popular and Latest"),
+            SortOrderSelectFilter(getSortOrderFilters()),
+            Filter.Header("Type filters apply based on selected Sort By option"),
+            PopularTypeSelectFilter(getPopularTypeFilters()),
+            LatestTypeSelectFilter(getLatestTypeFilters()),
+            SearchTypeSelectFilter(getSearchTypeFilters()),
+            Filter.Separator(),
+            Filter.Header("Filters below ignore text search and all options above"),
+            Filter.Header("Query must match title's non-special characters"),
+            Filter.Header("Separate queries with comma (,)"),
+            TextSearchFilter("Comic Tags", "category"),
+            TextSearchFilter("Comic Characters", "characters"),
+            TextSearchFilter("Comic Authors", "authors_comics"),
+            TextSearchFilter("Comic Sections", "comics"),
+            TextSearchFilter("Manga Categories", "category_hentai"),
+            TextSearchFilter("Manga Characters", "characters_hentai"),
+            TextSearchFilter("Manga Authors", "authors_hentai_comics"),
+            TextSearchFilter("Manga Sections", "hentai_manga"),
+            TextSearchFilter("Picture Authors", "authors_albums"),
+            TextSearchFilter("Picture Sections", "pictures"),
+            TextSearchFilter("Hentai Sections", "hentai"),
+            TextSearchFilter("Rule 63 Sections", "rule_63"),
+            TextSearchFilter("Gay Tags", "category_gay"),
+        )
 
-    private fun getPopularTypeFilters() = listOf(
-        URIFilter("Comics", "1"),
-        URIFilter("Hentai Manga", "2"),
-        URIFilter("Cartoon Pictures", "3"),
-        URIFilter("Hentai Pictures", "4"),
-        URIFilter("Rule 63", "10"),
-        URIFilter("Author Albums", "11"),
-    )
+    private fun getPopularTypeFilters() =
+        listOf(
+            URIFilter("Comics", "1"),
+            URIFilter("Hentai Manga", "2"),
+            URIFilter("Cartoon Pictures", "3"),
+            URIFilter("Hentai Pictures", "4"),
+            URIFilter("Rule 63", "10"),
+            URIFilter("Author Albums", "11"),
+        )
 
-    private fun getLatestTypeFilters() = listOf(
-        URIFilter("Comics", "1"),
-        URIFilter("Hentai Manga", "2"),
-        URIFilter("Cartoon Pictures", "3"),
-        URIFilter("Hentai Pictures", "4"),
-        URIFilter("Author Albums", "10"),
-    )
+    private fun getLatestTypeFilters() =
+        listOf(
+            URIFilter("Comics", "1"),
+            URIFilter("Hentai Manga", "2"),
+            URIFilter("Cartoon Pictures", "3"),
+            URIFilter("Hentai Pictures", "4"),
+            URIFilter("Author Albums", "10"),
+        )
 
-    private fun getSearchTypeFilters() = listOf(
-        URIFilter("Comics", "1"),
-        URIFilter("Hentai Manga", "2"),
-        URIFilter("Gay Comics", "3"),
-        URIFilter("Cartoon Pictures", "4"),
-        URIFilter("Hentai Pictures", "5"),
-        URIFilter("Rule 63", "11"),
-        URIFilter("Humor", "13"),
-    )
+    private fun getSearchTypeFilters() =
+        listOf(
+            URIFilter("Comics", "1"),
+            URIFilter("Hentai Manga", "2"),
+            URIFilter("Gay Comics", "3"),
+            URIFilter("Cartoon Pictures", "4"),
+            URIFilter("Hentai Pictures", "5"),
+            URIFilter("Rule 63", "11"),
+            URIFilter("Humor", "13"),
+        )
 
-    private fun getSortByFilters() = listOf(
-        RequestTypeURIFilter(POPULAR_REQUEST_TYPE, "Total Views", "totalcount_1"),
-        RequestTypeURIFilter(POPULAR_REQUEST_TYPE, "Views Today", "daycount"),
-        RequestTypeURIFilter(POPULAR_REQUEST_TYPE, "Last Viewed", "timestamp"),
-        RequestTypeURIFilter(LATEST_REQUEST_TYPE, "Date Posted", "created"),
-        RequestTypeURIFilter(LATEST_REQUEST_TYPE, "Date Updated", "changed"),
-        RequestTypeURIFilter(SEARCH_REQUEST_TYPE, "Relevance", "search_api_relevance"),
-        RequestTypeURIFilter(SEARCH_REQUEST_TYPE, "Author", "author"),
-    )
+    private fun getSortByFilters() =
+        listOf(
+            RequestTypeURIFilter(POPULAR_REQUEST_TYPE, "Total Views", "totalcount_1"),
+            RequestTypeURIFilter(POPULAR_REQUEST_TYPE, "Views Today", "daycount"),
+            RequestTypeURIFilter(POPULAR_REQUEST_TYPE, "Last Viewed", "timestamp"),
+            RequestTypeURIFilter(LATEST_REQUEST_TYPE, "Date Posted", "created"),
+            RequestTypeURIFilter(LATEST_REQUEST_TYPE, "Date Updated", "changed"),
+            RequestTypeURIFilter(SEARCH_REQUEST_TYPE, "Relevance", "search_api_relevance"),
+            RequestTypeURIFilter(SEARCH_REQUEST_TYPE, "Author", "author"),
+        )
 
-    private fun getSortOrderFilters() = listOf(
-        URIFilter("Descending", "DESC"),
-        URIFilter("Ascending", "ASC"),
-    )
+    private fun getSortOrderFilters() =
+        listOf(
+            URIFilter("Descending", "DESC"),
+            URIFilter("Ascending", "ASC"),
+        )
 
     private inline fun <reified T> Iterable<*>.findInstance() = find { it is T } as? T
 

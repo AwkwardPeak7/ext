@@ -38,25 +38,28 @@ data class YomuMangasSeriesDto(
     val genres: List<YomuMangasGenreDto>? = emptyList(),
     val description: String? = null,
 ) {
-    fun toSManga(): SManga = SManga.create().apply {
-        title = this@YomuMangasSeriesDto.title
-        author = authors.orEmpty().joinToString { it.trim() }
-        artist = artists.orEmpty().joinToString { it.trim() }
-        genre = genres.orEmpty()
-            .sortedBy { it.name }
-            .joinToString { it.name.trim() }
-        description = this@YomuMangasSeriesDto.description?.trim()
-        status = when (this@YomuMangasSeriesDto.status) {
-            "RELEASING" -> SManga.ONGOING
-            "FINISHED" -> SManga.COMPLETED
-            "HIATUS" -> SManga.ON_HIATUS
-            "CANCELLED" -> SManga.CANCELLED
-            "TRANSLATING" -> SManga.PUBLISHING_FINISHED
-            else -> SManga.UNKNOWN
+    fun toSManga(): SManga =
+        SManga.create().apply {
+            title = this@YomuMangasSeriesDto.title
+            author = authors.orEmpty().joinToString { it.trim() }
+            artist = artists.orEmpty().joinToString { it.trim() }
+            genre =
+                genres.orEmpty()
+                    .sortedBy { it.name }
+                    .joinToString { it.name.trim() }
+            description = this@YomuMangasSeriesDto.description?.trim()
+            status =
+                when (this@YomuMangasSeriesDto.status) {
+                    "RELEASING" -> SManga.ONGOING
+                    "FINISHED" -> SManga.COMPLETED
+                    "HIATUS" -> SManga.ON_HIATUS
+                    "CANCELLED" -> SManga.CANCELLED
+                    "TRANSLATING" -> SManga.PUBLISHING_FINISHED
+                    else -> SManga.UNKNOWN
+                }
+            thumbnail_url = cover?.let { "${YomuMangas.CDN_URL}/$it" }
+            url = "/manga/$id/$slug"
         }
-        thumbnail_url = cover?.let { "${YomuMangas.CDN_URL}/$it" }
-        url = "/manga/$id/$slug"
-    }
 }
 
 @Serializable
@@ -72,12 +75,13 @@ data class YomuMangasChapterDto(
     @SerialName("uploaded_at") val uploadedAt: String,
     val images: List<YomuMangasImageDto>? = emptyList(),
 ) {
-    fun toSChapter(series: YomuMangasSeriesDto): SChapter = SChapter.create().apply {
-        name = "Capítulo ${chapter.toString().removeSuffix(".0")}"
-        date_upload = runCatching { DATE_FORMATTER.parse(uploadedAt)?.time }
-            .getOrNull() ?: 0L
-        url = "/manga/${series.id}/${series.slug}/chapter/$id#$chapter"
-    }
+    fun toSChapter(series: YomuMangasSeriesDto): SChapter =
+        SChapter.create().apply {
+            name = "Capítulo ${chapter.toString().removeSuffix(".0")}"
+            date_upload = runCatching { DATE_FORMATTER.parse(uploadedAt)?.time }
+                .getOrNull() ?: 0L
+            url = "/manga/${series.id}/${series.slug}/chapter/$id#$chapter"
+        }
 
     companion object {
         private val DATE_FORMATTER by lazy {

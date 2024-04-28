@@ -28,8 +28,9 @@ class Webcomics : ParsedHttpSource() {
 
     override fun latestUpdatesSelector() = "section.mangas div div.col-md-3"
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "https://www.webcomicsapp.com")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "https://www.webcomicsapp.com")
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/popular.html", headers)
 
@@ -100,15 +101,16 @@ class Webcomics : ParsedHttpSource() {
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
         var nextPage = true
-        val mangas = document.select(searchMangaSelector()).toList().filter {
-            val shouldFilter = it.select(".col-md-2 > a").first()!!.text() == "READ"
-            if (nextPage) {
-                nextPage = shouldFilter
+        val mangas =
+            document.select(searchMangaSelector()).toList().filter {
+                val shouldFilter = it.select(".col-md-2 > a").first()!!.text() == "READ"
+                if (nextPage) {
+                    nextPage = shouldFilter
+                }
+                shouldFilter
+            }.map { element ->
+                searchMangaFromElement(element)
             }
-            shouldFilter
-        }.map { element ->
-            searchMangaFromElement(element)
-        }
 
         return MangasPage(mangas, if (nextPage) hasNextPage(document) else false)
     }
@@ -154,37 +156,40 @@ class Webcomics : ParsedHttpSource() {
 
     override fun pageListRequest(chapter: SChapter) = GET(baseUrl + "/" + chapter.url, headers)
 
-    override fun pageListParse(document: Document) = document
-        .select("section.book-reader .img-list > li > img")
-        .mapIndexed {
-                i, element ->
-            Page(i, "", element.attr("data-original"))
-        }
+    override fun pageListParse(document: Document) =
+        document
+            .select("section.book-reader .img-list > li > img")
+            .mapIndexed {
+                    i, element ->
+                Page(i, "", element.attr("data-original"))
+            }
 
     override fun imageUrlParse(document: Document) = ""
 
     private class GenreFilter(genres: Array<String>) : Filter.Select<String>("Genre", genres)
 
-    override fun getFilterList() = FilterList(
-        GenreFilter(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            GenreFilter(getGenreList()),
+        )
 
     // [...$('.row.wiki-book-nav .col-md-8 ul a')].map(el => `"${el.textContent.trim()}"`).join(',\n')
     // https://www.webcomicsapp.com/wiki.html
-    private fun getGenreList() = arrayOf(
-        "All",
-        "Fantasy",
-        "Comedy",
-        "Drama",
-        "Modern",
-        "Action",
-        "Monster",
-        "Romance",
-        "Boys'Love",
-        "Harem",
-        "Thriller",
-        "Historical",
-        "Sci-fi",
-        "Slice of Life",
-    )
+    private fun getGenreList() =
+        arrayOf(
+            "All",
+            "Fantasy",
+            "Comedy",
+            "Drama",
+            "Modern",
+            "Action",
+            "Monster",
+            "Romance",
+            "Boys'Love",
+            "Harem",
+            "Thriller",
+            "Historical",
+            "Sci-fi",
+            "Slice of Life",
+        )
 }

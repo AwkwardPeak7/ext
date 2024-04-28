@@ -15,7 +15,8 @@ class LuckyManga : Madara(
     override val useLoadMoreRequest = LoadMoreStrategy.Never
     override val useNewChapterEndpoint = true
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 }

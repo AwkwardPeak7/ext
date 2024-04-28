@@ -13,9 +13,10 @@ class LectorMangaLat : Madara(
     "es",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(2, 1, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(2, 1, TimeUnit.SECONDS)
+            .build()
 
     override val mangaSubString = "biblioteca"
 

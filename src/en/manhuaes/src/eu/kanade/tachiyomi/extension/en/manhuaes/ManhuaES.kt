@@ -24,9 +24,10 @@ class ManhuaES : Madara("Manhua ES", "https://manhuaes.com", "en") {
     }
 
     private fun isReleasedChapter(chapter: SChapter): Boolean {
-        val document = client.newCall(
-            GET(chapter.url, headersBuilder().build()),
-        ).execute().asJsoup()
+        val document =
+            client.newCall(
+                GET(chapter.url, headersBuilder().build()),
+            ).execute().asJsoup()
 
         return document.select(pageListParseSelector).isNotEmpty()
     }

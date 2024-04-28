@@ -34,12 +34,14 @@ class Brakeout : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", baseUrl)
 
     private val json: Json by injectLazy()
 
@@ -56,11 +58,12 @@ class Brakeout : ParsedHttpSource() {
         return MangasPage(distinctList, mangasPage.hasNextPage)
     }
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
-        title = element.selectFirst("figcaption")!!.text()
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
+            title = element.selectFirst("figcaption")!!.text()
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+        }
 
     override fun latestUpdatesRequest(page: Int): Request = GET(baseUrl, headers)
 
@@ -68,11 +71,12 @@ class Brakeout : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
-        title = element.selectFirst("figcaption")!!.text()
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
-    }
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
+            title = element.selectFirst("figcaption")!!.text()
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+        }
 
     override fun searchMangaRequest(
         page: Int,
@@ -119,26 +123,29 @@ class Brakeout : ParsedHttpSource() {
         }
     }
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
-        title = element.selectFirst("figcaption")!!.text()
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
-    }
-
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        with(document.select("section#section-sinopsis")) {
-            description = select("p").text()
-            genre = select("div.flex:has(div:containsOwn(Géneros)) > div > a > span").joinToString { it.text() }
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
+            title = element.selectFirst("figcaption")!!.text()
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
         }
-    }
+
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            with(document.select("section#section-sinopsis")) {
+                description = select("p").text()
+                genre = select("div.flex:has(div:containsOwn(Géneros)) > div > a > span").joinToString { it.text() }
+            }
+        }
 
     override fun chapterListSelector(): String = "section#section-list-cap div.grid-capitulos > div > a.group"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        name = element.selectFirst("div#name")!!.text()
-        date_upload = parseRelativeDate(element.selectFirst("time")!!.text())
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            name = element.selectFirst("div#name")!!.text()
+            date_upload = parseRelativeDate(element.selectFirst("time")!!.text())
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("section > div > img.readImg").mapIndexed { i, element ->

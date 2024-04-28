@@ -72,32 +72,35 @@ class Randowiz : ParsedHttpSource() {
         page: Int,
         query: String,
         filters: FilterList,
-    ): Observable<MangasPage> = fetchPopularManga(page).map {
-        MangasPage(
-            it.mangas.filter { manga ->
-                manga.title.contains(
-                    query,
-                    ignoreCase = true,
-                )
-            },
-            false,
-        )
-    }
+    ): Observable<MangasPage> =
+        fetchPopularManga(page).map {
+            MangasPage(
+                it.mangas.filter { manga ->
+                    manga.title.contains(
+                        query,
+                        ignoreCase = true,
+                    )
+                },
+                false,
+            )
+        }
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> = Observable.just(manga)
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
-        val chapters = document.select(chapterListSelector())
-            .map { chapterFromElement(it) }
-            .toMutableList()
+        val chapters =
+            document.select(chapterListSelector())
+                .map { chapterFromElement(it) }
+                .toMutableList()
         var next = document.selectFirst(".next")?.attr("href") ?: ""
 
         while (next.isNotEmpty()) {
             val nextDocument = client.newCall(GET(next, headers)).execute().asJsoup()
 
-            chapters += nextDocument.select(chapterListSelector())
-                .map { chapterFromElement(it) }
+            chapters +=
+                nextDocument.select(chapterListSelector())
+                    .map { chapterFromElement(it) }
             next = nextDocument.selectFirst(".next")?.attr("href") ?: ""
         }
 

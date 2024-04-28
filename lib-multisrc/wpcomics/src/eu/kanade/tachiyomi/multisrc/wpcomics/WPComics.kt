@@ -32,15 +32,17 @@ abstract class WPComics(
 
     override val client: OkHttpClient = network.cloudflareClient
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
-    open val intl = Intl(
-        language = lang,
-        baseLanguage = "en",
-        availableLanguages = setOf("en", "vi", "ja"),
-        classLoader = this::class.java.classLoader!!,
-    )
+    open val intl =
+        Intl(
+            language = lang,
+            baseLanguage = "en",
+            availableLanguages = setOf("en", "vi", "ja"),
+            classLoader = this::class.java.classLoader!!,
+        )
 
     protected fun List<String>.doesInclude(thisWord: String): Boolean = this.any { it.contains(thisWord, ignoreCase = true) }
 
@@ -232,11 +234,12 @@ abstract class WPComics(
 
     protected class GenreFilter(name: String, pairs: List<Pair<String?, String>>) : UriPartFilter(name, pairs)
 
-    protected open fun getStatusList(): List<Pair<String?, String>> = listOf(
-        Pair(null, intl["STATUS_ALL"]),
-        Pair("1", intl["STATUS_ONGOING"]),
-        Pair("2", intl["STATUS_COMPLETED"]),
-    )
+    protected open fun getStatusList(): List<Pair<String?, String>> =
+        listOf(
+            Pair(null, intl["STATUS_ALL"]),
+            Pair("1", intl["STATUS_ONGOING"]),
+            Pair("2", intl["STATUS_COMPLETED"]),
+        )
 
     protected var genreList: List<Pair<String?, String>> = emptyList()
 

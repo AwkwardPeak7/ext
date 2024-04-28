@@ -27,9 +27,10 @@ class Roumanwu : HttpSource(), ConfigurableSource {
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
 
-    override val baseUrl = MIRRORS[
-        max(MIRRORS.size - 1, preferences.getString(MIRROR_PREF, MIRROR_DEFAULT)!!.toInt()),
-    ]
+    override val baseUrl =
+        MIRRORS[
+            max(MIRRORS.size - 1, preferences.getString(MIRROR_PREF, MIRROR_DEFAULT)!!.toInt()),
+        ]
 
     override val client = network.client.newBuilder().addInterceptor(ScrambledImageInterceptor).build()
 
@@ -75,12 +76,13 @@ class Roumanwu : HttpSource(), ConfigurableSource {
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("提示：搜索时筛选无效"),
-        TagFilter(),
-        StatusFilter(),
-        SortFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("提示：搜索时筛选无效"),
+            TagFilter(),
+            StatusFilter(),
+            SortFilter(),
+        )
 
     private abstract class UriPartFilter(name: String, values: Array<String>) : Filter.Select<String>(name, values) {
         abstract fun toUriPart(): String
@@ -91,11 +93,12 @@ class Roumanwu : HttpSource(), ConfigurableSource {
     }
 
     private class StatusFilter : UriPartFilter("狀態", arrayOf("全部", "連載中", "已完結")) {
-        override fun toUriPart() = when (state) {
-            1 -> "&continued=true"
-            2 -> "&continued=false"
-            else -> ""
-        }
+        override fun toUriPart() =
+            when (state) {
+                1 -> "&continued=true"
+                2 -> "&continued=false"
+                else -> ""
+            }
     }
 
     private class SortFilter : UriPartFilter("排序", arrayOf("更新日期", "評分")) {
@@ -103,15 +106,16 @@ class Roumanwu : HttpSource(), ConfigurableSource {
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val mirrorPref = androidx.preference.ListPreference(screen.context).apply {
-            key = MIRROR_PREF
-            title = MIRROR_PREF_TITLE
-            entries = MIRRORS_DESC
-            entryValues = MIRRORS.indices.map(Int::toString).toTypedArray()
-            summary = MIRROR_PREF_SUMMARY
+        val mirrorPref =
+            androidx.preference.ListPreference(screen.context).apply {
+                key = MIRROR_PREF
+                title = MIRROR_PREF_TITLE
+                entries = MIRRORS_DESC
+                entryValues = MIRRORS.indices.map(Int::toString).toTypedArray()
+                summary = MIRROR_PREF_SUMMARY
 
-            setDefaultValue(MIRROR_DEFAULT)
-        }
+                setDefaultValue(MIRROR_DEFAULT)
+            }
         screen.addPreference(mirrorPref)
     }
 
@@ -125,25 +129,26 @@ class Roumanwu : HttpSource(), ConfigurableSource {
         private val MIRRORS_DESC get() = arrayOf("主站", "镜像")
         private const val MIRROR_DEFAULT = 1.toString() // use mirror
 
-        private val TAGS get() = arrayOf(
-            "全部",
-            "\u6B63\u59B9",
-            "\u604B\u7231",
-            "\u51FA\u7248\u6F2B\u753B",
-            "\u8089\u617E",
-            "\u6D6A\u6F2B",
-            "\u5927\u5C3A\u5EA6",
-            "\u5DE8\u4E73",
-            "\u6709\u592B\u4E4B\u5A66",
-            "\u5973\u5927\u751F",
-            "\u72D7\u8840\u5287",
-            "\u540C\u5C45",
-            "\u597D\u53CB",
-            "\u8ABF\u6559",
-            "\u52A8\u4F5C",
-            "\u5F8C\u5BAE",
-            "\u4E0D\u502B",
-        )
+        private val TAGS get() =
+            arrayOf(
+                "全部",
+                "\u6B63\u59B9",
+                "\u604B\u7231",
+                "\u51FA\u7248\u6F2B\u753B",
+                "\u8089\u617E",
+                "\u6D6A\u6F2B",
+                "\u5927\u5C3A\u5EA6",
+                "\u5DE8\u4E73",
+                "\u6709\u592B\u4E4B\u5A66",
+                "\u5973\u5927\u751F",
+                "\u72D7\u8840\u5287",
+                "\u540C\u5C45",
+                "\u597D\u53CB",
+                "\u8ABF\u6559",
+                "\u52A8\u4F5C",
+                "\u5F8C\u5BAE",
+                "\u4E0D\u502B",
+            )
     }
 
     private inline fun <reified T> Response.parseAs(): T = json.decodeFromStream(this.body.byteStream())

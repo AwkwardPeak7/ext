@@ -25,14 +25,16 @@ abstract class HotComics(
 ) : HttpSource() {
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .addNetworkInterceptor(
-            CookieInterceptor(baseUrl.removePrefix("https://"), "hc_vfs" to "Y"),
-        )
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .addNetworkInterceptor(
+                CookieInterceptor(baseUrl.removePrefix("https://"), "hc_vfs" to "Y"),
+            )
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/en", headers)
 
@@ -47,16 +49,17 @@ abstract class HotComics(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            if (query.isNotEmpty()) {
-                addEncodedPathSegments("en/search")
-                addQueryParameter("keyword", query.trim())
-            } else {
-                val filter = filters.filterIsInstance<BrowseFilter>().first()
-                addEncodedPathSegments(filter.selected)
-                addQueryParameter("page", page.toString())
-            }
-        }.build()
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                if (query.isNotEmpty()) {
+                    addEncodedPathSegments("en/search")
+                    addQueryParameter("keyword", query.trim())
+                } else {
+                    val filter = filters.filterIsInstance<BrowseFilter>().first()
+                    addEncodedPathSegments(filter.selected)
+                    addQueryParameter("page", page.toString())
+                }
+            }.build()
 
         return GET(url, headers)
     }
@@ -75,52 +78,59 @@ abstract class HotComics(
 
     class BrowseFilter(browseList: List<Pair<String, String>>) : SelectFilter("Browse", browseList)
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Doesn't work with Text search"),
-        Filter.Separator(),
-        BrowseFilter(browseList),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Doesn't work with Text search"),
+            Filter.Separator(),
+            BrowseFilter(browseList),
+        )
 
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val entries = document.select("li[itemtype*=ComicSeries]:not(.no-comic) > a").map { element ->
-            SManga.create().apply {
-                setUrlWithoutDomain(element.absUrl("href"))
-                thumbnail_url = element.selectFirst("div.visual img")?.imgAttr()
-                title = element.selectFirst("div.main-text > h4.title")!!.text()
-            }
-        }.distinctBy { it.url }
+        val entries =
+            document.select("li[itemtype*=ComicSeries]:not(.no-comic) > a").map { element ->
+                SManga.create().apply {
+                    setUrlWithoutDomain(element.absUrl("href"))
+                    thumbnail_url = element.selectFirst("div.visual img")?.imgAttr()
+                    title = element.selectFirst("div.main-text > h4.title")!!.text()
+                }
+            }.distinctBy { it.url }
         val hasNextPage = document.selectFirst("div.pagination a.vnext:not(.disabled)") != null
 
         return MangasPage(entries, hasNextPage)
     }
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val document = response.asJsoup()
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val document = response.asJsoup()
 
-        title = document.selectFirst("h2.episode-title")!!.text()
-        with(document.selectFirst("p.type_box")!!) {
-            author = selectFirst("span.writer")?.text()
-                ?.substringAfter("ⓒ")?.trim()
-            genre = selectFirst("span.type")?.text()
-                ?.split("/")?.joinToString { it.trim() }
-            status = when (selectFirst("span.date")?.text()) {
-                "End", "Ende" -> SManga.COMPLETED
-                null -> SManga.UNKNOWN
-                else -> SManga.ONGOING
+            title = document.selectFirst("h2.episode-title")!!.text()
+            with(document.selectFirst("p.type_box")!!) {
+                author =
+                    selectFirst("span.writer")?.text()
+                        ?.substringAfter("ⓒ")?.trim()
+                genre =
+                    selectFirst("span.type")?.text()
+                        ?.split("/")?.joinToString { it.trim() }
+                status =
+                    when (selectFirst("span.date")?.text()) {
+                        "End", "Ende" -> SManga.COMPLETED
+                        null -> SManga.UNKNOWN
+                        else -> SManga.ONGOING
+                    }
             }
+            description =
+                buildString {
+                    document.selectFirst("div.episode-contents header")
+                        ?.text()?.let {
+                            append(it)
+                            append("\n\n")
+                        }
+                    document.selectFirst("div.title_content > h2:not(.episode-title)")
+                        ?.text()?.let { append(it) }
+                }.trim()
         }
-        description = buildString {
-            document.selectFirst("div.episode-contents header")
-                ?.text()?.let {
-                    append(it)
-                    append("\n\n")
-                }
-            document.selectFirst("div.title_content > h2:not(.episode-title)")
-                ?.text()?.let { append(it) }
-        }.trim()
-    }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         return response.asJsoup().select("#tab-chapter a").map { element ->

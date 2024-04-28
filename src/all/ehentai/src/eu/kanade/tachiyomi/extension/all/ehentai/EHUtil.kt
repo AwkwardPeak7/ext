@@ -11,11 +11,12 @@ import kotlin.math.pow
  * Return null if String is blank, otherwise returns the original String
  * @returns null if the String is blank, otherwise returns the original String
  */
-fun String?.nullIfBlank(): String? = if (isNullOrBlank()) {
-    null
-} else {
-    this
-}
+fun String?.nullIfBlank(): String? =
+    if (isNullOrBlank()) {
+        null
+    } else {
+        this
+    }
 
 /**
  * Ignores any exceptions thrown inside a block

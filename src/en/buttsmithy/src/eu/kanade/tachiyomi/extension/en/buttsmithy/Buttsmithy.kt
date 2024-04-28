@@ -67,14 +67,15 @@ class Buttsmithy : HttpSource() {
         val currentPageComicPage = currentDoc.select("#comic img").first()!!
         val chapterTitle = currentPageComicPage.attr("alt")
 
-        val chapter = SChapter.create().apply {
+        val chapter =
+            SChapter.create().apply {
             /* the setUrlWithoutDomain method can't be used here because Alfie has another base
              * namespace and when retrieving the pages it is impossible to clearly differentiate an
              * Alfie Chapter from some other comic chapter. */
-            url = currentPageUrl
-            name = chapterTitle
-            chapter_number = pageNr
-        }
+                url = currentPageUrl
+                name = chapterTitle
+                chapter_number = pageNr
+            }
 
         // get the preferences for the current comic
         val seriesPrefs = Injekt.get<Application>().getSharedPreferences("source_${id}_updateTime:${comicTitle.lowercase()}", 0)
@@ -116,32 +117,33 @@ class Buttsmithy : HttpSource() {
         val pageNrRegex = "p*[0-9]+".toRegex()
 
         val currentDoc = client.newCall(GET(currentPageUrl, headers)).execute().asJsoup()
-        val pagesAsChapters = currentDoc.select("article.has-post-thumbnail .post-content")
-            .mapIndexed { index, postElement ->
-                val postTitleElement = postElement.select(".post-info .post-title a")
-                val chapUrl = postTitleElement.attr("href")
-                val title = postTitleElement.text()
-                // this is needed for the MISC chapter where the pages are not numbered
-                val pageNr =
-                    if (pageNrRegex.matches(title)) {
-                        title.substringAfter("p").trim().toFloat()
-                    } else {
-                        index + lastPageNr
-                    }
+        val pagesAsChapters =
+            currentDoc.select("article.has-post-thumbnail .post-content")
+                .mapIndexed { index, postElement ->
+                    val postTitleElement = postElement.select(".post-info .post-title a")
+                    val chapUrl = postTitleElement.attr("href")
+                    val title = postTitleElement.text()
+                    // this is needed for the MISC chapter where the pages are not numbered
+                    val pageNr =
+                        if (pageNrRegex.matches(title)) {
+                            title.substringAfter("p").trim().toFloat()
+                        } else {
+                            index + lastPageNr
+                        }
 
-                val dateString = postElement.select(".post-info .post-date").text()
-                val timeString = postElement.select(".post-info .post-time").text()
-                val date = alfieDateParser.parse("$timeString $dateString")?.time ?: 0L
+                    val dateString = postElement.select(".post-info .post-date").text()
+                    val timeString = postElement.select(".post-info .post-time").text()
+                    val date = alfieDateParser.parse("$timeString $dateString")?.time ?: 0L
 
-                SChapter.create().apply {
+                    SChapter.create().apply {
                     /* Alfie has its own name space and thus can't be handled like other comics.
                      * This means the setUrlWithoutDomain method can't be used */
-                    url = chapUrl
-                    name = title
-                    chapter_number = pageNr
-                    date_upload = date
+                        url = chapUrl
+                        name = title
+                        chapter_number = pageNr
+                        date_upload = date
+                    }
                 }
-            }
 
         allChapters.addAll(pagesAsChapters)
 

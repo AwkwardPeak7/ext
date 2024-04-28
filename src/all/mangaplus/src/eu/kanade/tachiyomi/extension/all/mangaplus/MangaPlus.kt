@@ -43,18 +43,20 @@ class MangaPlus(
 
     override val supportsLatest = true
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Origin", baseUrl)
-        .add("Referer", "$baseUrl/")
-        .add("User-Agent", USER_AGENT)
-        .add("SESSION-TOKEN", UUID.randomUUID().toString())
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Origin", baseUrl)
+            .add("Referer", "$baseUrl/")
+            .add("User-Agent", USER_AGENT)
+            .add("SESSION-TOKEN", UUID.randomUUID().toString())
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .addInterceptor(::imageIntercept)
-        .addInterceptor(::thumbnailIntercept)
-        .rateLimitHost(API_URL.toHttpUrl(), 1)
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .addInterceptor(::imageIntercept)
+            .addInterceptor(::thumbnailIntercept)
+            .rateLimitHost(API_URL.toHttpUrl(), 1)
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -99,18 +101,20 @@ class MangaPlus(
             result.error!!.langPopup(langCode)?.body ?: intl["unknown_error"]
         }
 
-        directory = result.success.titleRankingViewV2!!.rankedTitles
-            .flatMap(RankedTitle::titles)
-            .filter { it.language == langCode }
+        directory =
+            result.success.titleRankingViewV2!!.rankedTitles
+                .flatMap(RankedTitle::titles)
+                .filter { it.language == langCode }
         titleCache.putAll(directory.associateBy(Title::titleId))
 
         return parseDirectory(1)
     }
 
     private fun parseDirectory(page: Int): MangasPage {
-        val pageList = directory
-            .drop((page - 1) * LISTING_ITEMS_PER_PAGE)
-            .take(LISTING_ITEMS_PER_PAGE)
+        val pageList =
+            directory
+                .drop((page - 1) * LISTING_ITEMS_PER_PAGE)
+                .take(LISTING_ITEMS_PER_PAGE)
         val hasNextPage = (page + 1) * LISTING_ITEMS_PER_PAGE <= directory.size
 
         return MangasPage(pageList.map(Title::toSManga), hasNextPage)
@@ -136,12 +140,13 @@ class MangaPlus(
             result.error!!.langPopup(langCode)?.body ?: intl["unknown_error"]
         }
 
-        directory = result.success.webHomeViewV4!!.groups
-            .flatMap(UpdatedTitleV2Group::titleGroups)
-            .flatMap(OriginalTitleGroup::titles)
-            .map(UpdatedTitle::title)
-            .filter { it.language == langCode }
-            .distinctBy(Title::titleId)
+        directory =
+            result.success.webHomeViewV4!!.groups
+                .flatMap(UpdatedTitleV2Group::titleGroups)
+                .flatMap(OriginalTitleGroup::titles)
+                .map(UpdatedTitle::title)
+                .filter { it.language == langCode }
+                .distinctBy(Title::titleId)
 
         titleCache.putAll(directory.associateBy(Title::titleId))
         titleCache.putAll(
@@ -201,9 +206,10 @@ class MangaPlus(
         }
 
         if (result.success.titleDetailView != null) {
-            val mangaPlusTitle = result.success.titleDetailView.title
-                .takeIf { it.language == langCode }
-                ?: return MangasPage(emptyList(), hasNextPage = false)
+            val mangaPlusTitle =
+                result.success.titleDetailView.title
+                    .takeIf { it.language == langCode }
+                    ?: return MangasPage(emptyList(), hasNextPage = false)
 
             return MangasPage(listOf(mangaPlusTitle.toSManga()), hasNextPage = false)
         }
@@ -214,31 +220,34 @@ class MangaPlus(
             val titleId = result.success.mangaViewer.titleId
             val cachedTitle = titleCache[titleId]
 
-            val title = cachedTitle?.toSManga() ?: run {
-                val titleRequest = mangaDetailsRequest(titleId.toString())
-                val titleResult = client.newCall(titleRequest).execute().asMangaPlusResponse()
+            val title =
+                cachedTitle?.toSManga() ?: run {
+                    val titleRequest = mangaDetailsRequest(titleId.toString())
+                    val titleResult = client.newCall(titleRequest).execute().asMangaPlusResponse()
 
-                checkNotNull(titleResult.success) {
-                    titleResult.error!!.langPopup(langCode)?.body ?: intl["unknown_error"]
+                    checkNotNull(titleResult.success) {
+                        titleResult.error!!.langPopup(langCode)?.body ?: intl["unknown_error"]
+                    }
+
+                    titleResult.success.titleDetailView!!
+                        .takeIf { it.title.language == langCode }
+                        ?.toSManga(intl)
                 }
-
-                titleResult.success.titleDetailView!!
-                    .takeIf { it.title.language == langCode }
-                    ?.toSManga(intl)
-            }
 
             return MangasPage(listOfNotNull(title), hasNextPage = false)
         }
 
-        val allTitlesList = result.success.allTitlesViewV2!!.allTitlesGroup
-            .flatMap(AllTitlesGroup::titles)
-            .filter { it.language == langCode }
+        val allTitlesList =
+            result.success.allTitlesViewV2!!.allTitlesGroup
+                .flatMap(AllTitlesGroup::titles)
+                .filter { it.language == langCode }
 
         titleCache.putAll(allTitlesList.associateBy(Title::titleId))
-        directory = allTitlesList.filter { title ->
-            title.name.contains(query, ignoreCase = true) ||
-                title.author.orEmpty().contains(query, ignoreCase = true)
-        }
+        directory =
+            allTitlesList.filter { title ->
+                title.name.contains(query, ignoreCase = true) ||
+                    title.author.orEmpty().contains(query, ignoreCase = true)
+            }
 
         return parseDirectory(1)
     }
@@ -267,9 +276,10 @@ class MangaPlus(
             }
         }
 
-        val titleDetails = result.success.titleDetailView!!
-            .takeIf { it.title.language == langCode }
-            ?: throw Exception(intl["not_available"])
+        val titleDetails =
+            result.success.titleDetailView!!
+                .takeIf { it.title.language == langCode }
+                ?: throw Exception(intl["not_available"])
 
         return titleDetails.toSManga(intl)
     }
@@ -307,12 +317,13 @@ class MangaPlus(
     }
 
     private fun pageListRequest(chapterId: String): Request {
-        val url = "$API_URL/manga_viewer".toHttpUrl().newBuilder()
-            .addQueryParameter("chapter_id", chapterId)
-            .addQueryParameter("split", if (preferences.splitImages) "yes" else "no")
-            .addQueryParameter("img_quality", preferences.imageQuality)
-            .addQueryParameter("format", "json")
-            .toString()
+        val url =
+            "$API_URL/manga_viewer".toHttpUrl().newBuilder()
+                .addQueryParameter("chapter_id", chapterId)
+                .addQueryParameter("split", if (preferences.splitImages) "yes" else "no")
+                .addQueryParameter("img_quality", preferences.imageQuality)
+                .addQueryParameter("format", "json")
+                .toString()
 
         return GET(url, headers)
     }
@@ -341,25 +352,28 @@ class MangaPlus(
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val qualityPref = ListPreference(screen.context).apply {
-            key = "${QUALITY_PREF_KEY}_$lang"
-            title = intl["image_quality"]
-            entries = arrayOf(
-                intl["image_quality_low"],
-                intl["image_quality_medium"],
-                intl["image_quality_high"],
-            )
-            entryValues = QUALITY_PREF_ENTRY_VALUES
-            setDefaultValue(QUALITY_PREF_DEFAULT_VALUE)
-            summary = "%s"
-        }
+        val qualityPref =
+            ListPreference(screen.context).apply {
+                key = "${QUALITY_PREF_KEY}_$lang"
+                title = intl["image_quality"]
+                entries =
+                    arrayOf(
+                        intl["image_quality_low"],
+                        intl["image_quality_medium"],
+                        intl["image_quality_high"],
+                    )
+                entryValues = QUALITY_PREF_ENTRY_VALUES
+                setDefaultValue(QUALITY_PREF_DEFAULT_VALUE)
+                summary = "%s"
+            }
 
-        val splitPref = SwitchPreferenceCompat(screen.context).apply {
-            key = "${SPLIT_PREF_KEY}_$lang"
-            title = intl["split_double_pages"]
-            summary = intl["split_double_pages_summary"]
-            setDefaultValue(SPLIT_PREF_DEFAULT_VALUE)
-        }
+        val splitPref =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = "${SPLIT_PREF_KEY}_$lang"
+                title = intl["split_double_pages"]
+                summary = intl["split_double_pages_summary"]
+                setDefaultValue(SPLIT_PREF_DEFAULT_VALUE)
+            }
 
         screen.addPreference(qualityPref)
         screen.addPreference(splitPref)
@@ -394,10 +408,11 @@ class MangaPlus(
             return response
         }
 
-        val titleId = request.url.toString()
-            .substringBefore("/$TITLE_THUMBNAIL_PATH")
-            .substringAfterLast("/")
-            .toInt()
+        val titleId =
+            request.url.toString()
+                .substringBefore("/$TITLE_THUMBNAIL_PATH")
+                .substringAfterLast("/")
+                .toInt()
         val title = titleCache[titleId] ?: return response
 
         response.close()
@@ -406,17 +421,19 @@ class MangaPlus(
     }
 
     private fun ByteArray.decodeXorCipher(key: String): ByteArray {
-        val keyStream = key.chunked(2)
-            .map { it.toInt(16) }
+        val keyStream =
+            key.chunked(2)
+                .map { it.toInt(16) }
 
         return mapIndexed { i, byte -> byte.toInt() xor keyStream[i % keyStream.size] }
             .map(Int::toByte)
             .toByteArray()
     }
 
-    private fun Response.asMangaPlusResponse(): MangaPlusResponse = use {
-        json.decodeFromString(body.string())
-    }
+    private fun Response.asMangaPlusResponse(): MangaPlusResponse =
+        use {
+            json.decodeFromString(body.string())
+        }
 
     private val SharedPreferences.imageQuality: String
         get() = getString("${QUALITY_PREF_KEY}_$lang", QUALITY_PREF_DEFAULT_VALUE)!!
@@ -431,8 +448,9 @@ class MangaPlus(
 }
 
 private const val API_URL = "https://jumpg-webapi.tokyo-cdn.com/api"
-private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+private const val USER_AGENT =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
 
 private const val LISTING_ITEMS_PER_PAGE = 20
 

@@ -5,12 +5,13 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import org.jsoup.nodes.Element
 
 class ReadGojo : MangaThemesia("ReadGojo", "https://readgojo.com", "en") {
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
 
-        name = element.selectFirst(".truncate p")?.text()!!.ifBlank { element.text() }
-        date_upload = element.select("p").last()?.text()!!.split("Released ").last().parseChapterDate()
-    }
+            name = element.selectFirst(".truncate p")?.text()!!.ifBlank { element.text() }
+            date_upload = element.select("p").last()?.text()!!.split("Released ").last().parseChapterDate()
+        }
 
     override fun chapterListSelector() = "#chapterlist > a"
 

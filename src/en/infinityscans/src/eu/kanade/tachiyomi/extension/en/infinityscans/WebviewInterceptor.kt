@@ -52,19 +52,20 @@ class WebviewInterceptor(private val baseUrl: String) : Interceptor {
                 loadWithOverviewMode = false
             }
 
-            webview.webViewClient = object : WebViewClient() {
-                override fun shouldInterceptRequest(
-                    view: WebView?,
-                    request: WebResourceRequest?,
-                ): WebResourceResponse? {
-                    if (request?.url.toString().contains("$baseUrl/ajax/turnstile")) {
-                        hasSetCookies = true
-                    } else if (request?.url.toString().contains(baseUrl) && hasSetCookies) {
-                        latch.countDown()
+            webview.webViewClient =
+                object : WebViewClient() {
+                    override fun shouldInterceptRequest(
+                        view: WebView?,
+                        request: WebResourceRequest?,
+                    ): WebResourceResponse? {
+                        if (request?.url.toString().contains("$baseUrl/ajax/turnstile")) {
+                            hasSetCookies = true
+                        } else if (request?.url.toString().contains(baseUrl) && hasSetCookies) {
+                            latch.countDown()
+                        }
+                        return super.shouldInterceptRequest(view, request)
                     }
-                    return super.shouldInterceptRequest(view, request)
                 }
-            }
 
             webview.loadUrl("$baseUrl/")
         }

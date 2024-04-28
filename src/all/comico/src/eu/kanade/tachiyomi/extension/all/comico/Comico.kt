@@ -49,37 +49,41 @@ open class Comico(
     }
 
     private val apiHeaders: Headers
-        get() = headersBuilder().apply {
-            val time = System.currentTimeMillis() / 1000L
-            this["X-comico-request-time"] = time.toString()
-            this["X-comico-check-sum"] = sha256(time)
-            this["X-comico-client-immutable-uid"] = ANON_IP
-            this["X-comico-client-accept-mature"] = "Y"
-            this["X-comico-client-platform"] = "web"
-            this["X-comico-client-store"] = "other"
-            this["X-comico-client-os"] = "aos"
-            this["Origin"] = baseUrl
-        }.build()
+        get() =
+            headersBuilder().apply {
+                val time = System.currentTimeMillis() / 1000L
+                this["X-comico-request-time"] = time.toString()
+                this["X-comico-check-sum"] = sha256(time)
+                this["X-comico-client-immutable-uid"] = ANON_IP
+                this["X-comico-client-accept-mature"] = "Y"
+                this["X-comico-client-platform"] = "web"
+                this["X-comico-client-store"] = "other"
+                this["X-comico-client-os"] = "aos"
+                this["Origin"] = baseUrl
+            }.build()
 
-    override val client = network.client.newBuilder()
-        .cookieJar(
-            object : CookieJar {
-                override fun saveFromResponse(
-                    url: HttpUrl,
-                    cookies: List<Cookie>,
-                ) = cookies.filter { it.matches(url) }.forEach {
-                    cookieManager.setCookie(url.toString(), it.toString())
-                }
+    override val client =
+        network.client.newBuilder()
+            .cookieJar(
+                object : CookieJar {
+                    override fun saveFromResponse(
+                        url: HttpUrl,
+                        cookies: List<Cookie>,
+                    ) = cookies.filter { it.matches(url) }.forEach {
+                        cookieManager.setCookie(url.toString(), it.toString())
+                    }
 
-                override fun loadForRequest(url: HttpUrl) = cookieManager.getCookie(url.toString())?.split("; ")
-                    ?.mapNotNull { Cookie.parse(url, it) } ?: emptyList()
-            },
-        ).build()
+                    override fun loadForRequest(url: HttpUrl) =
+                        cookieManager.getCookie(url.toString())?.split("; ")
+                            ?.mapNotNull { Cookie.parse(url, it) } ?: emptyList()
+                },
+            ).build()
 
-    override fun headersBuilder() = Headers.Builder()
-        .set("Accept-Language", langCode)
-        .set("User-Agent", userAgent)
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        Headers.Builder()
+            .set("Accept-Language", langCode)
+            .set("User-Agent", userAgent)
+            .set("Referer", "$baseUrl/")
 
     override fun latestUpdatesRequest(page: Int) = paginate("all_comic/daily/$day", page)
 
@@ -106,26 +110,29 @@ open class Comico(
     override fun popularMangaParse(response: Response): MangasPage {
         val data = response.data
         val hasNext = data["page"]["hasNext"]
-        val mangas = data.map<ContentInfo, SManga>("contents") {
-            SManga.create().apply {
-                title = it.name
-                url = "/comic/${it.id}"
-                thumbnail_url = it.cover
-                description = it.description
-                status = when (it.status) {
-                    "completed" -> SManga.COMPLETED
-                    else -> SManga.ONGOING
-                }
-                author = it.authors?.filter { it.isAuthor }?.joinToString()
-                artist = it.authors?.filter { it.isArtist }?.joinToString()
-                genre = buildString {
-                    it.genres?.joinTo(this)
-                    if (it.mature) append(", Mature")
-                    if (it.original) append(", Original")
-                    if (it.exclusive) append(", Exclusive")
+        val mangas =
+            data.map<ContentInfo, SManga>("contents") {
+                SManga.create().apply {
+                    title = it.name
+                    url = "/comic/${it.id}"
+                    thumbnail_url = it.cover
+                    description = it.description
+                    status =
+                        when (it.status) {
+                            "completed" -> SManga.COMPLETED
+                            else -> SManga.ONGOING
+                        }
+                    author = it.authors?.filter { it.isAuthor }?.joinToString()
+                    artist = it.authors?.filter { it.isArtist }?.joinToString()
+                    genre =
+                        buildString {
+                            it.genres?.joinTo(this)
+                            if (it.mature) append(", Mature")
+                            if (it.original) append(", Original")
+                            if (it.exclusive) append(", Exclusive")
+                        }
                 }
             }
-        }
         return MangasPage(mangas, hasNext.jsonPrimitive.boolean)
     }
 
@@ -144,17 +151,19 @@ open class Comico(
         }.reversed()
     }
 
-    override fun pageListParse(response: Response) = response.data["chapter"].map<ChapterImage, Page>("images") {
-        Page(it.sort, "", it.url.decrypt() + "?" + it.parameter)
-    }
+    override fun pageListParse(response: Response) =
+        response.data["chapter"].map<ChapterImage, Page>("images") {
+            Page(it.sort, "", it.url.decrypt() + "?" + it.parameter)
+        }
 
     override fun fetchMangaDetails(manga: SManga) = rx.Observable.just(manga.apply { initialized = true })!!
 
-    override fun fetchPageList(chapter: SChapter) = if (!chapter.name.endsWith(LOCK)) {
-        super.fetchPageList(chapter)
-    } else {
-        throw Error("You are not authorized to view this!")
-    }
+    override fun fetchPageList(chapter: SChapter) =
+        if (!chapter.name.endsWith(LOCK)) {
+            super.fetchPageList(chapter)
+        } else {
+            throw Error("You are not authorized to view this!")
+        }
 
     private fun search(
         query: String,
@@ -171,10 +180,11 @@ open class Comico(
     private fun String.decrypt() = CryptoAES.decrypt(this, keyBytes, ivBytes)
 
     private val Response.data: JsonElement?
-        get() = json.parseToJsonElement(body.string()).jsonObject.also {
-            val code = it["result"]["code"].jsonPrimitive.int
-            if (code != 200) throw Error(status(code))
-        }["data"]
+        get() =
+            json.parseToJsonElement(body.string()).jsonObject.also {
+                val code = it["result"]["code"].jsonPrimitive.int
+                if (code != 200) throw Error(status(code))
+            }["data"]
 
     private operator fun JsonElement?.get(key: String) = this!!.jsonObject[key]!!
 
@@ -224,29 +234,31 @@ open class Comico(
             }
         }
 
-        fun sha256(timestamp: Long) = buildString(64) {
-            SHA256.digest((WEB_KEY + ANON_IP + timestamp).toByteArray())
-                .joinTo(this, "") { "%02x".format(it) }
-            SHA256.reset()
-        }
+        fun sha256(timestamp: Long) =
+            buildString(64) {
+                SHA256.digest((WEB_KEY + ANON_IP + timestamp).toByteArray())
+                    .joinTo(this, "") { "%02x".format(it) }
+                SHA256.reset()
+            }
 
-        private fun status(code: Int) = when (code) {
-            400 -> "Bad Request"
-            401 -> "Unauthorized"
-            402 -> "Payment Required"
-            403 -> "Forbidden"
-            404 -> "Not Found"
-            408 -> "Request Timeout"
-            409 -> "Conflict"
-            410 -> "DormantAccount"
-            417 -> "Expectation Failed"
-            426 -> "Upgrade Required"
-            428 -> "성인 on/off 권한"
-            429 -> "Too Many Requests"
-            500 -> "Internal Server Error"
-            503 -> "Service Unavailable"
-            451 -> "성인 인증"
-            else -> "Error $code"
-        }
+        private fun status(code: Int) =
+            when (code) {
+                400 -> "Bad Request"
+                401 -> "Unauthorized"
+                402 -> "Payment Required"
+                403 -> "Forbidden"
+                404 -> "Not Found"
+                408 -> "Request Timeout"
+                409 -> "Conflict"
+                410 -> "DormantAccount"
+                417 -> "Expectation Failed"
+                426 -> "Upgrade Required"
+                428 -> "성인 on/off 권한"
+                429 -> "Too Many Requests"
+                500 -> "Internal Server Error"
+                503 -> "Service Unavailable"
+                451 -> "성인 인증"
+                else -> "Error $code"
+            }
     }
 }

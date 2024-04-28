@@ -34,10 +34,11 @@ class ZeurelScan : HttpSource() {
     override fun popularMangaParse(response: Response): MangasPage {
         mangaList.clear()
         response.asJsoup().select("a.titoliSerie").forEach {
-            val manga = SManga.create().apply {
-                setUrlWithoutDomain(it.attr("href"))
-                title = it.text()
-            }
+            val manga =
+                SManga.create().apply {
+                    setUrlWithoutDomain(it.attr("href"))
+                    title = it.text()
+                }
             mangaList.add(manga)
         }
         return MangasPage(mangaList, false)
@@ -50,21 +51,23 @@ class ZeurelScan : HttpSource() {
     override fun latestUpdatesParse(response: Response): MangasPage {
         val document = response.asJsoup()
         // The titles of all unique manga in the latest section
-        val titles = document.select("div.capitoli_mini").distinctBy {
-            it.selectFirst("div:not(:has(img))")!!.text()
-        }.map { it.selectFirst("div:not(:has(img))")!!.text() }
+        val titles =
+            document.select("div.capitoli_mini").distinctBy {
+                it.selectFirst("div:not(:has(img))")!!.text()
+            }.map { it.selectFirst("div:not(:has(img))")!!.text() }
 
         // Gets manga link from dropdown menu as latest section links directly to chapter
-        val latestManga = document.select("a.titoliSerie").mapNotNull { element ->
-            if (titles.any { title -> title.contains(element.text()) }) {
-                SManga.create().apply {
-                    setUrlWithoutDomain(element.attr("href"))
-                    title = element.text()
+        val latestManga =
+            document.select("a.titoliSerie").mapNotNull { element ->
+                if (titles.any { title -> title.contains(element.text()) }) {
+                    SManga.create().apply {
+                        setUrlWithoutDomain(element.attr("href"))
+                        title = element.text()
+                    }
+                } else {
+                    null
                 }
-            } else {
-                null
             }
-        }
         return MangasPage(latestManga, false)
     }
 
@@ -74,9 +77,10 @@ class ZeurelScan : HttpSource() {
         page: Int,
         query: String,
         filters: FilterList,
-    ): Observable<MangasPage> = Observable.just(
-        MangasPage(mangaList.filter { it.title.contains(query, true) }, false),
-    )
+    ): Observable<MangasPage> =
+        Observable.just(
+            MangasPage(mangaList.filter { it.title.contains(query, true) }, false),
+        )
 
     override fun searchMangaParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
@@ -88,25 +92,27 @@ class ZeurelScan : HttpSource() {
 
     // Details
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val document = response.asJsoup()
-        val info = document.selectFirst("div.testo")!!
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val document = response.asJsoup()
+            val info = document.selectFirst("div.testo")!!
 
-        title = info.selectFirst("div.intestazione:contains(Titolo)")!!.nextElementSibling()!!.text()
-        author = info.selectFirst("div.intestazione:contains(Autore)")!!.nextElementSibling()!!.text()
-        artist = info.selectFirst("div.intestazione:contains(Artista)")!!.nextElementSibling()!!.text()
-        genre = info.selectFirst("div.intestazione:contains(Genere)")!!.nextElementSibling()!!.text()
-        description = info.selectFirst("div.intestazione:contains(Trama)")!!.nextElementSibling()!!.text()
-        thumbnail_url = document.select("div.immagine > img").attr("abs:src")
+            title = info.selectFirst("div.intestazione:contains(Titolo)")!!.nextElementSibling()!!.text()
+            author = info.selectFirst("div.intestazione:contains(Autore)")!!.nextElementSibling()!!.text()
+            artist = info.selectFirst("div.intestazione:contains(Artista)")!!.nextElementSibling()!!.text()
+            genre = info.selectFirst("div.intestazione:contains(Genere)")!!.nextElementSibling()!!.text()
+            description = info.selectFirst("div.intestazione:contains(Trama)")!!.nextElementSibling()!!.text()
+            thumbnail_url = document.select("div.immagine > img").attr("abs:src")
 
-        status = parseStatus(info.selectFirst("div.intestazione:contains(Stato)")!!.nextElementSibling()!!.text())
-    }
+            status = parseStatus(info.selectFirst("div.intestazione:contains(Stato)")!!.nextElementSibling()!!.text())
+        }
 
-    private fun parseStatus(status: String) = when {
-        status.contains("In Corso", true) -> SManga.ONGOING
-        status.contains("Completa", true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String) =
+        when {
+            status.contains("In Corso", true) -> SManga.ONGOING
+            status.contains("Completa", true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // Chapters
 
@@ -122,15 +128,17 @@ class ZeurelScan : HttpSource() {
         }
     }
 
-    private fun parseChapterDate(date: String): Long = try {
-        SimpleDateFormat("d MMM yyyy", Locale.ITALIAN).parse(date)?.time ?: 0L
-    } catch (e: ParseException) {
-        0L
-    }
+    private fun parseChapterDate(date: String): Long =
+        try {
+            SimpleDateFormat("d MMM yyyy", Locale.ITALIAN).parse(date)?.time ?: 0L
+        } catch (e: ParseException) {
+            0L
+        }
 
-    override fun pageListParse(response: Response): List<Page> = response.asJsoup().select("div.Immag img").mapIndexed { i, element ->
-        Page(i, "", element.attr("abs:src"))
-    }
+    override fun pageListParse(response: Response): List<Page> =
+        response.asJsoup().select("div.Immag img").mapIndexed { i, element ->
+            Page(i, "", element.attr("abs:src"))
+        }
 
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 }

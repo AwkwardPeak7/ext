@@ -12,9 +12,10 @@ class MangaLeveling : Madara("Manga Leveling", "https://mangaleveling.com", "en"
 
         with(element) {
             selectFirst(chapterUrlSelector)!!.let { urlElement ->
-                chapter.url = urlElement.attr("abs:href").let {
-                    it.substringBefore("?style=paged") + if (!it.endsWith(chapterUrlSuffix)) chapterUrlSuffix else ""
-                }
+                chapter.url =
+                    urlElement.attr("abs:href").let {
+                        it.substringBefore("?style=paged") + if (!it.endsWith(chapterUrlSuffix)) chapterUrlSuffix else ""
+                    }
                 chapter.name = urlElement.selectFirst("span")!!.text()
             }
             // Dates can be part of a "new" graphic or plain text

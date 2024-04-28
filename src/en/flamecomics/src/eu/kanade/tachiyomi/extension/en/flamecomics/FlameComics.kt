@@ -24,18 +24,20 @@ class FlameComics : MangaThemesia(
     // Flame Scans -> Flame Comics
     override val id = 6350607071566689772
 
-    override val client = super.client.newBuilder()
-        .rateLimit(2, 7)
-        .addInterceptor(::composedImageIntercept)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2, 7)
+            .addInterceptor(::composedImageIntercept)
+            .build()
 
     // Split Image Fixer Start
     private val composedSelector: String = "#readerarea div.figure_container div.composed_figure"
 
     override fun pageListParse(document: Document): List<Page> {
-        val hasSplitImages = document
-            .select(composedSelector)
-            .firstOrNull() != null
+        val hasSplitImages =
+            document
+                .select(composedSelector)
+                .firstOrNull() != null
 
         if (!hasSplitImages) {
             return super.pageListParse(document)
@@ -51,8 +53,9 @@ class FlameComics : MangaThemesia(
                 if (el.tagName() == "p") {
                     Page(i, "", el.select("img").attr("abs:src"))
                 } else {
-                    val imageUrls = el.select("img")
-                        .joinToString("|") { it.attr("abs:src") }
+                    val imageUrls =
+                        el.select("img")
+                            .joinToString("|") { it.attr("abs:src") }
 
                     Page(i, document.location(), imageUrls + COMPOSED_SUFFIX)
                 }
@@ -64,24 +67,26 @@ class FlameComics : MangaThemesia(
             return chain.proceed(chain.request())
         }
 
-        val imageUrls = chain.request().url.toString()
-            .removeSuffix(COMPOSED_SUFFIX)
-            .split("%7C")
+        val imageUrls =
+            chain.request().url.toString()
+                .removeSuffix(COMPOSED_SUFFIX)
+                .split("%7C")
 
         var width = 0
         var height = 0
 
-        val imageBitmaps = imageUrls.map { imageUrl ->
-            val request = chain.request().newBuilder().url(imageUrl).build()
-            val response = chain.proceed(request)
+        val imageBitmaps =
+            imageUrls.map { imageUrl ->
+                val request = chain.request().newBuilder().url(imageUrl).build()
+                val response = chain.proceed(request)
 
-            val bitmap = BitmapFactory.decodeStream(response.body.byteStream())
+                val bitmap = BitmapFactory.decodeStream(response.body.byteStream())
 
-            width += bitmap.width
-            height = bitmap.height
+                width += bitmap.width
+                height = bitmap.height
 
-            bitmap
-        }
+                bitmap
+            }
 
         val result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(result)

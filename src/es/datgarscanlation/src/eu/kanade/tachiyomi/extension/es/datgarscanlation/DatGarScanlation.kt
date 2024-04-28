@@ -12,7 +12,8 @@ class DatGarScanlation : ZeistManga(
     override val hasFilters = true
     override val hasLanguageFilter = false
 
-    override val client = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 }

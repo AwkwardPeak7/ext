@@ -20,11 +20,12 @@ class MangabzUrlActivity : Activity() {
         if (pathSegments != null && pathSegments.size > 0) {
             val titleId = pathSegments[0]
 
-            val mainIntent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", "${Mangabz.PREFIX_ID_SEARCH}$titleId")
-                putExtra("filter", packageName)
-            }
+            val mainIntent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra("query", "${Mangabz.PREFIX_ID_SEARCH}$titleId")
+                    putExtra("filter", packageName)
+                }
 
             try {
                 startActivity(mainIntent)

@@ -30,18 +30,20 @@ class UniComics : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .rateLimit(3)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .rateLimit(3)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add(
-            "User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
-        )
-        .add("Referer", baseDefaultUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add(
+                "User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50",
+            )
+            .add("Referer", baseDefaultUrl)
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseDefaultUrl/comics/series/page/$page", headers)
 
@@ -115,21 +117,23 @@ class UniComics : ParsedHttpSource() {
         val document = response.asJsoup()
 
         if (document.location().contains("$baseDefaultUrl$PATH_events")) {
-            val mangas = document.select(".list_events").map { element ->
-                SManga.create().apply {
-                    element.select("a").first()!!.let {
-                        setUrlWithoutDomain("/" + it.attr("href"))
-                        title = it.text()
+            val mangas =
+                document.select(".list_events").map { element ->
+                    SManga.create().apply {
+                        element.select("a").first()!!.let {
+                            setUrlWithoutDomain("/" + it.attr("href"))
+                            title = it.text()
+                        }
                     }
                 }
-            }
             return MangasPage(mangas, false)
         }
 
         if (document.location().contains("$baseDefaultUrl/comics")) {
-            val mangas = document.select(popularMangaSelector()).map { element ->
-                popularMangaFromElement(element)
-            }
+            val mangas =
+                document.select(popularMangaSelector()).map { element ->
+                    popularMangaFromElement(element)
+                }
             return MangasPage(mangas, mangas.isNotEmpty())
         }
 
@@ -140,9 +144,10 @@ class UniComics : ParsedHttpSource() {
             baseUrl = baseDefaultUrl
         }
 
-        val mangas = document.select(searchMangaSelector()).map { element ->
-            searchMangaFromElement(element)
-        }
+        val mangas =
+            document.select(searchMangaSelector()).map { element ->
+                searchMangaFromElement(element)
+            }
         var hasNextPage = false
         val nextSearchPage = document.select(searchMangaNextPageSelector())
         if (nextSearchPage.isNotEmpty()) {
@@ -206,26 +211,29 @@ class UniComics : ParsedHttpSource() {
         return GET(baseDefaultUrl + manga.url, headers)
     }
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        val infoElement = document.select(".left_container div").first()!!
-        title = infoElement.select("h1").first()!!.text()
-        thumbnail_url = if (infoElement.select("img").isNotEmpty()) {
-            infoElement.select("img").first()!!.attr("src")
-        } else {
-            document.select(".left_comics img").first()!!.attr("src").replace(".jpg", "_big.jpg")
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            val infoElement = document.select(".left_container div").first()!!
+            title = infoElement.select("h1").first()!!.text()
+            thumbnail_url =
+                if (infoElement.select("img").isNotEmpty()) {
+                    infoElement.select("img").first()!!.attr("src")
+                } else {
+                    document.select(".left_comics img").first()!!.attr("src").replace(".jpg", "_big.jpg")
+                }
+            description = infoElement.select("H2").first()!!.text() + "\n" + infoElement.select("p").last()?.text().orEmpty()
+            author = infoElement.select("tr:contains(Издательство)").text()
+            genre = infoElement.select("tr:contains(Жанр) a").joinToString { it.text() }
         }
-        description = infoElement.select("H2").first()!!.text() + "\n" + infoElement.select("p").last()?.text().orEmpty()
-        author = infoElement.select("tr:contains(Издательство)").text()
-        genre = infoElement.select("tr:contains(Жанр) a").joinToString { it.text() }
-    }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         val document = client.newCall(GET(baseDefaultUrl + manga.url, headers)).execute().asJsoup()
         val pages = mutableListOf(1)
-        val dataStrArray = document.toString()
-            .substringAfter("new Paginator(")
-            .substringBefore(");</script>")
-            .split(", ")
+        val dataStrArray =
+            document.toString()
+                .substringAfter("new Paginator(")
+                .substringBefore(");</script>")
+                .split(", ")
         if (dataStrArray[1].toInt() > 1) {
             pages += (2..dataStrArray[1].toInt()).toList()
         }
@@ -261,11 +269,12 @@ class UniComics : ParsedHttpSource() {
         val chapter = SChapter.create()
         element.select(".list_title").first()!!.text().let {
             val titleNoPrefix = it.removePrefix(manga.title).removePrefix(":").trim()
-            chapter.name = if (titleNoPrefix.isNotEmpty()) {
-                titleNoPrefix.replaceFirst(titleNoPrefix.first(), titleNoPrefix.first().uppercaseChar())
-            } else {
-                "Сингл"
-            }
+            chapter.name =
+                if (titleNoPrefix.isNotEmpty()) {
+                    titleNoPrefix.replaceFirst(titleNoPrefix.first(), titleNoPrefix.first().uppercaseChar())
+                } else {
+                    "Сингл"
+                }
             if (titleNoPrefix.contains("№")) {
                 chapter.chapter_number = titleNoPrefix.substringAfterLast("№").toFloatOrNull() ?: -1f
             }
@@ -281,10 +290,11 @@ class UniComics : ParsedHttpSource() {
     }
 
     override fun pageListParse(document: Document): List<Page> {
-        val dataStrArray = document.toString()
-            .substringAfter("new Paginator(")
-            .substringBefore(");</script>")
-            .split(", ")
+        val dataStrArray =
+            document.toString()
+                .substringAfter("new Paginator(")
+                .substringBefore(");</script>")
+                .split(", ")
         return (1..dataStrArray[1].toInt()).mapIndexed { i, page ->
             Page(i, document.location() + "/$page")
         }
@@ -296,10 +306,11 @@ class UniComics : ParsedHttpSource() {
 
     private class Publishers(publishers: Array<String>) : Filter.Select<String>("Издательства (только)", publishers)
 
-    override fun getFilterList() = FilterList(
-        Publishers(publishersName),
-        GetEventsList(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Publishers(publishersName),
+            GetEventsList(),
+        )
 
     private class GetEventsList : Filter.Select<String>(
         "События (только)",
@@ -308,54 +319,56 @@ class UniComics : ParsedHttpSource() {
 
     private data class Publisher(val name: String, val url: String)
 
-    private fun getPublishersList() = listOf(
-        Publisher("Все", "not"),
-        Publisher("Marvel", "marvel"),
-        Publisher("DC Comics", "dc"),
-        Publisher("Image Comics", "imagecomics"),
-        Publisher("Dark Horse Comics", "dark-horse-comics"),
-        Publisher("IDW Publishing", "idw"),
-        Publisher("Vertigo", "vertigo"),
-        Publisher("WildStorm", "wildstorm"),
-        Publisher("Dynamite Entertainment", "dynamite"),
-        Publisher("Boom! Studios", "boomstudios"),
-        Publisher("Avatar Press", "avatarpress"),
-        Publisher("Fox Atomicg", "foxatomic"),
-        Publisher("Top Shelf Productions", "topshelfproduct"),
-        Publisher("Topps", "topps"),
-        Publisher("Radical Publishing", "radical-publishing"),
-        Publisher("Top Cow", "top-cow"),
-        Publisher("Zenescope Entertainment", "zenescope"),
-        Publisher("88MPH", "88mph"),
-        Publisher("Soleil", "soleil"),
-        Publisher("Warner Bros. Entertainment", "warner-bros"),
-        Publisher("Ubisoft Entertainment", "ubisoft"),
-        Publisher("Oni Press", "oni-press"),
-        Publisher("Armada", "delcourt"),
-        Publisher("Heavy Metal", "heavy-metal"),
-        Publisher("Harris Comics", "harris-comics"),
-        Publisher("Antarctic Press", "antarctic-press"),
-        Publisher("Valiant", "valiant"),
-        Publisher("Disney", "disney"),
-        Publisher("Malibu", "malibu"),
-        Publisher("Slave Labor", "slave-labor"),
-        Publisher("Nbm", "nbm"),
-        Publisher("Viper Comics", "viper-comics"),
-        Publisher("Random House", "random-house"),
-        Publisher("Active Images", "active-images"),
-        Publisher("Eurotica", "eurotica"),
-        Publisher("Vortex", "vortex"),
-        Publisher("Fantagraphics", "fantagraphics"),
-        Publisher("Epic", "epic"),
-        Publisher("Warp Graphics", "warp-graphics"),
-        Publisher("Scholastic Book Services", "scholastic-book-services"),
-        Publisher("Ballantine Books", "ballantine-books"),
-        Publisher("Id Software", "id-software"),
-    )
+    private fun getPublishersList() =
+        listOf(
+            Publisher("Все", "not"),
+            Publisher("Marvel", "marvel"),
+            Publisher("DC Comics", "dc"),
+            Publisher("Image Comics", "imagecomics"),
+            Publisher("Dark Horse Comics", "dark-horse-comics"),
+            Publisher("IDW Publishing", "idw"),
+            Publisher("Vertigo", "vertigo"),
+            Publisher("WildStorm", "wildstorm"),
+            Publisher("Dynamite Entertainment", "dynamite"),
+            Publisher("Boom! Studios", "boomstudios"),
+            Publisher("Avatar Press", "avatarpress"),
+            Publisher("Fox Atomicg", "foxatomic"),
+            Publisher("Top Shelf Productions", "topshelfproduct"),
+            Publisher("Topps", "topps"),
+            Publisher("Radical Publishing", "radical-publishing"),
+            Publisher("Top Cow", "top-cow"),
+            Publisher("Zenescope Entertainment", "zenescope"),
+            Publisher("88MPH", "88mph"),
+            Publisher("Soleil", "soleil"),
+            Publisher("Warner Bros. Entertainment", "warner-bros"),
+            Publisher("Ubisoft Entertainment", "ubisoft"),
+            Publisher("Oni Press", "oni-press"),
+            Publisher("Armada", "delcourt"),
+            Publisher("Heavy Metal", "heavy-metal"),
+            Publisher("Harris Comics", "harris-comics"),
+            Publisher("Antarctic Press", "antarctic-press"),
+            Publisher("Valiant", "valiant"),
+            Publisher("Disney", "disney"),
+            Publisher("Malibu", "malibu"),
+            Publisher("Slave Labor", "slave-labor"),
+            Publisher("Nbm", "nbm"),
+            Publisher("Viper Comics", "viper-comics"),
+            Publisher("Random House", "random-house"),
+            Publisher("Active Images", "active-images"),
+            Publisher("Eurotica", "eurotica"),
+            Publisher("Vortex", "vortex"),
+            Publisher("Fantagraphics", "fantagraphics"),
+            Publisher("Epic", "epic"),
+            Publisher("Warp Graphics", "warp-graphics"),
+            Publisher("Scholastic Book Services", "scholastic-book-services"),
+            Publisher("Ballantine Books", "ballantine-books"),
+            Publisher("Id Software", "id-software"),
+        )
 
-    private val publishersName = getPublishersList().map {
-        it.name
-    }.toTypedArray()
+    private val publishersName =
+        getPublishersList().map {
+            it.name
+        }.toTypedArray()
 
     companion object {
         const val PREFIX_SLUG_SEARCH = "slug:"

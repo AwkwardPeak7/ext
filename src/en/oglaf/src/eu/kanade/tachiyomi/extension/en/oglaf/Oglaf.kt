@@ -24,15 +24,16 @@ class Oglaf : ParsedHttpSource() {
     override val supportsLatest = false
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        val manga = SManga.create().apply {
-            title = "Oglaf"
-            artist = "Trudy Cooper & Doug Bayne"
-            author = "Trudy Cooper & Doug Bayne"
-            status = SManga.ONGOING
-            url = "/archive/"
-            description = "Filth and other Fantastical Things in handy webcomic form."
-            thumbnail_url = "https://i.ibb.co/tzY0VQ9/oglaf.png"
-        }
+        val manga =
+            SManga.create().apply {
+                title = "Oglaf"
+                artist = "Trudy Cooper & Doug Bayne"
+                author = "Trudy Cooper & Doug Bayne"
+                status = SManga.ONGOING
+                url = "/archive/"
+                description = "Filth and other Fantastical Things in handy webcomic form."
+                thumbnail_url = "https://i.ibb.co/tzY0VQ9/oglaf.png"
+            }
 
         return Observable.just(MangasPage(arrayListOf(manga), false))
     }

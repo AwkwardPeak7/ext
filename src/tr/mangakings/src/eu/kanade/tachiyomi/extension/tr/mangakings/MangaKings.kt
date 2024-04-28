@@ -13,9 +13,10 @@ class MangaKings : MangaThemesia(
     "tr",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("tr")),
 ) {
-    override val client = network.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
     // =========================== Manga Details ============================
     override val seriesArtistSelector = ".fmed b:contains(Çizer) + span"
@@ -23,10 +24,11 @@ class MangaKings : MangaThemesia(
     override val seriesStatusSelector = ".tsinfo .imptdt:contains(Durum) i"
     override val seriesTypeSelector = ".tsinfo .imptdt:contains(Türü) a"
 
-    override fun String?.parseStatus() = when {
-        this == null -> SManga.UNKNOWN
-        contains("Devam Ediyor", true) -> SManga.ONGOING
-        contains("Tamamlandı", true) || contains("bitti", true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    override fun String?.parseStatus() =
+        when {
+            this == null -> SManga.UNKNOWN
+            contains("Devam Ediyor", true) -> SManga.ONGOING
+            contains("Tamamlandı", true) || contains("bitti", true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 }

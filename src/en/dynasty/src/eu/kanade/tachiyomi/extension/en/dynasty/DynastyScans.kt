@@ -123,14 +123,15 @@ abstract class DynastyScans : ParsedHttpSource() {
             manga.artist = elements[0].text()
             manga.author = elements[1].text()
         }
-        manga.status = document.select("div.tags > h2.tag-title > small").text().let {
-            when {
-                it.contains("Ongoing") -> SManga.ONGOING
-                it.contains("Completed") -> SManga.COMPLETED
-                it.contains("Licensed") -> SManga.LICENSED
-                else -> SManga.UNKNOWN
+        manga.status =
+            document.select("div.tags > h2.tag-title > small").text().let {
+                when {
+                    it.contains("Ongoing") -> SManga.ONGOING
+                    it.contains("Completed") -> SManga.COMPLETED
+                    it.contains("Licensed") -> SManga.LICENSED
+                    else -> SManga.UNKNOWN
+                }
             }
-        }
         return true
     }
 
@@ -197,10 +198,11 @@ abstract class DynastyScans : ParsedHttpSource() {
                 chapter.name += " and ${nodes[nodes.indexOfPartial(" and ") + 1]}"
             }
         }
-        chapter.date_upload = nodes[nodes.indexOfPartial("released")]
-            .substringAfter("released ")
-            .replace("\'", "")
-            .toDate("MMM dd yy")
+        chapter.date_upload =
+            nodes[nodes.indexOfPartial("released")]
+                .substringAfter("released ")
+                .replace("\'", "")
+                .toDate("MMM dd yy")
         return chapter
     }
 

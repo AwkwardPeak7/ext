@@ -36,8 +36,9 @@ abstract class FansubsCat(
 
     override val supportsLatest = true
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", "Tachiyomi/${AppInfo.getVersionName()}")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("User-Agent", "Tachiyomi/${AppInfo.getVersionName()}")
 
     override val client: OkHttpClient = network.client
 
@@ -46,17 +47,18 @@ abstract class FansubsCat(
     private fun parseMangaFromJson(response: Response): MangasPage {
         val jsonObject = json.decodeFromString<JsonObject>(response.body.string())
 
-        val mangas = jsonObject["result"]!!.jsonArray.map { json ->
-            SManga.create().apply {
-                url = json.jsonObject["slug"]!!.jsonPrimitive.content
-                title = json.jsonObject["name"]!!.jsonPrimitive.content
-                thumbnail_url = json.jsonObject["thumbnail_url"]!!.jsonPrimitive.content
-                author = json.jsonObject["author"]!!.jsonPrimitive.contentOrNull
-                description = json.jsonObject["synopsis"]!!.jsonPrimitive.contentOrNull
-                status = json.jsonObject["status"]!!.jsonPrimitive.content.toStatus()
-                genre = json.jsonObject["genres"]!!.jsonPrimitive.contentOrNull
+        val mangas =
+            jsonObject["result"]!!.jsonArray.map { json ->
+                SManga.create().apply {
+                    url = json.jsonObject["slug"]!!.jsonPrimitive.content
+                    title = json.jsonObject["name"]!!.jsonPrimitive.content
+                    thumbnail_url = json.jsonObject["thumbnail_url"]!!.jsonPrimitive.content
+                    author = json.jsonObject["author"]!!.jsonPrimitive.contentOrNull
+                    description = json.jsonObject["synopsis"]!!.jsonPrimitive.contentOrNull
+                    status = json.jsonObject["status"]!!.jsonPrimitive.content.toStatus()
+                    genre = json.jsonObject["genres"]!!.jsonPrimitive.contentOrNull
+                }
             }
-        }
 
         return MangasPage(mangas, mangas.size >= 20)
     }
@@ -158,12 +160,13 @@ abstract class FansubsCat(
         }
     }
 
-    private fun String?.toStatus() = when {
-        this == null -> SManga.UNKNOWN
-        this.contains("ongoing", ignoreCase = true) -> SManga.ONGOING
-        this.contains("finished", ignoreCase = true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun String?.toStatus() =
+        when {
+            this == null -> SManga.UNKNOWN
+            this.contains("ongoing", ignoreCase = true) -> SManga.ONGOING
+            this.contains("finished", ignoreCase = true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // Chapters
 
@@ -194,124 +197,130 @@ abstract class FansubsCat(
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     // Filter
-    override fun getFilterList() = FilterList(
+    override fun getFilterList() =
+        FilterList(
+            listOfNotNull(
+                MangaTypeFilter("Tipus", getMangaTypeList()),
+                StateFilter("Estat", getStateList()),
+                if (!isHentaiSite) {
+                    DemographyFilter("Demografies", getDemographyList())
+                } else {
+                    null
+                },
+                GenreTagFilter("Gèneres (inclou/exclou)", getGenreList()),
+                ThemeTagFilter("Temàtiques (inclou/exclou)", getThemeList()),
+            ),
+        )
+
+    private fun getMangaTypeList() =
+        listOf(
+            MangaType("oneshot", "One-shots"),
+            MangaType("serialized", "Serialitzats"),
+        )
+
+    private fun getStateList() =
+        listOf(
+            State(1, "Completat"),
+            State(2, "En procés"),
+            State(3, "Parcialment completat"),
+            State(4, "Abandonat"),
+            State(5, "Cancel·lat"),
+        )
+
+    private fun getDemographyList() =
+        listOf(
+            Demography(35, "Infantil"),
+            Demography(27, "Josei"),
+            Demography(12, "Seinen"),
+            Demography(16, "Shōjo"),
+            Demography(1, "Shōnen"),
+            Demography(-1, "No definida"),
+        )
+
+    private fun getGenreList() =
         listOfNotNull(
-            MangaTypeFilter("Tipus", getMangaTypeList()),
-            StateFilter("Estat", getStateList()),
-            if (!isHentaiSite) {
-                DemographyFilter("Demografies", getDemographyList())
+            Tag(4, "Acció"),
+            Tag(7, "Amor"),
+            Tag(38, "Amor entre noies"),
+            Tag(23, "Amor entre nois"),
+            Tag(31, "Avantguardisme"),
+            Tag(6, "Aventura"),
+            Tag(10, "Ciència-ficció"),
+            Tag(2, "Comèdia"),
+            Tag(47, "De prestigi"),
+            Tag(3, "Drama"),
+            Tag(19, "Ecchi"),
+            Tag(46, "Erotisme"),
+            Tag(20, "Esports"),
+            Tag(5, "Fantasia"),
+            Tag(48, "Gastronomia"),
+            if (isHentaiSite) {
+                Tag(34, "Hentai")
             } else {
                 null
             },
-            GenreTagFilter("Gèneres (inclou/exclou)", getGenreList()),
-            ThemeTagFilter("Temàtiques (inclou/exclou)", getThemeList()),
-        ),
-    )
+            Tag(11, "Misteri"),
+            Tag(8, "Sobrenatural"),
+            Tag(17, "Suspens"),
+            Tag(21, "Terror"),
+            Tag(42, "Vida quotidiana"),
+        )
 
-    private fun getMangaTypeList() = listOf(
-        MangaType("oneshot", "One-shots"),
-        MangaType("serialized", "Serialitzats"),
-    )
-
-    private fun getStateList() = listOf(
-        State(1, "Completat"),
-        State(2, "En procés"),
-        State(3, "Parcialment completat"),
-        State(4, "Abandonat"),
-        State(5, "Cancel·lat"),
-    )
-
-    private fun getDemographyList() = listOf(
-        Demography(35, "Infantil"),
-        Demography(27, "Josei"),
-        Demography(12, "Seinen"),
-        Demography(16, "Shōjo"),
-        Demography(1, "Shōnen"),
-        Demography(-1, "No definida"),
-    )
-
-    private fun getGenreList() = listOfNotNull(
-        Tag(4, "Acció"),
-        Tag(7, "Amor"),
-        Tag(38, "Amor entre noies"),
-        Tag(23, "Amor entre nois"),
-        Tag(31, "Avantguardisme"),
-        Tag(6, "Aventura"),
-        Tag(10, "Ciència-ficció"),
-        Tag(2, "Comèdia"),
-        Tag(47, "De prestigi"),
-        Tag(3, "Drama"),
-        Tag(19, "Ecchi"),
-        Tag(46, "Erotisme"),
-        Tag(20, "Esports"),
-        Tag(5, "Fantasia"),
-        Tag(48, "Gastronomia"),
-        if (isHentaiSite) {
-            Tag(34, "Hentai")
-        } else {
-            null
-        },
-        Tag(11, "Misteri"),
-        Tag(8, "Sobrenatural"),
-        Tag(17, "Suspens"),
-        Tag(21, "Terror"),
-        Tag(42, "Vida quotidiana"),
-    )
-
-    private fun getThemeList() = listOf(
-        Tag(71, "Animals de companyia"),
-        Tag(50, "Antropomorfisme"),
-        Tag(70, "Arts escèniques"),
-        Tag(18, "Arts marcials"),
-        Tag(81, "Arts visuals"),
-        Tag(64, "Canvi de gènere màgic"),
-        Tag(56, "Comèdia de gags"),
-        Tag(68, "Crim organitzat"),
-        Tag(69, "Cultura otaku"),
-        Tag(30, "Curses"),
-        Tag(54, "Delinqüència"),
-        Tag(43, "Detectivesc"),
-        Tag(55, "Educatiu"),
-        Tag(9, "Escolar"),
-        Tag(39, "Espai"),
-        Tag(77, "Esports d’equip"),
-        Tag(53, "Esports de combat"),
-        Tag(25, "Harem"),
-        Tag(73, "Harem invers"),
-        Tag(15, "Històric"),
-        Tag(59, "Idols femenines"),
-        Tag(60, "Idols masculins"),
-        Tag(75, "Indústria de l’entreteniment"),
-        Tag(61, "Isekai"),
-        Tag(58, "Joc d’alt risc"),
-        Tag(33, "Joc d’estratègia"),
-        Tag(82, "Laboral"),
-        Tag(29, "Mecha"),
-        Tag(66, "Medicina"),
-        Tag(67, "Memòries"),
-        Tag(22, "Militar"),
-        Tag(32, "Mitologia"),
-        Tag(26, "Música"),
-        Tag(65, "Noies màgiques"),
-        Tag(36, "Paròdia"),
-        Tag(49, "Personatges adults"),
-        Tag(51, "Personatges bufons"),
-        Tag(63, "Polígon amorós"),
-        Tag(13, "Psicològic"),
-        Tag(52, "Puericultura"),
-        Tag(72, "Reencarnació"),
-        Tag(62, "Relaxant"),
-        Tag(74, "Rerefons romàntic"),
-        Tag(37, "Samurais"),
-        Tag(57, "Sang i fetge"),
-        Tag(40, "Superpoders"),
-        Tag(76, "Supervivència"),
-        Tag(80, "Tirana"),
-        Tag(45, "Transformisme"),
-        Tag(41, "Vampirs"),
-        Tag(78, "Viatges en el temps"),
-        Tag(79, "Videojocs"),
-    )
+    private fun getThemeList() =
+        listOf(
+            Tag(71, "Animals de companyia"),
+            Tag(50, "Antropomorfisme"),
+            Tag(70, "Arts escèniques"),
+            Tag(18, "Arts marcials"),
+            Tag(81, "Arts visuals"),
+            Tag(64, "Canvi de gènere màgic"),
+            Tag(56, "Comèdia de gags"),
+            Tag(68, "Crim organitzat"),
+            Tag(69, "Cultura otaku"),
+            Tag(30, "Curses"),
+            Tag(54, "Delinqüència"),
+            Tag(43, "Detectivesc"),
+            Tag(55, "Educatiu"),
+            Tag(9, "Escolar"),
+            Tag(39, "Espai"),
+            Tag(77, "Esports d’equip"),
+            Tag(53, "Esports de combat"),
+            Tag(25, "Harem"),
+            Tag(73, "Harem invers"),
+            Tag(15, "Històric"),
+            Tag(59, "Idols femenines"),
+            Tag(60, "Idols masculins"),
+            Tag(75, "Indústria de l’entreteniment"),
+            Tag(61, "Isekai"),
+            Tag(58, "Joc d’alt risc"),
+            Tag(33, "Joc d’estratègia"),
+            Tag(82, "Laboral"),
+            Tag(29, "Mecha"),
+            Tag(66, "Medicina"),
+            Tag(67, "Memòries"),
+            Tag(22, "Militar"),
+            Tag(32, "Mitologia"),
+            Tag(26, "Música"),
+            Tag(65, "Noies màgiques"),
+            Tag(36, "Paròdia"),
+            Tag(49, "Personatges adults"),
+            Tag(51, "Personatges bufons"),
+            Tag(63, "Polígon amorós"),
+            Tag(13, "Psicològic"),
+            Tag(52, "Puericultura"),
+            Tag(72, "Reencarnació"),
+            Tag(62, "Relaxant"),
+            Tag(74, "Rerefons romàntic"),
+            Tag(37, "Samurais"),
+            Tag(57, "Sang i fetge"),
+            Tag(40, "Superpoders"),
+            Tag(76, "Supervivència"),
+            Tag(80, "Tirana"),
+            Tag(45, "Transformisme"),
+            Tag(41, "Vampirs"),
+            Tag(78, "Viatges en el temps"),
+            Tag(79, "Videojocs"),
+        )
 
     private interface UrlQueryFilter {
         fun addQueryParameter(url: HttpUrl.Builder)

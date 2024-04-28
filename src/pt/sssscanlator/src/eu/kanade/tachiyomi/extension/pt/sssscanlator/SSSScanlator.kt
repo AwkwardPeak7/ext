@@ -16,19 +16,21 @@ class SSSScanlator : MangaThemesia(
     "pt-BR",
     dateFormat = SimpleDateFormat("MMMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", page.url)
-            .set("Accept", "image/avif,image/webp,*/*")
-            .set("Accept-Language", "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3")
-            .set("Sec-Fetch-Dest", "image")
-            .set("Sec-Fetch-Mode", "no-cors")
-            .set("Sec-Fetch-Site", "same-origin")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", page.url)
+                .set("Accept", "image/avif,image/webp,*/*")
+                .set("Accept-Language", "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3")
+                .set("Sec-Fetch-Dest", "image")
+                .set("Sec-Fetch-Mode", "no-cors")
+                .set("Sec-Fetch-Site", "same-origin")
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }

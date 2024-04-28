@@ -31,20 +31,23 @@ class OlympusScanlation : HttpSource() {
 
     override val supportsLatest: Boolean = true
 
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 1, 2)
-        .rateLimitHost(apiBaseUrl.toHttpUrl(), 2, 1)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 1, 2)
+            .rateLimitHost(apiBaseUrl.toHttpUrl(), 2, 1)
+            .build()
 
     private val json: Json by injectLazy()
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US).apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-    }
+    private val dateFormat =
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
 
     override fun popularMangaRequest(page: Int): Request {
-        val apiUrl = "$apiBaseUrl/api/sf/home".toHttpUrl().newBuilder()
-            .build()
+        val apiUrl =
+            "$apiBaseUrl/api/sf/home".toHttpUrl().newBuilder()
+                .build()
         return GET(apiUrl, headers)
     }
 
@@ -56,8 +59,9 @@ class OlympusScanlation : HttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
-        val apiUrl = "$apiBaseUrl/api/sf/new-chapters?page=$page".toHttpUrl().newBuilder()
-            .build()
+        val apiUrl =
+            "$apiBaseUrl/api/sf/new-chapters?page=$page".toHttpUrl().newBuilder()
+                .build()
         return GET(apiUrl, headers)
     }
 
@@ -74,9 +78,10 @@ class OlympusScanlation : HttpSource() {
         filters: FilterList,
     ): Request {
         if (query.isNotEmpty()) {
-            val apiUrl = "$apiBaseUrl/api/search".toHttpUrl().newBuilder()
-                .addQueryParameter("name", query)
-                .build()
+            val apiUrl =
+                "$apiBaseUrl/api/search".toHttpUrl().newBuilder()
+                    .addQueryParameter("name", query)
+                    .build()
             return GET(apiUrl, headers)
         }
 
@@ -122,10 +127,11 @@ class OlympusScanlation : HttpSource() {
     }
 
     override fun mangaDetailsParse(response: Response): SManga {
-        val slug = response.request.url
-            .toString()
-            .substringAfter("/series/comic-")
-            .substringBefore("/chapters")
+        val slug =
+            response.request.url
+                .toString()
+                .substringAfter("/series/comic-")
+                .substringBefore("/chapters")
         val apiUrl = "$apiBaseUrl/api/series/$slug?type=comic"
         val newRequest = GET(url = apiUrl, headers = headers)
         val newResponse = client.newCall(newRequest).execute()
@@ -155,10 +161,11 @@ class OlympusScanlation : HttpSource() {
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        val slug = response.request.url
-            .toString()
-            .substringAfter("/series/")
-            .substringBefore("/chapters")
+        val slug =
+            response.request.url
+                .toString()
+                .substringAfter("/series/")
+                .substringBefore("/chapters")
         val data = json.decodeFromString<PayloadChapterDto>(response.body.string())
         var resultSize = data.data.size
         var page = 2
@@ -174,14 +181,16 @@ class OlympusScanlation : HttpSource() {
     }
 
     override fun pageListRequest(chapter: SChapter): Request {
-        val id = chapter.url
-            .substringAfter("/capitulo/")
-            .substringBefore("/chapters")
-            .substringBefore("/comic")
-        val slug = chapter.url
-            .substringAfter("comic-")
-            .substringBefore("/chapters")
-            .substringBefore("/comic")
+        val id =
+            chapter.url
+                .substringAfter("/capitulo/")
+                .substringBefore("/chapters")
+                .substringBefore("/comic")
+        val slug =
+            chapter.url
+                .substringAfter("comic-")
+                .substringBefore("/chapters")
+                .substringBefore("/comic")
         return GET("$apiBaseUrl/api/series/$slug/chapters/$id?type=comic")
     }
 
@@ -217,29 +226,33 @@ class OlympusScanlation : HttpSource() {
 
     override fun getFilterList(): FilterList {
         fetchFilters()
-        val filters = mutableListOf<Filter<*>>(
-            Filter.Header("Los filtros no funcionan en la búsqueda por texto"),
-            Filter.Separator(),
-            SortFilter(),
-        )
+        val filters =
+            mutableListOf<Filter<*>>(
+                Filter.Header("Los filtros no funcionan en la búsqueda por texto"),
+                Filter.Separator(),
+                SortFilter(),
+            )
 
         if (filtersState == FiltersState.FETCHED) {
-            filters += listOf(
-                Filter.Separator(),
-                Filter.Header("Filtrar por género"),
-                GenreFilter(genresList),
-            )
+            filters +=
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Filtrar por género"),
+                    GenreFilter(genresList),
+                )
 
-            filters += listOf(
-                Filter.Separator(),
-                Filter.Header("Filtrar por estado"),
-                StatusFilter(statusesList),
-            )
+            filters +=
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Filtrar por estado"),
+                    StatusFilter(statusesList),
+                )
         } else {
-            filters += listOf(
-                Filter.Separator(),
-                Filter.Header("Presione 'Reiniciar' para intentar cargar los filtros"),
-            )
+            filters +=
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Presione 'Reiniciar' para intentar cargar los filtros"),
+                )
         }
 
         return FilterList(filters)

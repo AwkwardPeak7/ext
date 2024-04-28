@@ -6,9 +6,10 @@ import okhttp3.OkHttpClient
 import org.jsoup.nodes.Element
 
 class ManhwaDesu : MangaThemesia("ManhwaDesu", "https://manhwadesu.one", "id", "/komik") {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 
     override fun Element.imgAttr(): String {
         attributes()

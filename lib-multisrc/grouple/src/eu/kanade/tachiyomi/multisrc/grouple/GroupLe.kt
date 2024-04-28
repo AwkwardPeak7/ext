@@ -42,30 +42,32 @@ abstract class GroupLe(
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .addNetworkInterceptor { chain ->
-            val originalRequest = chain.request()
-            val response = chain.proceed(originalRequest)
-            if (originalRequest.url.toString().contains(baseUrl) && (
-                    originalRequest.url.toString()
-                        .contains("internal/redirect") or (response.code == 301)
-                )
-            ) {
-                throw IOException(
-                    "Ссылка на мангу была изменена. Перемигрируйте мангу на тот же (или смежный с GroupLe) источник или передобавьте из Поисковика/Каталога.",
-                )
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .addNetworkInterceptor { chain ->
+                val originalRequest = chain.request()
+                val response = chain.proceed(originalRequest)
+                if (originalRequest.url.toString().contains(baseUrl) && (
+                        originalRequest.url.toString()
+                            .contains("internal/redirect") or (response.code == 301)
+                    )
+                ) {
+                    throw IOException(
+                        "Ссылка на мангу была изменена. Перемигрируйте мангу на тот же (или смежный с GroupLe) источник или передобавьте из Поисковика/Каталога.",
+                    )
+                }
+                response
             }
-            response
-        }
-        .build()
+            .build()
 
     private var uagent: String = preferences.getString(UAGENT_TITLE, UAGENT_DEFAULT)!!
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", uagent)
-        add("Referer", baseUrl)
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("User-Agent", uagent)
+            add("Referer", baseUrl)
+        }
 
     override fun popularMangaSelector() = "div.tile"
 
@@ -115,9 +117,10 @@ abstract class GroupLe(
     override fun mangaDetailsParse(document: Document): SManga {
         val infoElement = document.select(".expandable").first()!!
         val rawCategory = infoElement.select("span.elem_category").text()
-        val category = rawCategory.ifEmpty {
-            "манга"
-        }
+        val category =
+            rawCategory.ifEmpty {
+                "манга"
+            }
 
         val ratingValue =
             infoElement.select(".rating-block").attr("data-score").toFloat() * 2
@@ -127,66 +130,75 @@ abstract class GroupLe(
         val ratingVotes =
             infoElement.select(".col-sm-7 .user-rating meta[itemprop=\"ratingCount\"]")
                 .attr("content")
-        val ratingStar = when {
-            ratingValue > 9.5 -> "★★★★★"
-            ratingValue > 8.5 -> "★★★★✬"
-            ratingValue > 7.5 -> "★★★★☆"
-            ratingValue > 6.5 -> "★★★✬☆"
-            ratingValue > 5.5 -> "★★★☆☆"
-            ratingValue > 4.5 -> "★★✬☆☆"
-            ratingValue > 3.5 -> "★★☆☆☆"
-            ratingValue > 2.5 -> "★✬☆☆☆"
-            ratingValue > 1.5 -> "★☆☆☆☆"
-            ratingValue > 0.5 -> "✬☆☆☆☆"
-            else -> "☆☆☆☆☆"
-        }
-        val rawAgeStop = when (
-            val rawAgeValue =
-                infoElement.select(".elem_limitation .element-link").first()?.text() ?: ""
-        ) {
-            "NC-17" -> "18+"
-            "R18+" -> "18+"
-            "R" -> "16+"
-            "G" -> "16+"
-            "PG" -> "16+"
-            "PG-13" -> "12+"
-            else -> rawAgeValue
-        }
+        val ratingStar =
+            when {
+                ratingValue > 9.5 -> "★★★★★"
+                ratingValue > 8.5 -> "★★★★✬"
+                ratingValue > 7.5 -> "★★★★☆"
+                ratingValue > 6.5 -> "★★★✬☆"
+                ratingValue > 5.5 -> "★★★☆☆"
+                ratingValue > 4.5 -> "★★✬☆☆"
+                ratingValue > 3.5 -> "★★☆☆☆"
+                ratingValue > 2.5 -> "★✬☆☆☆"
+                ratingValue > 1.5 -> "★☆☆☆☆"
+                ratingValue > 0.5 -> "✬☆☆☆☆"
+                else -> "☆☆☆☆☆"
+            }
+        val rawAgeStop =
+            when (
+                val rawAgeValue =
+                    infoElement.select(".elem_limitation .element-link").first()?.text() ?: ""
+            ) {
+                "NC-17" -> "18+"
+                "R18+" -> "18+"
+                "R" -> "16+"
+                "G" -> "16+"
+                "PG" -> "16+"
+                "PG-13" -> "12+"
+                else -> rawAgeValue
+            }
         val manga = SManga.create()
         manga.title = document.select(".names > .name").text()
         manga.author = infoElement.select("span.elem_author").first()?.text() ?: infoElement.select(
             "span.elem_screenwriter",
         ).first()?.text()
         manga.artist = infoElement.select("span.elem_illustrator").first()?.text()
-        manga.genre = (
-            "$category, $rawAgeStop, " + infoElement.select("p:contains(Жанры:) a, p:contains(Теги:) a")
-                .joinToString { it.text() }
-        ).split(", ")
-            .filter { it.isNotEmpty() }.joinToString { it.trim().lowercase() }
-        val altName = if (infoElement.select(".another-names").isNotEmpty()) {
-            "Альтернативные названия:\n" + infoElement.select(".another-names").text() + "\n\n"
-        } else {
-            ""
-        }
+        manga.genre =
+            (
+                "$category, $rawAgeStop, " +
+                    infoElement.select("p:contains(Жанры:) a, p:contains(Теги:) a")
+                        .joinToString { it.text() }
+            ).split(", ")
+                .filter { it.isNotEmpty() }.joinToString { it.trim().lowercase() }
+        val altName =
+            if (infoElement.select(".another-names").isNotEmpty()) {
+                "Альтернативные названия:\n" + infoElement.select(".another-names").text() + "\n\n"
+            } else {
+                ""
+            }
         manga.description =
-            "$ratingStar $ratingValue[ⓘ$ratingValueOver] (голосов: $ratingVotes)\n$altName" + document.select(
+            "$ratingStar $ratingValue[ⓘ$ratingValueOver] (голосов: $ratingVotes)\n$altName" +
+            document.select(
                 "div#tab-description  .manga-description",
             ).text()
-        manga.status = when {
-            infoElement.html()
-                .contains("Запрещена публикация произведения по копирайту") || infoElement.html()
-                .contains("ЗАПРЕЩЕНА К ПУБЛИКАЦИИ НА ТЕРРИТОРИИ РФ!") -> SManga.LICENSED
-            infoElement.html().contains("<b>Сингл</b>") -> SManga.COMPLETED
-            else ->
-                when (infoElement.select("p:contains(Перевод:) span").first()?.text()) {
-                    "продолжается" -> SManga.ONGOING
-                    "начат" -> SManga.ONGOING
-                    "переведено" -> SManga.COMPLETED
-                    "завершён" -> SManga.COMPLETED
-                    "приостановлен" -> SManga.ON_HIATUS
-                    else -> SManga.UNKNOWN
-                }
-        }
+        manga.status =
+            when {
+                infoElement.html()
+                    .contains("Запрещена публикация произведения по копирайту") ||
+                    infoElement.html()
+                        .contains("ЗАПРЕЩЕНА К ПУБЛИКАЦИИ НА ТЕРРИТОРИИ РФ!")
+                -> SManga.LICENSED
+                infoElement.html().contains("<b>Сингл</b>") -> SManga.COMPLETED
+                else ->
+                    when (infoElement.select("p:contains(Перевод:) span").first()?.text()) {
+                        "продолжается" -> SManga.ONGOING
+                        "начат" -> SManga.ONGOING
+                        "переведено" -> SManga.COMPLETED
+                        "завершён" -> SManga.COMPLETED
+                        "приостановлен" -> SManga.ON_HIATUS
+                        else -> SManga.UNKNOWN
+                    }
+            }
         manga.thumbnail_url = infoElement.select("img").attr("data-full")
         return manga
     }
@@ -211,11 +223,13 @@ abstract class GroupLe(
         if ((
                 document.select(
                     ".expandable.hide-dn",
-                ).isNotEmpty() && document.select(
-                    ".user-avatar",
-                ).isNullOrEmpty() && document.toString().contains(
-                    "current_user_country_code = 'RU'",
-                )
+                ).isNotEmpty() &&
+                    document.select(
+                        ".user-avatar",
+                    ).isNullOrEmpty() &&
+                    document.toString().contains(
+                        "current_user_country_code = 'RU'",
+                    )
             ) || (
                 document.select(
                     "img.logo",
@@ -242,13 +256,14 @@ abstract class GroupLe(
 
         val translatorElement = urlElement.attr("title")
 
-        chapter.scanlator = if (!translatorElement.isNullOrBlank()) {
-            translatorElement
-                .replace("(Переводчик),", "&")
-                .removeSuffix(" (Переводчик)")
-        } else {
-            ""
-        }
+        chapter.scanlator =
+            if (!translatorElement.isNullOrBlank()) {
+                translatorElement
+                    .replace("(Переводчик),", "&")
+                    .removeSuffix(" (Переводчик)")
+            } else {
+                ""
+            }
 
         chapter.name = urlText.removeSuffix(" новое").trim()
         if (manga.title.length > 25) {
@@ -288,11 +303,13 @@ abstract class GroupLe(
         when {
             extra.containsMatchIn(chapter.name) -> {
                 if (chapter.name.substringAfter("Экстра").trim().isEmpty()) {
-                    chapter.name = chapter.name.replaceFirst(
-                        " ",
-                        " - " + DecimalFormat("#,###.##").format(chapter.chapter_number)
-                            .replace(",", ".") + " ",
-                    )
+                    chapter.name =
+                        chapter.name.replaceFirst(
+                            " ",
+                            " - " +
+                                DecimalFormat("#,###.##").format(chapter.chapter_number)
+                                    .replace(",", ".") + " ",
+                        )
                 }
             }
 
@@ -345,15 +362,16 @@ abstract class GroupLe(
         var i = 0
         while (m.find()) {
             val urlParts = m.group().replace("[\"\']+".toRegex(), "").split(',')
-            var url = if (urlParts[1].isEmpty() && urlParts[2].startsWith("/static/")) {
-                baseUrl + urlParts[2]
-            } else {
-                if (urlParts[1].endsWith("/manga/")) {
-                    urlParts[0] + urlParts[2]
+            var url =
+                if (urlParts[1].isEmpty() && urlParts[2].startsWith("/static/")) {
+                    baseUrl + urlParts[2]
                 } else {
-                    urlParts[1] + urlParts[0] + urlParts[2]
+                    if (urlParts[1].endsWith("/manga/")) {
+                        urlParts[0] + urlParts[2]
+                    } else {
+                        urlParts[1] + urlParts[0] + urlParts[2]
+                    }
                 }
-            }
             if (!url.contains("://")) {
                 url = "https:$url"
             }
@@ -373,10 +391,11 @@ abstract class GroupLe(
     override fun imageUrlParse(document: Document) = ""
 
     override fun imageRequest(page: Page): Request {
-        val imgHeader = Headers.Builder().apply {
-            add("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)")
-            add("Referer", baseUrl)
-        }.build()
+        val imgHeader =
+            Headers.Builder().apply {
+                add("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)")
+                add("Referer", baseUrl)
+            }.build()
         return GET(page.imageUrl!!, imgHeader)
     }
 

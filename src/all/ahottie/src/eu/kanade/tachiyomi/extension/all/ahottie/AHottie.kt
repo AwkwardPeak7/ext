@@ -22,15 +22,17 @@ class AHottie() : ParsedHttpSource() {
     override val supportsLatest = false
 
     // Popular
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        thumbnail_url = element.select(".relative img").attr("src")
-        genre = element.select(".flex a").joinToString(", ") {
-            it.text()
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            thumbnail_url = element.select(".relative img").attr("src")
+            genre =
+                element.select(".flex a").joinToString(", ") {
+                    it.text()
+                }
+            title = element.select("h2").text()
+            setUrlWithoutDomain(element.select("a").attr("href"))
+            initialized = true
         }
-        title = element.select("h2").text()
-        setUrlWithoutDomain(element.select("a").attr("href"))
-        initialized = true
-    }
 
     override fun popularMangaNextPageSelector() = "a[rel=next]"
 
@@ -64,12 +66,14 @@ class AHottie() : ParsedHttpSource() {
     override fun searchMangaSelector() = popularMangaSelector()
 
     // Details
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.select("h1").text()
-        genre = document.select("div.pl-3 > a").joinToString(", ") {
-            it.text()
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.select("h1").text()
+            genre =
+                document.select("div.pl-3 > a").joinToString(", ") {
+                    it.text()
+                }
         }
-    }
 
     override fun pageListParse(document: Document): List<Page> {
         val pages = mutableListOf<Page>()
@@ -85,12 +89,13 @@ class AHottie() : ParsedHttpSource() {
         return pages
     }
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.select("link[rel=canonical]").attr("abs:href"))
-        chapter_number = 0F
-        name = "GALLERY"
-        date_upload = getDate(element.select("time").text())
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.select("link[rel=canonical]").attr("abs:href"))
+            chapter_number = 0F
+            name = "GALLERY"
+            date_upload = getDate(element.select("time").text())
+        }
 
     override fun chapterListSelector() = "html"
 

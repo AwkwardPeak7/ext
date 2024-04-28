@@ -39,14 +39,15 @@ class ZeroScansHelper {
         ascending: Boolean,
         comics: List<ZeroScansComicDto>,
     ): List<ZeroScansComicDto> {
-        var sortedList = when (type) {
-            "alphabetic" -> comics.sortedBy { it.name.lowercase(Locale.ROOT) }
-            "rating" -> comics.sortedBy { it.getRating() }
-            "chapter_count" -> comics.sortedBy { it.chapterCount }
-            "bookmark_count" -> comics.sortedBy { it.bookmarkCount }
-            "view_count" -> comics.sortedBy { it.viewCount }
-            else -> comics
-        }
+        var sortedList =
+            when (type) {
+                "alphabetic" -> comics.sortedBy { it.name.lowercase(Locale.ROOT) }
+                "rating" -> comics.sortedBy { it.getRating() }
+                "chapter_count" -> comics.sortedBy { it.chapterCount }
+                "bookmark_count" -> comics.sortedBy { it.bookmarkCount }
+                "view_count" -> comics.sortedBy { it.viewCount }
+                else -> comics
+            }
 
         if (!ascending) {
             sortedList = sortedList.reversed()
@@ -60,27 +61,34 @@ class ZeroScansHelper {
         val value = date.split(' ')[0].toInt()
 
         return when (date.split(' ')[1].removeSuffix("s")) {
-            "sec" -> Calendar.getInstance().apply {
-                add(Calendar.SECOND, value * -1)
-            }.timeInMillis
-            "min" -> Calendar.getInstance().apply {
-                add(Calendar.MINUTE, value * -1)
-            }.timeInMillis
-            "hour" -> Calendar.getInstance().apply {
-                add(Calendar.HOUR_OF_DAY, value * -1)
-            }.timeInMillis
-            "day" -> Calendar.getInstance().apply {
-                add(Calendar.DATE, value * -1)
-            }.timeInMillis
-            "week" -> Calendar.getInstance().apply {
-                add(Calendar.DATE, value * 7 * -1)
-            }.timeInMillis
-            "month" -> Calendar.getInstance().apply {
-                add(Calendar.MONTH, value * -1)
-            }.timeInMillis
-            "year" -> Calendar.getInstance().apply {
-                add(Calendar.YEAR, value * -1)
-            }.timeInMillis
+            "sec" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.SECOND, value * -1)
+                }.timeInMillis
+            "min" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.MINUTE, value * -1)
+                }.timeInMillis
+            "hour" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.HOUR_OF_DAY, value * -1)
+                }.timeInMillis
+            "day" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.DATE, value * -1)
+                }.timeInMillis
+            "week" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.DATE, value * 7 * -1)
+                }.timeInMillis
+            "month" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.MONTH, value * -1)
+                }.timeInMillis
+            "year" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.YEAR, value * -1)
+                }.timeInMillis
             else -> {
                 return 0
             }

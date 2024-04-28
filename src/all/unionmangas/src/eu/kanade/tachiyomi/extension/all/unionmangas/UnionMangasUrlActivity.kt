@@ -14,11 +14,12 @@ class UnionMangasUrlActivity : Activity() {
         val pathSegments = intent?.data?.pathSegments
 
         if (host != null && pathSegments != null) {
-            val intent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", slug(pathSegments))
-                putExtra("filter", packageName)
-            }
+            val intent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra("query", slug(pathSegments))
+                    putExtra("filter", packageName)
+                }
 
             try {
                 startActivity(intent)

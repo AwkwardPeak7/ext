@@ -24,9 +24,10 @@ class DigitalComicMuseum() : ParsedHttpSource() {
     override val name = "Digital Comic Museum"
     override val supportsLatest = true
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .addInterceptor(::errorIntercept)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .addInterceptor(::errorIntercept)
+            .build()
 
     // Latest
     override fun latestUpdatesFromElement(element: Element): SManga {
@@ -76,17 +77,20 @@ class DigitalComicMuseum() : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val requestBody: RequestBody = MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("terms", query)
-            .build()
-        val requestHeaders: Headers = Headers.Builder()
-            .addAll(headers)
-            .add("Content-Type", "multipart/form-data")
-            .build()
-        val url = "$baseUrl/index.php".toHttpUrl().newBuilder()
-            .addQueryParameter("ACT", "dosearch")
-            .build()
+        val requestBody: RequestBody =
+            MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("terms", query)
+                .build()
+        val requestHeaders: Headers =
+            Headers.Builder()
+                .addAll(headers)
+                .add("Content-Type", "multipart/form-data")
+                .build()
+        val url =
+            "$baseUrl/index.php".toHttpUrl().newBuilder()
+                .addQueryParameter("ACT", "dosearch")
+                .build()
         return POST(url.toString(), requestHeaders, requestBody)
     }
 

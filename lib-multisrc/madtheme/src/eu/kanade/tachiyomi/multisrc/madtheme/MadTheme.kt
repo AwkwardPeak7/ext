@@ -38,19 +38,22 @@ abstract class MadTheme(
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(1, 1)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1, 1)
+            .build()
 
     // TODO: better cookie sharing
     // TODO: don't count cached responses against rate limit
-    private val chapterClient: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(1, 12)
-        .build()
+    private val chapterClient: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1, 12)
+            .build()
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("Referer", "$baseUrl/")
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("Referer", "$baseUrl/")
+        }
 
     private val json: Json by injectLazy()
 
@@ -82,9 +85,10 @@ abstract class MadTheme(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/search".toHttpUrl().newBuilder()
-            .addQueryParameter("q", query)
-            .addQueryParameter("page", page.toString())
+        val url =
+            "$baseUrl/search".toHttpUrl().newBuilder()
+                .addQueryParameter("q", query)
+                .addQueryParameter("page", page.toString())
 
         filters.forEach { filter ->
             when (filter) {
@@ -112,13 +116,14 @@ abstract class MadTheme(
 
     override fun searchMangaSelector(): String = ".book-detailed-item"
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.select("a").first()!!.attr("abs:href"))
-        title = element.select("a").first()!!.attr("title")
-        description = element.select(".summary").first()?.text()
-        genre = element.select(".genres > *").joinToString { it.text() }
-        thumbnail_url = element.select("img").first()!!.attr("abs:data-src")
-    }
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select("a").first()!!.attr("abs:href"))
+            title = element.select("a").first()!!.attr("title")
+            description = element.select(".summary").first()?.text()
+            genre = element.select(".genres > *").joinToString { it.text() }
+            thumbnail_url = element.select("img").first()!!.attr("abs:data-src")
+        }
 
     /*
      * Only some sites use the next/previous buttons, so instead we check for the next link
@@ -127,27 +132,30 @@ abstract class MadTheme(
     override fun searchMangaNextPageSelector(): String? = ".paginator > a.active + a:not([rel=next])"
 
     // Details
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.select(".detail h1").first()!!.text()
-        author = document.select(".detail .meta > p > strong:contains(Authors) ~ a").joinToString { it.text().trim(',', ' ') }
-        genre = document.select(".detail .meta > p > strong:contains(Genres) ~ a").joinToString { it.text().trim(',', ' ') }
-        thumbnail_url = document.select("#cover img").first()!!.attr("abs:data-src")
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.select(".detail h1").first()!!.text()
+            author = document.select(".detail .meta > p > strong:contains(Authors) ~ a").joinToString { it.text().trim(',', ' ') }
+            genre = document.select(".detail .meta > p > strong:contains(Genres) ~ a").joinToString { it.text().trim(',', ' ') }
+            thumbnail_url = document.select("#cover img").first()!!.attr("abs:data-src")
 
-        val altNames = document.select(".detail h2").first()?.text()
-            ?.split(',', ';')
-            ?.mapNotNull { it.trim().takeIf { it != title } }
-            ?: listOf()
+            val altNames =
+                document.select(".detail h2").first()?.text()
+                    ?.split(',', ';')
+                    ?.mapNotNull { it.trim().takeIf { it != title } }
+                    ?: listOf()
 
-        description = document.select(".summary .content").first()?.text() +
-            (altNames.takeIf { it.isNotEmpty() }?.let { "\n\nAlt name(s): ${it.joinToString()}" } ?: "")
+            description = document.select(".summary .content").first()?.text() +
+                (altNames.takeIf { it.isNotEmpty() }?.let { "\n\nAlt name(s): ${it.joinToString()}" } ?: "")
 
-        val statusText = document.select(".detail .meta > p > strong:contains(Status) ~ a").first()!!.text()
-        status = when (statusText.lowercase(Locale.US)) {
-            "ongoing" -> SManga.ONGOING
-            "completed" -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
+            val statusText = document.select(".detail .meta > p > strong:contains(Status) ~ a").first()!!.text()
+            status =
+                when (statusText.lowercase(Locale.US)) {
+                    "ongoing" -> SManga.ONGOING
+                    "completed" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
         }
-    }
 
     // Chapters
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
@@ -190,15 +198,17 @@ abstract class MadTheme(
 
     override fun chapterListSelector(): String = "#chapter-list > li"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        // Not using setUrlWithoutDomain() to support external chapters
-        url = element.selectFirst("a")!!
-            .absUrl("href")
-            .removePrefix(baseUrl)
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            // Not using setUrlWithoutDomain() to support external chapters
+            url =
+                element.selectFirst("a")!!
+                    .absUrl("href")
+                    .removePrefix(baseUrl)
 
-        name = element.select(".chapter-title").first()!!.text()
-        date_upload = parseChapterDate(element.select(".chapter-update").first()?.text())
-    }
+            name = element.select(".chapter-title").first()!!.text()
+            date_upload = parseChapterDate(element.select(".chapter-update").first()?.text())
+        }
 
     // Pages
     override fun pageListParse(document: Document): List<Page> {
@@ -213,10 +223,11 @@ abstract class MadTheme(
             // images directly from the <img> tags otherwise pick the higher count. (heuristic)
             // First things first, let's verify `chapImages` actually exists.
             if (html.contains("var chapImages = '")) {
-                val chapterImagesFromJs = html
-                    .substringAfter("var chapImages = '")
-                    .substringBefore("'")
-                    .split(',')
+                val chapterImagesFromJs =
+                    html
+                        .substringAfter("var chapImages = '")
+                        .substringBefore("'")
+                        .split(',')
 
                 // Make sure chapter images we've got from javascript all have a host, otherwise
                 // we've got no choice but to fallback to chapter images from HTML.
@@ -243,15 +254,17 @@ abstract class MadTheme(
         }
 
         // While the site may support multiple CDN hosts, we have opted to ignore those
-        val mainServer = html
-            .substringAfter("var mainServer = \"")
-            .substringBefore("\"")
+        val mainServer =
+            html
+                .substringAfter("var mainServer = \"")
+                .substringBefore("\"")
         val schemePrefix = if (mainServer.startsWith("//")) "https:" else ""
 
-        val chapImages = html
-            .substringAfter("var chapImages = '")
-            .substringBefore("'")
-            .split(',')
+        val chapImages =
+            html
+                .substringAfter("var chapImages = '")
+                .substringBefore("'")
+                .split(',')
 
         return chapImages.mapIndexed { index, path ->
             Page(index, imageUrl = "$schemePrefix$mainServer$path")
@@ -311,11 +324,12 @@ abstract class MadTheme(
     }
 
     // Filters
-    override fun getFilterList() = FilterList(
-        GenreFilter(getGenreList()),
-        StatusFilter(),
-        OrderFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            GenreFilter(getGenreList()),
+            StatusFilter(),
+            OrderFilter(),
+        )
 
     private class GenreFilter(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
 

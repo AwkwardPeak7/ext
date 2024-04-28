@@ -19,12 +19,14 @@ class Onma : MMRCMS(
                     in detailAuthor -> author = element.selectFirst("div.text")!!.text()
                     in detailArtist -> artist = element.selectFirst("div.text")!!.text()
                     in detailGenre -> genre = element.select("div.text a").joinToString { it.text() }
-                    in detailStatus -> status = when (element.selectFirst("div.text")!!.text()) {
-                        in detailStatusComplete -> SManga.COMPLETED
-                        in detailStatusOngoing -> SManga.ONGOING
-                        in detailStatusDropped -> SManga.CANCELLED
-                        else -> SManga.UNKNOWN
-                    }
+                    in detailStatus ->
+                        status =
+                            when (element.selectFirst("div.text")!!.text()) {
+                                in detailStatusComplete -> SManga.COMPLETED
+                                in detailStatusOngoing -> SManga.ONGOING
+                                in detailStatusDropped -> SManga.CANCELLED
+                                else -> SManga.UNKNOWN
+                            }
                 }
             }
         }

@@ -13,19 +13,21 @@ class VizUrlActivity : Activity() {
         val pathSegments: List<String>? = intent?.data?.pathSegments
         if (!pathSegments.isNullOrEmpty() && pathSegments.size >= 3) {
             // Have to use .equals, otherwise get an error 'Didn't find class "kotlin.jvm.internal.Intrinsics"'
-            val seriesSlug = if (pathSegments[2].equals("chapter") && contains(pathSegments[1], "-chapter-")) {
-                substringBeforeLast(pathSegments[1], "-chapter-")
-            } else {
-                pathSegments[2]
-            }
-            val mainIntent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra(
-                    "query",
-                    "${Viz.PREFIX_URL_SEARCH}/${pathSegments[0]}/chapters/$seriesSlug",
-                )
-                putExtra("filter", packageName)
-            }
+            val seriesSlug =
+                if (pathSegments[2].equals("chapter") && contains(pathSegments[1], "-chapter-")) {
+                    substringBeforeLast(pathSegments[1], "-chapter-")
+                } else {
+                    pathSegments[2]
+                }
+            val mainIntent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra(
+                        "query",
+                        "${Viz.PREFIX_URL_SEARCH}/${pathSegments[0]}/chapters/$seriesSlug",
+                    )
+                    putExtra("filter", packageName)
+                }
 
             try {
                 startActivity(mainIntent)

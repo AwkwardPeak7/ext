@@ -64,10 +64,11 @@ open class NHentai(
             .build()
     }
 
-    private var displayFullTitle: Boolean = when (preferences.getString(TITLE_PREF, "full")) {
-        "full" -> true
-        else -> false
-    }
+    private var displayFullTitle: Boolean =
+        when (preferences.getString(TITLE_PREF, "full")) {
+            "full" -> true
+            else -> false
+        }
 
     private val shortenTitleRegex = Regex("""(\[[^]]*]|[({][^)}]*[)}])""")
 
@@ -83,10 +84,11 @@ open class NHentai(
             setDefaultValue("full")
 
             setOnPreferenceChangeListener { _, newValue ->
-                displayFullTitle = when (newValue) {
-                    "full" -> true
-                    else -> false
-                }
+                displayFullTitle =
+                    when (newValue) {
+                        "full" -> true
+                        else -> false
+                    }
                 true
             }
         }.also(screen::addPreference)
@@ -99,22 +101,26 @@ open class NHentai(
 
     override fun latestUpdatesSelector() = "#content .container:not(.index-popular) .gallery"
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.select("a").attr("href"))
-        title = element.select("a > div").text().replace("\"", "").let {
-            if (displayFullTitle) it.trim() else it.shortenTitle()
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select("a").attr("href"))
+            title =
+                element.select("a > div").text().replace("\"", "").let {
+                    if (displayFullTitle) it.trim() else it.shortenTitle()
+                }
+            thumbnail_url =
+                element.select(".cover img").first()!!.let { img ->
+                    if (img.hasAttr("data-src")) img.attr("abs:data-src") else img.attr("abs:src")
+                }
         }
-        thumbnail_url = element.select(".cover img").first()!!.let { img ->
-            if (img.hasAttr("data-src")) img.attr("abs:data-src") else img.attr("abs:src")
-        }
-    }
 
     override fun latestUpdatesNextPageSelector() = "#content > section.pagination > a.next"
 
-    override fun popularMangaRequest(page: Int) = GET(
-        if (nhLang.isBlank()) "$baseUrl/search/?q=\"\"&sort=popular&page=$page" else "$baseUrl/language/$nhLang/popular?page=$page",
-        headers,
-    )
+    override fun popularMangaRequest(page: Int) =
+        GET(
+            if (nhLang.isBlank()) "$baseUrl/search/?q=\"\"&sort=popular&page=$page" else "$baseUrl/language/$nhLang/popular?page=$page",
+            headers,
+        )
 
     override fun popularMangaFromElement(element: Element) = latestUpdatesFromElement(element)
 
@@ -158,15 +164,17 @@ open class NHentai(
             filterList.findInstance<OffsetPageFilter>()?.state?.toIntOrNull()?.plus(page) ?: page
 
         if (favoriteFilter?.state == true) {
-            val url = "$baseUrl/favorites".toHttpUrl().newBuilder()
-                .addQueryParameter("q", "$fixedQuery $advQuery")
-                .addQueryParameter("page", offsetPage.toString())
+            val url =
+                "$baseUrl/favorites".toHttpUrl().newBuilder()
+                    .addQueryParameter("q", "$fixedQuery $advQuery")
+                    .addQueryParameter("page", offsetPage.toString())
 
             return GET(url.build(), headers)
         } else {
-            val url = "$baseUrl/search".toHttpUrl().newBuilder()
-                .addQueryParameter("q", "$fixedQuery $nhLangSearch$advQuery")
-                .addQueryParameter("page", offsetPage.toString())
+            val url =
+                "$baseUrl/search".toHttpUrl().newBuilder()
+                    .addQueryParameter("q", "$fixedQuery $nhLangSearch$advQuery")
+                    .addQueryParameter("page", offsetPage.toString())
 
             if (isOkayToSort) {
                 filterList.findInstance<SortFilter>()?.let { f ->
@@ -180,12 +188,13 @@ open class NHentai(
 
     private fun combineQuery(filters: FilterList): String {
         val stringBuilder = StringBuilder()
-        val advSearch = filters.filterIsInstance<AdvSearchEntryFilter>().flatMap { filter ->
-            val splitState = filter.state.split(",").map(String::trim).filterNot(String::isBlank)
-            splitState.map {
-                AdvSearchEntry(filter.name, it.removePrefix("-"), it.startsWith("-"))
+        val advSearch =
+            filters.filterIsInstance<AdvSearchEntryFilter>().flatMap { filter ->
+                val splitState = filter.state.split(",").map(String::trim).filterNot(String::isBlank)
+                splitState.map {
+                    AdvSearchEntry(filter.name, it.removePrefix("-"), it.startsWith("-"))
+                }
             }
-        }
 
         advSearch.forEach { entry ->
             if (entry.exclude) stringBuilder.append("-")
@@ -237,12 +246,13 @@ open class NHentai(
             artist = getArtists(document)
             author = artist
             // Some people want these additional details in description
-            description = "Full English and Japanese titles:\n"
-                .plus("$fullTitle\n")
-                .plus("${document.select("div#info h2").text()}\n\n")
-                .plus("Pages: ${getNumPages(document)}\n")
-                .plus("Favorited by: ${document.select("div#info i.fa-heart + span span").text().removeSurrounding("(", ")")}\n")
-                .plus(getTagDescription(document))
+            description =
+                "Full English and Japanese titles:\n"
+                    .plus("$fullTitle\n")
+                    .plus("${document.select("div#info h2").text()}\n\n")
+                    .plus("Pages: ${getNumPages(document)}\n")
+                    .plus("Favorited by: ${document.select("div#info i.fa-heart + span span").text().removeSurrounding("(", ")")}\n")
+                    .plus(getTagDescription(document))
             genre = getTags(document)
             update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
         }
@@ -279,26 +289,27 @@ open class NHentai(
         }
     }
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("Separate tags with commas (,)"),
-        Filter.Header("Prepend with dash (-) to exclude"),
-        TagFilter(),
-        CategoryFilter(),
-        GroupFilter(),
-        ArtistFilter(),
-        ParodyFilter(),
-        CharactersFilter(),
-        Filter.Header("Uploaded valid units are h, d, w, m, y."),
-        Filter.Header("example: (>20d)"),
-        UploadedFilter(),
-        Filter.Header("Filter by pages, for example: (>20)"),
-        PagesFilter(),
-        Filter.Separator(),
-        SortFilter(),
-        OffsetPageFilter(),
-        Filter.Header("Sort is ignored if favorites only"),
-        FavoriteFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("Separate tags with commas (,)"),
+            Filter.Header("Prepend with dash (-) to exclude"),
+            TagFilter(),
+            CategoryFilter(),
+            GroupFilter(),
+            ArtistFilter(),
+            ParodyFilter(),
+            CharactersFilter(),
+            Filter.Header("Uploaded valid units are h, d, w, m, y."),
+            Filter.Header("example: (>20d)"),
+            UploadedFilter(),
+            Filter.Header("Filter by pages, for example: (>20)"),
+            PagesFilter(),
+            Filter.Separator(),
+            SortFilter(),
+            OffsetPageFilter(),
+            Filter.Header("Sort is ignored if favorites only"),
+            FavoriteFilter(),
+        )
 
     class TagFilter : AdvSearchEntryFilter("Tags")
 

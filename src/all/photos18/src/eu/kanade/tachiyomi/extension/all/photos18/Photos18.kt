@@ -37,30 +37,33 @@ class Photos18 : HttpSource(), ConfigurableSource {
 
     override val client = network.client.newBuilder().followRedirects(false).build()
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("Referer", baseUrl)
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("Referer", baseUrl)
+        }
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrlWithLang/sort/views?page=$page", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
         parseCategories(document)
-        val mangas = document.selectFirst(Evaluator.Id("videos"))!!.children().map {
-            val cardBody = it.selectFirst(Evaluator.Class("card-body"))!!
-            val link = cardBody.selectFirst(Evaluator.Tag("a"))!!
-            SManga.create().apply {
-                url = link.attr("href").stripLang()
-                title = link.ownText()
-                thumbnail_url = baseUrl + it.selectFirst(Evaluator.Tag("img"))!!.attr("src")
-                genre = cardBody.selectFirst(Evaluator.Tag("label"))!!.ownText()
-                status = SManga.COMPLETED
-                initialized = true
+        val mangas =
+            document.selectFirst(Evaluator.Id("videos"))!!.children().map {
+                val cardBody = it.selectFirst(Evaluator.Class("card-body"))!!
+                val link = cardBody.selectFirst(Evaluator.Tag("a"))!!
+                SManga.create().apply {
+                    url = link.attr("href").stripLang()
+                    title = link.ownText()
+                    thumbnail_url = baseUrl + it.selectFirst(Evaluator.Tag("img"))!!.attr("src")
+                    genre = cardBody.selectFirst(Evaluator.Tag("label"))!!.ownText()
+                    status = SManga.COMPLETED
+                    initialized = true
+                }
             }
-        }
-        val isLastPage = document.selectFirst(Evaluator.Class("next")).run {
-            this == null || hasClass("disabled")
-        }
+        val isLastPage =
+            document.selectFirst(Evaluator.Class("next")).run {
+                this == null || hasClass("disabled")
+            }
         return MangasPage(mangas, !isLastPage)
     }
 
@@ -73,9 +76,10 @@ class Photos18 : HttpSource(), ConfigurableSource {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrlWithLang.toHttpUrl().newBuilder()
-            .addQueryParameter("q", query)
-            .addQueryParameter("page", page.toString())
+        val url =
+            baseUrlWithLang.toHttpUrl().newBuilder()
+                .addQueryParameter("q", query)
+                .addQueryParameter("page", page.toString())
 
         for (filter in filters) {
             if (filter is QueryFilter) filter.addQueryTo(url)
@@ -91,11 +95,12 @@ class Photos18 : HttpSource(), ConfigurableSource {
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        val chapter = SChapter.create().apply {
-            url = manga.url
-            name = manga.title
-            chapter_number = -2f
-        }
+        val chapter =
+            SChapter.create().apply {
+                url = manga.url
+                name = manga.title
+                chapter_number = -2f
+            }
         return Observable.just(listOf(chapter))
     }
 
@@ -111,14 +116,15 @@ class Photos18 : HttpSource(), ConfigurableSource {
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        SortFilter(),
-        if (categories.isEmpty()) {
-            Filter.Header("Tap 'Reset' to load categories")
-        } else {
-            CategoryFilter(categories)
-        },
-    )
+    override fun getFilterList() =
+        FilterList(
+            SortFilter(),
+            if (categories.isEmpty()) {
+                Filter.Header("Tap 'Reset' to load categories")
+            } else {
+                CategoryFilter(categories)
+            },
+        )
 
     private open class QueryFilter(
         name: String,
@@ -150,14 +156,15 @@ class Photos18 : HttpSource(), ConfigurableSource {
     private fun parseCategories(document: Document) {
         if (categories.isNotEmpty()) return
         val items = document.selectFirst(Evaluator.Id("w3"))!!.children()
-        categories = buildList(items.size + 1) {
-            add(Pair("All", ""))
-            items.mapTo(this) {
-                val value = it.text().substringBefore(" (")
-                val queryValue = it.selectFirst(Evaluator.Tag("a"))!!.attr("href").substringAfterLast('/')
-                Pair(value, queryValue)
+        categories =
+            buildList(items.size + 1) {
+                add(Pair("All", ""))
+                items.mapTo(this) {
+                    val value = it.text().substringBefore(" (")
+                    val queryValue = it.selectFirst(Evaluator.Tag("a"))!!.attr("href").substringAfterLast('/')
+                    Pair(value, queryValue)
+                }
             }
-        }
     }
 
     private val preferences by lazy {

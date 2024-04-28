@@ -47,10 +47,11 @@ class BoyLove : HttpSource(), ConfigurableSource {
         "https://" + mirrors[index]
     }
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .addInterceptor(UnscramblerInterceptor())
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .addInterceptor(UnscramblerInterceptor())
+            .build()
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/home/api/getpage/tp/1-topest-${page - 1}", headers)
 
@@ -119,24 +120,26 @@ class BoyLove : HttpSource(), ConfigurableSource {
             val doc = response.asJsoup()
             val root = doc.selectFirst(Evaluator.Tag("section"))!!
             val images = root.select(Evaluator.Class("reader-cartoon-image"))
-            val urlList = if (images.isEmpty()) {
-                root.select(Evaluator.Tag("img")).map { it.attr("src").trim().toImageUrl() }
-                    .filterNot { it.endsWith(".gif") }
-            } else {
-                images.map { it.child(0) }
-                    .filter { it.attr("src").endsWith("load.png") }
-                    .map { it.attr("data-original").trim().toImageUrl() }
-            }
+            val urlList =
+                if (images.isEmpty()) {
+                    root.select(Evaluator.Tag("img")).map { it.attr("src").trim().toImageUrl() }
+                        .filterNot { it.endsWith(".gif") }
+                } else {
+                    images.map { it.child(0) }
+                        .filter { it.attr("src").endsWith("load.png") }
+                        .map { it.attr("data-original").trim().toImageUrl() }
+                }
             val parts = doc.getPartsCount()
             urlList.mapIndexed { index, imageUrl ->
-                val url = if (parts == null) {
-                    imageUrl
-                } else {
-                    imageUrl.toHttpUrl().newBuilder()
-                        .addQueryParameter(UnscramblerInterceptor.PARTS_COUNT_PARAM, parts.toString())
-                        .build()
-                        .toString()
-                }
+                val url =
+                    if (parts == null) {
+                        imageUrl
+                    } else {
+                        imageUrl.toHttpUrl().newBuilder()
+                            .addQueryParameter(UnscramblerInterceptor.PARTS_COUNT_PARAM, parts.toString())
+                            .build()
+                            .toString()
+                    }
                 Page(index, imageUrl = url)
             }
         }
@@ -156,20 +159,22 @@ class BoyLove : HttpSource(), ConfigurableSource {
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream<ResultDto<T>>(body.byteStream()).result
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream<ResultDto<T>>(body.byteStream()).result
+        }
 
     private var genres: Array<String> = emptyArray()
     private var isFetchingGenres = false
 
     override fun getFilterList(): FilterList {
-        val genreFilter = if (genres.isEmpty()) {
-            if (!isFetchingGenres) fetchGenres()
-            Filter.Header("点击“重置”尝试刷新标签列表")
-        } else {
-            GenreFilter(genres)
-        }
+        val genreFilter =
+            if (genres.isEmpty()) {
+                if (!isFetchingGenres) fetchGenres()
+                Filter.Header("点击“重置”尝试刷新标签列表")
+            } else {
+                GenreFilter(genres)
+            }
         return FilterList(
             Filter.Header("分类筛选（搜索文本时无效）"),
             StatusFilter(),
@@ -185,8 +190,9 @@ class BoyLove : HttpSource(), ConfigurableSource {
             try {
                 val request = client.newCall(GET("$baseUrl/home/book/cate.html", headers))
                 val document = request.execute().asJsoup()
-                genres = document.select("ul[data-str=tag] > li[class] > a")
-                    .map { it.ownText() }.toTypedArray()
+                genres =
+                    document.select("ul[data-str=tag] > li[class] > a")
+                        .map { it.ownText() }.toTypedArray()
             } catch (e: Throwable) {
                 isFetchingGenres = false
                 Log.e("BoyLove", "failed to fetch genres", e)
@@ -211,29 +217,31 @@ class BoyLove : HttpSource(), ConfigurableSource {
 
         // redirect URL: https://fuhouse.club/bl
         // link source URL: https://boylovepage.github.io/boylove_page
-        private val MIRRORS get() = arrayOf(
-            "boylove1.mobi",
-            "boylove3.cc",
-            "boylove.cc",
-            "boyloves.space",
-            "boylove4.xyz",
-            "boyloves.fun",
-            "boylove.today",
-            "fuzai.one",
-            "xxfuzai.xyz",
-            "fuzai.cc",
-        )
-        private val MIRRORS_DESC get() = arrayOf(
-            "boylove1.mobi",
-            "boylove3.cc",
-            "boylove.cc（非大陆）",
-            "boyloves.space",
-            "boylove4.xyz",
-            "boyloves.fun",
-            "boylove.today",
-            "fuzai.one",
-            "xxfuzai.xyz",
-            "fuzai.cc（非大陆）",
-        )
+        private val MIRRORS get() =
+            arrayOf(
+                "boylove1.mobi",
+                "boylove3.cc",
+                "boylove.cc",
+                "boyloves.space",
+                "boylove4.xyz",
+                "boyloves.fun",
+                "boylove.today",
+                "fuzai.one",
+                "xxfuzai.xyz",
+                "fuzai.cc",
+            )
+        private val MIRRORS_DESC get() =
+            arrayOf(
+                "boylove1.mobi",
+                "boylove3.cc",
+                "boylove.cc（非大陆）",
+                "boyloves.space",
+                "boylove4.xyz",
+                "boyloves.fun",
+                "boylove.today",
+                "fuzai.one",
+                "xxfuzai.xyz",
+                "fuzai.cc（非大陆）",
+            )
     }
 }

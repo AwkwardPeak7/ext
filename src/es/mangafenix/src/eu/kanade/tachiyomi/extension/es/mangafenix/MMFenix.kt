@@ -16,7 +16,8 @@ class MMFenix : Madara(
 
     override val useLoadMoreRequest = LoadMoreStrategy.Always
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 }

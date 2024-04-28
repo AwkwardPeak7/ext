@@ -23,23 +23,26 @@ abstract class PO2Scans(
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .addInterceptor(DataImageInterceptor())
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor(DataImageInterceptor())
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     // popular
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/series", headers)
 
     override fun popularMangaSelector() = "div.series-list"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("div > a")!!.absUrl("href"))
-        title = element.selectFirst("div > h2")!!.text()
-        thumbnail_url = element.selectFirst("img")?.absUrl("data-src")
-    }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("div > a")!!.absUrl("href"))
+            title = element.selectFirst("div > h2")!!.text()
+            thumbnail_url = element.selectFirst("img")?.absUrl("data-src")
+        }
 
     // TODO: add page selectors & url parameters when site have enough series for pagination
     override fun popularMangaNextPageSelector() = null
@@ -49,13 +52,14 @@ abstract class PO2Scans(
 
     override fun latestUpdatesSelector() = "div.chap"
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        element.selectFirst("div.chap-title a")!!.let {
-            setUrlWithoutDomain(it.absUrl("href"))
-            title = it.text()
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            element.selectFirst("div.chap-title a")!!.let {
+                setUrlWithoutDomain(it.absUrl("href"))
+                title = it.text()
+            }
+            thumbnail_url = element.selectFirst("img")?.absUrl("data-src")
         }
-        thumbnail_url = element.selectFirst("img")?.absUrl("data-src")
-    }
 
     override fun latestUpdatesNextPageSelector() = popularMangaNextPageSelector()
 
@@ -104,18 +108,20 @@ abstract class PO2Scans(
     // chapter list
     override fun chapterListSelector() = "div.chap"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        element.selectFirst("a")!!.let {
-            setUrlWithoutDomain(it.absUrl("href"))
-            name = it.text()
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            element.selectFirst("a")!!.let {
+                setUrlWithoutDomain(it.absUrl("href"))
+                name = it.text()
+            }
+            date_upload = parseDate(element.select("div > div > span:nth-child(2)").text())
         }
-        date_upload = parseDate(element.select("div > div > span:nth-child(2)").text())
-    }
 
     // page list
-    override fun pageListParse(document: Document) = document.select(".swiper-slide img").mapIndexed { index, img ->
-        Page(index, imageUrl = img.imgAttr())
-    }
+    override fun pageListParse(document: Document) =
+        document.select(".swiper-slide img").mapIndexed { index, img ->
+            Page(index, imageUrl = img.imgAttr())
+        }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
@@ -130,14 +136,16 @@ abstract class PO2Scans(
         }
     }
 
-    private fun Element.imgAttr(): String = when {
-        hasAttr("data-pagespeed-high-res-src") -> dataImageAsUrl("data-pagespeed-high-res-src")
-        hasAttr("data-pagespeed-lazy-src") -> dataImageAsUrl("data-pagespeed-lazy-src")
-        else -> dataImageAsUrl("src")
-    }
+    private fun Element.imgAttr(): String =
+        when {
+            hasAttr("data-pagespeed-high-res-src") -> dataImageAsUrl("data-pagespeed-high-res-src")
+            hasAttr("data-pagespeed-lazy-src") -> dataImageAsUrl("data-pagespeed-lazy-src")
+            else -> dataImageAsUrl("src")
+        }
 
-    private fun parseDate(dateStr: String) = runCatching { dateFormat.parse(dateStr)!!.time }
-        .getOrDefault(0L)
+    private fun parseDate(dateStr: String) =
+        runCatching { dateFormat.parse(dateStr)!!.time }
+            .getOrDefault(0L)
 
     companion object {
         const val SLUG_SEARCH_PREFIX = "slug:"

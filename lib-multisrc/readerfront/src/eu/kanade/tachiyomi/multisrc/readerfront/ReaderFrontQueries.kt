@@ -69,7 +69,8 @@ fun chaptersByWork(
    |}
 }""".encodeUri()
 
-fun chapterById(id: Int) = """{
+fun chapterById(id: Int) =
+    """{
    |chapterById(
    |  id: $id
    |  showHidden: false

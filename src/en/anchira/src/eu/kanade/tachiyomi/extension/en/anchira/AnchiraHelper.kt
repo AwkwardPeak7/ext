@@ -40,26 +40,29 @@ object AnchiraHelper {
         val chSuffix = CHAPTER_SUFFIX_RE.find(entry.title)?.value.orEmpty()
         val chNumber =
             chSuffix.replace(Regex("[^.\\d]"), "").trim('.').takeUnless { it.isEmpty() } ?: "1"
-        val source = Regex("fakku|irodori").find(
-            anchiraData.find { it.id == entry.id }?.url.orEmpty(),
-        )?.value.orEmpty().titleCase()
+        val source =
+            Regex("fakku|irodori").find(
+                anchiraData.find { it.id == entry.id }?.url.orEmpty(),
+            )?.value.orEmpty().titleCase()
         url = "/g/${entry.id}/${entry.key}"
         name = "$chNumber. ${entry.title.removeSuffix(chSuffix)}"
         date_upload = entry.publishedAt * 1000
         chapter_number = chNumber.toFloat()
-        scanlator = buildString {
-            if (source.isNotEmpty()) {
-                append("$source - ")
+        scanlator =
+            buildString {
+                if (source.isNotEmpty()) {
+                    append("$source - ")
+                }
+                append("${entry.pages} pages")
             }
-            append("${entry.pages} pages")
-        }
     }
 
-    private fun String.titleCase() = replaceFirstChar {
-        if (it.isLowerCase()) {
-            it.titlecase(Locale.getDefault())
-        } else {
-            it.toString()
+    private fun String.titleCase() =
+        replaceFirstChar {
+            if (it.isLowerCase()) {
+                it.titlecase(Locale.getDefault())
+            } else {
+                it.toString()
+            }
         }
-    }
 }

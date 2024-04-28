@@ -24,9 +24,10 @@ object ScrambledImageInterceptor : Interceptor {
         if (aid < scrambleId) return response // 对在漫画章节ID为220980之前的图片未进行图片分割,直接放行
 // 章节ID:220980(包含)之后的漫画(2020.10.27之后)图片进行了分割getRows倒序处理
         val imgIndex: String = pathSegments.last().substringBefore('.')
-        val res = response.body.byteStream().use {
-            decodeImage(it, getRows(aid, imgIndex))
-        }
+        val res =
+            response.body.byteStream().use {
+                decodeImage(it, getRows(aid, imgIndex))
+            }
         val outputBytes = res.toResponseBody(jpegMediaType)
         return response.newBuilder().body(outputBytes).build()
     }
@@ -46,11 +47,12 @@ object ScrambledImageInterceptor : Interceptor {
         aid: Int,
         imgIndex: String,
     ): Int {
-        val modulus = when {
-            aid >= 421926 -> 8
-            aid >= 268850 -> 10
-            else -> return 10
-        }
+        val modulus =
+            when {
+                aid >= 421926 -> 8
+                aid >= 268850 -> 10
+                else -> return 10
+            }
         return 2 * (md5LastCharCode(aid.toString() + imgIndex) % modulus) + 2
     }
 

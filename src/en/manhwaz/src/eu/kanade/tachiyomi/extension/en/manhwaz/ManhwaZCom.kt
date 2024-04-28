@@ -9,7 +9,8 @@ class ManhwaZCom : ManhwaZ(
     "https://manhwaz.com",
     "en",
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 }

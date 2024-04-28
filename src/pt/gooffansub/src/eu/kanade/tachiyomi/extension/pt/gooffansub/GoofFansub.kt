@@ -13,9 +13,10 @@ class GoofFansub : Madara(
     "pt-BR",
     SimpleDateFormat("dd/MM/yyy", Locale("pt", "BR")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
     override val popularMangaUrlSelector = "div.post-title a:last-child"
 }

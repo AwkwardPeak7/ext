@@ -41,9 +41,10 @@ class VyvyManga : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/search".toHttpUrl().newBuilder()
-            .addQueryParameter("q", query)
-            .addQueryParameter("page", page.toString())
+        val url =
+            "$baseUrl/search".toHttpUrl().newBuilder()
+                .addQueryParameter("q", query)
+                .addQueryParameter("page", page.toString())
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
             when (filter) {
                 is SearchType -> url.addQueryParameter("search_po", filter.selected)
@@ -66,11 +67,12 @@ class VyvyManga : ParsedHttpSource() {
 
     override fun searchMangaSelector(): String = ".comic-item"
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
-        title = element.selectFirst(".comic-title")!!.text()
-        thumbnail_url = element.selectFirst(".comic-image")!!.absUrl("data-background-image")
-    }
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
+            title = element.selectFirst(".comic-title")!!.text()
+            thumbnail_url = element.selectFirst(".comic-image")!!.absUrl("data-background-image")
+        }
 
     override fun searchMangaNextPageSelector(): String = "[rel=next]"
 
@@ -85,28 +87,31 @@ class VyvyManga : ParsedHttpSource() {
     override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
     // Details
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.selectFirst("h1")!!.text()
-        artist = document.selectFirst(".pre-title:contains(Artist) ~ a")?.text()
-        author = document.selectFirst(".pre-title:contains(Author) ~ a")?.text()
-        description = document.selectFirst(".summary > .content")!!.text()
-        genre = document.select(".pre-title:contains(Genres) ~ a").joinToString { it.text() }
-        status = when (document.selectFirst(".pre-title:contains(Status) ~ span:not(.space)")?.text()) {
-            "Ongoing" -> SManga.ONGOING
-            "Completed" -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.selectFirst("h1")!!.text()
+            artist = document.selectFirst(".pre-title:contains(Artist) ~ a")?.text()
+            author = document.selectFirst(".pre-title:contains(Author) ~ a")?.text()
+            description = document.selectFirst(".summary > .content")!!.text()
+            genre = document.select(".pre-title:contains(Genres) ~ a").joinToString { it.text() }
+            status =
+                when (document.selectFirst(".pre-title:contains(Status) ~ span:not(.space)")?.text()) {
+                    "Ongoing" -> SManga.ONGOING
+                    "Completed" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
+            thumbnail_url = document.selectFirst(".img-manga")!!.absUrl("src")
         }
-        thumbnail_url = document.selectFirst(".img-manga")!!.absUrl("src")
-    }
 
     // Chapters
     override fun chapterListSelector(): String = ".list-group > a"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        url = element.absUrl("href")
-        name = element.selectFirst("span")!!.text()
-        date_upload = parseChapterDate(element.selectFirst("> p")?.text())
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            url = element.absUrl("href")
+            name = element.selectFirst("span")!!.text()
+            date_upload = parseChapterDate(element.selectFirst("> p")?.text())
+        }
 
     // Pages
     override fun pageListRequest(chapter: SChapter): Request = GET(chapter.url, headers)

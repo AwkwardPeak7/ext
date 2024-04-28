@@ -23,8 +23,9 @@ class ParagonScans : Madara(
         }
 
         val (amountStr, unit) = splitDate
-        val amount = amountStr.toIntOrNull()
-            ?: return super.parseChapterDate(date)
+        val amount =
+            amountStr.toIntOrNull()
+                ?: return super.parseChapterDate(date)
 
         val cal = Calendar.getInstance()
         return when (unit) {

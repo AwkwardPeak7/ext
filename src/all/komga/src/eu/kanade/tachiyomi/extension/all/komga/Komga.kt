@@ -55,9 +55,10 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
     private val displayName by lazy { preferences.getString(PREF_DISPLAY_NAME, "")!! }
 
     override val name by lazy {
-        val displayNameSuffix = displayName
-            .ifBlank { suffix }
-            .let { if (it.isNotBlank()) " ($it)" else "" }
+        val displayNameSuffix =
+            displayName
+                .ifBlank { suffix }
+                .let { if (it.isNotBlank()) " ($it)" else "" }
 
         "Komga$displayNameSuffix"
     }
@@ -84,8 +85,9 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
 
     private val json: Json by injectLazy()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("User-Agent", "TachiyomiKomga/${AppInfo.getVersionName()}")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("User-Agent", "TachiyomiKomga/${AppInfo.getVersionName()}")
 
     override val client: OkHttpClient =
         network.client.newBuilder()
@@ -101,23 +103,25 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
             .dns(Dns.SYSTEM) // don't use DNS over HTTPS as it breaks IP addressing
             .build()
 
-    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(
-        page,
-        "",
-        FilterList(
-            SeriesSort(Filter.Sort.Selection(1, true)),
-        ),
-    )
+    override fun popularMangaRequest(page: Int): Request =
+        searchMangaRequest(
+            page,
+            "",
+            FilterList(
+                SeriesSort(Filter.Sort.Selection(1, true)),
+            ),
+        )
 
     override fun popularMangaParse(response: Response): MangasPage = processSeriesPage(response, baseUrl)
 
-    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(
-        page,
-        "",
-        FilterList(
-            SeriesSort(Filter.Sort.Selection(3, false)),
-        ),
-    )
+    override fun latestUpdatesRequest(page: Int): Request =
+        searchMangaRequest(
+            page,
+            "",
+            FilterList(
+                SeriesSort(Filter.Sort.Selection(3, false)),
+            ),
+        )
 
     override fun latestUpdatesParse(response: Response): MangasPage = processSeriesPage(response, baseUrl)
 
@@ -126,15 +130,17 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
         query: String,
         filters: FilterList,
     ): Request {
-        val collectionId = (filters.find { it is CollectionSelect } as? CollectionSelect)?.let {
-            it.collections[it.state].id
-        }
+        val collectionId =
+            (filters.find { it is CollectionSelect } as? CollectionSelect)?.let {
+                it.collections[it.state].id
+            }
 
-        val type = when {
-            collectionId != null -> "collections/$collectionId/series"
-            filters.find { it is TypeSelect }?.state == 1 -> "readlists"
-            else -> "series"
-        }
+        val type =
+            when {
+                collectionId != null -> "collections/$collectionId/series"
+                filters.find { it is TypeSelect }?.state == 1 -> "readlists"
+                else -> "series"
+            }
 
         val url = "$baseUrl/api/v1/$type?search=$query&page=${page - 1}&deleted=false".toHttpUrl().newBuilder()
         val filterList = filters.ifEmpty { getFilterList() }
@@ -150,13 +156,14 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
                 is Filter.Sort -> {
                     val state = filter.state ?: return@forEach
 
-                    val sortCriteria = when (state.index) {
-                        0 -> "relevance"
-                        1 -> if (type == "series") "metadata.titleSort" else "name"
-                        2 -> "createdDate"
-                        3 -> "lastModifiedDate"
-                        else -> return@forEach
-                    } + "," + if (state.ascending) "asc" else "desc"
+                    val sortCriteria =
+                        when (state.index) {
+                            0 -> "relevance"
+                            1 -> if (type == "series") "metadata.titleSort" else "name"
+                            2 -> "createdDate"
+                            3 -> "lastModifiedDate"
+                            else -> return@forEach
+                        } + "," + if (state.ascending) "asc" else "desc"
 
                     url.addQueryParameter("sort", sortCriteria)
                 }
@@ -173,11 +180,12 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
         response: Response,
         baseUrl: String,
     ): MangasPage {
-        val data = if (response.isFromReadList()) {
-            response.parseAs<PageWrapperDto<ReadListDto>>()
-        } else {
-            response.parseAs<PageWrapperDto<SeriesDto>>()
-        }
+        val data =
+            if (response.isFromReadList()) {
+                response.parseAs<PageWrapperDto<ReadListDto>>()
+            } else {
+                response.parseAs<PageWrapperDto<SeriesDto>>()
+            }
 
         return MangasPage(data.content.map { it.toSManga(baseUrl) }, !data.last)
     }
@@ -216,18 +224,20 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
                     chapter_number = if (!isFromReadList) book.metadata.numberSort else index + 1F
                     url = "$baseUrl/api/v1/books/${book.id}"
                     name = book.getChapterName(chapterNameTemplate, isFromReadList)
-                    scanlator = book.metadata.authors
-                        .filter { it.role == "translator" }
-                        .joinToString { it.name }
-                    date_upload = when {
-                        book.metadata.releaseDate != null -> parseDate(book.metadata.releaseDate)
-                        book.created != null -> parseDateTime(book.created)
+                    scanlator =
+                        book.metadata.authors
+                            .filter { it.role == "translator" }
+                            .joinToString { it.name }
+                    date_upload =
+                        when {
+                            book.metadata.releaseDate != null -> parseDate(book.metadata.releaseDate)
+                            book.created != null -> parseDateTime(book.created)
 
-                        // XXX: `Book.fileLastModified` actually uses the server's running timezone,
-                        // not UTC, even if the timestamp ends with a Z! We cannot determine the
-                        // server's timezone, which is why this is a last resort option.
-                        else -> parseDateTime(book.fileLastModified)
-                    }
+                            // XXX: `Book.fileLastModified` actually uses the server's running timezone,
+                            // not UTC, even if the timestamp ends with a Z! We cannot determine the
+                            // server's timezone, which is why this is a last resort option.
+                            else -> parseDateTime(book.fileLastModified)
+                        }
                 }
             }
             .sortedByDescending { it.chapter_number }
@@ -239,12 +249,13 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
         val pages = response.parseAs<List<PageDto>>()
 
         return pages.map {
-            val url = "${response.request.url}/${it.number}" +
-                if (!SUPPORTED_IMAGE_TYPES.contains(it.mediaType)) {
-                    "?convert=png"
-                } else {
-                    ""
-                }
+            val url =
+                "${response.request.url}/${it.number}" +
+                    if (!SUPPORTED_IMAGE_TYPES.contains(it.mediaType)) {
+                        "?convert=png"
+                    } else {
+                        ""
+                    }
 
             Page(it.number, imageUrl = url)
         }
@@ -255,57 +266,59 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
     override fun getFilterList(): FilterList {
         fetchFilterOptions()
 
-        val filters = mutableListOf<Filter<*>>(
-            UnreadFilter(),
-            InProgressFilter(),
-            ReadFilter(),
-            TypeSelect(),
-            CollectionSelect(
-                buildList {
-                    add(CollectionFilterEntry("None"))
-                    collections.forEach {
-                        add(CollectionFilterEntry(it.name, it.id))
-                    }
-                },
-            ),
-            LibraryFilter(libraries, defaultLibraries),
-            UriMultiSelectFilter(
-                "Status",
-                "status",
-                listOf("Ongoing", "Ended", "Abandoned", "Hiatus").map {
-                    UriMultiSelectOption(it, it.uppercase(Locale.ROOT))
-                },
-            ),
-            UriMultiSelectFilter(
-                "Genres",
-                "genre",
-                genres.map { UriMultiSelectOption(it) },
-            ),
-            UriMultiSelectFilter(
-                "Tags",
-                "tag",
-                tags.map { UriMultiSelectOption(it) },
-            ),
-            UriMultiSelectFilter(
-                "Publishers",
-                "publisher",
-                publishers.map { UriMultiSelectOption(it) },
-            ),
-        ).apply {
-            if (fetchFilterStatus != FetchFilterStatus.FETCHED) {
-                val message = if (fetchFilterStatus == FetchFilterStatus.NOT_FETCHED && fetchFiltersAttempts >= 3) {
-                    "Failed to fetch filtering options from the server"
-                } else {
-                    "Press 'Reset' to show filtering options"
+        val filters =
+            mutableListOf<Filter<*>>(
+                UnreadFilter(),
+                InProgressFilter(),
+                ReadFilter(),
+                TypeSelect(),
+                CollectionSelect(
+                    buildList {
+                        add(CollectionFilterEntry("None"))
+                        collections.forEach {
+                            add(CollectionFilterEntry(it.name, it.id))
+                        }
+                    },
+                ),
+                LibraryFilter(libraries, defaultLibraries),
+                UriMultiSelectFilter(
+                    "Status",
+                    "status",
+                    listOf("Ongoing", "Ended", "Abandoned", "Hiatus").map {
+                        UriMultiSelectOption(it, it.uppercase(Locale.ROOT))
+                    },
+                ),
+                UriMultiSelectFilter(
+                    "Genres",
+                    "genre",
+                    genres.map { UriMultiSelectOption(it) },
+                ),
+                UriMultiSelectFilter(
+                    "Tags",
+                    "tag",
+                    tags.map { UriMultiSelectOption(it) },
+                ),
+                UriMultiSelectFilter(
+                    "Publishers",
+                    "publisher",
+                    publishers.map { UriMultiSelectOption(it) },
+                ),
+            ).apply {
+                if (fetchFilterStatus != FetchFilterStatus.FETCHED) {
+                    val message =
+                        if (fetchFilterStatus == FetchFilterStatus.NOT_FETCHED && fetchFiltersAttempts >= 3) {
+                            "Failed to fetch filtering options from the server"
+                        } else {
+                            "Press 'Reset' to show filtering options"
+                        }
+
+                    add(0, Filter.Header(message))
+                    add(1, Filter.Separator())
                 }
 
-                add(0, Filter.Header(message))
-                add(1, Filter.Separator())
+                addAll(authors.map { (role, authors) -> AuthorGroup(role, authors.map { AuthorFilter(it) }) })
+                add(SeriesSort())
             }
-
-            addAll(authors.map { (role, authors) -> AuthorGroup(role, authors.map { AuthorFilter(it) }) })
-            add(SeriesSort())
-        }
 
         return FilterList(filters)
     }
@@ -366,30 +379,33 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
         MultiSelectListPreference(screen.context).apply {
             key = PREF_DEFAULT_LIBRARIES
             title = "Default libraries"
-            summary = buildString {
-                append("Show content from selected libraries by default.")
+            summary =
+                buildString {
+                    append("Show content from selected libraries by default.")
 
-                if (libraries.isEmpty()) {
-                    append(" Exit and enter the settings menu to load options.")
+                    if (libraries.isEmpty()) {
+                        append(" Exit and enter the settings menu to load options.")
+                    }
                 }
-            }
             entries = libraries.map { it.name }.toTypedArray()
             entryValues = libraries.map { it.id }.toTypedArray()
             setDefaultValue(emptySet<String>())
         }.also(screen::addPreference)
 
-        val values = hashMapOf(
-            "title" to "",
-            "seriesTitle" to "",
-            "number" to "",
-            "createdDate" to "",
-            "releaseDate" to "",
-            "size" to "",
-            "sizeBytes" to "",
-        )
-        val stringSubstitutor = StringSubstitutor(values, "{", "}").apply {
-            isEnableUndefinedVariableException = true
-        }
+        val values =
+            hashMapOf(
+                "title" to "",
+                "seriesTitle" to "",
+                "number" to "",
+                "createdDate" to "",
+                "releaseDate" to "",
+                "size" to "",
+                "sizeBytes" to "",
+            )
+        val stringSubstitutor =
+            StringSubstitutor(values, "{", "}").apply {
+                isEnableUndefinedVariableException = true
+            }
 
         screen.addEditTextPreference(
             key = PREF_CHAPTER_NAME_TEMPLATE,
@@ -397,7 +413,8 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
             summary = "Customize how chapter names appear. Chapters in read lists will always be prefixed by the series' name.",
             inputType = InputType.TYPE_CLASS_TEXT,
             default = PREF_CHAPTER_NAME_TEMPLATE_DEFAULT,
-            dialogMessage = """
+            dialogMessage =
+                """
             |Supported placeholders:
             |- {title}: Chapter name
             |- {seriesTitle}: Series name
@@ -408,7 +425,7 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
             |- {sizeBytes}: Chapter file size (in bytes)
             |If you wish to place some text between curly brackets, place the escape character "$"
             |before the opening curly bracket, e.g. ${'$'}{series}.
-            """.trimMargin(),
+                """.trimMargin(),
             validate = {
                 try {
                     stringSubstitutor.replace(it)
@@ -443,19 +460,21 @@ open class Komga(private val suffix: String = "") : ConfigurableSource, Unmetere
         scope.launch {
             try {
                 libraries = client.newCall(GET("$baseUrl/api/v1/libraries")).await().parseAs()
-                collections = client
-                    .newCall(GET("$baseUrl/api/v1/collections?unpaged=true"))
-                    .await()
-                    .parseAs<PageWrapperDto<CollectionDto>>()
-                    .content
+                collections =
+                    client
+                        .newCall(GET("$baseUrl/api/v1/collections?unpaged=true"))
+                        .await()
+                        .parseAs<PageWrapperDto<CollectionDto>>()
+                        .content
                 genres = client.newCall(GET("$baseUrl/api/v1/genres")).await().parseAs()
                 tags = client.newCall(GET("$baseUrl/api/v1/tags")).await().parseAs()
                 publishers = client.newCall(GET("$baseUrl/api/v1/publishers")).await().parseAs()
-                authors = client
-                    .newCall(GET("$baseUrl/api/v1/authors"))
-                    .await()
-                    .parseAs<List<AuthorDto>>()
-                    .groupBy { it.role }
+                authors =
+                    client
+                        .newCall(GET("$baseUrl/api/v1/authors"))
+                        .await()
+                        .parseAs<List<AuthorDto>>()
+                        .groupBy { it.role }
                 fetchFilterStatus = FetchFilterStatus.FETCHED
             } catch (e: Exception) {
                 fetchFilterStatus = FetchFilterStatus.NOT_FETCHED

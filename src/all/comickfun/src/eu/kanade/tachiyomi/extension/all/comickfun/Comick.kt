@@ -40,12 +40,13 @@ abstract class Comick(
 
     override val supportsLatest = true
 
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        coerceInputValues = true
-        explicitNulls = true
-    }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            coerceInputValues = true
+            explicitNulls = true
+        }
 
     private lateinit var searchResponse: List<SearchManga>
 
@@ -108,12 +109,13 @@ abstract class Comick(
             key = SCORE_POSITION_PREF
             title = intl["score_position_title"]
             summary = "%s"
-            entries = arrayOf(
-                intl["score_position_top"],
-                intl["score_position_middle"],
-                intl["score_position_bottom"],
-                intl["score_position_none"],
-            )
+            entries =
+                arrayOf(
+                    intl["score_position_top"],
+                    intl["score_position_middle"],
+                    intl["score_position_bottom"],
+                    intl["score_position_none"],
+                )
             entryValues = arrayOf(SCORE_POSITION_DEFAULT, "middle", "bottom", "none")
             setDefaultValue(SCORE_POSITION_DEFAULT)
 
@@ -130,14 +132,15 @@ abstract class Comick(
     }
 
     private val SharedPreferences.ignoredGroups: Set<String>
-        get() = getString(IGNORED_GROUPS_PREF, "")
-            ?.lowercase()
-            ?.split("\n")
-            ?.map(String::trim)
-            ?.filter(String::isNotEmpty)
-            ?.sorted()
-            .orEmpty()
-            .toSet()
+        get() =
+            getString(IGNORED_GROUPS_PREF, "")
+                ?.lowercase()
+                ?.split("\n")
+                ?.map(String::trim)
+                ?.filter(String::isNotEmpty)
+                ?.sorted()
+                .orEmpty()
+                .toSet()
 
     private val SharedPreferences.includeMuTags: Boolean
         get() = getBoolean(INCLUDE_MU_TAGS_PREF, INCLUDE_MU_TAGS_DEFAULT)
@@ -148,14 +151,16 @@ abstract class Comick(
     private val SharedPreferences.scorePosition: String
         get() = getString(SCORE_POSITION_PREF, SCORE_POSITION_DEFAULT) ?: SCORE_POSITION_DEFAULT
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("Referer", "$baseUrl/")
-        add("User-Agent", "Tachiyomi ${System.getProperty("http.agent")}")
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("Referer", "$baseUrl/")
+            add("User-Agent", "Tachiyomi ${System.getProperty("http.agent")}")
+        }
 
-    override val client = network.client.newBuilder()
-        .rateLimit(3, 1)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .rateLimit(3, 1)
+            .build()
 
     /** Popular Manga **/
     override fun popularMangaRequest(page: Int): Request {
@@ -210,10 +215,11 @@ abstract class Comick(
     }
 
     private fun querySearchRequest(query: String): Request {
-        val url = "$apiUrl/v1.0/search?limit=300&page=1&tachiyomi=true"
-            .toHttpUrl().newBuilder()
-            .addQueryParameter("q", query.trim())
-            .build()
+        val url =
+            "$apiUrl/v1.0/search?limit=300&page=1&tachiyomi=true"
+                .toHttpUrl().newBuilder()
+                .addQueryParameter("q", query.trim())
+                .build()
 
         return GET(url, headers)
     }
@@ -226,8 +232,9 @@ abstract class Comick(
 
     private fun paginatedSearchPage(page: Int): MangasPage {
         val end = min(page * LIMIT, searchResponse.size)
-        val entries = searchResponse.subList((page - 1) * LIMIT, end)
-            .map(SearchManga::toSManga)
+        val entries =
+            searchResponse.subList((page - 1) * LIMIT, end)
+                .map(SearchManga::toSManga)
         return MangasPage(entries, end < searchResponse.size)
     }
 
@@ -236,92 +243,93 @@ abstract class Comick(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$apiUrl/v1.0/search".toHttpUrl().newBuilder().apply {
-            filters.forEach { it ->
-                when (it) {
-                    is CompletedFilter -> {
-                        if (it.state) {
-                            addQueryParameter("completed", "true")
-                        }
-                    }
-
-                    is GenreFilter -> {
-                        it.state.filter { it.isIncluded() }.forEach {
-                            addQueryParameter("genres", it.value)
-                        }
-
-                        it.state.filter { it.isExcluded() }.forEach {
-                            addQueryParameter("excludes", it.value)
-                        }
-                    }
-
-                    is DemographicFilter -> {
-                        it.state.filter { it.isIncluded() }.forEach {
-                            addQueryParameter("demographic", it.value)
-                        }
-                    }
-
-                    is TypeFilter -> {
-                        it.state.filter { it.state }.forEach {
-                            addQueryParameter("country", it.value)
-                        }
-                    }
-
-                    is SortFilter -> {
-                        addQueryParameter("sort", it.getValue())
-                    }
-
-                    is StatusFilter -> {
-                        if (it.state > 0) {
-                            addQueryParameter("status", it.getValue())
-                        }
-                    }
-
-                    is CreatedAtFilter -> {
-                        if (it.state > 0) {
-                            addQueryParameter("time", it.getValue())
-                        }
-                    }
-
-                    is MinimumFilter -> {
-                        if (it.state.isNotEmpty()) {
-                            addQueryParameter("minimum", it.state)
-                        }
-                    }
-
-                    is FromYearFilter -> {
-                        if (it.state.isNotEmpty()) {
-                            addQueryParameter("from", it.state)
-                        }
-                    }
-
-                    is ToYearFilter -> {
-                        if (it.state.isNotEmpty()) {
-                            addQueryParameter("to", it.state)
-                        }
-                    }
-
-                    is TagFilter -> {
-                        if (it.state.isNotEmpty()) {
-                            it.state.split(",").forEach {
-                                addQueryParameter(
-                                    "tags",
-                                    it.trim().lowercase().replace(
-                                        SPACE_AND_SLASH_REGEX,
-                                        "-",
-                                    ).replace("'-", "-and-039-").replace("'", "-and-039-"),
-                                )
+        val url =
+            "$apiUrl/v1.0/search".toHttpUrl().newBuilder().apply {
+                filters.forEach { it ->
+                    when (it) {
+                        is CompletedFilter -> {
+                            if (it.state) {
+                                addQueryParameter("completed", "true")
                             }
                         }
-                    }
 
-                    else -> {}
+                        is GenreFilter -> {
+                            it.state.filter { it.isIncluded() }.forEach {
+                                addQueryParameter("genres", it.value)
+                            }
+
+                            it.state.filter { it.isExcluded() }.forEach {
+                                addQueryParameter("excludes", it.value)
+                            }
+                        }
+
+                        is DemographicFilter -> {
+                            it.state.filter { it.isIncluded() }.forEach {
+                                addQueryParameter("demographic", it.value)
+                            }
+                        }
+
+                        is TypeFilter -> {
+                            it.state.filter { it.state }.forEach {
+                                addQueryParameter("country", it.value)
+                            }
+                        }
+
+                        is SortFilter -> {
+                            addQueryParameter("sort", it.getValue())
+                        }
+
+                        is StatusFilter -> {
+                            if (it.state > 0) {
+                                addQueryParameter("status", it.getValue())
+                            }
+                        }
+
+                        is CreatedAtFilter -> {
+                            if (it.state > 0) {
+                                addQueryParameter("time", it.getValue())
+                            }
+                        }
+
+                        is MinimumFilter -> {
+                            if (it.state.isNotEmpty()) {
+                                addQueryParameter("minimum", it.state)
+                            }
+                        }
+
+                        is FromYearFilter -> {
+                            if (it.state.isNotEmpty()) {
+                                addQueryParameter("from", it.state)
+                            }
+                        }
+
+                        is ToYearFilter -> {
+                            if (it.state.isNotEmpty()) {
+                                addQueryParameter("to", it.state)
+                            }
+                        }
+
+                        is TagFilter -> {
+                            if (it.state.isNotEmpty()) {
+                                it.state.split(",").forEach {
+                                    addQueryParameter(
+                                        "tags",
+                                        it.trim().lowercase().replace(
+                                            SPACE_AND_SLASH_REGEX,
+                                            "-",
+                                        ).replace("'-", "-and-039-").replace("'", "-and-039-"),
+                                    )
+                                }
+                            }
+                        }
+
+                        else -> {}
+                    }
                 }
-            }
-            addQueryParameter("tachiyomi", "true")
-            addQueryParameter("limit", "$LIMIT")
-            addQueryParameter("page", "$page")
-        }.build()
+                addQueryParameter("tachiyomi", "true")
+                addQueryParameter("limit", "$LIMIT")
+                addQueryParameter("page", "$page")
+            }.build()
 
         return GET(url, headers)
     }
@@ -359,19 +367,22 @@ abstract class Comick(
                 return mangaData.toSManga(
                     includeMuTags = preferences.includeMuTags,
                     scorePosition = preferences.scorePosition,
-                    covers = listOf(
-                        MDcovers(
-                            b2key = manga.thumbnail_url?.substringBeforeLast("#")
-                                ?.substringAfterLast("/"),
-                            vol = "1",
+                    covers =
+                        listOf(
+                            MDcovers(
+                                b2key =
+                                    manga.thumbnail_url?.substringBeforeLast("#")
+                                        ?.substringAfterLast("/"),
+                                vol = "1",
+                            ),
                         ),
-                    ),
                 )
             }
             val coversUrl =
                 "$apiUrl/comic/${mangaData.comic.slug ?: mangaData.comic.hid}/covers?tachiyomi=true"
-            val covers = client.newCall(GET(coversUrl)).execute()
-                .parseAs<Covers>().mdCovers.reversed()
+            val covers =
+                client.newCall(GET(coversUrl)).execute()
+                    .parseAs<Covers>().mdCovers.reversed()
             return mangaData.toSManga(
                 includeMuTags = preferences.includeMuTags,
                 covers = if (covers.any { it.vol == "1" }) covers.filter { it.vol == "1" } else covers,
@@ -392,12 +403,13 @@ abstract class Comick(
         }
 
         val mangaUrl = manga.url.removeSuffix("#")
-        val url = "$apiUrl$mangaUrl".toHttpUrl().newBuilder().apply {
-            addPathSegment("chapters")
-            if (comickLang != "all") addQueryParameter("lang", comickLang)
-            addQueryParameter("tachiyomi", "true")
-            addQueryParameter("limit", "$CHAPTERS_LIMIT")
-        }.build()
+        val url =
+            "$apiUrl$mangaUrl".toHttpUrl().newBuilder().apply {
+                addPathSegment("chapters")
+                if (comickLang != "all") addQueryParameter("lang", comickLang)
+                addQueryParameter("tachiyomi", "true")
+                addQueryParameter("limit", "$CHAPTERS_LIMIT")
+            }.build()
 
         return GET(url, headers)
     }
@@ -405,9 +417,10 @@ abstract class Comick(
     override fun chapterListParse(response: Response): List<SChapter> {
         val chapterListResponse = response.parseAs<ChapterList>()
 
-        val mangaUrl = response.request.url.toString()
-            .substringBefore("/chapters")
-            .substringAfter(apiUrl)
+        val mangaUrl =
+            response.request.url.toString()
+                .substringBefore("/chapters")
+                .substringAfter(apiUrl)
 
         return chapterListResponse.chapters
             .filter {

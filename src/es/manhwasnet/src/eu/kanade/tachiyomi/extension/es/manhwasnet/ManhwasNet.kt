@@ -26,25 +26,28 @@ class ManhwasNet : ParsedHttpSource() {
     override val name: String = "Manhwas.net"
     override val supportsLatest: Boolean = true
 
-    override val client = network.client.newBuilder()
-        .connectTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(60, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .addInterceptor { sucuriInterceptor(it) }
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor { sucuriInterceptor(it) }
+            .build()
 
     private fun sucuriInterceptor(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val url = request.url
-        val response = try {
-            chain.proceed(request)
-        } catch (e: Exception) {
-            // Try to clear cookies and retry
-            client.cookieJar.saveFromResponse(url, emptyList())
-            val clearHeaders = request.headers.newBuilder().removeAll("Cookie").build()
-            chain.proceed(request.newBuilder().headers(clearHeaders).build())
-        }
-        if (response.headers["x-sucuri-cache"].isNullOrEmpty() && response.headers["x-sucuri-id"] != null && url.toString().startsWith(
+        val response =
+            try {
+                chain.proceed(request)
+            } catch (e: Exception) {
+                // Try to clear cookies and retry
+                client.cookieJar.saveFromResponse(url, emptyList())
+                val clearHeaders = request.headers.newBuilder().removeAll("Cookie").build()
+                chain.proceed(request.newBuilder().headers(clearHeaders).build())
+            }
+        if (response.headers["x-sucuri-cache"].isNullOrEmpty() && response.headers["x-sucuri-id"] != null &&
+            url.toString().startsWith(
                 baseUrl,
             )
         ) {
@@ -52,9 +55,10 @@ class ManhwasNet : ParsedHttpSource() {
             if (script != null) {
                 val patchedScript = script.split("(r)")[0].dropLast(1) + "r=r.replace('document.cookie','cookie');"
                 QuickJs.create().use {
-                    val result = (it.evaluate(patchedScript) as String)
-                        .replace("location.", "")
-                        .replace("reload();", "")
+                    val result =
+                        (it.evaluate(patchedScript) as String)
+                            .replace("location.", "")
+                            .replace("reload();", "")
                     val sucuriCookie = (it.evaluate(result) as String).split("=", limit = 2)
                     val cookieName = sucuriCookie.first()
                     val cookieValue = sucuriCookie.last().replace(";path", "")
@@ -68,8 +72,9 @@ class ManhwasNet : ParsedHttpSource() {
         return response
     }
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int): Request {
         val url = "$baseUrl/biblioteca".toHttpUrl().newBuilder()
@@ -81,11 +86,12 @@ class ManhwasNet : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = "ul.pagination a.page-link[rel=next]"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
-        title = element.selectFirst(".title")!!.text()
-        thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
-    }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+            title = element.selectFirst(".title")!!.text()
+            thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
+        }
 
     override fun latestUpdatesRequest(page: Int): Request {
         return GET(baseUrl, headers)
@@ -95,11 +101,12 @@ class ManhwasNet : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector() = null
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.select("a").last()!!.attr("abs:href"))
-        title = element.selectFirst(".title")!!.text()
-        thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
-    }
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select("a").last()!!.attr("abs:href"))
+            title = element.selectFirst(".title")!!.text()
+            thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
+        }
 
     override fun searchMangaRequest(
         page: Int,
@@ -146,11 +153,12 @@ class ManhwasNet : ParsedHttpSource() {
 
     override fun chapterListSelector() = "ul.episodes-list > li"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
-        name = element.selectFirst("a > div > p > span")!!.text()
-        date_upload = parseRelativeDate(element.selectFirst("a > div > span")!!.text())
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
+            name = element.selectFirst("a > div > p > span")!!.text()
+            date_upload = parseRelativeDate(element.selectFirst("a > div > span")!!.text())
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("#chapter_imgs img[src][src!=\"\"]").mapIndexed { i, img ->
@@ -161,21 +169,23 @@ class ManhwasNet : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Los filtros no se pueden combinar:"),
-        Filter.Header("Prioridad:   Texto > Géneros > Estado"),
-        Filter.Separator(),
-        GenreFilter(),
-        OrderFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Los filtros no se pueden combinar:"),
+            Filter.Header("Prioridad:   Texto > Géneros > Estado"),
+            Filter.Separator(),
+            GenreFilter(),
+            OrderFilter(),
+        )
 
-    private fun parseStatus(status: String): Int = when (status) {
-        "Publicándose" -> SManga.ONGOING
-        "Finalizado" -> SManga.COMPLETED
-        "Cancelado" -> SManga.CANCELLED
-        "Pausado" -> SManga.ON_HIATUS
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String): Int =
+        when (status) {
+            "Publicándose" -> SManga.ONGOING
+            "Finalizado" -> SManga.COMPLETED
+            "Cancelado" -> SManga.CANCELLED
+            "Pausado" -> SManga.ON_HIATUS
+            else -> SManga.UNKNOWN
+        }
 
     private fun parseRelativeDate(date: String): Long {
         val number = Regex("""(\d+)""").find(date)?.value?.toIntOrNull() ?: return 0

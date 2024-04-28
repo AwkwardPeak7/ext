@@ -5,10 +5,11 @@ import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.serialization.json.Json
 
 class HNIScantrad : PizzaReader("HNI-Scantrad", "https://hni-scantrad.net", "all") {
-    override val json = Json {
-        ignoreUnknownKeys = true
-        coerceInputValues = true
-    }
+    override val json =
+        Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+        }
 
     override fun String.toStatus(): Int {
         return if (isEmpty()) {

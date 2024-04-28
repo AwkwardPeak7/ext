@@ -16,8 +16,9 @@ class TagFilter(tags: List<Pair<String, String>>) : SelectFilter("Tags", tags)
 
 class SortFilter : SelectFilter("Sort", sortValues)
 
-private val sortValues = listOf(
-    Pair("Latest", ""),
-    Pair("Views", "views"),
-    Pair("A-Z", "name"),
-)
+private val sortValues =
+    listOf(
+        Pair("Latest", ""),
+        Pair("Views", "views"),
+        Pair("A-Z", "name"),
+    )

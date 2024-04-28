@@ -23,9 +23,10 @@ abstract class ColorlibAnime(
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(3)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(3)
+            .build()
 
     private fun Element.toThumbnail(): String {
         return this.select(".set-bg").attr("abs:data-setbg").substringBeforeLast("?")
@@ -37,12 +38,13 @@ abstract class ColorlibAnime(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegment("manga")
-            addQueryParameter("page", page.toString())
-            addQueryParameter("sort", filters.findInstance<OrderFilter>()!!.toUriPart())
-            addQueryParameter("search", query)
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegment("manga")
+                addQueryParameter("page", page.toString())
+                addQueryParameter("sort", filters.findInstance<OrderFilter>()!!.toUriPart())
+                addQueryParameter("search", query)
+            }
 
         return GET(url.build(), headers)
     }
@@ -92,11 +94,12 @@ abstract class ColorlibAnime(
                 author = element.select("h3 + span").text()
                 description = element.select("p").text()
                 thumbnail_url = element.first()?.toThumbnail()
-                status = when (element.select("li:contains(status)").text().substringAfter(" ")) {
-                    "Ongoing" -> SManga.ONGOING
-                    "Complete" -> SManga.COMPLETED
-                    else -> SManga.UNKNOWN
-                }
+                status =
+                    when (element.select("li:contains(status)").text().substringAfter(" ")) {
+                        "Ongoing" -> SManga.ONGOING
+                        "Complete" -> SManga.COMPLETED
+                        else -> SManga.UNKNOWN
+                    }
             }
         }
     }
@@ -108,8 +111,9 @@ abstract class ColorlibAnime(
     override fun chapterListParse(response: Response): List<SChapter> {
         val doc = response.asJsoup()
 
-        val time = timeRegex.find(doc.select("script:containsData(lastUpdated)").html())
-            ?.let { it.groupValues[1].toLong() } ?: 0
+        val time =
+            timeRegex.find(doc.select("script:containsData(lastUpdated)").html())
+                ?.let { it.groupValues[1].toLong() } ?: 0
 
         return doc.select(chapterListSelector())
             .map { chapterFromElement(it) }
@@ -137,9 +141,10 @@ abstract class ColorlibAnime(
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // Filters
-    override fun getFilterList() = FilterList(
-        OrderFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            OrderFilter(),
+        )
 
     class OrderFilter(state: Int = 0) : UriPartFilter(
         "Order By",

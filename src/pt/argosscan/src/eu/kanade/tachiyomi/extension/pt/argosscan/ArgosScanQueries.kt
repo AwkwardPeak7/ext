@@ -9,15 +9,16 @@ import kotlinx.serialization.json.putJsonObject
 
 private fun buildQuery(queryAction: () -> String) = queryAction().replace("%", "$")
 
-val LOGIN_MUTATION_QUERY = buildQuery {
-    """
+val LOGIN_MUTATION_QUERY =
+    buildQuery {
+        """
         | mutation login(%email: String!, %password: String!) {
         |     login(loginInput: { email: %email, password: %password }) {
         |         token
         |     }
         | }
-    """.trimMargin()
-}
+        """.trimMargin()
+    }
 
 fun buildLoginMutationQueryPayload(
     email: String,
@@ -31,8 +32,9 @@ fun buildLoginMutationQueryPayload(
     }
 }
 
-val POPULAR_QUERY = buildQuery {
-    """
+val POPULAR_QUERY =
+    buildQuery {
+        """
         | query getProjects(
         |     %filters: FiltersExpression!,
         |     %orders: OrdersExpression!,
@@ -61,40 +63,41 @@ val POPULAR_QUERY = buildQuery {
         |         totalPages
         |     }
         | }
-    """.trimMargin()
-}
+        """.trimMargin()
+    }
 
-fun buildPopularQueryPayload(page: Int) = buildJsonObject {
-    put("operationName", "getProjects")
-    put("query", POPULAR_QUERY)
-    putJsonObject("variables") {
-        putJsonObject("filters") {
-            putJsonObject("childExpressions") {
-                putJsonObject("filters") {
-                    put("field", "Project.id")
-                    put("op", "GE")
-                    putJsonArray("values") {
-                        add("1")
+fun buildPopularQueryPayload(page: Int) =
+    buildJsonObject {
+        put("operationName", "getProjects")
+        put("query", POPULAR_QUERY)
+        putJsonObject("variables") {
+            putJsonObject("filters") {
+                putJsonObject("childExpressions") {
+                    putJsonObject("filters") {
+                        put("field", "Project.id")
+                        put("op", "GE")
+                        putJsonArray("values") {
+                            add("1")
+                        }
                     }
+                    put("operator", "AND")
                 }
                 put("operator", "AND")
             }
-            put("operator", "AND")
-        }
-        putJsonObject("orders") {
-            putJsonArray("orders") {
-                addJsonObject {
-                    put("field", "Project.views")
-                    put("or", "DESC")
+            putJsonObject("orders") {
+                putJsonArray("orders") {
+                    addJsonObject {
+                        put("field", "Project.views")
+                        put("or", "DESC")
+                    }
                 }
             }
-        }
-        putJsonObject("pagination") {
-            put("limit", 12)
-            put("page", page)
+            putJsonObject("pagination") {
+                put("limit", 12)
+                put("page", page)
+            }
         }
     }
-}
 
 fun buildSearchQueryPayload(
     query: String,
@@ -130,8 +133,9 @@ fun buildSearchQueryPayload(
     }
 }
 
-val MANGA_DETAILS_QUERY = buildQuery {
-    """
+val MANGA_DETAILS_QUERY =
+    buildQuery {
+        """
         | query project(%id: Int!) {
         |     project(id: %id) {
         |         id
@@ -152,19 +156,21 @@ val MANGA_DETAILS_QUERY = buildQuery {
         |         }
         |     }
         | }
-    """.trimMargin()
-}
-
-fun buildMangaDetailsQueryPayload(id: Int) = buildJsonObject {
-    put("operationName", "project")
-    put("query", MANGA_DETAILS_QUERY)
-    putJsonObject("variables") {
-        put("id", id)
+        """.trimMargin()
     }
-}
 
-val PAGES_QUERY = buildQuery {
-    """
+fun buildMangaDetailsQueryPayload(id: Int) =
+    buildJsonObject {
+        put("operationName", "project")
+        put("query", MANGA_DETAILS_QUERY)
+        putJsonObject("variables") {
+            put("id", id)
+        }
+    }
+
+val PAGES_QUERY =
+    buildQuery {
+        """
         | query getChapter(%id: String!) {
         |     getChapters(
         |         orders: {
@@ -193,13 +199,14 @@ val PAGES_QUERY = buildQuery {
         |         }
         |     }
         | }
-    """.trimMargin()
-}
-
-fun buildPagesQueryPayload(id: String) = buildJsonObject {
-    put("operationName", "getChapter")
-    put("query", PAGES_QUERY)
-    putJsonObject("variables") {
-        put("id", id)
+        """.trimMargin()
     }
-}
+
+fun buildPagesQueryPayload(id: String) =
+    buildJsonObject {
+        put("operationName", "getChapter")
+        put("query", PAGES_QUERY)
+        putJsonObject("variables") {
+            put("id", id)
+        }
+    }

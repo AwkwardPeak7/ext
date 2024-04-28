@@ -89,11 +89,12 @@ class SortFilter(private val sortings: List<Tag>, private val default: Int) :
         url: HttpUrl.Builder,
         query: String,
     ) {
-        val orderBy = if (state == null) {
-            sortings[default].id
-        } else {
-            sortings[state!!.index].id
-        }
+        val orderBy =
+            if (state == null) {
+                sortings[default].id
+            } else {
+                sortings[state!!.index].id
+            }
         val order = if (state?.ascending == true) "asc" else "desc"
 
         url.addQueryParameter("order", order)

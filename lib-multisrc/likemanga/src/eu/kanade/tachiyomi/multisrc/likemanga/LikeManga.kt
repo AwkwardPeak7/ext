@@ -33,8 +33,9 @@ abstract class LikeManga(
 
     override val client = network.cloudflareClient
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
@@ -67,40 +68,41 @@ abstract class LikeManga(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addQueryParameter("act", "searchadvance")
-            filters.forEach { filter ->
-                when (filter) {
-                    is GenreFilter -> {
-                        filter.checked?.forEach {
-                            addQueryParameter("f[genres][]", it)
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addQueryParameter("act", "searchadvance")
+                filters.forEach { filter ->
+                    when (filter) {
+                        is GenreFilter -> {
+                            filter.checked?.forEach {
+                                addQueryParameter("f[genres][]", it)
+                            }
                         }
-                    }
-                    is ChapterCountFilter -> {
-                        filter.selected?.let {
-                            addQueryParameter("f[min_num_chapter]", it)
+                        is ChapterCountFilter -> {
+                            filter.selected?.let {
+                                addQueryParameter("f[min_num_chapter]", it)
+                            }
                         }
-                    }
-                    is StatusFilter -> {
-                        filter.selected?.let {
-                            addQueryParameter("f[status]", it)
+                        is StatusFilter -> {
+                            filter.selected?.let {
+                                addQueryParameter("f[status]", it)
+                            }
                         }
-                    }
-                    is SortFilter -> {
-                        filter.selected?.let {
-                            addQueryParameter("f[sortby]", it)
+                        is SortFilter -> {
+                            filter.selected?.let {
+                                addQueryParameter("f[sortby]", it)
+                            }
                         }
+                        else -> {}
                     }
-                    else -> {}
                 }
-            }
-            if (query.isNotEmpty()) {
-                addQueryParameter("f[keyword]", query.trim())
-            }
-            if (page > 1) {
-                addQueryParameter("pageNum", page.toString())
-            }
-        }.build()
+                if (query.isNotEmpty()) {
+                    addQueryParameter("f[keyword]", query.trim())
+                }
+                if (page > 1) {
+                    addQueryParameter("pageNum", page.toString())
+                }
+            }.build()
 
         return GET(url, headers)
     }
@@ -112,41 +114,46 @@ abstract class LikeManga(
             ?.select("div.form-check")
             .orEmpty()
             .mapNotNull {
-                val label = it.selectFirst("label")
-                    ?.text()?.trim() ?: return@mapNotNull null
+                val label =
+                    it.selectFirst("label")
+                        ?.text()?.trim() ?: return@mapNotNull null
 
-                val value = it.selectFirst("input")
-                    ?.attr("value") ?: return@mapNotNull null
+                val value =
+                    it.selectFirst("input")
+                        ?.attr("value") ?: return@mapNotNull null
 
                 Pair(label, value)
             }
     }
 
     override fun getFilterList(): FilterList {
-        val filters: MutableList<Filter<*>> = mutableListOf(
-            SortFilter(),
-            StatusFilter(),
-            ChapterCountFilter(),
-        )
+        val filters: MutableList<Filter<*>> =
+            mutableListOf(
+                SortFilter(),
+                StatusFilter(),
+                ChapterCountFilter(),
+            )
 
-        filters += if (genresList.isEmpty()) {
-            listOf(
-                Filter.Separator(),
-                Filter.Header("Press 'reset' to attempt to show Genres"),
-            )
-        } else {
-            listOf(
-                GenreFilter("Genre", genresList),
-            )
-        }
+        filters +=
+            if (genresList.isEmpty()) {
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Press 'reset' to attempt to show Genres"),
+                )
+            } else {
+                listOf(
+                    GenreFilter("Genre", genresList),
+                )
+            }
 
         return FilterList(filters)
     }
 
     override fun searchMangaParse(response: Response): MangasPage {
         if (genresList.isEmpty()) {
-            val document = response.peekBody(Long.MAX_VALUE).string()
-                .let { Jsoup.parse(it, response.request.url.toString()) }
+            val document =
+                response.peekBody(Long.MAX_VALUE).string()
+                    .let { Jsoup.parse(it, response.request.url.toString()) }
 
             genresList = parseGenres(document)
         }
@@ -154,25 +161,28 @@ abstract class LikeManga(
         return super.searchMangaParse(response)
     }
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
-        thumbnail_url = element.selectFirst("img")?.imgAttr()
-        title = element.select(".title-manga").text()
-    }
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+            thumbnail_url = element.selectFirst("img")?.imgAttr()
+            title = element.select(".title-manga").text()
+        }
 
     override fun searchMangaSelector() = "div.card-body div.card"
 
     override fun searchMangaNextPageSelector() = "ul.pagination a:contains(»)"
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.select("#title-detail-manga").text()
-        thumbnail_url = document.selectFirst(".detail-info img")?.imgAttr()
-        description = document.selectFirst("#summary_shortened")?.text()?.trim()
-        genre = document.select(".list-info a[href*=/genres/]").joinToString { it.text() }
-        status = document.selectFirst(".list-info .status p:nth-child(2)")?.text().parseStatus()
-        author = document.selectFirst(".list-info .author p:nth-child(2)")?.text()
-            ?.takeUnless { it.trim() == "Updating" }
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.select("#title-detail-manga").text()
+            thumbnail_url = document.selectFirst(".detail-info img")?.imgAttr()
+            description = document.selectFirst("#summary_shortened")?.text()?.trim()
+            genre = document.select(".list-info a[href*=/genres/]").joinToString { it.text() }
+            status = document.selectFirst(".list-info .status p:nth-child(2)")?.text().parseStatus()
+            author =
+                document.selectFirst(".list-info .author p:nth-child(2)")?.text()
+                    ?.takeUnless { it.trim() == "Updating" }
+        }
 
     private fun String?.parseStatus(): Int {
         if (this == null) return SManga.UNKNOWN
@@ -188,18 +198,21 @@ abstract class LikeManga(
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.use { it.asJsoup() }
 
-        val chapters = document.select(chapterListSelector())
-            .map(::chapterFromElement)
-            .toMutableList()
+        val chapters =
+            document.select(chapterListSelector())
+                .map(::chapterFromElement)
+                .toMutableList()
 
-        val lastPage = document.select("div.chapters_pagination a:not(.next)").last()
-            ?.attr("onclick")
-            ?.run { chapterPageCountRegex.find(this)?.groupValues?.get(1) }
-            ?.toIntOrNull()
-            ?: return chapters
+        val lastPage =
+            document.select("div.chapters_pagination a:not(.next)").last()
+                ?.attr("onclick")
+                ?.run { chapterPageCountRegex.find(this)?.groupValues?.get(1) }
+                ?.toIntOrNull()
+                ?: return chapters
 
-        val id = document.select("#title-detail-manga").attr("data-manga")
-            .toIntOrNull() ?: return chapters
+        val id =
+            document.select("#title-detail-manga").attr("data-manga")
+                .toIntOrNull() ?: return chapters
 
         for (page in 2..lastPage) {
             chapters.addAll(fetchAjaxChapterList(id, page))
@@ -227,14 +240,15 @@ abstract class LikeManga(
         id: Int,
         page: Int,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addQueryParameter("act", "ajax")
-            addQueryParameter("code", "load_list_chapter")
-            addQueryParameter("manga_id", id.toString())
-            addQueryParameter("page_num", page.toString())
-            addQueryParameter("chap_id", "0")
-            addQueryParameter("keyword", "")
-        }.build()
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addQueryParameter("act", "ajax")
+                addQueryParameter("code", "load_list_chapter")
+                addQueryParameter("manga_id", id.toString())
+                addQueryParameter("page_num", page.toString())
+                addQueryParameter("chap_id", "0")
+                addQueryParameter("keyword", "")
+            }.build()
 
         return GET(url, headers)
     }
@@ -248,11 +262,12 @@ abstract class LikeManga(
             .map(::chapterFromElement)
     }
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
-        name = element.select("a").text()
-        date_upload = element.selectFirst(".chapter-release-date")?.text().parseDate()
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+            name = element.select("a").text()
+            date_upload = element.selectFirst(".chapter-release-date")?.text().parseDate()
+        }
 
     override fun chapterListSelector() = ".wp-manga-chapter"
 
@@ -266,8 +281,9 @@ abstract class LikeManga(
         val element = document.selectFirst("div.reading input#next_img_token")
 
         if (element != null) {
-            val imgCdnUrl = document.selectFirst("div.reading #currentlink")?.attr("value")
-                ?: throw Exception("Could not find image CDN URL")
+            val imgCdnUrl =
+                document.selectFirst("div.reading #currentlink")?.attr("value")
+                    ?: throw Exception("Could not find image CDN URL")
 
             val token = element.attr("value").split(".")[1]
             val jsonData = json.parseToJsonElement(String(Base64.decode(token, Base64.DEFAULT))).jsonObject

@@ -30,10 +30,11 @@ class SlimeRead : HttpSource() {
 
     override val baseUrl = "https://slimeread.com"
 
-    private val apiUrl = run {
-        val apiList = arrayOf("api1", "api2", "api3")
-        "https://${apiList.random()}.slimeread.com:8443"
-    }
+    private val apiUrl =
+        run {
+            val apiList = arrayOf("api1", "api2", "api3")
+            "https://${apiList.random()}.slimeread.com:8443"
+        }
 
     override val lang = "pt-BR"
 
@@ -99,16 +100,17 @@ class SlimeRead : HttpSource() {
     ): Request {
         val params = SlimeReadFilters.getSearchParameters(filters)
 
-        val url = "$apiUrl/book_search".toHttpUrl().newBuilder()
-            .addIfNotBlank("query", query)
-            .addIfNotBlank("genre[]", params.genre)
-            .addIfNotBlank("status", params.status)
-            .addIfNotBlank("searchMethod", params.searchMethod)
-            .apply {
-                params.categories.forEach {
-                    addQueryParameter("categories[]", it)
-                }
-            }.build()
+        val url =
+            "$apiUrl/book_search".toHttpUrl().newBuilder()
+                .addIfNotBlank("query", query)
+                .addIfNotBlank("genre[]", params.genre)
+                .addIfNotBlank("status", params.status)
+                .addIfNotBlank("searchMethod", params.searchMethod)
+                .apply {
+                    params.categories.forEach {
+                        addQueryParameter("categories[]", it)
+                    }
+                }.build()
 
         return GET(url, headers)
     }
@@ -120,20 +122,22 @@ class SlimeRead : HttpSource() {
 
     override fun mangaDetailsRequest(manga: SManga) = GET(apiUrl + manga.url, headers)
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val info = response.parseAs<MangaInfoDto>()
-        thumbnail_url = info.thumbnail_url
-        title = info.name
-        description = info.description
-        genre = info.categories.joinToString()
-        status = when (info.status) {
-            1 -> SManga.ONGOING
-            2 -> SManga.COMPLETED
-            3, 4 -> SManga.CANCELLED
-            5 -> SManga.ON_HIATUS
-            else -> SManga.UNKNOWN
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val info = response.parseAs<MangaInfoDto>()
+            thumbnail_url = info.thumbnail_url
+            title = info.name
+            description = info.description
+            genre = info.categories.joinToString()
+            status =
+                when (info.status) {
+                    1 -> SManga.ONGOING
+                    2 -> SManga.COMPLETED
+                    3, 4 -> SManga.CANCELLED
+                    5 -> SManga.ON_HIATUS
+                    else -> SManga.UNKNOWN
+                }
         }
-    }
 
     // ============================== Chapters ==============================
     override fun chapterListRequest(manga: SManga) =
@@ -154,10 +158,11 @@ class SlimeRead : HttpSource() {
 
     private fun parseChapterNumber(number: Float): String {
         val cap = number + 1F
-        val num = "%.2f".format(cap)
-            .let { if (cap < 10F) "0$it" else it }
-            .replace(",00", "")
-            .replace(",", ".")
+        val num =
+            "%.2f".format(cap)
+                .let { if (cap < 10F) "0$it" else it }
+                .replace(",00", "")
+                .replace(",", ".")
         return num
     }
 
@@ -174,11 +179,12 @@ class SlimeRead : HttpSource() {
 
     override fun pageListParse(response: Response): List<Page> {
         val body = response.body.string()
-        val pages = if (body.startsWith("{")) {
-            json.decodeFromString<Map<String, PageListDto>>(body).values.flatMap { it.pages }
-        } else {
-            json.decodeFromString<List<PageListDto>>(body).flatMap { it.pages }
-        }
+        val pages =
+            if (body.startsWith("{")) {
+                json.decodeFromString<Map<String, PageListDto>>(body).values.flatMap { it.pages }
+            } else {
+                json.decodeFromString<List<PageListDto>>(body).flatMap { it.pages }
+            }
 
         return pages.mapIndexed { index, item ->
             Page(index, "", item.url)
@@ -190,9 +196,10 @@ class SlimeRead : HttpSource() {
     }
 
     // ============================= Utilities ==============================
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream(it.body.byteStream())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream(it.body.byteStream())
+        }
 
     private fun HttpUrl.Builder.addIfNotBlank(
         query: String,

@@ -31,15 +31,17 @@ abstract class ToomicsGlobal(
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .writeTimeout(1, TimeUnit.MINUTES)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .writeTimeout(1, TimeUnit.MINUTES)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", "$baseUrl/$siteLang")
-        .add("User-Agent", USER_AGENT)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", "$baseUrl/$siteLang")
+            .add("User-Agent", USER_AGENT)
 
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/$siteLang/webtoon/favorite", headers)
@@ -48,12 +50,13 @@ abstract class ToomicsGlobal(
     // ToomicsGlobal does not have a popular list, so use recommended instead.
     override fun popularMangaSelector(): String = "li > div.visual"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.select("h4[class$=title]").first()!!.ownText()
-        // sometimes href contains "/ab/on" at the end and redirects to a chapter instead of manga
-        setUrlWithoutDomain(element.select("a").attr("href").removeSuffix("/ab/on"))
-        thumbnail_url = element.select("img").attr("src")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.select("h4[class$=title]").first()!!.ownText()
+            // sometimes href contains "/ab/on" at the end and redirects to a chapter instead of manga
+            setUrlWithoutDomain(element.select("a").attr("href").removeSuffix("/ab/on"))
+            thumbnail_url = element.select("img").attr("src")
+        }
 
     override fun popularMangaNextPageSelector(): String? = null
 
@@ -72,9 +75,10 @@ abstract class ToomicsGlobal(
         query: String,
         filters: FilterList,
     ): Request {
-        val newHeaders = headersBuilder()
-            .add("Content-Type", "application/x-www-form-urlencoded")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Content-Type", "application/x-www-form-urlencoded")
+                .build()
 
         val rbody = "toonData=$query&offset=0&limit=20".toRequestBody(null)
 
@@ -83,38 +87,41 @@ abstract class ToomicsGlobal(
 
     override fun searchMangaSelector(): String = "div.recently_list ul li"
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.select("a div.search_box dl dt span.title").text()
-        thumbnail_url = element.select("div.search_box p.img img").attr("abs:src")
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.select("a div.search_box dl dt span.title").text()
+            thumbnail_url = element.select("div.search_box p.img img").attr("abs:src")
 
-        // When the family mode is off, the url is encoded and is available in the onclick.
-        element.select("a:not([href^=javascript])").let {
-            if (it != null) {
-                setUrlWithoutDomain(it.attr("href"))
-            } else {
-                val toonId = element.select("a").attr("onclick")
-                    .substringAfter("Base.setDisplay('A', '")
-                    .substringBefore("'")
-                    .let { url -> URLDecoder.decode(url, "UTF-8") }
-                    .substringAfter("?toon=")
-                    .substringBefore("&")
-                url = "/$siteLang/webtoon/episode/toon/$toonId"
+            // When the family mode is off, the url is encoded and is available in the onclick.
+            element.select("a:not([href^=javascript])").let {
+                if (it != null) {
+                    setUrlWithoutDomain(it.attr("href"))
+                } else {
+                    val toonId =
+                        element.select("a").attr("onclick")
+                            .substringAfter("Base.setDisplay('A', '")
+                            .substringBefore("'")
+                            .let { url -> URLDecoder.decode(url, "UTF-8") }
+                            .substringAfter("?toon=")
+                            .substringBefore("&")
+                    url = "/$siteLang/webtoon/episode/toon/$toonId"
+                }
             }
         }
-    }
 
     override fun searchMangaNextPageSelector(): String? = null
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        val header = document.select("#glo_contents header.ep-cover_ch div.title_content")
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            val header = document.select("#glo_contents header.ep-cover_ch div.title_content")
 
-        title = header.select("h1").text()
-        author = header.select("p.type_box span.writer").text()
-        artist = header.select("p.type_box span.writer").text()
-        genre = header.select("p.type_box span.type").text().replace("/", ",")
-        description = header.select("h2").text()
-        thumbnail_url = document.select("head meta[property='og:image']").attr("content")
-    }
+            title = header.select("h1").text()
+            author = header.select("p.type_box span.writer").text()
+            artist = header.select("p.type_box span.writer").text()
+            genre = header.select("p.type_box span.type").text().replace("/", ",")
+            description = header.select("h2").text()
+            thumbnail_url = document.select("head meta[property='og:image']").attr("content")
+        }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return super.fetchChapterList(manga)
@@ -124,18 +131,20 @@ abstract class ToomicsGlobal(
     // coin-type1 - free chapter, coin-type6 - already read chapter
     override fun chapterListSelector(): String = "li.normal_ep:has(.coin-type1, .coin-type6)"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        val num = element.select("div.cell-num").text()
-        val numText = if (num.isNotEmpty()) "$num - " else ""
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            val num = element.select("div.cell-num").text()
+            val numText = if (num.isNotEmpty()) "$num - " else ""
 
-        name = numText + element.select("div.cell-title strong").first()?.ownText()
-        chapter_number = num.toFloatOrNull() ?: -1f
-        date_upload = parseChapterDate(element.select("div.cell-time time").text())
-        scanlator = "Toomics"
-        url = element.select("a").attr("onclick")
-            .substringAfter("href='")
-            .substringBefore("'")
-    }
+            name = numText + element.select("div.cell-title strong").first()?.ownText()
+            chapter_number = num.toFloatOrNull() ?: -1f
+            date_upload = parseChapterDate(element.select("div.cell-time time").text())
+            scanlator = "Toomics"
+            url =
+                element.select("a").attr("onclick")
+                    .substringAfter("href='")
+                    .substringBefore("'")
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         if (document.select("div.section_age_verif").isNotEmpty()) {
@@ -151,9 +160,10 @@ abstract class ToomicsGlobal(
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headers.newBuilder()
-            .set("Referer", page.url)
-            .build()
+        val newHeaders =
+            headers.newBuilder()
+                .set("Referer", page.url)
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }

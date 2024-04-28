@@ -3,13 +3,14 @@ package eu.kanade.tachiyomi.extension.zh.baozimanhua
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 
-fun getFilters() = FilterList(
-    Filter.Header("注意：不影響按標題搜索"),
-    TagFilter(),
-    RegionFilter(),
-    StatusFilter(),
-    StartFilter(),
-)
+fun getFilters() =
+    FilterList(
+        Filter.Header("注意：不影響按標題搜索"),
+        TagFilter(),
+        RegionFilter(),
+        StatusFilter(),
+        StartFilter(),
+    )
 
 open class UriPartFilter(name: String, private val query: String, private val vals: Array<Pair<String, String>>) :
     Filter.Select<String>(name, vals.map { it.first }.toTypedArray()) {

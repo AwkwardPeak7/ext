@@ -86,15 +86,16 @@ abstract class Pururin(
             pagesMax = it.last
         }
 
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegment("search")
-            addQueryParameter("q", query)
-            addQueryParameter("start_page", pagesMin.toString())
-            addQueryParameter("last_page", pagesMax.toString())
-            if (includeTags.isNotEmpty()) addQueryParameter("included_tags", includeTags.toValue())
-            if (excludeTags.isNotEmpty()) addQueryParameter("excluded_tags", excludeTags.toValue())
-            if (page > 1) addQueryParameter("page", page.toString())
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegment("search")
+                addQueryParameter("q", query)
+                addQueryParameter("start_page", pagesMin.toString())
+                addQueryParameter("last_page", pagesMax.toString())
+                if (includeTags.isNotEmpty()) addQueryParameter("included_tags", includeTags.toValue())
+                if (excludeTags.isNotEmpty()) addQueryParameter("excluded_tags", excludeTags.toValue())
+                if (page > 1) addQueryParameter("page", page.toString())
+            }
         return GET(url.build().toString(), headers)
     }
 
@@ -112,11 +113,12 @@ abstract class Pururin(
                 initialized = true
                 title = e.select(".title").text()
                 author = e.select("[itemprop=author]").text()
-                description = e.select(".box-gallery .table-info tr")
-                    .joinToString("\n") { tr ->
-                        tr.select("td")
-                            .joinToString(": ") { it.text() }
-                    }
+                description =
+                    e.select(".box-gallery .table-info tr")
+                        .joinToString("\n") { tr ->
+                            tr.select("td")
+                                .joinToString(": ") { it.text() }
+                        }
                 thumbnail_url = e.select("img").attr("abs:src")
             }
         }
@@ -160,8 +162,9 @@ abstract class Pururin(
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        CategoryGroup(),
-        PagesGroup(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            CategoryGroup(),
+            PagesGroup(),
+        )
 }

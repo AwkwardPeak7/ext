@@ -13,9 +13,10 @@ class GenreFilter(genres: List<Genre>) :
     Filter.Group<Genre>("Gêneros", genres),
     UrlQueryFilter {
     override fun addQueryParameter(url: HttpUrl.Builder) {
-        val genresParameter = state
-            .filter { it.state }
-            .joinToString(",") { it.id.toString() }
+        val genresParameter =
+            state
+                .filter { it.state }
+                .joinToString(",") { it.id.toString() }
 
         url.addQueryParameter("genres", genresParameter)
     }

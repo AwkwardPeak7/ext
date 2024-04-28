@@ -41,29 +41,32 @@ class WebNovel : HttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient
-        .newBuilder()
-        .addNetworkInterceptor(::csrfTokenInterceptor)
-        .addNetworkInterceptor(::expiredImageUrlInterceptor)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient
+            .newBuilder()
+            .addNetworkInterceptor(::csrfTokenInterceptor)
+            .addNetworkInterceptor(::expiredImageUrlInterceptor)
+            .build()
 
     private val json: Json by injectLazy()
 
     // Popular
-    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(
-        page = page,
-        query = "",
-        filters = FilterList(SortByFilter(default = 1)),
-    )
+    override fun popularMangaRequest(page: Int): Request =
+        searchMangaRequest(
+            page = page,
+            query = "",
+            filters = FilterList(SortByFilter(default = 1)),
+        )
 
     override fun popularMangaParse(response: Response): MangasPage = searchMangaParse(response)
 
     // Latest
-    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(
-        page = page,
-        query = "",
-        filters = FilterList(SortByFilter(default = 5)),
-    )
+    override fun latestUpdatesRequest(page: Int): Request =
+        searchMangaRequest(
+            page = page,
+            query = "",
+            filters = FilterList(SortByFilter(default = 5)),
+        )
 
     override fun latestUpdatesParse(response: Response): MangasPage = searchMangaParse(response)
 
@@ -74,10 +77,11 @@ class WebNovel : HttpSource() {
         filters: FilterList,
     ): Request {
         if (query.isNotBlank()) {
-            val url = "$baseApiUrl$QUERY_SEARCH_PATH?type=manga&pageIndex=$page".toHttpUrl()
-                .newBuilder()
-                .addQueryParameter("keywords", query)
-                .toString()
+            val url =
+                "$baseApiUrl$QUERY_SEARCH_PATH?type=manga&pageIndex=$page".toHttpUrl()
+                    .newBuilder()
+                    .addQueryParameter("keywords", query)
+                    .toString()
 
             return GET(url, headers)
         }
@@ -85,26 +89,29 @@ class WebNovel : HttpSource() {
         val contentStatus = filters.firstInstanceOrNull<ContentStatusFilter>()?.selectedValue.orEmpty()
         val genre = filters.firstInstanceOrNull<GenreFilter>()?.selectedValue.orEmpty()
 
-        val url = "$baseApiUrl$FILTER_SEARCH_PATH?categoryType=2&pageIndex=$page" +
-            "&categoryId=$genre&bookStatus=$contentStatus&orderBy=$sort"
+        val url =
+            "$baseApiUrl$FILTER_SEARCH_PATH?categoryType=2&pageIndex=$page" +
+                "&categoryId=$genre&bookStatus=$contentStatus&orderBy=$sort"
 
         return GET(url, headers)
     }
 
     override fun searchMangaParse(response: Response): MangasPage {
-        val browseResponseDto = if (response.request.url.toString().contains(QUERY_SEARCH_PATH)) {
-            response.parseAsForWebNovel<QuerySearchResponseDto>().browseResponse
-        } else {
-            response.parseAsForWebNovel()
-        }
-
-        val manga = browseResponseDto.items.map {
-            SManga.create().apply {
-                title = it.name
-                url = it.id
-                thumbnail_url = getCoverUrl(it.id)
+        val browseResponseDto =
+            if (response.request.url.toString().contains(QUERY_SEARCH_PATH)) {
+                response.parseAsForWebNovel<QuerySearchResponseDto>().browseResponse
+            } else {
+                response.parseAsForWebNovel()
             }
-        }
+
+        val manga =
+            browseResponseDto.items.map {
+                SManga.create().apply {
+                    title = it.name
+                    url = it.id
+                    thumbnail_url = getCoverUrl(it.id)
+                }
+            }
 
         return MangasPage(manga, browseResponseDto.isLast == 0)
     }
@@ -131,20 +138,22 @@ class WebNovel : HttpSource() {
             url = comic.id
             thumbnail_url = getCoverUrl(comic.id)
             author = comic.authorName
-            description = buildString {
-                append(comic.description)
-                if (comic.actionStatus == ComicDetailInfoDto.ONGOING && comic.updateCycle.isNotBlank()) {
-                    append("\n\nInformation:")
-                    append("\n• ${comic.updateCycle.replaceFirstChar { it.uppercase(Locale.ENGLISH) }}")
+            description =
+                buildString {
+                    append(comic.description)
+                    if (comic.actionStatus == ComicDetailInfoDto.ONGOING && comic.updateCycle.isNotBlank()) {
+                        append("\n\nInformation:")
+                        append("\n• ${comic.updateCycle.replaceFirstChar { it.uppercase(Locale.ENGLISH) }}")
+                    }
                 }
-            }
             genre = comic.categoryName
-            status = when (comic.actionStatus) {
-                ComicDetailInfoDto.ONGOING -> SManga.ONGOING
-                ComicDetailInfoDto.COMPLETED -> SManga.COMPLETED
-                ComicDetailInfoDto.ON_HIATUS -> SManga.ON_HIATUS
-                else -> SManga.UNKNOWN
-            }
+            status =
+                when (comic.actionStatus) {
+                    ComicDetailInfoDto.ONGOING -> SManga.ONGOING
+                    ComicDetailInfoDto.COMPLETED -> SManga.COMPLETED
+                    ComicDetailInfoDto.ON_HIATUS -> SManga.ON_HIATUS
+                    else -> SManga.UNKNOWN
+                }
         }
     }
 
@@ -158,12 +167,13 @@ class WebNovel : HttpSource() {
         val comic = chapterList.comicInfo
         val chapters = chapterList.comicChapters.reversed().asSequence()
 
-        val accurateUpdateTimes = runCatching {
-            client.newCall(GET("$WEBNOVEL_UPLOAD_TIME/${comic.id}.json"))
-                .execute()
-                .parseAs<Map<String, Long>>()
-        }
-            .getOrDefault(emptyMap())
+        val accurateUpdateTimes =
+            runCatching {
+                client.newCall(GET("$WEBNOVEL_UPLOAD_TIME/${comic.id}.json"))
+                    .execute()
+                    .parseAs<Map<String, Long>>()
+            }
+                .getOrDefault(emptyMap())
 
         val updateTimes = chapters.map { accurateUpdateTimes[it.id] ?: it.publishTime.toDate() }
 
@@ -174,10 +184,11 @@ class WebNovel : HttpSource() {
         // When new privileged chapter is released oldest privileged chapter becomes normal one (in most cases)
         // but since those normal chapter retain the original upload time we improvise. (This isn't optimal but meh)
         return filteredChapters.zip(updateTimes) { chapter, updateTime ->
-            val namePrefix = when {
-                chapter.isPremium && !chapter.isAccessibleByUser -> "\uD83D\uDD12 "
-                else -> ""
-            }
+            val namePrefix =
+                when {
+                    chapter.isPremium && !chapter.isAccessibleByUser -> "\uD83D\uDD12 "
+                    else -> ""
+                }
             SChapter.create().apply {
                 name = namePrefix + chapter.name
                 url = "${comic.id}:${chapter.id}"
@@ -195,14 +206,15 @@ class WebNovel : HttpSource() {
         if (contains("now", ignoreCase = true)) return Date().time
 
         val number = DIGIT_REGEX.find(this)?.value?.toIntOrNull() ?: return 0
-        val field = when {
-            contains("yr") -> Calendar.YEAR
-            contains("mth") -> Calendar.MONTH
-            contains("d") -> Calendar.DAY_OF_MONTH
-            contains("h") -> Calendar.HOUR
-            contains("min") -> Calendar.MINUTE
-            else -> return 0
-        }
+        val field =
+            when {
+                contains("yr") -> Calendar.YEAR
+                contains("mth") -> Calendar.MONTH
+                contains("d") -> Calendar.DAY_OF_MONTH
+                contains("h") -> Calendar.HOUR
+                contains("min") -> Calendar.MINUTE
+                else -> return 0
+            }
 
         return Calendar.getInstance().apply { add(field, -number) }.timeInMillis
     }
@@ -240,11 +252,12 @@ class WebNovel : HttpSource() {
     )
 
     // LinkedHashMap with a capacity of 25. When exceeding the capacity the oldest entry is removed.
-    private val chapterPageCache = object : LinkedHashMap<String, List<ChapterPage>>() {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<ChapterPage>>?): Boolean {
-            return size > 25
+    private val chapterPageCache =
+        object : LinkedHashMap<String, List<ChapterPage>>() {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<ChapterPage>>?): Boolean {
+                return size > 25
+            }
         }
-    }
 
     override fun pageListParse(response: Response): List<Page> {
         val chapterContent = response.parseAsForWebNovel<ChapterContentResponseDto>().chapterContent
@@ -255,13 +268,14 @@ class WebNovel : HttpSource() {
 
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("NOTE: Ignored if using text search!"),
-        Filter.Separator(),
-        ContentStatusFilter(),
-        SortByFilter(),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("NOTE: Ignored if using text search!"),
+            Filter.Separator(),
+            ContentStatusFilter(),
+            SortByFilter(),
+            GenreFilter(),
+        )
 
     private val SManga.getId: String
         get() {
@@ -285,15 +299,17 @@ class WebNovel : HttpSource() {
         val originalRequestUrl = originalRequest.url
         if (!originalRequestUrl.toString().contains(BASE_API_ENDPOINT)) return chain.proceed(originalRequest)
 
-        val csrfToken = originalRequest.header("cookie")
-            ?.takeIf { CSRF_TOKEN_NAME in it }
-            ?.substringAfter("$CSRF_TOKEN_NAME=")
-            ?.substringBefore(";")
-            ?: throw IOException("Open in WebView to set necessary cookies.")
+        val csrfToken =
+            originalRequest.header("cookie")
+                ?.takeIf { CSRF_TOKEN_NAME in it }
+                ?.substringAfter("$CSRF_TOKEN_NAME=")
+                ?.substringBefore(";")
+                ?: throw IOException("Open in WebView to set necessary cookies.")
 
-        val newUrl = originalRequestUrl.newBuilder()
-            .addQueryParameter(CSRF_TOKEN_NAME, csrfToken)
-            .build()
+        val newUrl =
+            originalRequestUrl.newBuilder()
+                .addQueryParameter(CSRF_TOKEN_NAME, csrfToken)
+                .build()
 
         val newRequest = originalRequest.newBuilder().url(newUrl).build()
         return chain.proceed(newRequest)
@@ -318,30 +334,34 @@ class WebNovel : HttpSource() {
         // Time to get it from site
         chain.proceed(pageListRequest(comicId, chapterId)).use { pageListParse(it) }
 
-        val newPageUrl = chapterPageCache[chapterId]?.firstOrNull { it.id == pageId }?.url?.toHttpUrl()
-            ?: throw IOException("Couldn't regenerate expired image url")
+        val newPageUrl =
+            chapterPageCache[chapterId]?.firstOrNull { it.id == pageId }?.url?.toHttpUrl()
+                ?: throw IOException("Couldn't regenerate expired image url")
 
         val newRequest = originalRequest.newBuilder().url(newPageUrl).build()
         return chain.proceed(newRequest)
     }
 
     private fun isPageUrlStillValid(imageUrl: HttpUrl): Boolean {
-        val urlGenerationTime = imageUrl.queryParameter("t")?.toLongOrNull()?.times(1000)
-            ?: throw IOException("Couldn't get image generation time from page url")
+        val urlGenerationTime =
+            imageUrl.queryParameter("t")?.toLongOrNull()?.times(1000)
+                ?: throw IOException("Couldn't get image generation time from page url")
 
         // Urls are valid for 10 minutes after generation. We check for 9min and 30s just to be safe
         return Date().time - urlGenerationTime <= 570000
     }
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromString<T>(it.body.string())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromString<T>(it.body.string())
+        }
 
-    private inline fun <reified T> Response.parseAsForWebNovel(): T = use {
-        val parsed = parseAs<ResponseDto<T>>()
-        if (parsed.code != 0) error("Error ${parsed.code}: ${parsed.msg}")
-        requireNotNull(parsed.data) { "Response data is null" }
-    }
+    private inline fun <reified T> Response.parseAsForWebNovel(): T =
+        use {
+            val parsed = parseAs<ResponseDto<T>>()
+            if (parsed.code != 0) error("Error ${parsed.code}: ${parsed.msg}")
+            requireNotNull(parsed.data) { "Response data is null" }
+        }
 
     private inline fun <reified T> List<*>.firstInstanceOrNull() = firstOrNull { it is T } as? T
 

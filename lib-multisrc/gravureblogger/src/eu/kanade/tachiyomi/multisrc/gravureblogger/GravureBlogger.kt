@@ -31,8 +31,9 @@ abstract class GravureBlogger(
 
     override val client = network.cloudflareClient
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
@@ -51,19 +52,20 @@ abstract class GravureBlogger(
 
         categories = data.feed.category.map { it.term }
 
-        val manga = data.feed.entry.map { entry ->
-            val content = Jsoup.parseBodyFragment(entry.content.t, baseUrl)
+        val manga =
+            data.feed.entry.map { entry ->
+                val content = Jsoup.parseBodyFragment(entry.content.t, baseUrl)
 
-            SManga.create().apply {
-                setUrlWithoutDomain(entry.link.first { it.rel == "alternate" }.href + "#${entry.published.t}")
-                title = entry.title.t
-                thumbnail_url = content.selectFirst("img")?.absUrl("src")
-                genre = entry.category?.joinToString { it.term }
-                status = SManga.COMPLETED
-                update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
-                initialized = true
+                SManga.create().apply {
+                    setUrlWithoutDomain(entry.link.first { it.rel == "alternate" }.href + "#${entry.published.t}")
+                    title = entry.title.t
+                    thumbnail_url = content.selectFirst("img")?.absUrl("src")
+                    genre = entry.category?.joinToString { it.term }
+                    status = SManga.COMPLETED
+                    update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
+                    initialized = true
+                }
             }
-        }
         val hasNextPage = data.feed.entry.size == MAX_RESULTS
 
         return MangasPage(manga, hasNextPage)
@@ -79,25 +81,27 @@ abstract class GravureBlogger(
         filters: FilterList,
     ): Request {
         val filterList = filters.ifEmpty { getFilterList() }
-        val searchQuery = buildString {
-            filterList.filterIsInstance<LabelFilter>().forEach {
-                it.state
-                    .filter { f -> f.state }
-                    .forEach { f ->
-                        append(" label:\"")
-                        append(f.name)
-                        append("\"")
-                    }
-            }
+        val searchQuery =
+            buildString {
+                filterList.filterIsInstance<LabelFilter>().forEach {
+                    it.state
+                        .filter { f -> f.state }
+                        .forEach { f ->
+                            append(" label:\"")
+                            append(f.name)
+                            append("\"")
+                        }
+                }
 
-            if (query.isNotEmpty()) {
-                append(" ")
-                append(query)
-            }
-        }.trim()
-        val url = apiUrlBuilder(page)
-            .addQueryParameter("q", searchQuery)
-            .build()
+                if (query.isNotEmpty()) {
+                    append(" ")
+                    append(query)
+                }
+            }.trim()
+        val url =
+            apiUrlBuilder(page)
+                .addQueryParameter("q", searchQuery)
+                .build()
 
         return GET(url, headers)
     }
@@ -120,9 +124,10 @@ abstract class GravureBlogger(
                 SChapter.create().apply {
                     url = manga.url.substringBefore("#")
                     name = "Gallery"
-                    date_upload = runCatching {
-                        dateFormat.parse(date)!!.time
-                    }.getOrDefault(0L)
+                    date_upload =
+                        runCatching {
+                            dateFormat.parse(date)!!.time
+                        }.getOrDefault(0L)
                 },
             ),
         )
@@ -159,8 +164,9 @@ abstract class GravureBlogger(
             filters.add(1, Filter.Separator())
         } else {
             val existing = labelFilters.values.flatten()
-            val others = categories
-                .filterNot { existing.contains(it) }
+            val others =
+                categories
+                    .filterNot { existing.contains(it) }
 
             filters.add(LabelFilter("Other", others.map(::Label)))
         }
@@ -170,15 +176,16 @@ abstract class GravureBlogger(
 
     private var categories = emptyList<String>()
 
-    private fun apiUrlBuilder(page: Int) = baseUrl.toHttpUrl().newBuilder().apply {
-        // Blogger indices start from 1
-        val startIndex = MAX_RESULTS * (page - 1) + 1
+    private fun apiUrlBuilder(page: Int) =
+        baseUrl.toHttpUrl().newBuilder().apply {
+            // Blogger indices start from 1
+            val startIndex = MAX_RESULTS * (page - 1) + 1
 
-        addPathSegments("feeds/posts/default")
-        addQueryParameter("alt", "json")
-        addQueryParameter("max-results", MAX_RESULTS.toString())
-        addQueryParameter("start-index", startIndex.toString())
-    }
+            addPathSegments("feeds/posts/default")
+            addQueryParameter("alt", "json")
+            addQueryParameter("max-results", MAX_RESULTS.toString())
+            addQueryParameter("start-index", startIndex.toString())
+        }
 
     companion object {
         private const val MAX_RESULTS = 25

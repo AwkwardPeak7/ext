@@ -160,135 +160,145 @@ class Komiku : ParsedHttpSource() {
 
     private class ProjectList(project: Array<Status>) : Filter.Select<Status>("Filter Project", project, 0)
 
-    override fun getFilterList() = FilterList(
-        CategoryNames(categoryNames),
-        OrderBy(orderBy),
-        GenreList1(genreList),
-        GenreList2(genreList),
-        StatusList(statusList),
-        Filter.Separator(),
-        Filter.Header("NOTE: cant be used with other filter!"),
-        Filter.Header("$name Project List page"),
-        ProjectList(projectFilter),
-    )
+    override fun getFilterList() =
+        FilterList(
+            CategoryNames(categoryNames),
+            OrderBy(orderBy),
+            GenreList1(genreList),
+            GenreList2(genreList),
+            StatusList(statusList),
+            Filter.Separator(),
+            Filter.Header("NOTE: cant be used with other filter!"),
+            Filter.Header("$name Project List page"),
+            ProjectList(projectFilter),
+        )
 
-    private val projectFilter = arrayOf(
-        Status("Show all manga", ""),
-        Status("Show only project manga", "project-filter-on"),
-    )
+    private val projectFilter =
+        arrayOf(
+            Status("Show all manga", ""),
+            Status("Show only project manga", "project-filter-on"),
+        )
 
-    private val categoryNames = arrayOf(
-        Category("All", ""),
-        Category("Manga", "manga"),
-        Category("Manhua", "manhua"),
-        Category("Manhwa", "manhwa"),
-    )
+    private val categoryNames =
+        arrayOf(
+            Category("All", ""),
+            Category("Manga", "manga"),
+            Category("Manhua", "manhua"),
+            Category("Manhwa", "manhwa"),
+        )
 
-    private val orderBy = arrayOf(
-        Order("Ranking", "meta_value_num"),
-        Order("New Title", "date"),
-        Order("Updates", "modified"),
-        Order("Random", "rand"),
-    )
+    private val orderBy =
+        arrayOf(
+            Order("Ranking", "meta_value_num"),
+            Order("New Title", "date"),
+            Order("Updates", "modified"),
+            Order("Random", "rand"),
+        )
 
-    private val genreList = arrayOf(
-        Genre("All", ""),
-        Genre("Action", "action"),
-        Genre("Adventure", "adventure"),
-        Genre("Comedy", "comedy"),
-        Genre("Cooking", "cooking"),
-        Genre("Crime", "crime"),
-        Genre("Demons", "demons"),
-        Genre("Drama", "drama"),
-        Genre("Ecchi", "ecchi"),
-        Genre("Fantasy", "fantasy"),
-        Genre("Game", "game"),
-        Genre("Gender Bender", "gender-bender"),
-        Genre("Harem", "harem"),
-        Genre("Historical", "historical"),
-        Genre("Horror", "horror"),
-        Genre("Isekai", "isekai"),
-        Genre("Josei", "josei"),
-        Genre("Magic", "magic"),
-        Genre("Martial Arts", "martial-arts"),
-        Genre("Mature", "mature"),
-        Genre("Mecha", "mecha"),
-        Genre("Medical", "medical"),
-        Genre("Military", "military"),
-        Genre("Music", "music"),
-        Genre("Mystery", "mystery"),
-        Genre("One Shot", "one-shot"),
-        Genre("Overpower", "overpower"),
-        Genre("Parodi", "parodi"),
-        Genre("Police", "police"),
-        Genre("Psychological", "psychological"),
-        Genre("Reincarnation", "reincarnation"),
-        Genre("Romance", "romance"),
-        Genre("School", "school"),
-        Genre("School life", "school-life"),
-        Genre("Sci-fi", "sci-fi"),
-        Genre("Seinen", "seinen"),
-        Genre("Shotacon", "shotacon"),
-        Genre("Shoujo", "shoujo"),
-        Genre("Shoujo Ai", "shoujo-ai"),
-        Genre("Shounen", "shounen"),
-        Genre("Shounen Ai", "shounen-ai"),
-        Genre("Slice of Life", "slice-of-life"),
-        Genre("Sport", "sport"),
-        Genre("Sports", "sports"),
-        Genre("Super Power", "super-power"),
-        Genre("Supernatural", "supernatural"),
-        Genre("Thriller", "thriller"),
-        Genre("Tragedy", "tragedy"),
-        Genre("Urban", "urban"),
-        Genre("Vampire", "vampire"),
-        Genre("Webtoons", "webtoons"),
-        Genre("Yuri", "yuri"),
-    )
+    private val genreList =
+        arrayOf(
+            Genre("All", ""),
+            Genre("Action", "action"),
+            Genre("Adventure", "adventure"),
+            Genre("Comedy", "comedy"),
+            Genre("Cooking", "cooking"),
+            Genre("Crime", "crime"),
+            Genre("Demons", "demons"),
+            Genre("Drama", "drama"),
+            Genre("Ecchi", "ecchi"),
+            Genre("Fantasy", "fantasy"),
+            Genre("Game", "game"),
+            Genre("Gender Bender", "gender-bender"),
+            Genre("Harem", "harem"),
+            Genre("Historical", "historical"),
+            Genre("Horror", "horror"),
+            Genre("Isekai", "isekai"),
+            Genre("Josei", "josei"),
+            Genre("Magic", "magic"),
+            Genre("Martial Arts", "martial-arts"),
+            Genre("Mature", "mature"),
+            Genre("Mecha", "mecha"),
+            Genre("Medical", "medical"),
+            Genre("Military", "military"),
+            Genre("Music", "music"),
+            Genre("Mystery", "mystery"),
+            Genre("One Shot", "one-shot"),
+            Genre("Overpower", "overpower"),
+            Genre("Parodi", "parodi"),
+            Genre("Police", "police"),
+            Genre("Psychological", "psychological"),
+            Genre("Reincarnation", "reincarnation"),
+            Genre("Romance", "romance"),
+            Genre("School", "school"),
+            Genre("School life", "school-life"),
+            Genre("Sci-fi", "sci-fi"),
+            Genre("Seinen", "seinen"),
+            Genre("Shotacon", "shotacon"),
+            Genre("Shoujo", "shoujo"),
+            Genre("Shoujo Ai", "shoujo-ai"),
+            Genre("Shounen", "shounen"),
+            Genre("Shounen Ai", "shounen-ai"),
+            Genre("Slice of Life", "slice-of-life"),
+            Genre("Sport", "sport"),
+            Genre("Sports", "sports"),
+            Genre("Super Power", "super-power"),
+            Genre("Supernatural", "supernatural"),
+            Genre("Thriller", "thriller"),
+            Genre("Tragedy", "tragedy"),
+            Genre("Urban", "urban"),
+            Genre("Vampire", "vampire"),
+            Genre("Webtoons", "webtoons"),
+            Genre("Yuri", "yuri"),
+        )
 
-    private val statusList = arrayOf(
-        Status("All", ""),
-        Status("Ongoing", "ongoing"),
-        Status("End", "end"),
-    )
+    private val statusList =
+        arrayOf(
+            Status("All", ""),
+            Status("Ongoing", "ongoing"),
+            Status("End", "end"),
+        )
 
     // manga details
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        description = document.select("#Sinopsis > p").text().trim()
-        author = document.select("table.inftable td:contains(Komikus)+td").text()
-        genre = document.select("li[itemprop=genre] > a").joinToString { it.text() }
-        status = parseStatus(document.select("table.inftable tr > td:contains(Status) + td").text())
-        thumbnail_url = document.select("div.ims > img").attr("abs:src")
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            description = document.select("#Sinopsis > p").text().trim()
+            author = document.select("table.inftable td:contains(Komikus)+td").text()
+            genre = document.select("li[itemprop=genre] > a").joinToString { it.text() }
+            status = parseStatus(document.select("table.inftable tr > td:contains(Status) + td").text())
+            thumbnail_url = document.select("div.ims > img").attr("abs:src")
 
-        // add series type(manga/manhwa/manhua/other) thinggy to genre
-        val seriesTypeSelector = "table.inftable tr:contains(Jenis) a, table.inftable tr:has(a[href*=category\\/]) a, a[href*=category\\/]"
-        document.select(seriesTypeSelector).firstOrNull()?.text()?.let {
-            if (it.isEmpty().not() && genre!!.contains(it, true).not()) {
-                genre += if (genre!!.isEmpty()) it else ", $it"
+            // add series type(manga/manhwa/manhua/other) thinggy to genre
+            val seriesTypeSelector = "table.inftable tr:contains(Jenis) a, table.inftable tr:has(a[href*=category\\/]) a, a[href*=category\\/]"
+            document.select(seriesTypeSelector).firstOrNull()?.text()?.let {
+                if (it.isEmpty().not() && genre!!.contains(it, true).not()) {
+                    genre += if (genre!!.isEmpty()) it else ", $it"
+                }
             }
         }
-    }
 
-    private fun parseStatus(status: String) = when {
-        status.contains("Ongoing") -> SManga.ONGOING
-        status.contains("Completed") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String) =
+        when {
+            status.contains("Ongoing") -> SManga.ONGOING
+            status.contains("Completed") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // chapters
     override fun chapterListSelector() = "#Daftar_Chapter tr:has(td.judulseries)"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.select("a").attr("href"))
-        name = element.select("a").text()
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.select("a").attr("href"))
+            name = element.select("a").text()
 
-        val timeStamp = element.select("td.tanggalseries")
-        date_upload = if (timeStamp.text().contains("lalu")) {
-            parseRelativeDate(timeStamp.text().trim())
-        } else {
-            parseDate(timeStamp.last()!!)
+            val timeStamp = element.select("td.tanggalseries")
+            date_upload =
+                if (timeStamp.text().contains("lalu")) {
+                    parseRelativeDate(timeStamp.text().trim())
+                } else {
+                    parseDate(timeStamp.last()!!)
+                }
         }
-    }
 
     private fun parseDate(element: Element): Long = SimpleDateFormat("dd/MM/yyyy", Locale.US).parse(element.text())?.time ?: 0
 

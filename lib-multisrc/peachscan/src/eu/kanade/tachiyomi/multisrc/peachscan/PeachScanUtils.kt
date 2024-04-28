@@ -41,40 +41,44 @@ object PeachScanUtils {
             classSignature = ClassSignature.Newest
 
             // decode(region, sampleSize)
-            decodeMethod = ImageDecoder::class.java.getMethod(
-                "decode",
-                rectClass,
-                intClass,
-            )
+            decodeMethod =
+                ImageDecoder::class.java.getMethod(
+                    "decode",
+                    rectClass,
+                    intClass,
+                )
 
             // newInstance(stream, cropBorders, displayProfile)
-            newInstanceMethod = ImageDecoder.Companion::class.java.getMethod(
-                "newInstance",
-                inputStreamClass,
-                booleanClass,
-                byteArrayClass,
-            )
+            newInstanceMethod =
+                ImageDecoder.Companion::class.java.getMethod(
+                    "newInstance",
+                    inputStreamClass,
+                    booleanClass,
+                    byteArrayClass,
+                )
         } catch (_: NoSuchMethodException) {
             try {
                 // Mihon Stable & forks
                 classSignature = ClassSignature.New
 
                 // decode(region, rgb565, sampleSize, applyColorManagement, displayProfile)
-                decodeMethod = ImageDecoder::class.java.getMethod(
-                    "decode",
-                    rectClass,
-                    booleanClass,
-                    intClass,
-                    booleanClass,
-                    byteArrayClass,
-                )
+                decodeMethod =
+                    ImageDecoder::class.java.getMethod(
+                        "decode",
+                        rectClass,
+                        booleanClass,
+                        intClass,
+                        booleanClass,
+                        byteArrayClass,
+                    )
 
                 // newInstance(stream, cropBorders)
-                newInstanceMethod = ImageDecoder.Companion::class.java.getMethod(
-                    "newInstance",
-                    inputStreamClass,
-                    booleanClass,
-                )
+                newInstanceMethod =
+                    ImageDecoder.Companion::class.java.getMethod(
+                        "newInstance",
+                        inputStreamClass,
+                        booleanClass,
+                    )
             } catch (_: NoSuchMethodException) {
                 // Tachiyomi J2k
                 classSignature = ClassSignature.Old
@@ -89,11 +93,12 @@ object PeachScanUtils {
                     )
 
                 // newInstance(stream, cropBorders)
-                newInstanceMethod = ImageDecoder.Companion::class.java.getMethod(
-                    "newInstance",
-                    inputStreamClass,
-                    booleanClass,
-                )
+                newInstanceMethod =
+                    ImageDecoder.Companion::class.java.getMethod(
+                        "newInstance",
+                        inputStreamClass,
+                        booleanClass,
+                    )
             }
         }
     }
@@ -104,21 +109,23 @@ object PeachScanUtils {
         filename: String,
         entryName: String,
     ): Bitmap {
-        val decoder = when (classSignature) {
-            ClassSignature.Newest -> newInstanceMethod.invoke(ImageDecoder.Companion, ByteArrayInputStream(data), false, null)
-            else -> newInstanceMethod.invoke(ImageDecoder.Companion, ByteArrayInputStream(data), false)
-        } as ImageDecoder?
+        val decoder =
+            when (classSignature) {
+                ClassSignature.Newest -> newInstanceMethod.invoke(ImageDecoder.Companion, ByteArrayInputStream(data), false, null)
+                else -> newInstanceMethod.invoke(ImageDecoder.Companion, ByteArrayInputStream(data), false)
+            } as ImageDecoder?
 
         if (decoder == null || decoder.width <= 0 || decoder.height <= 0) {
             throw IOException("Falha ao inicializar o decodificador de imagem")
         }
 
         val rect = Rect(0, 0, decoder.width, decoder.height)
-        val bitmap = when (classSignature) {
-            ClassSignature.Newest -> decodeMethod.invoke(decoder, rect, 1)
-            ClassSignature.New -> decodeMethod.invoke(decoder, rect, rgb565, 1, false, null)
-            else -> decodeMethod.invoke(decoder, rect, rgb565, 1)
-        } as Bitmap?
+        val bitmap =
+            when (classSignature) {
+                ClassSignature.Newest -> decodeMethod.invoke(decoder, rect, 1)
+                ClassSignature.New -> decodeMethod.invoke(decoder, rect, rgb565, 1, false, null)
+                else -> decodeMethod.invoke(decoder, rect, rgb565, 1)
+            } as Bitmap?
 
         decoder.recycle()
 

@@ -13,9 +13,10 @@ class SoftEpsilonScan : Madara(
     "fr",
     SimpleDateFormat("dd/MM/yy", Locale.FRENCH),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(2, 1, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(2, 1, TimeUnit.SECONDS)
+            .build()
 
     override val useNewChapterEndpoint = true
 }

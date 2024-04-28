@@ -36,22 +36,25 @@ data class ZeistMangaEntryDto(
     val content: ZeistMangaEntryContentDto? = null,
     @SerialName("media\$thumbnail") val thumbnail: ZeistMangaEntryThumbnail? = null,
 ) {
-    fun toSManga(baseurl: String): SManga = SManga.create().apply {
-        title = this@ZeistMangaEntryDto.title!!.t
-        url = getChapterLink(this@ZeistMangaEntryDto.url!!).substringAfter(baseurl)
-        thumbnail_url = if (this@ZeistMangaEntryDto.thumbnail == null) {
-            getThumbnailFromContent(this@ZeistMangaEntryDto.content!!)
-        } else {
-            getThumbnail(this@ZeistMangaEntryDto.thumbnail)
+    fun toSManga(baseurl: String): SManga =
+        SManga.create().apply {
+            title = this@ZeistMangaEntryDto.title!!.t
+            url = getChapterLink(this@ZeistMangaEntryDto.url!!).substringAfter(baseurl)
+            thumbnail_url =
+                if (this@ZeistMangaEntryDto.thumbnail == null) {
+                    getThumbnailFromContent(this@ZeistMangaEntryDto.content!!)
+                } else {
+                    getThumbnail(this@ZeistMangaEntryDto.thumbnail)
+                }
         }
-    }
 
-    fun toSChapter(baseurl: String): SChapter = SChapter.create().apply {
-        name = this@ZeistMangaEntryDto.title!!.t
-        url = getChapterLink(this@ZeistMangaEntryDto.url!!).substringAfter(baseurl)
-        val chapterDate = this@ZeistMangaEntryDto.published!!.t.trim()
-        date_upload = parseDate(chapterDate)
-    }
+    fun toSChapter(baseurl: String): SChapter =
+        SChapter.create().apply {
+            name = this@ZeistMangaEntryDto.title!!.t
+            url = getChapterLink(this@ZeistMangaEntryDto.url!!).substringAfter(baseurl)
+            val chapterDate = this@ZeistMangaEntryDto.published!!.t.trim()
+            date_upload = parseDate(chapterDate)
+        }
 
     private fun getChapterLink(list: List<ZeistMangaEntryLink>): String {
         return list.first { it.rel == "alternate" }.href

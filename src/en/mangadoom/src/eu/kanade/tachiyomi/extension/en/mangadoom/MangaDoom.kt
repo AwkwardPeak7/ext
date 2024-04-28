@@ -83,8 +83,9 @@ class MangaDoom : HttpSource() {
      * Checks on a page that has pagination (e.g. popular-manga and latest-chapters)
      * whether or not a next page exists.
      */
-    private fun paginationHasNext(document: Document) = !document
-        .select("ul.pagination > li:contains(»)").isEmpty()
+    private fun paginationHasNext(document: Document) =
+        !document
+            .select("ul.pagination > li:contains(»)").isEmpty()
 
     // individual manga
     override fun mangaDetailsParse(response: Response): SManga {
@@ -96,32 +97,39 @@ class MangaDoom : HttpSource() {
         return SManga.create().apply {
             this.url = response.request.url.toString()
 
-            this.title = innerContentElement
-                .select("h5.widget-heading:matchText").first()!!.text()
-            this.thumbnail_url = innerContentElement
-                .select("div.col-md-4 > img").first()?.attr("src")
+            this.title =
+                innerContentElement
+                    .select("h5.widget-heading:matchText").first()!!.text()
+            this.thumbnail_url =
+                innerContentElement
+                    .select("div.col-md-4 > img").first()?.attr("src")
 
-            this.genre = dlElement.select("dt:contains(Categories:) ~ dd > a[title]")
-                .joinToString { e -> e.attr("title") }
+            this.genre =
+                dlElement.select("dt:contains(Categories:) ~ dd > a[title]")
+                    .joinToString { e -> e.attr("title") }
 
-            this.description = innerContentElement.select("div.note").first()?.let {
-                descriptionProcessor(it)
-            }
+            this.description =
+                innerContentElement.select("div.note").first()?.let {
+                    descriptionProcessor(it)
+                }
 
-            this.author = dlElement.selectFirst("dt:contains(Author:) ~ dd")
-                ?.text().takeIf { it != "-" }
+            this.author =
+                dlElement.selectFirst("dt:contains(Author:) ~ dd")
+                    ?.text().takeIf { it != "-" }
 
-            this.artist = dlElement.selectFirst("dt:contains(Artist:) ~ dd")
-                ?.text().takeIf { it != "-" }
+            this.artist =
+                dlElement.selectFirst("dt:contains(Artist:) ~ dd")
+                    ?.text().takeIf { it != "-" }
 
-            this.status = when (
-                dlElement.selectFirst("dt:contains(Status:) ~ dd")
-                    ?.text()
-            ) {
-                "Ongoing" -> SManga.ONGOING
-                "Completed" -> SManga.COMPLETED
-                else -> SManga.UNKNOWN
-            }
+            this.status =
+                when (
+                    dlElement.selectFirst("dt:contains(Status:) ~ dd")
+                        ?.text()
+                ) {
+                    "Ongoing" -> SManga.ONGOING
+                    "Completed" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
         }
     }
 
@@ -219,9 +227,10 @@ class MangaDoom : HttpSource() {
      * days, months, years ago. This leads to a lot of inaccuracy, but it's the best we have.
      */
     private fun parseDate(inputString: String): Long? {
-        val timeDifference = regexFirstNumberPattern.find(inputString)?.let {
-            it.value.toInt() * (-1)
-        }
+        val timeDifference =
+            regexFirstNumberPattern.find(inputString)?.let {
+                it.value.toInt() * (-1)
+            }
 
         val lastWord = regexLastWordPattern.find(inputString)?.value
 
@@ -302,21 +311,23 @@ class MangaDoom : HttpSource() {
      * The search API won't respond properly unless a certain header field is added to each request.
      * This function prepares the searchHeader by appending the header field to the default headers.
      */
-    private val searchHeaders: Headers = headers.newBuilder()
-        .set("X-Requested-With", "XMLHttpRequest")
-        .build()
+    private val searchHeaders: Headers =
+        headers.newBuilder()
+            .set("X-Requested-With", "XMLHttpRequest")
+            .build()
 
     /**
      * All search payload parameters must be sent with each request. This ensures that even if
      * filters don't want to provide a payload parameter, no parameter will be missed.
      */
-    private val defaultSearchParameter = linkedMapOf(
-        Pair("type", "all"),
-        Pair("manga-name", ""),
-        Pair("author-name", ""),
-        Pair("artist-name", ""),
-        Pair("status", "both"),
-    )
+    private val defaultSearchParameter =
+        linkedMapOf(
+            Pair("type", "all"),
+            Pair("manga-name", ""),
+            Pair("author-name", ""),
+            Pair("artist-name", ""),
+            Pair("status", "both"),
+        )
 
     /**
      * Search requests are made with POST requests to the search API of the website.
@@ -377,13 +388,14 @@ class MangaDoom : HttpSource() {
     // filters
     private val genreManager = GenreGroupFilterManager(client, baseUrl)
 
-    override fun getFilterList() = FilterList(
-        TypeFilter(),
-        AuthorTextFilter(),
-        ArtistTextFilter(),
-        StatusFilter(),
-        genreManager.getGenreGroupFilterOrPlaceholder(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            TypeFilter(),
+            AuthorTextFilter(),
+            ArtistTextFilter(),
+            StatusFilter(),
+            genreManager.getGenreGroupFilterOrPlaceholder(),
+        )
 
     private class TypeFilter : FormBodySelectFilter(
         "Type",
@@ -457,25 +469,28 @@ class MangaDoom : HttpSource() {
          * Checks if an object (e.g. cached response) isn't older than 15 minutes, by comparing its
          * timestamp with the current time
          */
-        private fun contentUpToDate(compareTimestamp: Long?): Boolean = (
-            compareTimestamp != null &&
-                (System.currentTimeMillis() - compareTimestamp < 15 * 60 * 1000)
-        )
+        private fun contentUpToDate(compareTimestamp: Long?): Boolean =
+            (
+                compareTimestamp != null &&
+                    (System.currentTimeMillis() - compareTimestamp < 15 * 60 * 1000)
+            )
 
         /**
          * Used to generate a GenreGroupFilter from cached Pair objects or (if the cached pairs are
          * unavailable) resorts a fetch approach.
          */
         private fun callForGenreGroup(): GenreGroupFilter? {
-            fun genreContentListToGenreGroup(genreFiltersContent: List<Pair<String, String>>) = GenreGroupFilter(
-                genreFiltersContent.map { singleGenreContent ->
-                    GenreFilter(singleGenreContent.first, singleGenreContent.second)
-                },
-            )
+            fun genreContentListToGenreGroup(genreFiltersContent: List<Pair<String, String>>) =
+                GenreGroupFilter(
+                    genreFiltersContent.map { singleGenreContent ->
+                        GenreFilter(singleGenreContent.first, singleGenreContent.second)
+                    },
+                )
 
-            val genreGroupFromVar = genreFiltersContent?.let { genreList ->
-                genreContentListToGenreGroup(genreList)
-            }
+            val genreGroupFromVar =
+                genreFiltersContent?.let { genreList ->
+                    genreContentListToGenreGroup(genreList)
+                }
 
             return if (genreGroupFromVar != null && contentUpToDate(genreFilterContentFrom)) {
                 genreGroupFromVar
@@ -504,13 +519,14 @@ class MangaDoom : HttpSource() {
                 }
             }
 
-            val genreResponse = client
-                .newCall(
-                    GET(
-                        url = baseUrl + advancedSearchPagePath,
-                        cache = CacheControl.FORCE_CACHE,
-                    ),
-                ).execute()
+            val genreResponse =
+                client
+                    .newCall(
+                        GET(
+                            url = baseUrl + advancedSearchPagePath,
+                            cache = CacheControl.FORCE_CACHE,
+                        ),
+                    ).execute()
 
             return if (genreResponse.code == 200 &&
                 contentUpToDate(genreResponse.receivedResponseAtMillis)
@@ -583,11 +599,13 @@ class MangaDoom : HttpSource() {
     /**
      * Used for latest, popular and search manga parsing to create [SManga] objects
      */
-    private fun mangaFromMangaTitleElement(mangaTitleElement: Element): SManga = SManga.create()
-        .apply {
-            this.title = mangaTitleElement.attr("title")
-            this.setUrlWithoutDomain(mangaTitleElement.attr("href"))
-            this.thumbnail_url = mangaTitleElement.select("img").first()!!
-                .attr("src")
-        }
+    private fun mangaFromMangaTitleElement(mangaTitleElement: Element): SManga =
+        SManga.create()
+            .apply {
+                this.title = mangaTitleElement.attr("title")
+                this.setUrlWithoutDomain(mangaTitleElement.attr("href"))
+                this.thumbnail_url =
+                    mangaTitleElement.select("img").first()!!
+                        .attr("src")
+            }
 }

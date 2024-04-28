@@ -49,13 +49,14 @@ class TypeFilter : CheckBoxFilterGroup("タイプ", types) {
     override val queryParameter = "type[]"
 
     companion object {
-        private val types = listOf(
-            Pair("Manga", "manga"),
-            Pair("Manhua", "manhua"),
-            Pair("Manhwa", "manhwa"),
-            Pair("Oneshot", "oneshot"),
-            Pair("Doujinshi", "doujinshi"),
-        )
+        private val types =
+            listOf(
+                Pair("Manga", "manga"),
+                Pair("Manhua", "manhua"),
+                Pair("Manhwa", "manhwa"),
+                Pair("Oneshot", "oneshot"),
+                Pair("Doujinshi", "doujinshi"),
+            )
     }
 }
 
@@ -67,10 +68,11 @@ class StatusFilter : CheckBoxFilterGroup("ステータス", status) {
     override val queryParameter = "status[]"
 
     companion object {
-        private val status = listOf(
-            Pair("Ongoing", "ongoing"),
-            Pair("Completed", "completed"),
-        )
+        private val status =
+            listOf(
+                Pair("Ongoing", "ongoing"),
+                Pair("Completed", "completed"),
+            )
     }
 }
 
@@ -78,15 +80,16 @@ class ChapterNumFilter : SelectFilter("最小章", minChapNum) {
     override val queryParameter = "minchap"
 
     companion object {
-        private val minChapNum = listOf(
-            Pair(">= 1 chapters", "1"),
-            Pair(">= 3 chapters", "3"),
-            Pair(">= 5 chapters", "5"),
-            Pair(">= 10 chapters", "10"),
-            Pair(">= 20 chapters", "20"),
-            Pair(">= 30 chapters", "30"),
-            Pair(">= 50 chapters", "50"),
-        )
+        private val minChapNum =
+            listOf(
+                Pair(">= 1 chapters", "1"),
+                Pair(">= 3 chapters", "3"),
+                Pair(">= 5 chapters", "5"),
+                Pair(">= 10 chapters", "10"),
+                Pair(">= 20 chapters", "20"),
+                Pair(">= 30 chapters", "30"),
+                Pair(">= 50 chapters", "50"),
+            )
     }
 }
 
@@ -94,12 +97,13 @@ class SortFilter(default: String? = null) : SelectFilter("並び替え", sorts, 
     override val queryParameter = "order_by"
 
     companion object {
-        private val sorts = listOf(
-            Pair("Recently updated", "updated_at"),
-            Pair("Recently added", "created_at"),
-            Pair("Trending", "views"),
-            Pair("Name A-Z", "name"),
-        )
+        private val sorts =
+            listOf(
+                Pair("Recently updated", "updated_at"),
+                Pair("Recently added", "created_at"),
+                Pair("Trending", "views"),
+                Pair("Name A-Z", "name"),
+            )
 
         val POPULAR = FilterList(SortFilter("views"))
         val LATEST = FilterList(SortFilter("updated_at"))

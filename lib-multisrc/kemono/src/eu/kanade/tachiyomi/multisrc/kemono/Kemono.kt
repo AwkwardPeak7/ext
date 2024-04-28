@@ -39,8 +39,9 @@ open class Kemono(
 
     override val client = network.client.newBuilder().rateLimit(1).build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
@@ -82,16 +83,17 @@ open class Kemono(
         return if (page == 1) {
             val document = client.newCall(GET(baseUrl + path, headers)).execute().asJsoup()
             val cardList = document.selectFirst(Evaluator.Class("card-list__items"))!!
-            val creators = cardList.children().map {
-                SManga.create().apply {
-                    url = it.attr("href")
-                    title = it.selectFirst(Evaluator.Class("user-card__name"))!!.ownText()
-                    author = it.selectFirst(Evaluator.Class("user-card__service"))!!.ownText()
-                    thumbnail_url = it.selectFirst(Evaluator.Tag("img"))!!.absUrl("src").formatAvatarUrl()
-                    description = PROMPT
-                    initialized = true
-                }
-            }.filterUnsupported()
+            val creators =
+                cardList.children().map {
+                    SManga.create().apply {
+                        url = it.attr("href")
+                        title = it.selectFirst(Evaluator.Class("user-card__name"))!!.ownText()
+                        author = it.selectFirst(Evaluator.Class("user-card__service"))!!.ownText()
+                        thumbnail_url = it.selectFirst(Evaluator.Tag("img"))!!.absUrl("src").formatAvatarUrl()
+                        description = PROMPT
+                        initialized = true
+                    }
+                }.filterUnsupported()
             MangasPage(creators, true).also { cacheCreators() }
         } else {
             fetchCreatorsPage(page) { it.apply { sortWith(comparator) } }
@@ -102,19 +104,20 @@ open class Kemono(
         page: Int,
         query: String,
         filters: FilterList,
-    ): Observable<MangasPage> = Observable.fromCallable {
-        if (query.isBlank()) throw Exception("Query is empty")
-        fetchCreatorsPage(page) { all ->
-            val result = all.filterTo(ArrayList()) { it.name.contains(query, ignoreCase = true) }
-            if (result.isEmpty()) return@fetchCreatorsPage emptyList()
-            if (result[0].favorited != -1) {
-                result.sortByDescending { it.favorited }
-            } else {
-                result.sortByDescending { it.updatedDate }
+    ): Observable<MangasPage> =
+        Observable.fromCallable {
+            if (query.isBlank()) throw Exception("Query is empty")
+            fetchCreatorsPage(page) { all ->
+                val result = all.filterTo(ArrayList()) { it.name.contains(query, ignoreCase = true) }
+                if (result.isEmpty()) return@fetchCreatorsPage emptyList()
+                if (result[0].favorited != -1) {
+                    result.sortByDescending { it.favorited }
+                } else {
+                    result.sortByDescending { it.updatedDate }
+                }
+                result
             }
-            result
         }
-    }
 
     private fun fetchCreatorsPage(
         page: Int,
@@ -126,27 +129,29 @@ open class Kemono(
         val count = allCreators.size
         val fromIndex = (page - 1) * NEW_PAGE_SIZE
         val toIndex = min(count, fromIndex + NEW_PAGE_SIZE)
-        val creators = allCreators.subList(fromIndex, toIndex)
-            .map { it.toSManga(imgCdnUrl) }
-            .filterUnsupported()
+        val creators =
+            allCreators.subList(fromIndex, toIndex)
+                .map { it.toSManga(imgCdnUrl) }
+                .filterUnsupported()
         return MangasPage(creators, toIndex < count)
     }
 
     private fun cacheCreators() {
-        val callback = object : Callback {
-            override fun onResponse(
-                call: Call,
-                response: Response,
-            ) = response.body.source().run {
-                readAll(blackholeSink())
-                close()
-            }
+        val callback =
+            object : Callback {
+                override fun onResponse(
+                    call: Call,
+                    response: Response,
+                ) = response.body.source().run {
+                    readAll(blackholeSink())
+                    close()
+                }
 
-            override fun onFailure(
-                call: Call,
-                e: IOException,
-            ) = Unit
-        }
+                override fun onFailure(
+                    call: Call,
+                    e: IOException,
+                ) = Unit
+            }
         client.newCall(GET("$baseUrl/$apiPath/creators", headers)).enqueue(callback)
     }
 
@@ -165,25 +170,28 @@ open class Kemono(
 
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> = Observable.fromCallable {
-        KemonoPostDto.dateFormat.timeZone = when (manga.author) {
-            "Pixiv Fanbox", "Fantia" -> TimeZone.getTimeZone("GMT+09:00")
-            else -> TimeZone.getTimeZone("GMT")
+    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> =
+        Observable.fromCallable {
+            KemonoPostDto.dateFormat.timeZone =
+                when (manga.author) {
+                    "Pixiv Fanbox", "Fantia" -> TimeZone.getTimeZone("GMT+09:00")
+                    else -> TimeZone.getTimeZone("GMT")
+                }
+            val maxPosts =
+                preferences.getString(POST_PAGES_PREF, POST_PAGES_DEFAULT)!!
+                    .toInt().coerceAtMost(POST_PAGES_MAX) * POST_PAGE_SIZE
+            var offset = 0
+            var hasNextPage = true
+            val result = ArrayList<SChapter>()
+            while (offset < maxPosts && hasNextPage) {
+                val request = GET("$baseUrl/$apiPath${manga.url}?limit=$POST_PAGE_SIZE&o=$offset", headers)
+                val page: List<KemonoPostDto> = retry(request).parseAs()
+                page.forEach { post -> if (post.images.isNotEmpty()) result.add(post.toSChapter()) }
+                offset += POST_PAGE_SIZE
+                hasNextPage = page.size == POST_PAGE_SIZE
+            }
+            result
         }
-        val maxPosts = preferences.getString(POST_PAGES_PREF, POST_PAGES_DEFAULT)!!
-            .toInt().coerceAtMost(POST_PAGES_MAX) * POST_PAGE_SIZE
-        var offset = 0
-        var hasNextPage = true
-        val result = ArrayList<SChapter>()
-        while (offset < maxPosts && hasNextPage) {
-            val request = GET("$baseUrl/$apiPath${manga.url}?limit=$POST_PAGE_SIZE&o=$offset", headers)
-            val page: List<KemonoPostDto> = retry(request).parseAs()
-            page.forEach { post -> if (post.images.isNotEmpty()) result.add(post.toSChapter()) }
-            offset += POST_PAGE_SIZE
-            hasNextPage = page.size == POST_PAGE_SIZE
-        }
-        result
-    }
 
     private fun retry(request: Request): Response {
         var code = 0
@@ -209,19 +217,21 @@ open class Kemono(
         val imageUrl = page.imageUrl!!
         if (!preferences.getBoolean(USE_LOW_RES_IMG, false)) return GET(imageUrl, headers)
         val index = imageUrl.indexOf('/', startIndex = 8) // https://
-        val url = buildString {
-            append(imageUrl, 0, index)
-            append("/thumbnail")
-            append(imageUrl, index, imageUrl.length)
-        }
+        val url =
+            buildString {
+                append(imageUrl, 0, index)
+                append("/thumbnail")
+                append(imageUrl, index, imageUrl.length)
+            }
         return GET(url, headers)
     }
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream(it.body.byteStream())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream(it.body.byteStream())
+        }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         ListPreference(screen.context).apply {
@@ -229,9 +239,10 @@ open class Kemono(
             title = "Maximum posts to load"
             summary = "Loading more posts costs more time and network traffic.\nCurrently: %s"
             entryValues = (1..POST_PAGES_MAX).map { it.toString() }.toTypedArray()
-            entries = (1..POST_PAGES_MAX).map {
-                if (it == 1) "1 page ($POST_PAGE_SIZE posts)" else "$it pages (${it * POST_PAGE_SIZE} posts)"
-            }.toTypedArray()
+            entries =
+                (1..POST_PAGES_MAX).map {
+                    if (it == 1) "1 page ($POST_PAGE_SIZE posts)" else "$it pages (${it * POST_PAGE_SIZE} posts)"
+                }.toTypedArray()
             setDefaultValue(POST_PAGES_DEFAULT)
         }.let { screen.addPreference(it) }
 

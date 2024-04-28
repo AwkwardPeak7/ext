@@ -36,13 +36,14 @@ class Baozi : ParsedHttpSource(), ConfigurableSource {
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
 
-    private val domain: String = run {
-        val mirrors = MIRRORS
-        val domain = preferences.getString(MIRROR_PREF, null) ?: return@run mirrors[0]
-        if (domain in mirrors) return@run domain
-        preferences.edit().remove(MIRROR_PREF).apply()
-        mirrors[0]
-    }
+    private val domain: String =
+        run {
+            val mirrors = MIRRORS
+            val domain = preferences.getString(MIRROR_PREF, null) ?: return@run mirrors[0]
+            if (domain in mirrors) return@run domain
+            preferences.edit().remove(MIRROR_PREF).apply()
+            mirrors[0]
+        }
 
     override val baseUrl = "https://$domain"
 
@@ -50,19 +51,22 @@ class Baozi : ParsedHttpSource(), ConfigurableSource {
 
     override val supportsLatest = true
 
-    private val bannerInterceptor = BaoziBanner(
-        level = preferences.getString(BaoziBanner.PREF, DEFAULT_LEVEL)!!.toInt(),
-    )
+    private val bannerInterceptor =
+        BaoziBanner(
+            level = preferences.getString(BaoziBanner.PREF, DEFAULT_LEVEL)!!.toInt(),
+        )
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .addInterceptor(bannerInterceptor)
-        .addNetworkInterceptor(MissingImageInterceptor)
-        .addNetworkInterceptor(RedirectDomainInterceptor(domain))
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .addInterceptor(bannerInterceptor)
+            .addNetworkInterceptor(MissingImageInterceptor)
+            .addNetworkInterceptor(RedirectDomainInterceptor(domain))
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "https://$domain/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "https://$domain/")
 
     override fun chapterListSelector() = throw UnsupportedOperationException()
 
@@ -134,36 +138,40 @@ class Baozi : ParsedHttpSource(), ConfigurableSource {
             thumbnail_url = document.select("div.pure-g div > amp-img").attr("src").trim()
             author = document.select("h2.comics-detail__author").text()
             description = document.select("p.comics-detail__desc").text()
-            status = when (document.selectFirst("div.tag-list > span.tag")!!.text()) {
-                "连载中", "連載中" -> SManga.ONGOING
-                "已完结", "已完結" -> SManga.COMPLETED
-                else -> SManga.UNKNOWN
-            }
+            status =
+                when (document.selectFirst("div.tag-list > span.tag")!!.text()) {
+                    "连载中", "連載中" -> SManga.ONGOING
+                    "已完结", "已完結" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
         }
     }
 
-    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> = Observable.fromCallable {
-        val pathToUrl = LinkedHashMap<String, String>()
-        var request = GET(baseUrl + chapter.url, headers).newBuilder()
-            .tag(RedirectDomainInterceptor.Tag::class, RedirectDomainInterceptor.Tag()).build()
-        while (true) {
-            val document = client.newCall(request).execute().asJsoup()
-            for (element in document.select(".comic-contain amp-img")) {
-                val imageUrl = element.attr("data-src")
-                val path = imageUrl.substring(imageUrl.indexOf('/', startIndex = 8)) // Skip "https://"
-                pathToUrl[path] = imageUrl
-            }
-            val url = document.selectFirst(Evaluator.Id("next-chapter"))
-                ?.takeIf {
-                    val text = it.text()
-                    text == "下一页" || text == "下一頁"
+    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> =
+        Observable.fromCallable {
+            val pathToUrl = LinkedHashMap<String, String>()
+            var request =
+                GET(baseUrl + chapter.url, headers).newBuilder()
+                    .tag(RedirectDomainInterceptor.Tag::class, RedirectDomainInterceptor.Tag()).build()
+            while (true) {
+                val document = client.newCall(request).execute().asJsoup()
+                for (element in document.select(".comic-contain amp-img")) {
+                    val imageUrl = element.attr("data-src")
+                    val path = imageUrl.substring(imageUrl.indexOf('/', startIndex = 8)) // Skip "https://"
+                    pathToUrl[path] = imageUrl
                 }
-                ?.attr("href")
-                ?: break
-            request = GET(url, headers)
+                val url =
+                    document.selectFirst(Evaluator.Id("next-chapter"))
+                        ?.takeIf {
+                            val text = it.text()
+                            text == "下一页" || text == "下一頁"
+                        }
+                        ?.attr("href")
+                        ?: break
+                request = GET(url, headers)
+            }
+            pathToUrl.values.mapIndexed { index, imageUrl -> Page(index, imageUrl = imageUrl) }
         }
-        pathToUrl.values.mapIndexed { index, imageUrl -> Page(index, imageUrl = imageUrl) }
-    }
 
     override fun imageRequest(page: Page): Request {
         val url = page.imageUrl!!.replace(".baozicdn.com", ".baozimh.com")
@@ -214,10 +222,11 @@ class Baozi : ParsedHttpSource(), ConfigurableSource {
         // impossible to search a manga and use the filters
         return if (query.isNotEmpty()) {
             val baseUrl = baseUrl.replace(".dinnerku.com", ".baozimh.com")
-            val url = baseUrl.toHttpUrl().newBuilder()
-                .addEncodedPathSegment("search")
-                .addQueryParameter("q", query)
-                .toString()
+            val url =
+                baseUrl.toHttpUrl().newBuilder()
+                    .addEncodedPathSegment("search")
+                    .addQueryParameter("q", query)
+                    .toString()
             GET(url, headers)
         } else {
             val parts = filters.filterIsInstance<UriPartFilter>().joinToString("&") { it.toUriPart() }
@@ -229,15 +238,17 @@ class Baozi : ParsedHttpSource(), ConfigurableSource {
         val document = response.asJsoup()
         // Normal search
         return if (response.request.url.encodedPath.startsWith("search?")) {
-            val mangas = document.select(popularMangaSelector()).map { element ->
-                popularMangaFromElement(element)
-            }
+            val mangas =
+                document.select(popularMangaSelector()).map { element ->
+                    popularMangaFromElement(element)
+                }
             MangasPage(mangas, false)
             // Filter search
         } else {
-            val mangas = document.select(popularMangaSelector()).map { element ->
-                popularMangaFromElement(element)
-            }
+            val mangas =
+                document.select(popularMangaSelector()).map { element ->
+                    popularMangaFromElement(element)
+                }
             MangasPage(mangas, mangas.size == 36)
         }
     }
@@ -287,23 +298,24 @@ class Baozi : ParsedHttpSource(), ConfigurableSource {
         const val ID_SEARCH_PREFIX = "id:"
 
         private const val MIRROR_PREF = "MIRROR"
-        private val MIRRORS get() = arrayOf(
-            "cn.baozimh.com",
-            "tw.baozimh.com",
-            "www.baozimh.com",
-            "cn.webmota.com",
-            "tw.webmota.com",
-            "www.webmota.com",
-            "cn.kukuc.co",
-            "tw.kukuc.co",
-            "www.kukuc.co",
-            "cn.czmanga.com",
-            "tw.czmanga.com",
-            "www.czmanga.com",
-            "cn.dinnerku.com",
-            "tw.dinnerku.com",
-            "www.dinnerku.com",
-        )
+        private val MIRRORS get() =
+            arrayOf(
+                "cn.baozimh.com",
+                "tw.baozimh.com",
+                "www.baozimh.com",
+                "cn.webmota.com",
+                "tw.webmota.com",
+                "www.webmota.com",
+                "cn.kukuc.co",
+                "tw.kukuc.co",
+                "www.kukuc.co",
+                "cn.czmanga.com",
+                "tw.czmanga.com",
+                "www.czmanga.com",
+                "cn.dinnerku.com",
+                "tw.dinnerku.com",
+                "www.dinnerku.com",
+            )
 
         private const val DEFAULT_LEVEL = BaoziBanner.NORMAL.toString()
 

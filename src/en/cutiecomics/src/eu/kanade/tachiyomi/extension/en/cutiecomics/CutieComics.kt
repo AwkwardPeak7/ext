@@ -29,22 +29,24 @@ class CutieComics : ParsedHttpSource() {
 
     override val supportsLatest = false
 
-    override val client = network.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
     // ============================== Popular ===============================
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/page/$page", headers)
 
     override fun popularMangaSelector() = "#dle-content > div.w25"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        with(element.selectFirst("strong.field-content > a")!!) {
-            title = ownText()
-            setUrlWithoutDomain(attr("href"))
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            with(element.selectFirst("strong.field-content > a")!!) {
+                title = ownText()
+                setUrlWithoutDomain(attr("href"))
+            }
+            thumbnail_url = element.selectFirst("a > img")?.absUrl("src")
         }
-        thumbnail_url = element.selectFirst("a > img")?.absUrl("src")
-    }
 
     override fun popularMangaNextPageSelector() = ".navigation > a > i.fa-angle-right"
 
@@ -83,8 +85,9 @@ class CutieComics : ParsedHttpSource() {
 
     private fun searchMangaByIdParse(response: Response): MangasPage {
         val doc = response.asJsoup()
-        val details = mangaDetailsParse(doc)
-            .apply { setUrlWithoutDomain(doc.location()) }
+        val details =
+            mangaDetailsParse(doc)
+                .apply { setUrlWithoutDomain(doc.location()) }
         return MangasPage(listOf(details), false)
     }
 
@@ -94,14 +97,15 @@ class CutieComics : ParsedHttpSource() {
         filters: FilterList,
     ): Request {
         require(query.isNotBlank() && query.length >= 4) { "Invalid search! It should have at least 4 non-blank characters." }
-        val body = FormBody.Builder()
-            .add("do", "search")
-            .add("subaction", "search")
-            .add("full_search", "0")
-            .add("search_start", "$page")
-            .add("result_from", "${(page - 1) * 20 + 1}")
-            .add("story", query)
-            .build()
+        val body =
+            FormBody.Builder()
+                .add("do", "search")
+                .add("subaction", "search")
+                .add("full_search", "0")
+                .add("search_start", "$page")
+                .add("result_from", "${(page - 1) * 20 + 1}")
+                .add("story", query)
+                .build()
         return POST("$baseUrl/index.php?do=search", headers, body)
     }
 
@@ -112,22 +116,24 @@ class CutieComics : ParsedHttpSource() {
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     // =========================== Manga Details ============================
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        status = SManga.COMPLETED
-        update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            status = SManga.COMPLETED
+            update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
 
-        title = document.selectFirst("h1#page-title")!!.text()
-        thumbnail_url = document.selectFirst("div.galery > img")?.absUrl("src")
-        genre = document.select("h3.field-label ~ span").joinToString { it.text() }
-    }
+            title = document.selectFirst("h1#page-title")!!.text()
+            thumbnail_url = document.selectFirst("div.galery > img")?.absUrl("src")
+            genre = document.select("h3.field-label ~ span").joinToString { it.text() }
+        }
 
     // ============================== Chapters ==============================
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        val chapter = SChapter.create().apply {
-            url = manga.url
-            chapter_number = 1F
-            name = "Chapter"
-        }
+        val chapter =
+            SChapter.create().apply {
+                url = manga.url
+                chapter_number = 1F
+                name = "Chapter"
+            }
 
         return Observable.just(listOf(chapter))
     }

@@ -24,27 +24,30 @@ class MangaPlusCreators(override val lang: String) : HttpSource() {
 
     override val supportsLatest = true
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Origin", baseUrl.substringBeforeLast("/"))
-        .add("Referer", baseUrl)
-        .add("User-Agent", USER_AGENT)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Origin", baseUrl.substringBeforeLast("/"))
+            .add("Referer", baseUrl)
+            .add("User-Agent", USER_AGENT)
 
     private val json: Json by injectLazy()
 
     override fun popularMangaRequest(page: Int): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", "$baseUrl/titles/popular/?p=m")
-            .add("X-Requested-With", "XMLHttpRequest")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", "$baseUrl/titles/popular/?p=m")
+                .add("X-Requested-With", "XMLHttpRequest")
+                .build()
 
-        val apiUrl = "$API_URL/titles/popular/list".toHttpUrl().newBuilder()
-            .addQueryParameter("page", page.toString())
-            .addQueryParameter("pageSize", POPULAR_PAGE_SIZE)
-            .addQueryParameter("l", lang)
-            .addQueryParameter("p", "m")
-            .addQueryParameter("isWebview", "false")
-            .addQueryParameter("_", System.currentTimeMillis().toString())
-            .toString()
+        val apiUrl =
+            "$API_URL/titles/popular/list".toHttpUrl().newBuilder()
+                .addQueryParameter("page", page.toString())
+                .addQueryParameter("pageSize", POPULAR_PAGE_SIZE)
+                .addQueryParameter("l", lang)
+                .addQueryParameter("p", "m")
+                .addQueryParameter("isWebview", "false")
+                .addQueryParameter("_", System.currentTimeMillis().toString())
+                .toString()
 
         return GET(apiUrl, newHeaders)
     }
@@ -60,19 +63,21 @@ class MangaPlusCreators(override val lang: String) : HttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", "$baseUrl/titles/recent/?t=episode")
-            .add("X-Requested-With", "XMLHttpRequest")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", "$baseUrl/titles/recent/?t=episode")
+                .add("X-Requested-With", "XMLHttpRequest")
+                .build()
 
-        val apiUrl = "$API_URL/titles/recent/list".toHttpUrl().newBuilder()
-            .addQueryParameter("page", page.toString())
-            .addQueryParameter("pageSize", POPULAR_PAGE_SIZE)
-            .addQueryParameter("l", lang)
-            .addQueryParameter("c", "episode")
-            .addQueryParameter("isWebview", "false")
-            .addQueryParameter("_", System.currentTimeMillis().toString())
-            .toString()
+        val apiUrl =
+            "$API_URL/titles/recent/list".toHttpUrl().newBuilder()
+                .addQueryParameter("page", page.toString())
+                .addQueryParameter("pageSize", POPULAR_PAGE_SIZE)
+                .addQueryParameter("l", lang)
+                .addQueryParameter("c", "episode")
+                .addQueryParameter("isWebview", "false")
+                .addQueryParameter("_", System.currentTimeMillis().toString())
+                .toString()
 
         return GET(apiUrl, newHeaders)
     }
@@ -84,23 +89,26 @@ class MangaPlusCreators(override val lang: String) : HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val refererUrl = "$baseUrl/keywords".toHttpUrl().newBuilder()
-            .addQueryParameter("q", query)
-            .toString()
+        val refererUrl =
+            "$baseUrl/keywords".toHttpUrl().newBuilder()
+                .addQueryParameter("q", query)
+                .toString()
 
-        val newHeaders = headersBuilder()
-            .set("Referer", refererUrl)
-            .add("X-Requested-With", "XMLHttpRequest")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", refererUrl)
+                .add("X-Requested-With", "XMLHttpRequest")
+                .build()
 
-        val apiUrl = "$API_URL/search/titles".toHttpUrl().newBuilder()
-            .addQueryParameter("keyword", query)
-            .addQueryParameter("page", page.toString())
-            .addQueryParameter("pageSize", POPULAR_PAGE_SIZE)
-            .addQueryParameter("sort", "newly")
-            .addQueryParameter("lang", lang)
-            .addQueryParameter("_", System.currentTimeMillis().toString())
-            .toString()
+        val apiUrl =
+            "$API_URL/search/titles".toHttpUrl().newBuilder()
+                .addQueryParameter("keyword", query)
+                .addQueryParameter("page", page.toString())
+                .addQueryParameter("pageSize", POPULAR_PAGE_SIZE)
+                .addQueryParameter("sort", "newly")
+                .addQueryParameter("lang", lang)
+                .addQueryParameter("_", System.currentTimeMillis().toString())
+                .toString()
 
         return GET(apiUrl, newHeaders)
     }
@@ -114,15 +122,18 @@ class MangaPlusCreators(override val lang: String) : HttpSource() {
         return SManga.create().apply {
             title = bookBox.selectFirst("div.title")!!.text()
             author = bookBox.selectFirst("div.mod-btn-profile div.name")!!.text()
-            description = bookBox.select("div.summary p")
-                .joinToString("\n\n") { it.text() }
-            status = when (bookBox.selectFirst("div.book-submit-type")!!.text()) {
-                "Series" -> SManga.ONGOING
-                "One-shot" -> SManga.COMPLETED
-                else -> SManga.UNKNOWN
-            }
-            genre = bookBox.select("div.genre-area div.tag-genre")
-                .joinToString { it.text() }
+            description =
+                bookBox.select("div.summary p")
+                    .joinToString("\n\n") { it.text() }
+            status =
+                when (bookBox.selectFirst("div.book-submit-type")!!.text()) {
+                    "Series" -> SManga.ONGOING
+                    "One-shot" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
+            genre =
+                bookBox.select("div.genre-area div.tag-genre")
+                    .joinToString { it.text() }
             thumbnail_url = bookBox.selectFirst("div.cover img")!!.attr("data-src")
         }
     }
@@ -130,16 +141,18 @@ class MangaPlusCreators(override val lang: String) : HttpSource() {
     override fun chapterListRequest(manga: SManga): Request {
         val titleId = manga.url.substringAfterLast("/")
 
-        val newHeaders = headersBuilder()
-            .set("Referer", baseUrl + manga.url)
-            .add("X-Requested-With", "XMLHttpRequest")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", baseUrl + manga.url)
+                .add("X-Requested-With", "XMLHttpRequest")
+                .build()
 
-        val apiUrl = "$API_URL/titles/$titleId/episodes/".toHttpUrl().newBuilder()
-            .addQueryParameter("page", "1")
-            .addQueryParameter("pageSize", CHAPTER_PAGE_SIZE)
-            .addQueryParameter("_", System.currentTimeMillis().toString())
-            .toString()
+        val apiUrl =
+            "$API_URL/titles/$titleId/episodes/".toHttpUrl().newBuilder()
+                .addQueryParameter("page", "1")
+                .addQueryParameter("pageSize", CHAPTER_PAGE_SIZE)
+                .addQueryParameter("_", System.currentTimeMillis().toString())
+                .toString()
 
         return GET(apiUrl, newHeaders)
     }
@@ -157,14 +170,16 @@ class MangaPlusCreators(override val lang: String) : HttpSource() {
     override fun pageListRequest(chapter: SChapter): Request {
         val chapterId = chapter.url.substringAfterLast("/")
 
-        val newHeaders = headersBuilder()
-            .set("Referer", baseUrl + chapter.url)
-            .add("X-Requested-With", "XMLHttpRequest")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", baseUrl + chapter.url)
+                .add("X-Requested-With", "XMLHttpRequest")
+                .build()
 
-        val apiUrl = "$API_URL/episodes/pageList/$chapterId/".toHttpUrl().newBuilder()
-            .addQueryParameter("_", System.currentTimeMillis().toString())
-            .toString()
+        val apiUrl =
+            "$API_URL/episodes/pageList/$chapterId/".toHttpUrl().newBuilder()
+                .addQueryParameter("_", System.currentTimeMillis().toString())
+                .toString()
 
         return GET(apiUrl, newHeaders)
     }
@@ -186,22 +201,25 @@ class MangaPlusCreators(override val lang: String) : HttpSource() {
     override fun imageUrlParse(response: Response): String = ""
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .removeAll("Origin")
-            .set("Referer", page.url)
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .removeAll("Origin")
+                .set("Referer", page.url)
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
 
-    private fun Response.asMpcResponse(): MpcResponse = use {
-        json.decodeFromString(body.string())
-    }
+    private fun Response.asMpcResponse(): MpcResponse =
+        use {
+            json.decodeFromString(body.string())
+        }
 
     companion object {
         private const val API_URL = "https://medibang.com/api/mpc"
-        private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+        private const val USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
 
         private const val POPULAR_PAGE_SIZE = "30"
         private const val CHAPTER_PAGE_SIZE = "200"

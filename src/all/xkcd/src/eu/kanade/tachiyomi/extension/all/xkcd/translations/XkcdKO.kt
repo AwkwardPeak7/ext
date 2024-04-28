@@ -19,26 +19,28 @@ class XkcdKO : Xkcd("https://xkcdko.com", "ko") {
 
     override val chapterListSelector = "#comicList > ol > li > a"
 
-    override fun chapterListParse(response: Response) = response.asJsoup().select(chapterListSelector).map {
-        SChapter.create().apply {
-            url = it.attr("href")
-            val number = it.attr("title")
-            name = it.text().numbered(number)
-            chapter_number = number.toFloat()
-            // no dates available
-            date_upload = 0L
+    override fun chapterListParse(response: Response) =
+        response.asJsoup().select(chapterListSelector).map {
+            SChapter.create().apply {
+                url = it.attr("href")
+                val number = it.attr("title")
+                name = it.text().numbered(number)
+                chapter_number = number.toFloat()
+                // no dates available
+                date_upload = 0L
+            }
         }
-    }
 
     override fun pageListParse(response: Response): List<Page> {
         // if the img tag is empty then it is an interactive comic
         val img = response.asJsoup().selectFirst(imageSelector) ?: error(interactiveText)
 
         // if an HD image is available it'll be the srcset attribute
-        val image = when {
-            !img.hasAttr("srcset") -> img.attr("abs:src")
-            else -> img.attr("abs:srcset").substringBefore(' ')
-        }
+        val image =
+            when {
+                !img.hasAttr("srcset") -> img.attr("abs:src")
+                else -> img.attr("abs:srcset").substringBefore(' ')
+            }
 
         // create a text image for the alt text
         val text = img.attr("alt") + "\n\n" + img.attr("title")

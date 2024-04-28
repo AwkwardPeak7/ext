@@ -35,25 +35,28 @@ abstract class BlogTruyen(
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
-    private val dateFormat: SimpleDateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).apply {
-        timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")
-    }
+    private val dateFormat: SimpleDateFormat =
+        SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")
+        }
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/ajax/Search/AjaxLoadListManga?key=tatca&orderBy=3&p=$page", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val manga = document.select(popularMangaSelector()).map {
-            val tiptip = it.attr("data-tiptip")
+        val manga =
+            document.select(popularMangaSelector()).map {
+                val tiptip = it.attr("data-tiptip")
 
-            popularMangaFromElement(it, document.getElementById(tiptip)!!)
-        }
+                popularMangaFromElement(it, document.getElementById(tiptip)!!)
+            }
 
         val hasNextPage = document.selectFirst(popularMangaNextPageSelector()) != null
 
@@ -82,13 +85,14 @@ abstract class BlogTruyen(
 
     override fun latestUpdatesSelector() = ".storyitem .fl-l"
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        val anchor = element.selectFirst("a")!!
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            val anchor = element.selectFirst("a")!!
 
-        setUrlWithoutDomain(anchor.absUrl("href"))
-        title = anchor.attr("title")
-        thumbnail_url = element.selectFirst("img")?.absUrl("src")
-    }
+            setUrlWithoutDomain(anchor.absUrl("href"))
+            title = anchor.attr("title")
+            thumbnail_url = element.selectFirst("img")?.absUrl("src")
+        }
 
     override fun latestUpdatesNextPageSelector() = "select.slcPaging option:last-child:not([selected])"
 
@@ -96,26 +100,27 @@ abstract class BlogTruyen(
         page: Int,
         query: String,
         filters: FilterList,
-    ): Observable<MangasPage> = when {
-        query.startsWith(PREFIX_ID_SEARCH) -> {
-            var id = query.removePrefix(PREFIX_ID_SEARCH).trimStart()
+    ): Observable<MangasPage> =
+        when {
+            query.startsWith(PREFIX_ID_SEARCH) -> {
+                var id = query.removePrefix(PREFIX_ID_SEARCH).trimStart()
 
-            // it's a chapter, resolve to manga ID
-            if (id.startsWith("c")) {
-                val document = client.newCall(GET("$baseUrl/$id", headers)).execute().asJsoup()
+                // it's a chapter, resolve to manga ID
+                if (id.startsWith("c")) {
+                    val document = client.newCall(GET("$baseUrl/$id", headers)).execute().asJsoup()
 
-                id = document.selectFirst(".breadcrumbs a:last-child")!!.attr("href").removePrefix("/")
+                    id = document.selectFirst(".breadcrumbs a:last-child")!!.attr("href").removePrefix("/")
+                }
+
+                fetchMangaDetails(
+                    SManga.create().apply {
+                        url = "/$id"
+                    },
+                )
+                    .map { MangasPage(listOf(it), false) }
             }
-
-            fetchMangaDetails(
-                SManga.create().apply {
-                    url = "/$id"
-                },
-            )
-                .map { MangasPage(listOf(it), false) }
+            else -> super.fetchSearchManga(page, query, filters)
         }
-        else -> super.fetchSearchManga(page, query, filters)
-    }
 
     override fun searchMangaRequest(
         page: Int,
@@ -126,53 +131,56 @@ abstract class BlogTruyen(
             .firstOrNull { query.startsWith(it) }
             ?.let {
                 val id = extractIdFromQuery(it, query)
-                val url = "$baseUrl/ajax/${ajaxSearchUrls[it]!!}".toHttpUrl().newBuilder()
-                    .addQueryParameter("id", id)
-                    .addQueryParameter("p", page.toString())
-                    .build()
+                val url =
+                    "$baseUrl/ajax/${ajaxSearchUrls[it]!!}".toHttpUrl().newBuilder()
+                        .addQueryParameter("id", id)
+                        .addQueryParameter("p", page.toString())
+                        .build()
 
                 return GET(url, headers)
             }
 
-        val url = "$baseUrl/timkiem/nangcao/1".toHttpUrl().newBuilder().apply {
-            if (query.isNotBlank()) {
-                addQueryParameter("txt", query)
-            }
-
-            if (page > 1) {
-                addQueryParameter("p", page.toString())
-            }
-
-            val inclGenres = mutableListOf<String>()
-            val exclGenres = mutableListOf<String>()
-            var status = 0
-
-            (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
-                when (filter) {
-                    is GenreList -> filter.state.forEach {
-                        when (it.state) {
-                            Filter.TriState.STATE_INCLUDE -> inclGenres.add(it.id)
-                            Filter.TriState.STATE_EXCLUDE -> exclGenres.add(it.id)
-                            else -> {}
-                        }
-                    }
-                    is Author -> {
-                        addQueryParameter("aut", filter.state)
-                    }
-                    is Scanlator -> {
-                        addQueryParameter("gr", filter.state)
-                    }
-                    is Status -> {
-                        status = filter.state
-                    }
-                    else -> {}
+        val url =
+            "$baseUrl/timkiem/nangcao/1".toHttpUrl().newBuilder().apply {
+                if (query.isNotBlank()) {
+                    addQueryParameter("txt", query)
                 }
-            }
 
-            addPathSegment(status.toString())
-            addPathSegment(inclGenres.joinToString(",").ifEmpty { "-1" })
-            addPathSegment(exclGenres.joinToString(",").ifEmpty { "-1" })
-        }.build()
+                if (page > 1) {
+                    addQueryParameter("p", page.toString())
+                }
+
+                val inclGenres = mutableListOf<String>()
+                val exclGenres = mutableListOf<String>()
+                var status = 0
+
+                (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
+                    when (filter) {
+                        is GenreList ->
+                            filter.state.forEach {
+                                when (it.state) {
+                                    Filter.TriState.STATE_INCLUDE -> inclGenres.add(it.id)
+                                    Filter.TriState.STATE_EXCLUDE -> exclGenres.add(it.id)
+                                    else -> {}
+                                }
+                            }
+                        is Author -> {
+                            addQueryParameter("aut", filter.state)
+                        }
+                        is Scanlator -> {
+                            addQueryParameter("gr", filter.state)
+                        }
+                        is Status -> {
+                            status = filter.state
+                        }
+                        else -> {}
+                    }
+                }
+
+                addPathSegment(status.toString())
+                addPathSegment(inclGenres.joinToString(",").ifEmpty { "-1" })
+                addPathSegment(exclGenres.joinToString(",").ifEmpty { "-1" })
+            }.build()
 
         return GET(url, headers)
     }
@@ -180,11 +188,12 @@ abstract class BlogTruyen(
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val manga = document.select(searchMangaSelector()).map {
-            val tiptip = it.attr("data-tiptip")
+        val manga =
+            document.select(searchMangaSelector()).map {
+                val tiptip = it.attr("data-tiptip")
 
-            searchMangaFromElement(it, document.getElementById(tiptip)!!)
-        }
+                searchMangaFromElement(it, document.getElementById(tiptip)!!)
+            }
 
         val hasNextPage = document.selectFirst(searchMangaNextPageSelector()) != null
 
@@ -202,74 +211,77 @@ abstract class BlogTruyen(
 
     override fun searchMangaNextPageSelector() = ".pagination .glyphicon-step-forward"
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        val anchor = document.selectFirst(".entry-title a")!!
-        val descriptionBlock = document.selectFirst("div.description")!!
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            val anchor = document.selectFirst(".entry-title a")!!
+            val descriptionBlock = document.selectFirst("div.description")!!
 
-        setUrlWithoutDomain(anchor.absUrl("href"))
-        title = getMangaTitle(document)
-        thumbnail_url = document.selectFirst(".thumbnail img")?.absUrl("src")
-        author = descriptionBlock.select("p:contains(Tác giả) a").joinToString { it.text() }
-        genre = descriptionBlock.select("span.category").joinToString { it.text() }
-        status = when (descriptionBlock.selectFirst("p:contains(Trạng thái) span.color-red")?.text()) {
-            "Đang tiến hành" -> SManga.ONGOING
-            "Đã hoàn thành" -> SManga.COMPLETED
-            "Tạm ngưng" -> SManga.ON_HIATUS
-            else -> SManga.UNKNOWN
+            setUrlWithoutDomain(anchor.absUrl("href"))
+            title = getMangaTitle(document)
+            thumbnail_url = document.selectFirst(".thumbnail img")?.absUrl("src")
+            author = descriptionBlock.select("p:contains(Tác giả) a").joinToString { it.text() }
+            genre = descriptionBlock.select("span.category").joinToString { it.text() }
+            status =
+                when (descriptionBlock.selectFirst("p:contains(Trạng thái) span.color-red")?.text()) {
+                    "Đang tiến hành" -> SManga.ONGOING
+                    "Đã hoàn thành" -> SManga.COMPLETED
+                    "Tạm ngưng" -> SManga.ON_HIATUS
+                    else -> SManga.UNKNOWN
+                }
+            description =
+                buildString {
+                    document.selectFirst(".manga-detail .detail .content")?.let {
+                        // replace the facebook blockquote in synopsis with the link (if there is one)
+                        it.selectFirst(".fb-page, .fb-group")?.let { fb ->
+                            val link = fb.attr("data-href")
+                            val node = document.createElement("p")
+
+                            node.appendText(link)
+                            fb.replaceWith(node)
+                        }
+
+                        appendLine(it.textWithNewlines().trim())
+                        appendLine()
+                    }
+
+                    descriptionBlock.select("p:not(:contains(Thể loại)):not(:contains(Tác giả))")
+                        .forEach { e ->
+                            val text = e.text()
+
+                            if (text.isBlank()) {
+                                return@forEach
+                            }
+
+                            // Uploader and status share the same <p>
+                            if (text.contains("Trạng thái")) {
+                                appendLine(text.substringBefore("Trạng thái").trim())
+                                return@forEach
+                            }
+
+                            // "Source", "Updaters" and "Scanlators" use badges with links
+                            if (text.contains("Nguồn") ||
+                                text.contains("Tham gia update") ||
+                                text.contains("Nhóm dịch")
+                            ) {
+                                val key = text.substringBefore(":")
+                                val value = e.select("a").joinToString { el -> el.text() }
+                                appendLine("$key: $value")
+                                return@forEach
+                            }
+
+                            // Generic paragraphs i.e. view count and follower count for this series
+                            // Basically the same trick as [Element.textWithNewlines], just applied to
+                            // different elements.
+                            e.select("a, span").append("\\n")
+                            appendLine(
+                                e.text()
+                                    .replace("\\n", "\n")
+                                    .replace("\n ", "\n")
+                                    .trim(),
+                            )
+                        }
+                }.trim()
         }
-        description = buildString {
-            document.selectFirst(".manga-detail .detail .content")?.let {
-                // replace the facebook blockquote in synopsis with the link (if there is one)
-                it.selectFirst(".fb-page, .fb-group")?.let { fb ->
-                    val link = fb.attr("data-href")
-                    val node = document.createElement("p")
-
-                    node.appendText(link)
-                    fb.replaceWith(node)
-                }
-
-                appendLine(it.textWithNewlines().trim())
-                appendLine()
-            }
-
-            descriptionBlock.select("p:not(:contains(Thể loại)):not(:contains(Tác giả))")
-                .forEach { e ->
-                    val text = e.text()
-
-                    if (text.isBlank()) {
-                        return@forEach
-                    }
-
-                    // Uploader and status share the same <p>
-                    if (text.contains("Trạng thái")) {
-                        appendLine(text.substringBefore("Trạng thái").trim())
-                        return@forEach
-                    }
-
-                    // "Source", "Updaters" and "Scanlators" use badges with links
-                    if (text.contains("Nguồn") ||
-                        text.contains("Tham gia update") ||
-                        text.contains("Nhóm dịch")
-                    ) {
-                        val key = text.substringBefore(":")
-                        val value = e.select("a").joinToString { el -> el.text() }
-                        appendLine("$key: $value")
-                        return@forEach
-                    }
-
-                    // Generic paragraphs i.e. view count and follower count for this series
-                    // Basically the same trick as [Element.textWithNewlines], just applied to
-                    // different elements.
-                    e.select("a, span").append("\\n")
-                    appendLine(
-                        e.text()
-                            .replace("\\n", "\n")
-                            .replace("\n ", "\n")
-                            .trim(),
-                    )
-                }
-        }.trim()
-    }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
@@ -284,17 +296,19 @@ abstract class BlogTruyen(
     private fun chapterFromElement(
         element: Element,
         title: String,
-    ): SChapter = SChapter.create().apply {
-        val anchor = element.select("span > a").first()!!
+    ): SChapter =
+        SChapter.create().apply {
+            val anchor = element.select("span > a").first()!!
 
-        setUrlWithoutDomain(anchor.attr("href"))
-        name = anchor.text().removePrefix("$title ")
-        date_upload = runCatching {
-            dateFormat.parse(
-                element.selectFirst("span.publishedDate")!!.text(),
-            )!!.time
-        }.getOrDefault(0L)
-    }
+            setUrlWithoutDomain(anchor.attr("href"))
+            name = anchor.text().removePrefix("$title ")
+            date_upload =
+                runCatching {
+                    dateFormat.parse(
+                        element.selectFirst("span.publishedDate")!!.text(),
+                    )!!.time
+                }.getOrDefault(0L)
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         val pages = mutableListOf<Page>()
@@ -321,11 +335,12 @@ abstract class BlogTruyen(
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     override fun getFilterList(): FilterList {
-        val filters = mutableListOf<Filter<*>>(
-            Author(),
-            Scanlator(),
-            Status(),
-        )
+        val filters =
+            mutableListOf<Filter<*>>(
+                Author(),
+                Scanlator(),
+                Status(),
+            )
         val genres = getGenreList()
 
         if (genres.isNotEmpty()) {
@@ -351,15 +366,17 @@ abstract class BlogTruyen(
 
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Thể loại", genres)
 
-    private fun getMangaTitle(document: Document) = document
-        .selectFirst(".entry-title a")!!
-        .attr("title")
-        .removePrefix("truyện tranh ")
+    private fun getMangaTitle(document: Document) =
+        document
+            .selectFirst(".entry-title a")!!
+            .attr("title")
+            .removePrefix("truyện tranh ")
 
-    private fun Element.textWithNewlines() = run {
-        select("p, br").prepend("\\n")
-        text().replace("\\n", "\n").replace("\n ", "\n")
-    }
+    private fun Element.textWithNewlines() =
+        run {
+            select("p, br").prepend("\\n")
+            text().replace("\\n", "\n").replace("\n ", "\n")
+        }
 
     private fun extractIdFromQuery(
         prefix: String,
@@ -369,14 +386,15 @@ abstract class BlogTruyen(
     private fun countView(document: Document) {
         val mangaId = document.getElementById("MangaId")!!.attr("value")
         val chapterId = document.getElementById("ChapterId")!!.attr("value")
-        val request = POST(
-            "$baseUrl/Chapter/UpdateView",
-            headers,
-            FormBody.Builder()
-                .add("mangaId", mangaId)
-                .add("chapterId", chapterId)
-                .build(),
-        )
+        val request =
+            POST(
+                "$baseUrl/Chapter/UpdateView",
+                headers,
+                FormBody.Builder()
+                    .add("mangaId", mangaId)
+                    .add("chapterId", chapterId)
+                    .build(),
+            )
 
         Single.fromCallable {
             client.newCall(request).execute().close()
@@ -386,10 +404,11 @@ abstract class BlogTruyen(
             .subscribe()
     }
 
-    private val ajaxSearchUrls: Map<String, String> = mapOf(
-        PREFIX_AUTHOR_SEARCH to "Author/AjaxLoadMangaByAuthor?orderBy=3",
-        PREFIX_TEAM_SEARCH to "TranslateTeam/AjaxLoadMangaByTranslateTeam",
-    )
+    private val ajaxSearchUrls: Map<String, String> =
+        mapOf(
+            PREFIX_AUTHOR_SEARCH to "Author/AjaxLoadMangaByAuthor?orderBy=3",
+            PREFIX_TEAM_SEARCH to "TranslateTeam/AjaxLoadMangaByTranslateTeam",
+        )
 
     companion object {
         internal const val PREFIX_ID_SEARCH = "id:"

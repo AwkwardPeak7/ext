@@ -16,13 +16,14 @@ class Onemanhua : ColaManga("COLAMANGA", "https://www.colamanga.com", "zh") {
     override val statusCompleted = "已完结"
 
     override fun getFilterList(): FilterList {
-        val filters = buildList {
-            addAll(super.getFilterList().list)
-            add(SortFilter())
-            add(CategoryFilter())
-            add(CharFilter())
-            add(StatusFilter())
-        }
+        val filters =
+            buildList {
+                addAll(super.getFilterList().list)
+                add(SortFilter())
+                add(CategoryFilter())
+                add(CharFilter())
+                add(StatusFilter())
+            }
 
         return FilterList(filters)
     }

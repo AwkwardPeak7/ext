@@ -6,9 +6,10 @@ import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
 class MangaShiro : MangaThemesia("MangaShiro", "https://mangashiro.me", "id") {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(20, 5, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(20, 5, TimeUnit.SECONDS)
+            .build()
 
     override val hasProjectPage = true
 

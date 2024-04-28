@@ -31,12 +31,14 @@ abstract class Keyoapp(
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
@@ -48,13 +50,14 @@ abstract class Keyoapp(
 
     override fun popularMangaSelector(): String = "div.flex-col div.grid > div.group.border"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        thumbnail_url = element.getImageUrl("*[style*=background-image]")
-        element.selectFirst("a[href]")!!.run {
-            title = attr("title")
-            setUrlWithoutDomain(attr("abs:href"))
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            thumbnail_url = element.getImageUrl("*[style*=background-image]")
+            element.selectFirst("a[href]")!!.run {
+                title = attr("title")
+                setUrlWithoutDomain(attr("abs:href"))
+            }
         }
-    }
 
     override fun popularMangaNextPageSelector(): String? = null
 
@@ -85,21 +88,22 @@ abstract class Keyoapp(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegment("series")
-            addPathSegment("")
-            if (query.isNotBlank()) {
-                addQueryParameter("q", query)
-            }
-            filters.firstOrNull { it is GenreList }?.also {
-                val filter = it as GenreList
-                filter.state
-                    .filter { it.state }
-                    .forEach { genre ->
-                        addQueryParameter("genre", genre.id)
-                    }
-            }
-        }.build()
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegment("series")
+                addPathSegment("")
+                if (query.isNotBlank()) {
+                    addQueryParameter("q", query)
+                }
+                filters.firstOrNull { it is GenreList }?.also {
+                    val filter = it as GenreList
+                    filter.state
+                        .filter { it.state }
+                        .forEach { genre ->
+                            addQueryParameter("genre", genre.id)
+                        }
+                }
+            }.build()
 
         return GET(url, headers)
     }
@@ -117,14 +121,15 @@ abstract class Keyoapp(
         val query = response.request.url.queryParameter("q") ?: ""
         val genres = response.request.url.queryParameterValues("genre")
 
-        val mangaList = document.select(searchMangaSelector())
-            .toTypedArray()
-            .filter { it.attr("title").contains(query, true) }
-            .filter { entry ->
-                val entryGenres = json.decodeFromString<List<String>>(entry.attr("tags"))
-                genres.all { genre -> entryGenres.any { it.equals(genre, true) } }
-            }
-            .map(::searchMangaFromElement)
+        val mangaList =
+            document.select(searchMangaSelector())
+                .toTypedArray()
+                .filter { it.attr("title").contains(query, true) }
+                .filter { entry ->
+                    val entryGenres = json.decodeFromString<List<String>>(entry.attr("tags"))
+                    genres.all { genre -> entryGenres.any { it.equals(genre, true) } }
+                }
+                .map(::searchMangaFromElement)
 
         return MangasPage(mangaList, false)
     }
@@ -167,10 +172,11 @@ abstract class Keyoapp(
      */
     protected open fun fetchGenres() {
         if (fetchGenresAttempts <= 3 && (genresList.isEmpty() || fetchGenresFailed)) {
-            val genres = runCatching {
-                client.newCall(genresRequest()).execute()
-                    .use { parseGenres(it.asJsoup()) }
-            }
+            val genres =
+                runCatching {
+                    client.newCall(genresRequest()).execute()
+                        .use { parseGenres(it.asJsoup()) }
+                }
 
             fetchGenresFailed = genres.isFailure
             genresList = genres.getOrNull().orEmpty()
@@ -194,35 +200,38 @@ abstract class Keyoapp(
 
     // Details
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.selectFirst("div.grid > h1")!!.text()
-        thumbnail_url = document.getImageUrl("div[class*=photoURL]")
-        description = document.selectFirst("div.grid > div.overflow-hidden > p")?.text()
-        status = document.selectFirst("div[alt=Status]").parseStatus()
-        author = document.selectFirst("div[alt=Author]")?.text()
-        artist = document.selectFirst("div[alt=Artist]")?.text()
-        genre = document.select("div.grid:has(>h1) > div > a").joinToString { it.text() }
-    }
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.selectFirst("div.grid > h1")!!.text()
+            thumbnail_url = document.getImageUrl("div[class*=photoURL]")
+            description = document.selectFirst("div.grid > div.overflow-hidden > p")?.text()
+            status = document.selectFirst("div[alt=Status]").parseStatus()
+            author = document.selectFirst("div[alt=Author]")?.text()
+            artist = document.selectFirst("div[alt=Artist]")?.text()
+            genre = document.select("div.grid:has(>h1) > div > a").joinToString { it.text() }
+        }
 
-    private fun Element?.parseStatus(): Int = when (this?.text()?.lowercase()) {
-        "ongoing" -> SManga.ONGOING
-        "dropped" -> SManga.CANCELLED
-        "paused" -> SManga.ON_HIATUS
-        "completed" -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun Element?.parseStatus(): Int =
+        when (this?.text()?.lowercase()) {
+            "ongoing" -> SManga.ONGOING
+            "dropped" -> SManga.CANCELLED
+            "paused" -> SManga.ON_HIATUS
+            "completed" -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // Chapter list
 
     override fun chapterListSelector(): String = "#chapters > a:not(:has(.text-sm span:matches(Upcoming)))"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a[href]")!!.attr("href"))
-        name = element.selectFirst(".text-sm")!!.text()
-        element.selectFirst(".text-xs")?.run {
-            date_upload = text().trim().parseDate()
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a[href]")!!.attr("href"))
+            name = element.selectFirst(".text-sm")!!.text()
+            element.selectFirst(".text-xs")?.run {
+                date_upload = text().trim().parseDate()
+            }
         }
-    }
 
     // Image list
 
@@ -239,11 +248,12 @@ abstract class Keyoapp(
 
     // From mangathemesia
     private fun Element.imgAttr(width: String): String {
-        val url = when {
-            hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
-            hasAttr("data-src") -> attr("abs:data-src")
-            else -> attr("abs:src")
-        }
+        val url =
+            when {
+                hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
+                hasAttr("data-src") -> attr("abs:data-src")
+                else -> attr("abs:src")
+            }
         return url.toHttpUrl()
             .newBuilder()
             .addQueryParameter("w", width)
@@ -279,18 +289,20 @@ abstract class Keyoapp(
     }
 
     private fun String.parseRelativeDate(): Long {
-        val now = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
+        val now =
+            Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
 
-        val relativeDate = this.split(" ").firstOrNull()
-            ?.replace("one", "1")
-            ?.replace("a", "1")
-            ?.toIntOrNull()
-            ?: return 0L
+        val relativeDate =
+            this.split(" ").firstOrNull()
+                ?.replace("one", "1")
+                ?.replace("a", "1")
+                ?.toIntOrNull()
+                ?: return 0L
 
         when {
             "second" in this -> now.add(Calendar.SECOND, -relativeDate) // parse: 30 seconds ago

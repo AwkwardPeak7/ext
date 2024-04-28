@@ -19,9 +19,10 @@ class TenshiId : MangaThemesia(
     override val seriesArtistSelector: String = ".imptdt-artist-sub-2 i .js-button-custom"
     override val seriesAuthorSelector: String = ".imptdt-author-sub-2 i .js-button-custom"
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 
     override val projectPageString = "/project-list"
 

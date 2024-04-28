@@ -39,11 +39,12 @@ class MangaTube : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .writeTimeout(1, TimeUnit.MINUTES)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .writeTimeout(1, TimeUnit.MINUTES)
+            .build()
 
     private val xhrHeaders: Headers = headersBuilder().add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8").build()
 
@@ -71,16 +72,17 @@ class MangaTube : ParsedHttpSource() {
         hasNextPage: Boolean,
     ): MangasPage {
         var titleKey = "manga_title"
-        val mangas = json.decodeFromString<JsonObject>(response.body.string())
-            .let { it["success"] ?: it["suggestions"].also { titleKey = "value" } }!!
-            .jsonArray
-            .map { json ->
-                SManga.create().apply {
-                    title = json.jsonObject[titleKey]!!.jsonPrimitive.content
-                    url = "/series/${json.jsonObject["manga_slug"]!!.jsonPrimitive.content}"
-                    thumbnail_url = json.jsonObject["covers"]!!.jsonArray[0].jsonObject["img_name"]!!.jsonPrimitive.content
+        val mangas =
+            json.decodeFromString<JsonObject>(response.body.string())
+                .let { it["success"] ?: it["suggestions"].also { titleKey = "value" } }!!
+                .jsonArray
+                .map { json ->
+                    SManga.create().apply {
+                        title = json.jsonObject[titleKey]!!.jsonPrimitive.content
+                        url = "/series/${json.jsonObject["manga_slug"]!!.jsonPrimitive.content}"
+                        thumbnail_url = json.jsonObject["covers"]!!.jsonArray[0].jsonObject["img_name"]!!.jsonPrimitive.content
+                    }
                 }
-            }
         return MangasPage(mangas, hasNextPage)
     }
 
@@ -146,12 +148,13 @@ class MangaTube : ParsedHttpSource() {
         }
     }
 
-    private fun String?.toStatus() = when {
-        this == null -> SManga.UNKNOWN
-        this.contains("laufend", ignoreCase = true) -> SManga.ONGOING
-        this.contains("abgeschlossen", ignoreCase = true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun String?.toStatus() =
+        when {
+            this == null -> SManga.UNKNOWN
+            this.contains("laufend", ignoreCase = true) -> SManga.ONGOING
+            this.contains("abgeschlossen", ignoreCase = true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // Chapters
 
@@ -163,13 +166,14 @@ class MangaTube : ParsedHttpSource() {
                 name = "${it.select("b").text()} ${it.select("span:not(.btn)").joinToString(" ") { span -> span.text() }}"
                 setUrlWithoutDomain(it.attr("href"))
             }
-            date_upload = element.select("p.chapter-date").text().let {
-                try {
-                    SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).parse(it.substringAfter(" "))?.time ?: 0L
-                } catch (_: ParseException) {
-                    0L
+            date_upload =
+                element.select("p.chapter-date").text().let {
+                    try {
+                        SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).parse(it.substringAfter(" "))?.time ?: 0L
+                    } catch (_: ParseException) {
+                        0L
+                    }
                 }
-            }
         }
     }
 
@@ -177,10 +181,12 @@ class MangaTube : ParsedHttpSource() {
 
     override fun pageListParse(document: Document): List<Page> {
         val script = document.select("script:containsData(current_chapter:)").first()!!.data()
-        val imagePath = Regex("""img_path: '(.*)'""").find(script)?.groupValues?.get(1)
-            ?: throw Exception("Couldn't find image path")
-        val jsonArray = Regex("""pages: (\[.*]),""").find(script)?.groupValues?.get(1)
-            ?: throw Exception("Couldn't find JSON array")
+        val imagePath =
+            Regex("""img_path: '(.*)'""").find(script)?.groupValues?.get(1)
+                ?: throw Exception("Couldn't find image path")
+        val jsonArray =
+            Regex("""pages: (\[.*]),""").find(script)?.groupValues?.get(1)
+                ?: throw Exception("Couldn't find JSON array")
 
         return json.decodeFromString<JsonArray>(jsonArray).mapIndexed { i, json ->
             Page(i, "", imagePath + json.jsonObject["file_name"]!!.jsonPrimitive.content)

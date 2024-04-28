@@ -44,32 +44,33 @@ open class Webtoons(
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .cookieJar(
-            object : CookieJar {
-                override fun saveFromResponse(
-                    url: HttpUrl,
-                    cookies: List<Cookie>,
-                ) {}
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .cookieJar(
+                object : CookieJar {
+                    override fun saveFromResponse(
+                        url: HttpUrl,
+                        cookies: List<Cookie>,
+                    ) {}
 
-                override fun loadForRequest(url: HttpUrl): List<Cookie> {
-                    return listOf<Cookie>(
-                        Cookie.Builder()
-                            .domain("www.webtoons.com")
-                            .path("/")
-                            .name("ageGatePass")
-                            .value("true")
-                            .name("locale")
-                            .value(localeForCookie)
-                            .name("needGDPR")
-                            .value("false")
-                            .build(),
-                    )
-                }
-            },
-        )
-        .addInterceptor(::sslRetryInterceptor)
-        .build()
+                    override fun loadForRequest(url: HttpUrl): List<Cookie> {
+                        return listOf<Cookie>(
+                            Cookie.Builder()
+                                .domain("www.webtoons.com")
+                                .path("/")
+                                .name("ageGatePass")
+                                .value("true")
+                                .name("locale")
+                                .value(localeForCookie)
+                                .name("needGDPR")
+                                .value("false")
+                                .build(),
+                        )
+                    }
+                },
+            )
+            .addInterceptor(::sslRetryInterceptor)
+            .build()
 
     // m.webtoons.com throws an SSL error that can be solved by a simple retry
     private fun sslRetryInterceptor(chain: Interceptor.Chain): Response {
@@ -102,12 +103,14 @@ open class Webtoons(
 
     override fun latestUpdatesSelector() = "div#dailyList > $day li > a"
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Referer", "https://www.webtoons.com/$langCode/")
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .add("Referer", "https://www.webtoons.com/$langCode/")
 
-    protected val mobileHeaders: Headers = super.headersBuilder()
-        .add("Referer", "https://m.webtoons.com")
-        .build()
+    protected val mobileHeaders: Headers =
+        super.headersBuilder()
+            .add("Referer", "https://m.webtoons.com")
+            .build()
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/$langCode/dailySchedule", headers)
 
@@ -165,10 +168,11 @@ open class Webtoons(
         val emptyResult = Observable.just(MangasPage(emptyList(), false))
 
         // given a url to either a webtoon or an episode, returns a url path to corresponding webtoon
-        fun webtoonPath(u: HttpUrl) = when {
-            langCode == u.pathSegments[0] -> "/${u.pathSegments[0]}/${u.pathSegments[1]}/${u.pathSegments[2]}/list"
-            else -> "/${u.pathSegments[0]}/${u.pathSegments[1]}/list" // dongmanmanhua doesn't include langCode
-        }
+        fun webtoonPath(u: HttpUrl) =
+            when {
+                langCode == u.pathSegments[0] -> "/${u.pathSegments[0]}/${u.pathSegments[1]}/${u.pathSegments[2]}/list"
+                else -> "/${u.pathSegments[0]}/${u.pathSegments[1]}/list" // dongmanmanhua doesn't include langCode
+            }
 
         return query.substringAfter(URL_SEARCH_PREFIX).toHttpUrlOrNull()?.let { url ->
             val title_no = url.queryParameter("title_no")
@@ -230,11 +234,12 @@ open class Webtoons(
         return manga
     }
 
-    open fun String.toStatus(): Int = when {
-        contains("UP") -> SManga.ONGOING
-        contains("COMPLETED") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    open fun String.toStatus(): Int =
+        when {
+            contains("UP") -> SManga.ONGOING
+            contains("COMPLETED") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun imageUrlParse(document: Document): String = document.select("img").first()!!.attr("src")
 
@@ -252,11 +257,12 @@ open class Webtoons(
 
     private class SearchType(vals: Array<Pair<String, String>>) : UriPartFilter("Official or Challenge", vals)
 
-    private fun getOfficialList() = arrayOf(
-        Pair("Any", ""),
-        Pair("Official only", "WEBTOON"),
-        Pair("Challenge only", "CHALLENGE"),
-    )
+    private fun getOfficialList() =
+        arrayOf(
+            Pair("Any", ""),
+            Pair("Official only", "WEBTOON"),
+            Pair("Challenge only", "CHALLENGE"),
+        )
 
     open class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
         Select<String>(displayName, vals.map { it.first }.toTypedArray()) {

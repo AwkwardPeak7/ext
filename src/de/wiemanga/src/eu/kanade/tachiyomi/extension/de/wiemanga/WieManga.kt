@@ -27,9 +27,10 @@ class WieManga : ParsedHttpSource() {
 
     override val client: OkHttpClient = network.cloudflareClient
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Accept-Language", "en-US,en;q=0.5")
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .add("Accept-Language", "en-US,en;q=0.5")
+            .add("Referer", baseUrl)
 
     override fun popularMangaSelector() = ".booklist td > div"
 
@@ -100,12 +101,13 @@ class WieManga : ParsedHttpSource() {
         return manga
     }
 
-    private fun parseStatus(status: String?) = when {
-        status == null -> SManga.UNKNOWN
-        status.contains("ongoing", ignoreCase = true) -> SManga.ONGOING
-        status.contains("finished", ignoreCase = true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String?) =
+        when {
+            status == null -> SManga.UNKNOWN
+            status.contains("ongoing", ignoreCase = true) -> SManga.ONGOING
+            status.contains("finished", ignoreCase = true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun chapterListSelector() = ".chapterlist tr:not(:first-child)"
 

@@ -18,25 +18,27 @@ class AntiScrapInterceptor : Interceptor {
             return chain.proceed(request)
         }
 
-        val imageUrls = request.url
-            .queryParameter("urls").orEmpty()
-            .split(IMAGE_URLS_SEPARATOR)
+        val imageUrls =
+            request.url
+                .queryParameter("urls").orEmpty()
+                .split(IMAGE_URLS_SEPARATOR)
 
         var width = 0
         var height = 0
 
-        val imageBitmaps = imageUrls.map { imageUrl ->
-            val newRequest = request.newBuilder().url(imageUrl).build()
-            val response = chain.proceed(newRequest)
+        val imageBitmaps =
+            imageUrls.map { imageUrl ->
+                val newRequest = request.newBuilder().url(imageUrl).build()
+                val response = chain.proceed(newRequest)
 
-            val bitmap = BitmapFactory.decodeStream(response.body.byteStream())
-            response.close()
+                val bitmap = BitmapFactory.decodeStream(response.body.byteStream())
+                response.close()
 
-            width += bitmap.width
-            height = bitmap.height
+                width += bitmap.width
+                height = bitmap.height
 
-            bitmap
-        }
+                bitmap
+            }
 
         val mergedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         Canvas(mergedBitmap).apply {

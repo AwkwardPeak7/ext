@@ -16,9 +16,10 @@ class MangaGezgini : Madara(
         val chapter = SChapter.create()
         with(element) {
             selectFirst(chapterUrlSelector)!!.let { urlElement ->
-                chapter.url = urlElement.attr("abs:href").let {
-                    it.substringBefore("?style=paged") + if (!it.endsWith(chapterUrlSuffix)) chapterUrlSuffix else ""
-                }
+                chapter.url =
+                    urlElement.attr("abs:href").let {
+                        it.substringBefore("?style=paged") + if (!it.endsWith(chapterUrlSuffix)) chapterUrlSuffix else ""
+                    }
                 chapter.name = element.select("li.wp-manga-chapter.has-thumb a").text()
             }
             chapter.date_upload = selectFirst("img:not(.thumb)")?.attr("alt")?.let { parseRelativeDate(it) }

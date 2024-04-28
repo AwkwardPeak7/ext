@@ -52,10 +52,11 @@ class Desu : ConfigurableSource, HttpSource() {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", "Tachiyomi")
-        add("Referer", baseUrl)
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("User-Agent", "Tachiyomi")
+            add("Referer", baseUrl)
+        }
 
     override val client: OkHttpClient =
         network.cloudflareClient.newBuilder()
@@ -66,12 +67,13 @@ class Desu : ConfigurableSource, HttpSource() {
         jsonStr: String,
         next: Boolean,
     ): MangasPage {
-        val mangaList = json.parseToJsonElement(jsonStr).jsonArray
-            .map {
-                SManga.create().apply {
-                    mangaFromJSON(it.jsonObject, false)
+        val mangaList =
+            json.parseToJsonElement(jsonStr).jsonArray
+                .map {
+                    SManga.create().apply {
+                        mangaFromJSON(it.jsonObject, false)
+                    }
                 }
-            }
 
         return MangasPage(mangaList, next)
     }
@@ -83,45 +85,49 @@ class Desu : ConfigurableSource, HttpSource() {
         val id = obj["id"]!!.jsonPrimitive.int
 
         url = "/$id"
-        title = if (isEng.equals("rus")) {
-            obj["russian"]!!.jsonPrimitive.content
-                .split(" / ")
-                .first()
-        } else {
-            obj["name"]!!.jsonPrimitive.content
-                .split(" / ")
-                .first()
-        }
+        title =
+            if (isEng.equals("rus")) {
+                obj["russian"]!!.jsonPrimitive.content
+                    .split(" / ")
+                    .first()
+            } else {
+                obj["name"]!!.jsonPrimitive.content
+                    .split(" / ")
+                    .first()
+            }
         thumbnail_url = obj["image"]!!.jsonObject["original"]!!.jsonPrimitive.content
 
         val ratingValue = obj["score"]!!.jsonPrimitive.floatOrNull ?: 0F
-        val ratingStar = when {
-            ratingValue > 9.5 -> "★★★★★"
-            ratingValue > 8.5 -> "★★★★✬"
-            ratingValue > 7.5 -> "★★★★☆"
-            ratingValue > 6.5 -> "★★★✬☆"
-            ratingValue > 5.5 -> "★★★☆☆"
-            ratingValue > 4.5 -> "★★✬☆☆"
-            ratingValue > 3.5 -> "★★☆☆☆"
-            ratingValue > 2.5 -> "★✬☆☆☆"
-            ratingValue > 1.5 -> "★☆☆☆☆"
-            ratingValue > 0.5 -> "✬☆☆☆☆"
-            else -> "☆☆☆☆☆"
-        }
+        val ratingStar =
+            when {
+                ratingValue > 9.5 -> "★★★★★"
+                ratingValue > 8.5 -> "★★★★✬"
+                ratingValue > 7.5 -> "★★★★☆"
+                ratingValue > 6.5 -> "★★★✬☆"
+                ratingValue > 5.5 -> "★★★☆☆"
+                ratingValue > 4.5 -> "★★✬☆☆"
+                ratingValue > 3.5 -> "★★☆☆☆"
+                ratingValue > 2.5 -> "★✬☆☆☆"
+                ratingValue > 1.5 -> "★☆☆☆☆"
+                ratingValue > 0.5 -> "✬☆☆☆☆"
+                else -> "☆☆☆☆☆"
+            }
 
-        val rawAgeStop = when (obj["adult"]!!.jsonPrimitive.int) {
-            1 -> "18+"
-            else -> ""
-        }
+        val rawAgeStop =
+            when (obj["adult"]!!.jsonPrimitive.int) {
+                1 -> "18+"
+                else -> ""
+            }
 
-        val category = when (obj["kind"]!!.jsonPrimitive.content) {
-            "manga" -> "Манга"
-            "manhwa" -> "Манхва"
-            "manhua" -> "Маньхуа"
-            "comics" -> "Комикс"
-            "one_shot" -> "Ваншот"
-            else -> "Манга"
-        }
+        val category =
+            when (obj["kind"]!!.jsonPrimitive.content) {
+                "manga" -> "Манга"
+                "manhwa" -> "Манхва"
+                "manhua" -> "Маньхуа"
+                "comics" -> "Комикс"
+                "one_shot" -> "Ваншот"
+                else -> "Манга"
+            }
 
         var altName = ""
 
@@ -147,25 +153,28 @@ class Desu : ConfigurableSource, HttpSource() {
             ")\n" + altName +
             obj["description"]!!.jsonPrimitive.content
 
-        genre = if (chapter) {
-            "$category, $rawAgeStop, " +
-                obj["genres"]!!.jsonArray
-                    .map { it.jsonObject["russian"]!!.jsonPrimitive.content }
-                    .joinToString()
-        } else {
-            category + ", " + rawAgeStop + ", " + obj["genres"]!!.jsonPrimitive.content
-        }
-
-        status = when (obj["trans_status"]!!.jsonPrimitive.content) {
-            "continued" -> SManga.ONGOING
-            "completed" -> SManga.COMPLETED
-            else -> when (obj["status"]!!.jsonPrimitive.content) {
-                "ongoing" -> SManga.ONGOING
-                "released" -> SManga.COMPLETED
-                //  "copyright" -> SManga.LICENSED  Hides available chapters!
-                else -> SManga.UNKNOWN
+        genre =
+            if (chapter) {
+                "$category, $rawAgeStop, " +
+                    obj["genres"]!!.jsonArray
+                        .map { it.jsonObject["russian"]!!.jsonPrimitive.content }
+                        .joinToString()
+            } else {
+                category + ", " + rawAgeStop + ", " + obj["genres"]!!.jsonPrimitive.content
             }
-        }
+
+        status =
+            when (obj["trans_status"]!!.jsonPrimitive.content) {
+                "continued" -> SManga.ONGOING
+                "completed" -> SManga.COMPLETED
+                else ->
+                    when (obj["status"]!!.jsonPrimitive.content) {
+                        "ongoing" -> SManga.ONGOING
+                        "released" -> SManga.COMPLETED
+                        //  "copyright" -> SManga.LICENSED  Hides available chapters!
+                        else -> SManga.UNKNOWN
+                    }
+            }
     }
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl$API_URL/?limit=50&order=popular&page=$page")
@@ -233,18 +242,21 @@ class Desu : ConfigurableSource, HttpSource() {
         return GET(baseUrl + "/manga" + manga.url, headers)
     }
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val obj = json.parseToJsonElement(response.body.string())
-            .jsonObject["response"]!!
-            .jsonObject
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val obj =
+                json.parseToJsonElement(response.body.string())
+                    .jsonObject["response"]!!
+                    .jsonObject
 
-        mangaFromJSON(obj, true)
-    }
+            mangaFromJSON(obj, true)
+        }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        val obj = json.parseToJsonElement(response.body.string())
-            .jsonObject["response"]!!
-            .jsonObject
+        val obj =
+            json.parseToJsonElement(response.body.string())
+                .jsonObject["response"]!!
+                .jsonObject
 
         val cid = obj["id"]!!.jsonPrimitive.int
         val objChapter = obj["chapters"]!!
@@ -278,9 +290,10 @@ class Desu : ConfigurableSource, HttpSource() {
     }
 
     override fun pageListParse(response: Response): List<Page> {
-        val obj = json.parseToJsonElement(response.body.string())
-            .jsonObject["response"]!!
-            .jsonObject
+        val obj =
+            json.parseToJsonElement(response.body.string())
+                .jsonObject["response"]!!
+                .jsonObject
 
         return obj["pages"]!!.jsonObject["list"]!!.jsonArray
             .mapIndexed { i, jsonEl ->
@@ -330,84 +343,88 @@ class Desu : ConfigurableSource, HttpSource() {
 
     private class Genre(name: String, val id: String) : Filter.CheckBox(name)
 
-    override fun getFilterList() = FilterList(
-        OrderBy(),
-        TypeList(getTypeList()),
-        GenreList(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            OrderBy(),
+            TypeList(getTypeList()),
+            GenreList(getGenreList()),
+        )
 
-    private fun getTypeList() = listOf(
-        Type("Манга", "manga"),
-        Type("Манхва", "manhwa"),
-        Type("Маньхуа", "manhua"),
-        Type("Ваншот", "one_shot"),
-        Type("Комикс", "comics"),
-    )
+    private fun getTypeList() =
+        listOf(
+            Type("Манга", "manga"),
+            Type("Манхва", "manhwa"),
+            Type("Маньхуа", "manhua"),
+            Type("Ваншот", "one_shot"),
+            Type("Комикс", "comics"),
+        )
 
-    private fun getGenreList() = listOf(
-        Genre("Безумие", "Dementia"),
-        Genre("Боевые искусства", "Martial Arts"),
-        Genre("Вампиры", "Vampire"),
-        Genre("Военное", "Military"),
-        Genre("Гарем", "Harem"),
-        Genre("Демоны", "Demons"),
-        Genre("Детектив", "Mystery"),
-        Genre("Детское", "Kids"),
-        Genre("Дзёсей", "Josei"),
-        Genre("Додзинси", "Doujinshi"),
-        Genre("Драма", "Drama"),
-        Genre("Игры", "Game"),
-        Genre("Исторический", "Historical"),
-        Genre("Комедия", "Comedy"),
-        Genre("Космос", "Space"),
-        Genre("Магия", "Magic"),
-        Genre("Машины", "Cars"),
-        Genre("Меха", "Mecha"),
-        Genre("Музыка", "Music"),
-        Genre("Пародия", "Parody"),
-        Genre("Повседневность", "Slice of Life"),
-        Genre("Полиция", "Police"),
-        Genre("Приключения", "Adventure"),
-        Genre("Психологическое", "Psychological"),
-        Genre("Романтика", "Romance"),
-        Genre("Самураи", "Samurai"),
-        Genre("Сверхъестественное", "Supernatural"),
-        Genre("Сёдзе", "Shoujo"),
-        Genre("Сёдзе Ай", "Shoujo Ai"),
-        Genre("Сейнен", "Seinen"),
-        Genre("Сёнен", "Shounen"),
-        Genre("Сёнен Ай", "Shounen Ai"),
-        Genre("Смена пола", "Gender Bender"),
-        Genre("Спорт", "Sports"),
-        Genre("Супер сила", "Super Power"),
-        Genre("Триллер", "Thriller"),
-        Genre("Ужасы", "Horror"),
-        Genre("Фантастика", "Sci-Fi"),
-        Genre("Фэнтези", "Fantasy"),
-        Genre("Хентай", "Hentai"),
-        Genre("Школа", "School"),
-        Genre("Экшен", "Action"),
-        Genre("Этти", "Ecchi"),
-        Genre("Юри", "Yuri"),
-        Genre("Яой", "Yaoi"),
-    )
+    private fun getGenreList() =
+        listOf(
+            Genre("Безумие", "Dementia"),
+            Genre("Боевые искусства", "Martial Arts"),
+            Genre("Вампиры", "Vampire"),
+            Genre("Военное", "Military"),
+            Genre("Гарем", "Harem"),
+            Genre("Демоны", "Demons"),
+            Genre("Детектив", "Mystery"),
+            Genre("Детское", "Kids"),
+            Genre("Дзёсей", "Josei"),
+            Genre("Додзинси", "Doujinshi"),
+            Genre("Драма", "Drama"),
+            Genre("Игры", "Game"),
+            Genre("Исторический", "Historical"),
+            Genre("Комедия", "Comedy"),
+            Genre("Космос", "Space"),
+            Genre("Магия", "Magic"),
+            Genre("Машины", "Cars"),
+            Genre("Меха", "Mecha"),
+            Genre("Музыка", "Music"),
+            Genre("Пародия", "Parody"),
+            Genre("Повседневность", "Slice of Life"),
+            Genre("Полиция", "Police"),
+            Genre("Приключения", "Adventure"),
+            Genre("Психологическое", "Psychological"),
+            Genre("Романтика", "Romance"),
+            Genre("Самураи", "Samurai"),
+            Genre("Сверхъестественное", "Supernatural"),
+            Genre("Сёдзе", "Shoujo"),
+            Genre("Сёдзе Ай", "Shoujo Ai"),
+            Genre("Сейнен", "Seinen"),
+            Genre("Сёнен", "Shounen"),
+            Genre("Сёнен Ай", "Shounen Ai"),
+            Genre("Смена пола", "Gender Bender"),
+            Genre("Спорт", "Sports"),
+            Genre("Супер сила", "Super Power"),
+            Genre("Триллер", "Thriller"),
+            Genre("Ужасы", "Horror"),
+            Genre("Фантастика", "Sci-Fi"),
+            Genre("Фэнтези", "Fantasy"),
+            Genre("Хентай", "Hentai"),
+            Genre("Школа", "School"),
+            Genre("Экшен", "Action"),
+            Genre("Этти", "Ecchi"),
+            Genre("Юри", "Yuri"),
+            Genre("Яой", "Yaoi"),
+        )
 
     private var isEng: String? = preferences.getString(LANGUAGE_PREF, "eng")
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        val titleLanguagePref = ListPreference(screen.context).apply {
-            key = LANGUAGE_PREF
-            title = "Выбор языка на обложке"
-            entries = arrayOf("Английский", "Русский")
-            entryValues = arrayOf("eng", "rus")
-            summary = "%s"
-            setDefaultValue("eng")
-            setOnPreferenceChangeListener { _, newValue ->
-                val warning = "Если язык обложки не изменился очистите базу данных в приложении (Настройки -> Дополнительно -> Очистить базу данных)"
-                Toast.makeText(screen.context, warning, Toast.LENGTH_LONG).show()
-                true
+        val titleLanguagePref =
+            ListPreference(screen.context).apply {
+                key = LANGUAGE_PREF
+                title = "Выбор языка на обложке"
+                entries = arrayOf("Английский", "Русский")
+                entryValues = arrayOf("eng", "rus")
+                summary = "%s"
+                setDefaultValue("eng")
+                setOnPreferenceChangeListener { _, newValue ->
+                    val warning = "Если язык обложки не изменился очистите базу данных в приложении (Настройки -> Дополнительно -> Очистить базу данных)"
+                    Toast.makeText(screen.context, warning, Toast.LENGTH_LONG).show()
+                    true
+                }
             }
-        }
         screen.addPreference(titleLanguagePref)
     }
 

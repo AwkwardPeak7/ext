@@ -25,12 +25,14 @@ class Nartag : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", baseUrl)
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/biblioteca?page=$page", headers)
 
@@ -38,11 +40,12 @@ class Nartag : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector(): String = "nav.paginator a[rel=next]"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.select("a.manga__link").attr("href"))
-        title = element.select("a.manga__link").text()
-        thumbnail_url = element.selectFirst("figure.manga__image > img")?.imgAttr()
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select("a.manga__link").attr("href"))
+            title = element.select("a.manga__link").text()
+            thumbnail_url = element.selectFirst("figure.manga__image > img")?.imgAttr()
+        }
 
     override fun latestUpdatesRequest(page: Int): Request = GET("$baseUrl/actualizaciones?page=$page", headers)
 
@@ -57,8 +60,9 @@ class Nartag : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/biblioteca".toHttpUrl().newBuilder()
-            .addQueryParameter("page", page.toString())
+        val url =
+            "$baseUrl/biblioteca".toHttpUrl().newBuilder()
+                .addQueryParameter("page", page.toString())
 
         if (query.isNotEmpty()) {
             url.addQueryParameter("s", query)
@@ -111,23 +115,25 @@ class Nartag : ParsedHttpSource() {
 
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        with(document.selectFirst("section.manga__card")!!) {
-            title = select("div.manga__title > h2").text()
-            thumbnail_url = selectFirst("figure.manga__cover > img")?.imgAttr()
-            genre = select("div.category__item > a").joinToString { it.text() }
-            status = select("div.manga__status span.status__name").text().toStatus()
-            description = select("div.manga__description > p").text()
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            with(document.selectFirst("section.manga__card")!!) {
+                title = select("div.manga__title > h2").text()
+                thumbnail_url = selectFirst("figure.manga__cover > img")?.imgAttr()
+                genre = select("div.category__item > a").joinToString { it.text() }
+                status = select("div.manga__status span.status__name").text().toStatus()
+                description = select("div.manga__description > p").text()
+            }
         }
-    }
 
     override fun chapterListSelector(): String = "section.manga__chapters div.chapter__item"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        setUrlWithoutDomain(element.select("div.chapter__actions a").attr("href"))
-        name = element.select(".chapter__title").text()
-        date_upload = parseRelativeDate(element.select("span.chapter__date").text())
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.select("div.chapter__actions a").attr("href"))
+            name = element.select(".chapter__title").text()
+            date_upload = parseRelativeDate(element.select("span.chapter__date").text())
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("div.view__content > div.reader__item > img").mapIndexed { i, element ->
@@ -135,28 +141,31 @@ class Nartag : ParsedHttpSource() {
         }
     }
 
-    private fun String.toStatus(): Int = when (this) {
-        "En emisión", "Ongoing" -> SManga.ONGOING
-        "Finalizado" -> SManga.COMPLETED
-        "Publishing finished" -> SManga.PUBLISHING_FINISHED
-        "En pausa" -> SManga.ON_HIATUS
-        else -> SManga.UNKNOWN
-    }
+    private fun String.toStatus(): Int =
+        when (this) {
+            "En emisión", "Ongoing" -> SManga.ONGOING
+            "Finalizado" -> SManga.COMPLETED
+            "Publishing finished" -> SManga.PUBLISHING_FINISHED
+            "En pausa" -> SManga.ON_HIATUS
+            else -> SManga.UNKNOWN
+        }
 
-    private fun Element.imgAttr(): String = when {
-        hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
-        hasAttr("data-src") -> attr("abs:data-src")
-        else -> attr("abs:src")
-    }
+    private fun Element.imgAttr(): String =
+        when {
+            hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
+            hasAttr("data-src") -> attr("abs:data-src")
+            else -> attr("abs:src")
+        }
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
-    override fun getFilterList(): FilterList = FilterList(
-        TypeFilter(),
-        DemographicFilter(),
-        StatusFilter(),
-        CategoryFilter("Categorías", getCategoryList()),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            TypeFilter(),
+            DemographicFilter(),
+            StatusFilter(),
+            CategoryFilter("Categorías", getCategoryList()),
+        )
 
     private class TypeFilter : UriPartFilter(
         "Tipo",
@@ -199,57 +208,58 @@ class Nartag : ParsedHttpSource() {
 
     class CategoryFilter(title: String, categories: List<Category>) : Filter.Group<Category>(title, categories)
 
-    private fun getCategoryList() = listOf(
-        Category("Acción", "accion"),
-        Category("Animación", "animacion"),
-        Category("Apocalíptico", "apocaliptico"),
-        Category("Artes Marciales", "artes-marciales"),
-        Category("Aventura", "aventura"),
-        Category("Boys Love", "boys-love"),
-        Category("Ciberpunk", "ciberpunk"),
-        Category("Ciencia Ficción", "ciencia-ficcion"),
-        Category("Comedia", "comedia"),
-        Category("Crimen", "crimen"),
-        Category("Demonios", "demonios"),
-        Category("Deporte", "deporte"),
-        Category("Drama", "drama"),
-        Category("Ecchi", "ecchi"),
-        Category("Extranjero", "extranjero"),
-        Category("Familia", "familia"),
-        Category("Fantasia", "fantasia"),
-        Category("Género Bender", "genero-bender"),
-        Category("Girls Love", "girls-love"),
-        Category("Gore", "gore"),
-        Category("Guerra", "guerra"),
-        Category("Harem", "harem"),
-        Category("Historia", "historia"),
-        Category("Horror", "horror"),
-        Category("Magia", "magia"),
-        Category("Mecha", "mecha"),
-        Category("Militar", "militar"),
-        Category("Misterio", "misterio"),
-        Category("Murim", "murim"),
-        Category("Musica", "musica"),
-        Category("Niños", "ninos"),
-        Category("Oeste", "oeste"),
-        Category("Parodia", "parodia"),
-        Category("Policiaco", "policiaco"),
-        Category("Psicológico", "psicologico"),
-        Category("Realidad", "realidad"),
-        Category("Realidad Virtual", "realidad-virtual"),
-        Category("Recuentos de la vida", "recuentos-de-la-vida"),
-        Category("Reencarnacion", "reencarnacion"),
-        Category("Regresion", "regresion"),
-        Category("Romance", "romance"),
-        Category("Samurái", "samurai"),
-        Category("Sobrenatural", "sobrenatural"),
-        Category("Superpoderes", "superpoderes"),
-        Category("Telenovela", "telenovela"),
-        Category("Thriller", "thriller"),
-        Category("Tragedia", "tragedia"),
-        Category("Vampiros", "vampiros"),
-        Category("Vida Escolar", "vida-escolar"),
-    )
+    private fun getCategoryList() =
+        listOf(
+            Category("Acción", "accion"),
+            Category("Animación", "animacion"),
+            Category("Apocalíptico", "apocaliptico"),
+            Category("Artes Marciales", "artes-marciales"),
+            Category("Aventura", "aventura"),
+            Category("Boys Love", "boys-love"),
+            Category("Ciberpunk", "ciberpunk"),
+            Category("Ciencia Ficción", "ciencia-ficcion"),
+            Category("Comedia", "comedia"),
+            Category("Crimen", "crimen"),
+            Category("Demonios", "demonios"),
+            Category("Deporte", "deporte"),
+            Category("Drama", "drama"),
+            Category("Ecchi", "ecchi"),
+            Category("Extranjero", "extranjero"),
+            Category("Familia", "familia"),
+            Category("Fantasia", "fantasia"),
+            Category("Género Bender", "genero-bender"),
+            Category("Girls Love", "girls-love"),
+            Category("Gore", "gore"),
+            Category("Guerra", "guerra"),
+            Category("Harem", "harem"),
+            Category("Historia", "historia"),
+            Category("Horror", "horror"),
+            Category("Magia", "magia"),
+            Category("Mecha", "mecha"),
+            Category("Militar", "militar"),
+            Category("Misterio", "misterio"),
+            Category("Murim", "murim"),
+            Category("Musica", "musica"),
+            Category("Niños", "ninos"),
+            Category("Oeste", "oeste"),
+            Category("Parodia", "parodia"),
+            Category("Policiaco", "policiaco"),
+            Category("Psicológico", "psicologico"),
+            Category("Realidad", "realidad"),
+            Category("Realidad Virtual", "realidad-virtual"),
+            Category("Recuentos de la vida", "recuentos-de-la-vida"),
+            Category("Reencarnacion", "reencarnacion"),
+            Category("Regresion", "regresion"),
+            Category("Romance", "romance"),
+            Category("Samurái", "samurai"),
+            Category("Sobrenatural", "sobrenatural"),
+            Category("Superpoderes", "superpoderes"),
+            Category("Telenovela", "telenovela"),
+            Category("Thriller", "thriller"),
+            Category("Tragedia", "tragedia"),
+            Category("Vampiros", "vampiros"),
+            Category("Vida Escolar", "vida-escolar"),
+        )
 
     private fun parseRelativeDate(date: String): Long {
         val number = Regex("""(\d+)""").find(date)?.value?.toIntOrNull() ?: return 0

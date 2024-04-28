@@ -29,9 +29,10 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
     override val supportsLatest = true
     override val name = "动漫屋"
     override val baseUrl = "https://www.dm5.cn"
-    override val client: OkHttpClient = network.client.newBuilder()
-        .addInterceptor(CommentsInterceptor)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .addInterceptor(CommentsInterceptor)
+            .build()
 
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
@@ -45,12 +46,14 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
 
     override fun popularMangaSelector(): String = "ul.mh-list > li > div.mh-item"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst("h2.title > a")!!.text()
-        thumbnail_url = element.selectFirst("p.mh-cover")!!.attr("style")
-            .substringAfter("url(").substringBefore(")")
-        url = element.selectFirst("h2.title > a")!!.attr("href")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.selectFirst("h2.title > a")!!.text()
+            thumbnail_url =
+                element.selectFirst("p.mh-cover")!!.attr("style")
+                    .substringAfter("url(").substringBefore(")")
+            url = element.selectFirst("h2.title > a")!!.attr("href")
+        }
 
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/manhua-list-s2-p$page/", headers)
 
@@ -72,49 +75,53 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
 
     override fun searchMangaSelector(): String = "ul.mh-list > li, div.banner_detail_form"
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst(".title > a")!!.text()
-        thumbnail_url = element.selectFirst("img")?.attr("src")
-            ?: element.selectFirst("p.mh-cover")!!.attr("style")
-                .substringAfter("url(").substringBefore(")")
-        url = element.selectFirst(".title > a")!!.attr("href")
-    }
-
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.selectFirst("div.banner_detail_form p.title")!!.ownText()
-        thumbnail_url = document.selectFirst("div.banner_detail_form img")!!.attr("abs:src")
-        author = document.selectFirst("div.banner_detail_form p.subtitle > a")!!.text()
-        artist = author
-        genre = document.select("div.banner_detail_form p.tip a").eachText().joinToString(", ")
-        val el = document.selectFirst("div.banner_detail_form p.content")!!
-        description = el.ownText() + el.selectFirst("span")?.ownText().orEmpty()
-        status = when (document.selectFirst("div.banner_detail_form p.tip > span > span")!!.text()) {
-            "连载中" -> SManga.ONGOING
-            "已完结" -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.selectFirst(".title > a")!!.text()
+            thumbnail_url = element.selectFirst("img")?.attr("src")
+                ?: element.selectFirst("p.mh-cover")!!.attr("style")
+                    .substringAfter("url(").substringBefore(")")
+            url = element.selectFirst(".title > a")!!.attr("href")
         }
-    }
+
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.selectFirst("div.banner_detail_form p.title")!!.ownText()
+            thumbnail_url = document.selectFirst("div.banner_detail_form img")!!.attr("abs:src")
+            author = document.selectFirst("div.banner_detail_form p.subtitle > a")!!.text()
+            artist = author
+            genre = document.select("div.banner_detail_form p.tip a").eachText().joinToString(", ")
+            val el = document.selectFirst("div.banner_detail_form p.content")!!
+            description = el.ownText() + el.selectFirst("span")?.ownText().orEmpty()
+            status =
+                when (document.selectFirst("div.banner_detail_form p.tip > span > span")!!.text()) {
+                    "连载中" -> SManga.ONGOING
+                    "已完结" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
+        }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         // May need to click button on website to read
         document.selectFirst("ul#detail-list-select-1")?.attr("class")
             ?: throw Exception("請到webview確認")
-        val li = document.select("div#chapterlistload li > a").map {
-            SChapter.create().apply {
-                url = it.attr("href")
-                name = if (it.selectFirst("span.detail-lock, span.view-lock") != null) {
-                    "\uD83D\uDD12"
-                } else {
-                    ""
-                } + (it.selectFirst("p.title")?.text() ?: it.text())
+        val li =
+            document.select("div#chapterlistload li > a").map {
+                SChapter.create().apply {
+                    url = it.attr("href")
+                    name = if (it.selectFirst("span.detail-lock, span.view-lock") != null) {
+                        "\uD83D\uDD12"
+                    } else {
+                        ""
+                    } + (it.selectFirst("p.title")?.text() ?: it.text())
 
-                val dateStr = it.selectFirst("p.tip")
-                if (dateStr != null) {
-                    date_upload = dateFormat.parse(dateStr.text())?.time ?: 0L
+                    val dateStr = it.selectFirst("p.tip")
+                    if (dateStr != null) {
+                        date_upload = dateFormat.parse(dateStr.text())?.time ?: 0L
+                    }
                 }
             }
-        }
 
         // Sort chapter by url (related to upload time)
         if (preferences.getBoolean(SORT_CHAPTER_PREF, false)) {
@@ -142,30 +149,33 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
         }
         val cid = script.substringAfter("var DM5_CID=").substringBefore(";")
         if (!images.isEmpty()) {
-            result = images.mapIndexed { index, it ->
-                Page(index, "", it.attr("data-src"))
-            } as ArrayList<Page>
+            result =
+                images.mapIndexed { index, it ->
+                    Page(index, "", it.attr("data-src"))
+                } as ArrayList<Page>
         } else {
             val mid = script.substringAfter("var DM5_MID=").substringBefore(";")
             val dt = script.substringAfter("var DM5_VIEWSIGN_DT=\"").substringBefore("\";")
             val sign = script.substringAfter("var DM5_VIEWSIGN=\"").substringBefore("\";")
             val requestUrl = document.location()
             val imageCount = script.substringAfter("var DM5_IMAGE_COUNT=").substringBefore(";").toInt()
-            result = (1..imageCount).map {
-                val url = requestUrl.toHttpUrl().newBuilder()
-                    .addPathSegment("chapterfun.ashx")
-                    .addQueryParameter("cid", cid)
-                    .addQueryParameter("page", it.toString())
-                    .addQueryParameter("key", "")
-                    .addQueryParameter("language", "1")
-                    .addQueryParameter("gtk", "6")
-                    .addQueryParameter("_cid", cid)
-                    .addQueryParameter("_mid", mid)
-                    .addQueryParameter("_dt", dt)
-                    .addQueryParameter("_sign", sign)
-                    .build()
-                Page(it, url.toString())
-            } as ArrayList<Page>
+            result =
+                (1..imageCount).map {
+                    val url =
+                        requestUrl.toHttpUrl().newBuilder()
+                            .addPathSegment("chapterfun.ashx")
+                            .addQueryParameter("cid", cid)
+                            .addQueryParameter("page", it.toString())
+                            .addQueryParameter("key", "")
+                            .addQueryParameter("language", "1")
+                            .addQueryParameter("gtk", "6")
+                            .addQueryParameter("_cid", cid)
+                            .addQueryParameter("_mid", mid)
+                            .addQueryParameter("_dt", dt)
+                            .addQueryParameter("_sign", sign)
+                            .build()
+                    Page(it, url.toString())
+                } as ArrayList<Page>
         }
 
         if (preferences.getBoolean(CHAPTER_COMMENTS_PREF, false)) {
@@ -206,17 +216,19 @@ class Dm5 : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val chapterCommentsPreference = SwitchPreferenceCompat(screen.context).apply {
-            key = CHAPTER_COMMENTS_PREF
-            title = "章末吐槽页"
-            summary = "修改后，已加载的章节需要清除章节缓存才能生效。"
-            setDefaultValue(false)
-        }
-        val sortChapterPreference = SwitchPreferenceCompat(screen.context).apply {
-            key = SORT_CHAPTER_PREF
-            title = "依照上傳時間排序章節"
-            setDefaultValue(false)
-        }
+        val chapterCommentsPreference =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = CHAPTER_COMMENTS_PREF
+                title = "章末吐槽页"
+                summary = "修改后，已加载的章节需要清除章节缓存才能生效。"
+                setDefaultValue(false)
+            }
+        val sortChapterPreference =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = SORT_CHAPTER_PREF
+                title = "依照上傳時間排序章節"
+                setDefaultValue(false)
+            }
         screen.addPreference(chapterCommentsPreference)
         screen.addPreference(sortChapterPreference)
     }

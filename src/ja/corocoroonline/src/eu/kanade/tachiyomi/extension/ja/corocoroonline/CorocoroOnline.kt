@@ -19,9 +19,10 @@ class CorocoroOnline : GigaViewer(
 ) {
     override val supportsLatest: Boolean = false
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .addInterceptor(::imageIntercept)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .addInterceptor(::imageIntercept)
+            .build()
 
     override val publisher = "小学館"
 
@@ -29,12 +30,14 @@ class CorocoroOnline : GigaViewer(
 
     override fun popularMangaSelector(): String = "a.p-article-wrap"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst("h3.p-article-title")!!.text()
-            .substringAfter(']')
-        thumbnail_url = element.selectFirst("> .p-article-image > img")!!.attr("src")
-        setUrlWithoutDomain(element.attr("href"))
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title =
+                element.selectFirst("h3.p-article-title")!!.text()
+                    .substringAfter(']')
+            thumbnail_url = element.selectFirst("> .p-article-image > img")!!.attr("src")
+            setUrlWithoutDomain(element.attr("href"))
+        }
 
     // Site doesn't have a manga search and only returns news in search results.
     override fun fetchSearchManga(
@@ -44,9 +47,10 @@ class CorocoroOnline : GigaViewer(
     ): Observable<MangasPage> {
         return fetchPopularManga(page)
             .map { allManga ->
-                val filteredManga = allManga.mangas.filter { manga ->
-                    manga.title.contains(query, true)
-                }
+                val filteredManga =
+                    allManga.mangas.filter { manga ->
+                        manga.title.contains(query, true)
+                    }
 
                 MangasPage(filteredManga, hasNextPage = false)
             }

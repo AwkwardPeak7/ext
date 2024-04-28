@@ -9,9 +9,10 @@ import okhttp3.Response
 import org.jsoup.Jsoup
 
 class DMCScans : ZeistManga("DMC Scans", "https://didascans.blogspot.com", "en") {
-    override val client = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 
     // ============================== Popular ===============================
 
@@ -30,34 +31,36 @@ class DMCScans : ZeistManga("DMC Scans", "https://didascans.blogspot.com", "en")
     override val hasTypeFilter = false
     override val hasLanguageFilter = false
 
-    override fun getGenreList(): List<Genre> = listOf(
-        Genre("Adaptation", "Adaptation"),
-        Genre("Drama", "Drama"),
-        Genre("Historical", "Historical"),
-        Genre("Josei(W)", "Josei(W)"),
-        Genre("Regression", "Regression"),
-        Genre("Romance", "Romance"),
-        Genre("Shojo(G)", "Shojo(G)"),
-        Genre("Slice of Life", "Slice of Life"),
-        Genre("Transmigration", "Transmigration"),
-    )
+    override fun getGenreList(): List<Genre> =
+        listOf(
+            Genre("Adaptation", "Adaptation"),
+            Genre("Drama", "Drama"),
+            Genre("Historical", "Historical"),
+            Genre("Josei(W)", "Josei(W)"),
+            Genre("Regression", "Regression"),
+            Genre("Romance", "Romance"),
+            Genre("Shojo(G)", "Shojo(G)"),
+            Genre("Slice of Life", "Slice of Life"),
+            Genre("Transmigration", "Transmigration"),
+        )
 
     // =============================== Pages ================================
 
     override fun pageListParse(response: Response): List<Page> {
         val document = response.asJsoup()
 
-        val imgData = document.selectFirst("script:containsData(imgTags)")
-            ?.data()
-            ?.substringAfter("imgTags")
-            ?.substringAfter("`")
-            ?.substringBefore("`")
-            ?.replace("\\\"", "\"")
-            ?.replace("\\\\", "\\")
-            ?.replace("\\/", "/")
-            ?.replace("\\:", ":")
-            ?.let(Jsoup::parseBodyFragment)
-            ?: return super.pageListParse(response)
+        val imgData =
+            document.selectFirst("script:containsData(imgTags)")
+                ?.data()
+                ?.substringAfter("imgTags")
+                ?.substringAfter("`")
+                ?.substringBefore("`")
+                ?.replace("\\\"", "\"")
+                ?.replace("\\\\", "\\")
+                ?.replace("\\/", "/")
+                ?.replace("\\:", ":")
+                ?.let(Jsoup::parseBodyFragment)
+                ?: return super.pageListParse(response)
 
         return imgData.select("img[src]").mapIndexed { i, img ->
             Page(i, imageUrl = img.attr("abs:src"))

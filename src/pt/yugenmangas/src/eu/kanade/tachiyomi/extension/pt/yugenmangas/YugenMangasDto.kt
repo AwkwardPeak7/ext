@@ -19,19 +19,21 @@ data class YugenMangaDto(
     val synopsis: String? = null,
     val status: String? = null,
 ) {
-    fun toSManga(baseUrl: String): SManga = SManga.create().apply {
-        title = name
-        author = this@YugenMangaDto.author
-        artist = this@YugenMangaDto.artist
-        description = synopsis
-        status = when (this@YugenMangaDto.status) {
-            "ongoing" -> SManga.ONGOING
-            "completed", "finished" -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
+    fun toSManga(baseUrl: String): SManga =
+        SManga.create().apply {
+            title = name
+            author = this@YugenMangaDto.author
+            artist = this@YugenMangaDto.artist
+            description = synopsis
+            status =
+                when (this@YugenMangaDto.status) {
+                    "ongoing" -> SManga.ONGOING
+                    "completed", "finished" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
+            thumbnail_url = if (cover.startsWith("/")) baseUrl + cover else cover
+            url = "/series/$slug"
         }
-        thumbnail_url = if (cover.startsWith("/")) baseUrl + cover else cover
-        url = "/series/$slug"
-    }
 }
 
 @Serializable
@@ -45,17 +47,18 @@ data class YugenChapterDto(
     val slug: String,
     val group: String,
 ) {
-    fun toSChapter(mangaSlug: String): SChapter = SChapter.create().apply {
-        name = this@YugenChapterDto.name
-        date_upload = runCatching { DATE_FORMATTER.parse(uploadDate)?.time }
-            .getOrNull() ?: 0L
-        chapter_number = this@YugenChapterDto.name
-            .removePrefix("Capítulo ")
-            .substringBefore(" - ")
-            .toFloatOrNull() ?: -1f
-        scanlator = group.ifEmpty { null }
-        url = "/series/$mangaSlug/$slug"
-    }
+    fun toSChapter(mangaSlug: String): SChapter =
+        SChapter.create().apply {
+            name = this@YugenChapterDto.name
+            date_upload = runCatching { DATE_FORMATTER.parse(uploadDate)?.time }
+                .getOrNull() ?: 0L
+            chapter_number = this@YugenChapterDto.name
+                .removePrefix("Capítulo ")
+                .substringBefore(" - ")
+                .toFloatOrNull() ?: -1f
+            scanlator = group.ifEmpty { null }
+            url = "/series/$mangaSlug/$slug"
+        }
 
     companion object {
         private val DATE_FORMATTER by lazy {

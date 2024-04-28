@@ -51,13 +51,15 @@ class MangaPark(
 
     private val json: Json by injectLazy()
 
-    override val client = network.cloudflareClient.newBuilder()
-        .addNetworkInterceptor(CookieInterceptor(domain, "nsfw" to "2"))
-        .rateLimitHost(apiUrl.toHttpUrl(), 1)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .addNetworkInterceptor(CookieInterceptor(domain, "nsfw" to "2"))
+            .rateLimitHost(apiUrl.toHttpUrl(), 1)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", SortFilter.POPULAR)
 
@@ -72,24 +74,25 @@ class MangaPark(
         query: String,
         filters: FilterList,
     ): Request {
-        val payload = GraphQL(
-            SearchVariables(
-                SearchPayload(
-                    page = page,
-                    size = size,
-                    query = query.takeUnless(String::isEmpty),
-                    incGenres = filters.firstInstanceOrNull<GenreFilter>()?.included,
-                    excGenres = filters.firstInstanceOrNull<GenreFilter>()?.excluded,
-                    incTLangs = listOf(siteLang),
-                    incOLangs = filters.firstInstanceOrNull<OriginalLanguageFilter>()?.checked,
-                    sortby = filters.firstInstanceOrNull<SortFilter>()?.selected,
-                    chapCount = filters.firstInstanceOrNull<ChapterCountFilter>()?.selected,
-                    origStatus = filters.firstInstanceOrNull<OriginalStatusFilter>()?.selected,
-                    siteStatus = filters.firstInstanceOrNull<UploadStatusFilter>()?.selected,
+        val payload =
+            GraphQL(
+                SearchVariables(
+                    SearchPayload(
+                        page = page,
+                        size = size,
+                        query = query.takeUnless(String::isEmpty),
+                        incGenres = filters.firstInstanceOrNull<GenreFilter>()?.included,
+                        excGenres = filters.firstInstanceOrNull<GenreFilter>()?.excluded,
+                        incTLangs = listOf(siteLang),
+                        incOLangs = filters.firstInstanceOrNull<OriginalLanguageFilter>()?.checked,
+                        sortby = filters.firstInstanceOrNull<SortFilter>()?.selected,
+                        chapCount = filters.firstInstanceOrNull<ChapterCountFilter>()?.selected,
+                        origStatus = filters.firstInstanceOrNull<OriginalStatusFilter>()?.selected,
+                        siteStatus = filters.firstInstanceOrNull<UploadStatusFilter>()?.selected,
+                    ),
                 ),
-            ),
-            SEARCH_QUERY,
-        ).toJsonRequestBody()
+                SEARCH_QUERY,
+            ).toJsonRequestBody()
 
         return POST(apiUrl, headers, payload)
     }
@@ -110,40 +113,46 @@ class MangaPark(
 
     private fun getGenres() {
         if (genreCache.isEmpty() && genreFetchAttempt < 3) {
-            val elements = runCatching {
-                client.newCall(GET("$baseUrl/search", headers)).execute()
-                    .use { it.asJsoup() }
-                    .select("div.flex-col:contains(Genres) div.whitespace-nowrap")
-            }.getOrNull().orEmpty()
+            val elements =
+                runCatching {
+                    client.newCall(GET("$baseUrl/search", headers)).execute()
+                        .use { it.asJsoup() }
+                        .select("div.flex-col:contains(Genres) div.whitespace-nowrap")
+                }.getOrNull().orEmpty()
 
-            genreCache = elements.mapNotNull {
-                val name = it.selectFirst("span.whitespace-nowrap")
-                    ?.text()?.takeUnless(String::isEmpty)
-                    ?: return@mapNotNull null
+            genreCache =
+                elements.mapNotNull {
+                    val name =
+                        it.selectFirst("span.whitespace-nowrap")
+                            ?.text()?.takeUnless(String::isEmpty)
+                            ?: return@mapNotNull null
 
-                val key = it.attr("q:key")
-                    .takeUnless(String::isEmpty) ?: return@mapNotNull null
+                    val key =
+                        it.attr("q:key")
+                            .takeUnless(String::isEmpty) ?: return@mapNotNull null
 
-                Pair(name, key)
-            }
+                    Pair(name, key)
+                }
             genreFetchAttempt++
         }
     }
 
     override fun getFilterList(): FilterList {
-        val filters = mutableListOf<Filter<*>>(
-            SortFilter(),
-            OriginalLanguageFilter(),
-            OriginalStatusFilter(),
-            UploadStatusFilter(),
-            ChapterCountFilter(),
-        )
+        val filters =
+            mutableListOf<Filter<*>>(
+                SortFilter(),
+                OriginalLanguageFilter(),
+                OriginalStatusFilter(),
+                UploadStatusFilter(),
+                ChapterCountFilter(),
+            )
 
         if (genreCache.isEmpty()) {
-            filters += listOf(
-                Filter.Separator(),
-                Filter.Header("Press 'reset' to attempt to load genres"),
-            )
+            filters +=
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Press 'reset' to attempt to load genres"),
+                )
         } else {
             filters.addAll(1, listOf(GenreFilter(genreCache)))
         }
@@ -152,10 +161,11 @@ class MangaPark(
     }
 
     override fun mangaDetailsRequest(manga: SManga): Request {
-        val payload = GraphQL(
-            IdVariables(manga.url.substringAfterLast("#")),
-            DETAILS_QUERY,
-        ).toJsonRequestBody()
+        val payload =
+            GraphQL(
+                IdVariables(manga.url.substringAfterLast("#")),
+                DETAILS_QUERY,
+            ).toJsonRequestBody()
 
         return POST(apiUrl, headers, payload)
     }
@@ -169,10 +179,11 @@ class MangaPark(
     override fun getMangaUrl(manga: SManga) = baseUrl + manga.url.substringBeforeLast("#")
 
     override fun chapterListRequest(manga: SManga): Request {
-        val payload = GraphQL(
-            IdVariables(manga.url.substringAfterLast("#")),
-            CHAPTERS_QUERY,
-        ).toJsonRequestBody()
+        val payload =
+            GraphQL(
+                IdVariables(manga.url.substringAfterLast("#")),
+                CHAPTERS_QUERY,
+            ).toJsonRequestBody()
 
         return POST(apiUrl, headers, payload)
     }
@@ -186,10 +197,11 @@ class MangaPark(
     override fun getChapterUrl(chapter: SChapter) = baseUrl + chapter.url.substringBeforeLast("#")
 
     override fun pageListRequest(chapter: SChapter): Request {
-        val payload = GraphQL(
-            IdVariables(chapter.url.substringAfterLast("#")),
-            PAGES_QUERY,
-        ).toJsonRequestBody()
+        val payload =
+            GraphQL(
+                IdVariables(chapter.url.substringAfterLast("#")),
+                PAGES_QUERY,
+            ).toJsonRequestBody()
 
         return POST(apiUrl, headers, payload)
     }
@@ -234,21 +246,22 @@ class MangaPark(
 
         private const val MIRROR_PREF_KEY = "pref_mirror"
         private const val MIRROR_PREF_DEFAULT = "mangapark.net"
-        private val mirrors = arrayOf(
-            "mangapark.net",
-            "mangapark.com",
-            "mangapark.org",
-            "mangapark.me",
-            "mangapark.io",
-            "mangapark.to",
-            "comicpark.org",
-            "comicpark.to",
-            "readpark.org",
-            "readpark.net",
-            "parkmanga.com",
-            "parkmanga.net",
-            "parkmanga.org",
-            "mpark.to",
-        )
+        private val mirrors =
+            arrayOf(
+                "mangapark.net",
+                "mangapark.com",
+                "mangapark.org",
+                "mangapark.me",
+                "mangapark.io",
+                "mangapark.to",
+                "comicpark.org",
+                "comicpark.to",
+                "readpark.org",
+                "readpark.net",
+                "parkmanga.com",
+                "parkmanga.net",
+                "parkmanga.org",
+                "mpark.to",
+            )
     }
 }

@@ -42,13 +42,15 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .addInterceptor(::tokenIntercept)
-        .rateLimit(2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor(::tokenIntercept)
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", baseUrl)
 
     private val json: Json by injectLazy()
 
@@ -63,15 +65,17 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
             return chain.proceed(request)
         }
 
-        val url = request.url.newBuilder()
-            .setQueryParameter("token", preference.getToken())
-            .build()
+        val url =
+            request.url.newBuilder()
+                .setQueryParameter("token", preference.getToken())
+                .build()
 
-        val response = chain.proceed(
-            request.newBuilder()
-                .url(url)
-                .build(),
-        )
+        val response =
+            chain.proceed(
+                request.newBuilder()
+                    .url(url)
+                    .build(),
+            )
 
         if (response.isSuccessful.not() && response.code == 403) {
             response.close()
@@ -80,9 +84,10 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
 
             preference.putToken(newToken)
 
-            val newUrl = request.url.newBuilder()
-                .setQueryParameter("token", newToken)
-                .build()
+            val newUrl =
+                request.url.newBuilder()
+                    .setQueryParameter("token", newToken)
+                    .build()
 
             return chain.proceed(
                 request.newBuilder()
@@ -97,13 +102,15 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
     private fun fetchNewToken(): String {
         val document = client.newCall(GET(baseUrl, headers)).execute().asJsoup()
 
-        val scriptUrl = document.selectFirst("script[src*=main]")
-            ?.attr("abs:src")
-            ?: throw IOException(TOKEN_EXCEPTION)
+        val scriptUrl =
+            document.selectFirst("script[src*=main]")
+                ?.attr("abs:src")
+                ?: throw IOException(TOKEN_EXCEPTION)
 
-        val scriptContent = client.newCall(GET(scriptUrl, headers)).execute()
-            .use { it.body.string() }
-            .replace("\'", "\"")
+        val scriptContent =
+            client.newCall(GET(scriptUrl, headers)).execute()
+                .use { it.body.string() }
+                .replace("\'", "\"")
 
         return TokenRegex.find(scriptContent)?.groupValues?.get(1)
             ?: throw IOException(TOKEN_EXCEPTION)
@@ -170,31 +177,32 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
     ): Request {
         val sort = filters.filterIsInstance<SortFilter>().firstOrNull()?.getSort() ?: "new"
 
-        val url = browseUrlBuilder("search", sort, page).apply {
-            if (query.isNotEmpty()) {
-                addQueryParameter("query", query)
-            }
-            filters.map { filter ->
-                when (filter) {
-                    is TagFilter -> {
-                        filter.getSelected().forEachIndexed { index, tag ->
-                            addQueryParameter(
-                                "filter[tag_names][$index]",
-                                tag.name.replace(" ", "+"),
-                            )
-                        }
-                    }
-                    is TypeFilter -> {
-                        filter.getValue().let {
-                            if (it.isNotEmpty()) {
-                                addQueryParameter("filter[type][0]", it)
+        val url =
+            browseUrlBuilder("search", sort, page).apply {
+                if (query.isNotEmpty()) {
+                    addQueryParameter("query", query)
+                }
+                filters.map { filter ->
+                    when (filter) {
+                        is TagFilter -> {
+                            filter.getSelected().forEachIndexed { index, tag ->
+                                addQueryParameter(
+                                    "filter[tag_names][$index]",
+                                    tag.name.replace(" ", "+"),
+                                )
                             }
                         }
+                        is TypeFilter -> {
+                            filter.getValue().let {
+                                if (it.isNotEmpty()) {
+                                    addQueryParameter("filter[type][0]", it)
+                                }
+                            }
+                        }
+                        else -> { }
                     }
-                    else -> { }
                 }
             }
-        }
 
         return GET(url.build(), headers)
     }
@@ -207,24 +215,27 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
 
     private fun fetchTags() {
         if (tagsFetchAttempt < 3 && (tagList.isEmpty() || tagsFetchFailed)) {
-            val tags = runCatching {
-                client.newCall(tagsRequest())
-                    .execute().use(::tagsParse)
-            }
+            val tags =
+                runCatching {
+                    client.newCall(tagsRequest())
+                        .execute().use(::tagsParse)
+                }
 
             tagsFetchFailed = tags.isFailure
-            tagList = tags.getOrElse {
-                Log.e("SimplyHentaiTags", it.stackTraceToString())
-                emptyList()
-            }
+            tagList =
+                tags.getOrElse {
+                    Log.e("SimplyHentaiTags", it.stackTraceToString())
+                    emptyList()
+                }
             tagsFetchAttempt++
         }
     }
 
     private fun tagsRequest(): Request {
-        val url = apiUrl.newBuilder()
-            .addPathSegment("search")
-            .build()
+        val url =
+            apiUrl.newBuilder()
+                .addPathSegment("search")
+                .build()
 
         return GET(url, headers)
     }
@@ -255,18 +266,20 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
     }
 
     override fun getFilterList(): FilterList {
-        val filters: MutableList<Filter<*>> = mutableListOf(
-            SortFilter("Sort", listOf("New", "Hot")),
-            TypeFilter("Type", listOf("", "Image", "Gallery")),
-        )
+        val filters: MutableList<Filter<*>> =
+            mutableListOf(
+                SortFilter("Sort", listOf("New", "Hot")),
+                TypeFilter("Type", listOf("", "Image", "Gallery")),
+            )
 
         if (tagList.isNotEmpty()) {
             filters += TagFilter("Tags", tagList)
         } else {
-            filters += listOf(
-                Filter.Separator(),
-                Filter.Header("Press 'Reset' to attempt to show tags"),
-            )
+            filters +=
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Press 'Reset' to attempt to show tags"),
+                )
         }
 
         return FilterList(filters)
@@ -302,15 +315,16 @@ class SimplyCosplay : HttpSource(), ConfigurableSource {
             listOf(
                 SChapter.create().apply {
                     url = manga.url
-                    name = manga.url.split("/")[1].replaceFirstChar {
-                        if (it.isLowerCase()) {
-                            it.titlecase(
-                                Locale.ROOT,
-                            )
-                        } else {
-                            it.toString()
+                    name =
+                        manga.url.split("/")[1].replaceFirstChar {
+                            if (it.isLowerCase()) {
+                                it.titlecase(
+                                    Locale.ROOT,
+                                )
+                            } else {
+                                it.toString()
+                            }
                         }
-                    }
                     date_upload = manga.description?.substringAfterLast("Date: ").parseDate()
                 },
             ),

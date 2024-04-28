@@ -12,12 +12,14 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 class HentaiSlayer : FuzzyDoodle("هنتاي سلاير", "https://hentaislayer.net", "ar"), ConfigurableSource {
-    override val client = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Origin", baseUrl)
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Origin", baseUrl)
 
     private val preferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
@@ -27,16 +29,18 @@ class HentaiSlayer : FuzzyDoodle("هنتاي سلاير", "https://hentaislayer.
 
     companion object {
         private const val LATEST_PREF = "LatestType"
-        private val LATEST_PREF_ENTRIES get() = arrayOf(
-            "مانجا",
-            "مانهوا",
-            "كوميكس",
-        )
-        private val LATEST_PREF_ENTRY_VALUES get() = arrayOf(
-            "manga",
-            "manhwa",
-            "comics",
-        )
+        private val LATEST_PREF_ENTRIES get() =
+            arrayOf(
+                "مانجا",
+                "مانهوا",
+                "كوميكس",
+            )
+        private val LATEST_PREF_ENTRY_VALUES get() =
+            arrayOf(
+                "manga",
+                "manhwa",
+                "comics",
+            )
         private val LATEST_PREF_DEFAULT = LATEST_PREF_ENTRY_VALUES[0]
     }
 

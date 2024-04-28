@@ -16,7 +16,8 @@ class AtlantisScan : MangaThemesia(
     // Site moved from Madara to MangaThemesia
     override val versionId = 2
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(2, 1, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(2, 1, TimeUnit.SECONDS)
+            .build()
 }

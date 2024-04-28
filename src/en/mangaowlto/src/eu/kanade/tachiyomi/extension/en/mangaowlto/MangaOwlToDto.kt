@@ -15,10 +15,11 @@ class MangaOwlToStories(
     private val next: String?,
     private val results: List<MangaOwlToStory>,
 ) {
-    fun toMangasPage() = MangasPage(
-        mangas = results.map { it.toSManga() },
-        hasNextPage = !next.isNullOrEmpty(),
-    )
+    fun toMangasPage() =
+        MangasPage(
+            mangas = results.map { it.toSManga() },
+            hasNextPage = !next.isNullOrEmpty(),
+        )
 }
 
 @Serializable
@@ -36,29 +37,32 @@ class MangaOwlToStory(
     private val chapters: List<MangaOwlToChapter> = emptyList(),
 ) {
     private val fullDescription: String
-        get() = buildString {
-            append(description)
-            altName?.let { append("\n\n $it") }
-            append("\n\nRating: $rating")
-            append("\nViews: $views")
-        }
+        get() =
+            buildString {
+                append(description)
+                altName?.let { append("\n\n $it") }
+                append("\n\nRating: $rating")
+                append("\nViews: $views")
+            }
 
     val chaptersList: List<SChapter>
         get() = chapters.reversed().map { it.toSChapter(slug) }
 
-    fun toSManga(): SManga = SManga.create().apply {
-        title = name
-        author = authors.joinToString { it.name }
-        description = fullDescription.trim()
-        genre = genres.joinToString { it.name }
-        status = when (titleStatus) {
-            MangaOwlTo.ONGOING -> SManga.ONGOING
-            MangaOwlTo.COMPLETED -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
+    fun toSManga(): SManga =
+        SManga.create().apply {
+            title = name
+            author = authors.joinToString { it.name }
+            description = fullDescription.trim()
+            genre = genres.joinToString { it.name }
+            status =
+                when (titleStatus) {
+                    MangaOwlTo.ONGOING -> SManga.ONGOING
+                    MangaOwlTo.COMPLETED -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
+            thumbnail_url = thumbnailUrl
+            url = slug
         }
-        thumbnail_url = thumbnailUrl
-        url = slug
-    }
 }
 
 @Serializable
@@ -77,33 +81,36 @@ class MangaOwlToChapter(
     @SerialName("name") private val title: String,
     @SerialName("created_at") private val createdAt: String,
 ) {
-    fun toSChapter(slug: String): SChapter = SChapter.create().apply {
-        name = title
-        date_upload = parseDate()
-        url = "/reading/$slug/$id"
-    }
+    fun toSChapter(slug: String): SChapter =
+        SChapter.create().apply {
+            name = title
+            date_upload = parseDate()
+            url = "/reading/$slug/$id"
+        }
 
     companion object {
         private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.US)
     }
 
-    private fun parseDate(): Long = try {
-        dateFormat.parse(createdAt)!!.time
-    } catch (_: ParseException) {
-        0L
-    }
+    private fun parseDate(): Long =
+        try {
+            dateFormat.parse(createdAt)!!.time
+        } catch (_: ParseException) {
+            0L
+        }
 }
 
 @Serializable
 class MangaOwlToChapterPages(
     @SerialName("results") private val pages: List<MangaOwlToPage> = emptyList(),
 ) {
-    fun toPages() = pages.mapIndexed { idx, page ->
-        Page(
-            index = idx,
-            imageUrl = page.imageUrl,
-        )
-    }
+    fun toPages() =
+        pages.mapIndexed { idx, page ->
+            Page(
+                index = idx,
+                imageUrl = page.imageUrl,
+            )
+        }
 }
 
 @Serializable

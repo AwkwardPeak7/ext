@@ -29,8 +29,9 @@ class Twicomi : HttpSource() {
 
     override val supportsLatest = true
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
@@ -56,27 +57,28 @@ class Twicomi : HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = apiUrl.toHttpUrl().newBuilder().apply {
-            when (filters.find { it is TypeSelect }?.state) {
-                1 -> {
-                    addPathSegment("author")
-                    filters.filterIsInstance<AuthorSortFilter>().firstOrNull()?.addToUrl(this)
+        val url =
+            apiUrl.toHttpUrl().newBuilder().apply {
+                when (filters.find { it is TypeSelect }?.state) {
+                    1 -> {
+                        addPathSegment("author")
+                        filters.filterIsInstance<AuthorSortFilter>().firstOrNull()?.addToUrl(this)
+                    }
+                    else -> {
+                        addPathSegment("manga")
+                        filters.filterIsInstance<MangaSortFilter>().firstOrNull()?.addToUrl(this)
+                    }
                 }
-                else -> {
-                    addPathSegment("manga")
-                    filters.filterIsInstance<MangaSortFilter>().firstOrNull()?.addToUrl(this)
+
+                addPathSegment("list")
+
+                if (query.isNotBlank()) {
+                    addQueryParameter("query", query)
                 }
-            }
 
-            addPathSegment("list")
-
-            if (query.isNotBlank()) {
-                addQueryParameter("query", query)
-            }
-
-            addQueryParameter("page_no", page.toString())
-            addQueryParameter("page_limit", "12")
-        }.build()
+                addQueryParameter("page_no", page.toString())
+                addQueryParameter("page_limit", "12")
+            }.build()
 
         return GET(url, headers)
     }
@@ -169,11 +171,12 @@ class Twicomi : HttpSource() {
         page: Int,
     ) = GET("$apiUrl/author/manga/list?screen_name=$screenName&order_by=create_time&order=asc&page_no=$page&page_limit=500")
 
-    private fun dummyChapterFromManga(manga: SManga) = SChapter.create().apply {
-        url = manga.url
-        name = "Tweet"
-        date_upload = manga.url.substringAfter("#").substringBefore(",").toLong()
-    }
+    private fun dummyChapterFromManga(manga: SManga) =
+        SChapter.create().apply {
+            url = manga.url
+            name = "Tweet"
+            date_upload = manga.url.substringAfter("#").substringBefore(",").toLong()
+        }
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         val urls = chapter.url.substringAfter("#").split(",").drop(1)
@@ -186,11 +189,12 @@ class Twicomi : HttpSource() {
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        TypeSelect(),
-        MangaSortFilter(),
-        AuthorSortFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            TypeSelect(),
+            MangaSortFilter(),
+            AuthorSortFilter(),
+        )
 
     private class TypeSelect : Filter.Select<String>("Search for", arrayOf("Tweet", "Author"))
 

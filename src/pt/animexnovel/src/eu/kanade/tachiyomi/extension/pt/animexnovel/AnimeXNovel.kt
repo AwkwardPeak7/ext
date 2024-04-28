@@ -12,13 +12,14 @@ class AnimeXNovel : ZeistManga("AnimeXNovel", "https://www.animexnovel.com", "pt
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val mangas = document.select("div.PopularPosts div.grid > figure").map { element ->
-            SManga.create().apply {
-                thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
-                title = element.selectFirst("figcaption > a")!!.text()
-                setUrlWithoutDomain(element.selectFirst("figcaption > a")!!.attr("href"))
-            }
-        }.filter { it.title.contains("[Mangá]") }
+        val mangas =
+            document.select("div.PopularPosts div.grid > figure").map { element ->
+                SManga.create().apply {
+                    thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
+                    title = element.selectFirst("figcaption > a")!!.text()
+                    setUrlWithoutDomain(element.selectFirst("figcaption > a")!!.attr("href"))
+                }
+            }.filter { it.title.contains("[Mangá]") }
 
         return MangasPage(mangas, false)
     }

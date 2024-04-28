@@ -27,9 +27,10 @@ class CreepyScans : Madara(
     "https://creepyscans.com",
     "en",
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 3, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 3, TimeUnit.SECONDS)
+            .build()
 
     override val useNewChapterEndpoint = true
 
@@ -41,21 +42,23 @@ class CreepyScans : Madara(
         filters: FilterList,
     ): Observable<MangasPage> {
         return if (query.isNotBlank()) {
-            val form = FormBody.Builder()
-                .add("action", "wp-manga-search-manga")
-                .add("title", query)
-                .build()
+            val form =
+                FormBody.Builder()
+                    .add("action", "wp-manga-search-manga")
+                    .add("title", query)
+                    .build()
             client.newCall(POST("$baseUrl/wp-admin/admin-ajax.php", headers, form)).asObservableSuccess().map { res ->
                 json.parseToJsonElement(res.body.string()).jsonObject.let { obj ->
                     if (!obj["success"]!!.jsonPrimitive.boolean) {
                         MangasPage(emptyList(), false)
                     } else {
-                        val mangas = obj["data"]!!.jsonArray.map {
-                            SManga.create().apply {
-                                title = it.jsonObject["title"]!!.jsonPrimitive.content
-                                setUrlWithoutDomain(it.jsonObject["url"]!!.jsonPrimitive.content)
+                        val mangas =
+                            obj["data"]!!.jsonArray.map {
+                                SManga.create().apply {
+                                    title = it.jsonObject["title"]!!.jsonPrimitive.content
+                                    setUrlWithoutDomain(it.jsonObject["url"]!!.jsonPrimitive.content)
+                                }
                             }
-                        }
                         MangasPage(mangas, false)
                     }
                 }
@@ -103,15 +106,17 @@ class CreepyScans : Madara(
     }
 
     override fun parseGenres(document: Document): List<Genre> {
-        genresList = document.select(".list-unstyled li").mapNotNull { genre ->
-            genre.selectFirst("a[href]")?.let {
-                val slug = it.attr("href")
-                    .split("/")
-                    .last(String::isNotEmpty)
+        genresList =
+            document.select(".list-unstyled li").mapNotNull { genre ->
+                genre.selectFirst("a[href]")?.let {
+                    val slug =
+                        it.attr("href")
+                            .split("/")
+                            .last(String::isNotEmpty)
 
-                Pair(it.ownText().trim(), slug)
+                    Pair(it.ownText().trim(), slug)
+                }
             }
-        }
 
         return emptyList()
     }
@@ -125,23 +130,24 @@ class CreepyScans : Madara(
     override fun getFilterList(): FilterList {
         launchIO { fetchGenres() }
 
-        val filters = buildList(4) {
-            add(
-                OrderByFilter(
-                    title = intl["order_by_filter_title"],
-                    options = orderByFilterOptions.map { Pair(it.key, it.value) },
-                    state = 0,
-                ),
-            )
-            add(Filter.Separator())
-            add(Filter.Header("Filters are ignored for text search!"))
+        val filters =
+            buildList(4) {
+                add(
+                    OrderByFilter(
+                        title = intl["order_by_filter_title"],
+                        options = orderByFilterOptions.map { Pair(it.key, it.value) },
+                        state = 0,
+                    ),
+                )
+                add(Filter.Separator())
+                add(Filter.Header("Filters are ignored for text search!"))
 
-            if (genresList.isNotEmpty()) {
-                add(GenreFilter(listOf(Pair("<select>", "")) + genresList))
-            } else {
-                add(Filter.Header("Wait for mangas to load then tap Reset"))
+                if (genresList.isNotEmpty()) {
+                    add(GenreFilter(listOf(Pair("<select>", "")) + genresList))
+                } else {
+                    add(Filter.Header("Wait for mangas to load then tap Reset"))
+                }
             }
-        }
 
         return FilterList(filters)
     }

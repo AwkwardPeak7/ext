@@ -30,13 +30,14 @@ class EmperorScan :
     override val useLoadMoreRequest = LoadMoreStrategy.Never
     override val useNewChapterEndpoint = true
 
-    override val client = super.client.newBuilder()
-        .setRandomUserAgent(
-            preferences.getPrefUAType(),
-            preferences.getPrefCustomUA(),
-        )
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .setRandomUserAgent(
+                preferences.getPrefUAType(),
+                preferences.getPrefCustomUA(),
+            )
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
     override val mangaDetailsSelectorDescription = "div.tab-summary div.sinopsis p"
 

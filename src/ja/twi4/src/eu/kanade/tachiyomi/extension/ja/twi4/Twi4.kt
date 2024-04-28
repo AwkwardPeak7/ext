@@ -36,10 +36,11 @@ class Twi4 : HttpSource() {
 
     private fun getUrlDomain(): String = baseUrl.substring(0, 22)
 
-    private fun getChromeHeaders(): Headers = headersBuilder().add(
-        "User-Agent",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36",
-    ).build()
+    private fun getChromeHeaders(): Headers =
+        headersBuilder().add(
+            "User-Agent",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36",
+        ).build()
 
     // Both latest and popular only lists 4 manga in total
     // As the full catalog is consists of less than 50 manga, it is not worth implementing
@@ -49,17 +50,19 @@ class Twi4 : HttpSource() {
         val ret = mutableListOf<SManga>()
         // Manga that are recently updated don't show up on the full catalog
         // So we'll need to parse the recent updates section as well
-        val listings = arrayOf(
-            "#lineup_recent > div> section",
-            "#lineup > div > section:not(.zadankai):not([id])",
-        )
+        val listings =
+            arrayOf(
+                "#lineup_recent > div> section",
+                "#lineup > div > section:not(.zadankai):not([id])",
+            )
         for (listing in listings) {
             val mangas = doc.select(listing)
             for (manga in mangas) {
                 ret.add(
                     SManga.create().apply {
                         thumbnail_url =
-                            getUrlDomain() + manga.select("div.figgroup > figure > a > img")
+                            getUrlDomain() +
+                            manga.select("div.figgroup > figure > a > img")
                                 .attr("src")
                         setUrlWithoutDomain(
                             getUrlDomain() + manga.select("div.hgroup > h3 > a").attr("href"),
@@ -98,7 +101,8 @@ class Twi4 : HttpSource() {
             title = match?.groups?.get(1)?.value.toString()
             // Twi4 uses the exact same thumbnail at both the main page and manga details
             thumbnail_url =
-                getUrlDomain() + document.select("#introduction > header > div > h2 > img")
+                getUrlDomain() +
+                document.select("#introduction > header > div > h2 > img")
                     .attr("src")
             description =
                 document.select("#introduction > div > div > p").text()
@@ -186,20 +190,22 @@ class Twi4 : HttpSource() {
             val chapterNum = requestUrl.substringAfterLast("/").take(4).toInt()
             // The index file contains everything about each image. Usually we can find the file name directly from the document
             // This is a failsafe
-            val indexResponse = client.newCall(
-                GET(
-                    requestUrl.substringBeforeLast("/") + "/index.js",
-                    getChromeHeaders(),
-                ),
-            ).execute()
+            val indexResponse =
+                client.newCall(
+                    GET(
+                        requestUrl.substringBeforeLast("/") + "/index.js",
+                        getChromeHeaders(),
+                    ),
+                ).execute()
             if (!indexResponse.isSuccessful) {
                 throw Exception("Failed to find pages!")
             }
             // We got a JS file that looks very much like a JSON object
             // A few string manipulation and we can parse the whole thing as JSON!
             val re = Regex("([A-z]+):")
-            val index = indexResponse.body.string().substringAfter("=").dropLast(1)
-                .let { re.replace(it, "\"$1\":") }
+            val index =
+                indexResponse.body.string().substringAfter("=").dropLast(1)
+                    .let { re.replace(it, "\"$1\":") }
             indexResponse.close()
             val indexElement = index.let { Json.parseToJsonElement(it) }
             val suffix =
@@ -208,8 +214,9 @@ class Twi4 : HttpSource() {
             // Because in very rare cases, the image filename *doesn't* come with a suffix
             // So only attach the suffix if there is one
             if (suffix != null) {
-                imageUrl = getUrlDomain() + page.select("div > div > p > img").attr("src")
-                    .dropLast(4) + suffix + ".jpg"
+                imageUrl = getUrlDomain() +
+                    page.select("div > div > p > img").attr("src")
+                        .dropLast(4) + suffix + ".jpg"
             }
         }
         ret.add(

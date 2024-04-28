@@ -35,82 +35,88 @@ class HQNow : HttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
     private val json: Json by injectLazy()
 
-    private fun genericComicBookFromObject(comicBook: HqNowComicBookDto): SManga = SManga.create().apply {
-        title = comicBook.name
-        url = "/hq/${comicBook.id}/${comicBook.name.toSlug()}"
-        thumbnail_url = comicBook.cover
-    }
+    private fun genericComicBookFromObject(comicBook: HqNowComicBookDto): SManga =
+        SManga.create().apply {
+            title = comicBook.name
+            url = "/hq/${comicBook.id}/${comicBook.name.toSlug()}"
+            thumbnail_url = comicBook.cover
+        }
 
     override fun popularMangaRequest(page: Int): Request {
-        val query = buildQuery {
-            """
-            query getHqsByFilters(
-                %orderByViews: Boolean,
-                %limit: Int,
-                %publisherId: Int,
-                %loadCovers: Boolean
-            ) {
-                getHqsByFilters(
-                    orderByViews: %orderByViews,
-                    limit: %limit,
-                    publisherId: %publisherId,
-                    loadCovers: %loadCovers
+        val query =
+            buildQuery {
+                """
+                query getHqsByFilters(
+                    %orderByViews: Boolean,
+                    %limit: Int,
+                    %publisherId: Int,
+                    %loadCovers: Boolean
                 ) {
-                    id
-                    name
-                    editoraId
-                    status
-                    publisherName
-                    hqCover
-                    synopsis
-                    updatedAt
+                    getHqsByFilters(
+                        orderByViews: %orderByViews,
+                        limit: %limit,
+                        publisherId: %publisherId,
+                        loadCovers: %loadCovers
+                    ) {
+                        id
+                        name
+                        editoraId
+                        status
+                        publisherName
+                        hqCover
+                        synopsis
+                        updatedAt
+                    }
                 }
+                """.trimIndent()
             }
-            """.trimIndent()
-        }
 
         return queryRequest(
             query = query,
             operationName = "getHqsByFilters",
-            variables = buildJsonObject {
-                put("orderByViews", true)
-                put("loadCovers", true)
-                put("limit", 300)
-            },
+            variables =
+                buildJsonObject {
+                    put("orderByViews", true)
+                    put("loadCovers", true)
+                    put("limit", 300)
+                },
         )
     }
 
     override fun popularMangaParse(response: Response): MangasPage {
         val result = json.parseToJsonElement(response.body.string()).jsonObject
 
-        val comicList = result["data"]!!.jsonObject["getHqsByFilters"]!!
-            .let { json.decodeFromJsonElement<List<HqNowComicBookDto>>(it) }
-            .map(::genericComicBookFromObject)
+        val comicList =
+            result["data"]!!.jsonObject["getHqsByFilters"]!!
+                .let { json.decodeFromJsonElement<List<HqNowComicBookDto>>(it) }
+                .map(::genericComicBookFromObject)
 
         return MangasPage(comicList, hasNextPage = false)
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
-        val query = buildQuery {
-            """
-            query getRecentlyUpdatedHqs {
-                getRecentlyUpdatedHqs {
-                    name
-                    hqCover
-                    synopsis
-                    id
-                    updatedAt
-                    updatedChapters
+        val query =
+            buildQuery {
+                """
+                query getRecentlyUpdatedHqs {
+                    getRecentlyUpdatedHqs {
+                        name
+                        hqCover
+                        synopsis
+                        id
+                        updatedAt
+                        updatedChapters
+                    }
                 }
+                """.trimIndent()
             }
-            """.trimIndent()
-        }
 
         return queryRequest(query = query, operationName = "getRecentlyUpdatedHqs")
     }
@@ -118,9 +124,10 @@ class HQNow : HttpSource() {
     override fun latestUpdatesParse(response: Response): MangasPage {
         val result = json.parseToJsonElement(response.body.string()).jsonObject
 
-        val comicList = result["data"]!!.jsonObject["getRecentlyUpdatedHqs"]!!
-            .let { json.decodeFromJsonElement<List<HqNowComicBookDto>>(it) }
-            .map(::genericComicBookFromObject)
+        val comicList =
+            result["data"]!!.jsonObject["getRecentlyUpdatedHqs"]!!
+                .let { json.decodeFromJsonElement<List<HqNowComicBookDto>>(it) }
+                .map(::genericComicBookFromObject)
 
         return MangasPage(comicList, hasNextPage = false)
     }
@@ -130,36 +137,39 @@ class HQNow : HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val queryStr = buildQuery {
-            """
-            query getHqsByName(%name: String!) {
-                getHqsByName(name: %name) {
-                    id
-                    name
-                    editoraId
-                    status
-                    publisherName
-                    impressionsCount
+        val queryStr =
+            buildQuery {
+                """
+                query getHqsByName(%name: String!) {
+                    getHqsByName(name: %name) {
+                        id
+                        name
+                        editoraId
+                        status
+                        publisherName
+                        impressionsCount
+                    }
                 }
+                """.trimIndent()
             }
-            """.trimIndent()
-        }
 
         return queryRequest(
             query = queryStr,
             operationName = "getHqsByName",
-            variables = buildJsonObject {
-                put("name", query)
-            },
+            variables =
+                buildJsonObject {
+                    put("name", query)
+                },
         )
     }
 
     override fun searchMangaParse(response: Response): MangasPage {
         val result = json.parseToJsonElement(response.body.string()).jsonObject
 
-        val comicList = result["data"]!!.jsonObject["getHqsByName"]!!
-            .let { json.decodeFromJsonElement<List<HqNowComicBookDto>>(it) }
-            .map(::genericComicBookFromObject)
+        val comicList =
+            result["data"]!!.jsonObject["getHqsByName"]!!
+                .let { json.decodeFromJsonElement<List<HqNowComicBookDto>>(it) }
+                .map(::genericComicBookFromObject)
 
         return MangasPage(comicList, hasNextPage = false)
     }
@@ -169,55 +179,60 @@ class HQNow : HttpSource() {
     override fun mangaDetailsRequest(manga: SManga): Request {
         val comicBookId = manga.url.substringAfter("/hq/").substringBefore("/")
 
-        val query = buildQuery {
-            """
-            query getHqsById(%id: Int!) {
-                getHqsById(id: %id) {
-                    id
-                    name
-                    synopsis
-                    editoraId
-                    status
-                    publisherName
-                    hqCover
-                    impressionsCount
-                    capitulos {
-                        name
+        val query =
+            buildQuery {
+                """
+                query getHqsById(%id: Int!) {
+                    getHqsById(id: %id) {
                         id
-                        number
+                        name
+                        synopsis
+                        editoraId
+                        status
+                        publisherName
+                        hqCover
+                        impressionsCount
+                        capitulos {
+                            name
+                            id
+                            number
+                        }
                     }
                 }
+                """.trimIndent()
             }
-            """.trimIndent()
-        }
 
         return queryRequest(
             query = query,
             operationName = "getHqsById",
-            variables = buildJsonObject {
-                put("id", comicBookId.toInt())
-            },
+            variables =
+                buildJsonObject {
+                    put("id", comicBookId.toInt())
+                },
         )
     }
 
-    override fun mangaDetailsParse(response: Response): SManga = SManga.create().apply {
-        val result = json.parseToJsonElement(response.body.string()).jsonObject
-        val comicBook = result["data"]!!.jsonObject["getHqsById"]!!.jsonArray[0].jsonObject
-            .let { json.decodeFromJsonElement<HqNowComicBookDto>(it) }
+    override fun mangaDetailsParse(response: Response): SManga =
+        SManga.create().apply {
+            val result = json.parseToJsonElement(response.body.string()).jsonObject
+            val comicBook =
+                result["data"]!!.jsonObject["getHqsById"]!!.jsonArray[0].jsonObject
+                    .let { json.decodeFromJsonElement<HqNowComicBookDto>(it) }
 
-        title = comicBook.name
-        thumbnail_url = comicBook.cover
-        description = comicBook.synopsis.orEmpty()
-        author = comicBook.publisherName.orEmpty()
-        status = comicBook.status.orEmpty().toStatus()
-    }
+            title = comicBook.name
+            thumbnail_url = comicBook.cover
+            description = comicBook.synopsis.orEmpty()
+            author = comicBook.publisherName.orEmpty()
+            status = comicBook.status.orEmpty().toStatus()
+        }
 
     override fun chapterListRequest(manga: SManga): Request = mangaDetailsRequest(manga)
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val result = json.parseToJsonElement(response.body.string()).jsonObject
-        val comicBook = result["data"]!!.jsonObject["getHqsById"]!!.jsonArray[0].jsonObject
-            .let { json.decodeFromJsonElement<HqNowComicBookDto>(it) }
+        val comicBook =
+            result["data"]!!.jsonObject["getHqsById"]!!.jsonArray[0].jsonObject
+                .let { json.decodeFromJsonElement<HqNowComicBookDto>(it) }
 
         return comicBook.chapters
             .map { chapter -> chapterFromObject(chapter, comicBook) }
@@ -227,47 +242,51 @@ class HQNow : HttpSource() {
     private fun chapterFromObject(
         chapter: HqNowChapterDto,
         comicBook: HqNowComicBookDto,
-    ): SChapter = SChapter.create().apply {
-        name = "#" + chapter.number +
-            (if (chapter.name.isNotEmpty()) " - " + chapter.name else "")
-        url = "/hq-reader/${comicBook.id}/${comicBook.name.toSlug()}" +
-            "/chapter/${chapter.id}/page/1"
-    }
+    ): SChapter =
+        SChapter.create().apply {
+            name = "#" + chapter.number +
+                (if (chapter.name.isNotEmpty()) " - " + chapter.name else "")
+            url = "/hq-reader/${comicBook.id}/${comicBook.name.toSlug()}" +
+                "/chapter/${chapter.id}/page/1"
+        }
 
     override fun getChapterUrl(chapter: SChapter): String = baseUrl + chapter.url
 
     override fun pageListRequest(chapter: SChapter): Request {
         val chapterId = chapter.url.substringAfter("/chapter/").substringBefore("/")
 
-        val query = buildQuery {
-            """
-            query getChapterById(%chapterId: Int!) {
-                getChapterById(chapterId: %chapterId) {
-                    name
-                    number
-                    oneshot
-                    pictures {
-                        pictureUrl
+        val query =
+            buildQuery {
+                """
+                query getChapterById(%chapterId: Int!) {
+                    getChapterById(chapterId: %chapterId) {
+                        name
+                        number
+                        oneshot
+                        pictures {
+                            pictureUrl
+                        }
                     }
                 }
+                """.trimIndent()
             }
-            """.trimIndent()
-        }
 
         return queryRequest(
             query = query,
             operationName = "getChapterById",
-            variables = buildJsonObject {
-                put("chapterId", chapterId.toInt())
-            },
+            variables =
+                buildJsonObject {
+                    put("chapterId", chapterId.toInt())
+                },
         )
     }
 
     override fun pageListParse(response: Response): List<Page> {
         val result = json.parseToJsonElement(response.body.string()).jsonObject
 
-        val chapterDto = result["data"]!!.jsonObject["getChapterById"]!!
-            .let { json.decodeFromJsonElement<HqNowChapterDto>(it) }
+        val chapterDto =
+            result["data"]!!.jsonObject["getChapterById"]!!
+                .let { json.decodeFromJsonElement<HqNowChapterDto>(it) }
 
         return chapterDto.pictures.mapIndexed { i, page ->
             Page(i, baseUrl, page.pictureUrl)
@@ -277,9 +296,10 @@ class HQNow : HttpSource() {
     override fun imageUrlParse(response: Response): String = ""
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", page.url)
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", page.url)
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
@@ -291,18 +311,20 @@ class HQNow : HttpSource() {
         operationName: String,
         variables: JsonObject? = null,
     ): Request {
-        val payload = buildJsonObject {
-            put("operationName", operationName)
-            put("query", query)
-            variables?.let { put("variables", it) }
-        }
+        val payload =
+            buildJsonObject {
+                put("operationName", operationName)
+                put("query", query)
+                variables?.let { put("variables", it) }
+            }
 
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)
 
-        val newHeaders = headersBuilder()
-            .add("Content-Length", body.contentLength().toString())
-            .add("Content-Type", body.contentType().toString())
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Content-Length", body.contentLength().toString())
+                .add("Content-Type", body.contentType().toString())
+                .build()
 
         return POST(GRAPHQL_URL, newHeaders, body)
     }
@@ -316,11 +338,12 @@ class HQNow : HttpSource() {
             .lowercase(Locale("pt", "BR"))
     }
 
-    private fun String.toStatus(): Int = when (this) {
-        "Concluído" -> SManga.COMPLETED
-        "Em Andamento" -> SManga.ONGOING
-        else -> SManga.UNKNOWN
-    }
+    private fun String.toStatus(): Int =
+        when (this) {
+            "Concluído" -> SManga.COMPLETED
+            "Em Andamento" -> SManga.ONGOING
+            else -> SManga.UNKNOWN
+        }
 
     companion object {
         private const val STATIC_URL = "https://static.hq-now.com/"

@@ -13,11 +13,12 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class Manhwa18CcFactory : SourceFactory {
-    override fun createSources(): List<Source> = listOf(
-        Manhwa18CcEN(),
-        Manhwa18CcKO(),
-        Manhwa18CcALL(),
-    )
+    override fun createSources(): List<Source> =
+        listOf(
+            Manhwa18CcEN(),
+            Manhwa18CcKO(),
+            Manhwa18CcALL(),
+        )
 }
 
 class Manhwa18CcALL : Manhwa18Cc("Manhwa18.cc", "https://manhwa18.cc", "all")

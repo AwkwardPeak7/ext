@@ -79,12 +79,13 @@ object DecompressJson {
         val keys = decode(values, keyId)
         val n = vs.size
 
-        val keyArray = try {
-            keys.jsonArray.map { it.jsonPrimitive.content }
-        } catch (_: IllegalArgumentException) {
-            // single-key object using existing value as key
-            listOf(keys.jsonPrimitive.content)
-        }
+        val keyArray =
+            try {
+                keys.jsonArray.map { it.jsonPrimitive.content }
+            } catch (_: IllegalArgumentException) {
+                // single-key object using existing value as key
+                listOf(keys.jsonPrimitive.content)
+            }
 
         return buildJsonObject {
             for (i in 2 until n) {
@@ -136,7 +137,8 @@ object DecompressJson {
 
     private val itos = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-    private val stoi = itos.associate {
-        it to itos.indexOf(it)
-    }
+    private val stoi =
+        itos.associate {
+            it to itos.indexOf(it)
+        }
 }

@@ -39,11 +39,12 @@ data class MpcTitle(
     val title: String,
     val thumbnailUrl: String,
 ) {
-    fun toSManga(): SManga = SManga.create().apply {
-        title = this@MpcTitle.title
-        thumbnail_url = thumbnailUrl
-        url = "/titles/$id"
-    }
+    fun toSManga(): SManga =
+        SManga.create().apply {
+            title = this@MpcTitle.title
+            thumbnail_url = thumbnailUrl
+            url = "/titles/$id"
+        }
 }
 
 @Serializable
@@ -54,11 +55,12 @@ data class MpcEpisode(
     val oneshot: Boolean = false,
     val publishDate: Long,
 ) {
-    fun toSChapter(): SChapter = SChapter.create().apply {
-        name = if (oneshot) "One-shot" else title
-        date_upload = publishDate
-        url = "/episodes/$id"
-    }
+    fun toSChapter(): SChapter =
+        SChapter.create().apply {
+            name = if (oneshot) "One-shot" else title
+            date_upload = publishDate
+            url = "/episodes/$id"
+        }
 }
 
 @Serializable

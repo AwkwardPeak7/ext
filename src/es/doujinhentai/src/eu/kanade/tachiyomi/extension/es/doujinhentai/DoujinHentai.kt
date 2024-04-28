@@ -78,10 +78,11 @@ class DoujinHentai : Madara(
 
     override val pageListParseSelector = "div#all > img.img-responsive"
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Solo funciona si la consulta está en blanco"),
-        GenreSelectFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Solo funciona si la consulta está en blanco"),
+            GenreSelectFilter(),
+        )
 
     class GenreSelectFilter : UriPartFilter(
         "Búsqueda de género",

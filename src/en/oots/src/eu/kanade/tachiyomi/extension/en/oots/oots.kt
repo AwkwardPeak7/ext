@@ -25,15 +25,16 @@ class oots : ParsedHttpSource() {
     override val supportsLatest = false
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        val manga = SManga.create().apply {
-            title = "The Order Of The Stick"
-            artist = "Rich Burlew"
-            author = "Rich Burlew"
-            status = SManga.ONGOING
-            url = "/comics/oots.html"
-            description = "Having fun with games."
-            thumbnail_url = "https://i.giantitp.com/redesign/Icon_Comics_OOTS.gif"
-        }
+        val manga =
+            SManga.create().apply {
+                title = "The Order Of The Stick"
+                artist = "Rich Burlew"
+                author = "Rich Burlew"
+                status = SManga.ONGOING
+                url = "/comics/oots.html"
+                description = "Having fun with games."
+                thumbnail_url = "https://i.giantitp.com/redesign/Icon_Comics_OOTS.gif"
+            }
 
         manga.initialized = true
         return Observable.just(MangasPage(listOf(manga), false))

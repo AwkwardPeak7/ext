@@ -41,44 +41,47 @@ class AllAnime : ConfigurableSource, HttpSource() {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    override val client = network.cloudflareClient.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val frag = request.url.fragment
-            val quality = preferences.imageQuality
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val frag = request.url.fragment
+                val quality = preferences.imageQuality
 
-            if (frag.isNullOrEmpty() || quality == IMAGE_QUALITY_PREF_DEFAULT) {
-                return@addInterceptor chain.proceed(request)
+                if (frag.isNullOrEmpty() || quality == IMAGE_QUALITY_PREF_DEFAULT) {
+                    return@addInterceptor chain.proceed(request)
+                }
+
+                val oldUrl = request.url.toString()
+                val newUrl = oldUrl.replace(imageQualityRegex, "$image_cdn/$1?w=$quality")
+
+                return@addInterceptor chain.proceed(
+                    request.newBuilder()
+                        .url(newUrl)
+                        .build(),
+                )
             }
+            .rateLimit(1)
+            .build()
 
-            val oldUrl = request.url.toString()
-            val newUrl = oldUrl.replace(imageQualityRegex, "$image_cdn/$1?w=$quality")
-
-            return@addInterceptor chain.proceed(
-                request.newBuilder()
-                    .url(newUrl)
-                    .build(),
-            )
-        }
-        .rateLimit(1)
-        .build()
-
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     // Popular
     override fun popularMangaRequest(page: Int): Request {
-        val payload = GraphQL(
-            PopularVariables(
-                type = "manga",
-                size = limit,
-                dateRange = 0,
-                page = page,
-                allowAdult = preferences.allowAdult,
-                allowUnknown = false,
-            ),
-            POPULAR_QUERY,
-        )
+        val payload =
+            GraphQL(
+                PopularVariables(
+                    type = "manga",
+                    size = limit,
+                    dateRange = 0,
+                    page = page,
+                    allowAdult = preferences.allowAdult,
+                    allowUnknown = false,
+                ),
+                POPULAR_QUERY,
+            )
 
         val requestBody = payload.toJsonRequestBody()
 
@@ -90,8 +93,9 @@ class AllAnime : ConfigurableSource, HttpSource() {
     override fun popularMangaParse(response: Response): MangasPage {
         val result = response.parseAs<ApiPopularResponse>()
 
-        val mangaList = result.data.popular.mangas
-            .mapNotNull { it.manga?.toSManga() }
+        val mangaList =
+            result.data.popular.mangas
+                .mapNotNull { it.manga?.toSManga() }
 
         val hasNextPage = result.data.popular.mangas.size == limit
 
@@ -124,24 +128,26 @@ class AllAnime : ConfigurableSource, HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val payload = GraphQL(
-            SearchVariables(
-                search = SearchPayload(
-                    query = query.takeUnless { it.isEmpty() },
-                    sortBy = filters.firstInstanceOrNull<SortFilter>()?.getValue(),
-                    genres = filters.firstInstanceOrNull<GenreFilter>()?.included,
-                    excludeGenres = filters.firstInstanceOrNull<GenreFilter>()?.excluded,
-                    isManga = true,
-                    allowAdult = preferences.allowAdult,
-                    allowUnknown = false,
+        val payload =
+            GraphQL(
+                SearchVariables(
+                    search =
+                        SearchPayload(
+                            query = query.takeUnless { it.isEmpty() },
+                            sortBy = filters.firstInstanceOrNull<SortFilter>()?.getValue(),
+                            genres = filters.firstInstanceOrNull<GenreFilter>()?.included,
+                            excludeGenres = filters.firstInstanceOrNull<GenreFilter>()?.excluded,
+                            isManga = true,
+                            allowAdult = preferences.allowAdult,
+                            allowUnknown = false,
+                        ),
+                    size = limit,
+                    page = page,
+                    translationType = "sub",
+                    countryOrigin = filters.firstInstanceOrNull<CountryFilter>()?.getValue() ?: "ALL",
                 ),
-                size = limit,
-                page = page,
-                translationType = "sub",
-                countryOrigin = filters.firstInstanceOrNull<CountryFilter>()?.getValue() ?: "ALL",
-            ),
-            SEARCH_QUERY,
-        )
+                SEARCH_QUERY,
+            )
 
         val requestBody = payload.toJsonRequestBody()
 
@@ -153,8 +159,9 @@ class AllAnime : ConfigurableSource, HttpSource() {
     override fun searchMangaParse(response: Response): MangasPage {
         val result = response.parseAs<ApiSearchResponse>()
 
-        val mangaList = result.data.mangas.edges
-            .map(SearchManga::toSManga)
+        val mangaList =
+            result.data.mangas.edges
+                .map(SearchManga::toSManga)
 
         val hasNextPage = result.data.mangas.edges.size == limit
 
@@ -167,10 +174,11 @@ class AllAnime : ConfigurableSource, HttpSource() {
     override fun mangaDetailsRequest(manga: SManga): Request {
         val mangaId = manga.url.split("/")[2]
 
-        val payload = GraphQL(
-            IDVariables(mangaId),
-            DETAILS_QUERY,
-        )
+        val payload =
+            GraphQL(
+                IDVariables(mangaId),
+                DETAILS_QUERY,
+            )
 
         val requestBody = payload.toJsonRequestBody()
 
@@ -201,14 +209,15 @@ class AllAnime : ConfigurableSource, HttpSource() {
     override fun chapterListRequest(manga: SManga): Request {
         val mangaId = manga.url.split("/")[2]
 
-        val payload = GraphQL(
-            ChapterListVariables(
-                id = "manga@$mangaId",
-                chapterNumStart = 0f,
-                chapterNumEnd = 9999f,
-            ),
-            CHAPTERS_QUERY,
-        )
+        val payload =
+            GraphQL(
+                ChapterListVariables(
+                    id = "manga@$mangaId",
+                    chapterNumStart = 0f,
+                    chapterNumEnd = 9999f,
+                ),
+                CHAPTERS_QUERY,
+            )
 
         val requestBody = payload.toJsonRequestBody()
 
@@ -223,8 +232,9 @@ class AllAnime : ConfigurableSource, HttpSource() {
     ): List<SChapter> {
         val result = response.parseAs<ApiChapterListResponse>()
 
-        val chapters = result.data.chapterList?.sortedByDescending { it.chapterNum.float }
-            ?: return emptyList()
+        val chapters =
+            result.data.chapterList?.sortedByDescending { it.chapterNum.float }
+                ?: return emptyList()
 
         val mangaUrl = manga.url.substringAfter("/manga/")
 
@@ -245,14 +255,15 @@ class AllAnime : ConfigurableSource, HttpSource() {
         val mangaId = chapterUrl[2]
         val chapterNo = chapterUrl[4].split("-")[1]
 
-        val payload = GraphQL(
-            PageListVariables(
-                id = mangaId,
-                chapterNum = chapterNo,
-                translationType = "sub",
-            ),
-            PAGE_QUERY,
-        )
+        val payload =
+            GraphQL(
+                PageListVariables(
+                    id = mangaId,
+                    chapterNum = chapterNo,
+                    translationType = "sub",
+                ),
+                PAGE_QUERY,
+            )
 
         val requestBody = payload.toJsonRequestBody()
 
@@ -265,13 +276,14 @@ class AllAnime : ConfigurableSource, HttpSource() {
         val result = response.parseAs<ApiPageListResponse>()
         val pages = result.data.pageList?.edges?.get(0) ?: return emptyList()
 
-        val imageDomain = pages.serverUrl?.let { server ->
-            if (server.matches(urlRegex)) {
-                server
-            } else {
-                "https://$server"
-            }
-        } ?: return emptyList()
+        val imageDomain =
+            pages.serverUrl?.let { server ->
+                if (server.matches(urlRegex)) {
+                    server
+                } else {
+                    "https://$server"
+                }
+            } ?: return emptyList()
 
         return pages.pictureUrls?.mapIndexed { index, image ->
             Page(

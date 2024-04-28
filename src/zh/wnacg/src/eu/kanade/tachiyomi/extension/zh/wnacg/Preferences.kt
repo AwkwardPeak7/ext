@@ -72,15 +72,16 @@ class UpdateUrlInterceptor(private val preferences: SharedPreferences) : Interce
         val request = chain.request()
         if (!request.url.toString().startsWith(baseUrl)) return chain.proceed(request)
 
-        val failedResponse = try {
-            val response = chain.proceed(request)
-            if (response.isSuccessful) return response
-            response.close()
-            Result.success(response)
-        } catch (e: Throwable) {
-            if (chain.call().isCanceled()) throw e
-            Result.failure(e)
-        }
+        val failedResponse =
+            try {
+                val response = chain.proceed(request)
+                if (response.isSuccessful) return response
+                response.close()
+                Result.success(response)
+            } catch (e: Throwable) {
+                if (chain.call().isCanceled()) throw e
+                Result.failure(e)
+            }
 
         if (isUpdated || updateUrl(chain)) {
             throw IOException("网址已自动更新，请重启应用")
@@ -91,11 +92,12 @@ class UpdateUrlInterceptor(private val preferences: SharedPreferences) : Interce
     @Synchronized
     private fun updateUrl(chain: Interceptor.Chain): Boolean {
         if (isUpdated) return true
-        val response = try {
-            chain.proceed(GET("https://stevenyomi.github.io/source-domains/wnacg.txt"))
-        } catch (_: Throwable) {
-            return false
-        }
+        val response =
+            try {
+                chain.proceed(GET("https://stevenyomi.github.io/source-domains/wnacg.txt"))
+            } catch (_: Throwable) {
+                return false
+            }
         if (!response.isSuccessful) {
             response.close()
             return false

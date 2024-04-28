@@ -9,9 +9,10 @@ class GalaxScanlator : ZeistManga(
     "https://galaxscanlator.blogspot.com",
     "pt-BR",
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(5, 2, TimeUnit.SECONDS)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(5, 2, TimeUnit.SECONDS)
+            .build()
 
     override val popularMangaSelector = "#PopularPosts2 article"
     override val popularMangaSelectorTitle = "h3"

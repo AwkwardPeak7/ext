@@ -52,17 +52,18 @@ class Vomic : HttpSource(), ConfigurableSource {
         }
     }
 
-    override val client = network.client.newBuilder().addInterceptor { chain ->
-        try {
-            val response = chain.proceed(chain.request())
-            if (response.isSuccessful) {
-                return@addInterceptor response
+    override val client =
+        network.client.newBuilder().addInterceptor { chain ->
+            try {
+                val response = chain.proceed(chain.request())
+                if (response.isSuccessful) {
+                    return@addInterceptor response
+                }
+                response.close()
+            } catch (_: Throwable) {
             }
-            response.close()
-        } catch (_: Throwable) {
-        }
-        throw IOException("请在插件设置中修改网址")
-    }.build()
+            throw IOException("请在插件设置中修改网址")
+        }.build()
 
     override fun headersBuilder() = Headers.Builder().add("User-Agent", System.getProperty("http.agent")!!)
 
@@ -89,11 +90,12 @@ class Vomic : HttpSource(), ConfigurableSource {
         val searchQuery = parseSearchQuery(query.trim(), filters)
         if (searchQuery.title.isEmpty() && searchQuery.category.isEmpty()) throw Exception("请输入搜索词或分类")
 
-        val url = "$apiUrl/api/v1/search/search-comic-data".toHttpUrl().newBuilder()
-            .addQueryParameter("title", searchQuery.title)
-            .addQueryParameter("category", searchQuery.category)
-            .addEncodedQueryParameter("page", page.toString())
-            .build()
+        val url =
+            "$apiUrl/api/v1/search/search-comic-data".toHttpUrl().newBuilder()
+                .addQueryParameter("title", searchQuery.title)
+                .addQueryParameter("category", searchQuery.category)
+                .addEncodedQueryParameter("page", page.toString())
+                .build()
         return GET(url, headers)
     }
 
@@ -125,28 +127,32 @@ class Vomic : HttpSource(), ConfigurableSource {
 
     override fun pageListRequest(chapter: SChapter): Request {
         val (mangaId, chapterId) = chapter.id
-        val key = run {
-            val alphanumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-            val chars = CharArray(24) { alphanumeric.random() }
-            String(chars)
-        }
-        val time = System.currentTimeMillis().toString()
-        val encrypted = run {
-            val keySpec = SecretKeySpec(key.toByteArray(), "DESede")
-            val iv = "k8tUyS\$m"
-            val ivSpec = IvParameterSpec(iv.toByteArray())
-            val payload = key + iv + "cid=" + chapterId + "&mid=" + mangaId + time
-            val bytes = Cipher.getInstance("DESede/CBC/PKCS5Padding").run {
-                init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
-                doFinal(payload.toByteArray())
+        val key =
+            run {
+                val alphanumeric = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+                val chars = CharArray(24) { alphanumeric.random() }
+                String(chars)
             }
-            Base64.encodeToString(bytes, Base64.DEFAULT)
-        }
-        val url = "$apiUrl/api/v2/page/get-comic-page-img-data".toHttpUrl().newBuilder()
-            .addEncodedQueryParameter("k", key)
-            .addEncodedQueryParameter("t", time)
-            .addQueryParameter("e", encrypted)
-            .build()
+        val time = System.currentTimeMillis().toString()
+        val encrypted =
+            run {
+                val keySpec = SecretKeySpec(key.toByteArray(), "DESede")
+                val iv = "k8tUyS\$m"
+                val ivSpec = IvParameterSpec(iv.toByteArray())
+                val payload = key + iv + "cid=" + chapterId + "&mid=" + mangaId + time
+                val bytes =
+                    Cipher.getInstance("DESede/CBC/PKCS5Padding").run {
+                        init(Cipher.ENCRYPT_MODE, keySpec, ivSpec)
+                        doFinal(payload.toByteArray())
+                    }
+                Base64.encodeToString(bytes, Base64.DEFAULT)
+            }
+        val url =
+            "$apiUrl/api/v2/page/get-comic-page-img-data".toHttpUrl().newBuilder()
+                .addEncodedQueryParameter("k", key)
+                .addEncodedQueryParameter("t", time)
+                .addQueryParameter("e", encrypted)
+                .build()
         return GET(url, headers)
     }
 

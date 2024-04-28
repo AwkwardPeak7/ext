@@ -78,18 +78,20 @@ class MangaMonks : ParsedHttpSource() {
             val url = "$baseUrl/genre/".toHttpUrl().newBuilder()
             filterList.forEach { filter ->
                 when (filter) {
-                    is GenreFilter -> filter.toUriPart().let {
-                        url.apply {
-                            addPathSegment(it)
-                            addQueryParameter("include[]", filter.toGenreValue())
+                    is GenreFilter ->
+                        filter.toUriPart().let {
+                            url.apply {
+                                addPathSegment(it)
+                                addQueryParameter("include[]", filter.toGenreValue())
+                            }
                         }
-                    }
-                    is StatusFilter -> filter.toUriPart().let {
-                        url.apply {
-                            addQueryParameter("term", query)
-                            addQueryParameter("status[]", it)
+                    is StatusFilter ->
+                        filter.toUriPart().let {
+                            url.apply {
+                                addQueryParameter("term", query)
+                                addQueryParameter("status[]", it)
+                            }
                         }
-                    }
                     else -> {}
                 }
             }
@@ -110,13 +112,14 @@ class MangaMonks : ParsedHttpSource() {
         if (isJson) {
             return try {
                 val result = json.decodeFromString<MangaList>(response.body.string())
-                val mangaList = result.manga.map {
-                    SManga.create().apply {
-                        title = it.title
-                        setUrlWithoutDomain(it.url)
-                        thumbnail_url = it.image
+                val mangaList =
+                    result.manga.map {
+                        SManga.create().apply {
+                            title = it.title
+                            setUrlWithoutDomain(it.url)
+                            thumbnail_url = it.image
+                        }
                     }
-                }
                 val hasNextPage = false
                 MangasPage(mangaList, hasNextPage)
             } catch (_: MissingFieldException) {
@@ -125,13 +128,15 @@ class MangaMonks : ParsedHttpSource() {
         } else {
             val document = response.asJsoup()
 
-            val mangas = document.select(searchMangaSelector()).map { element ->
-                searchMangaFromElement(element)
-            }
+            val mangas =
+                document.select(searchMangaSelector()).map { element ->
+                    searchMangaFromElement(element)
+                }
 
-            val hasNextPage = searchMangaNextPageSelector().let { selector ->
-                document.select(selector).first()
-            } != null
+            val hasNextPage =
+                searchMangaNextPageSelector().let { selector ->
+                    document.select(selector).first()
+                } != null
 
             return MangasPage(mangas, hasNextPage)
         }
@@ -173,12 +178,13 @@ class MangaMonks : ParsedHttpSource() {
     }
 
     // filters
-    override fun getFilterList() = FilterList(
-        Filter.Header("NOTE: Ignored if using text search!"),
-        Filter.Separator(),
-        StatusFilter(),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("NOTE: Ignored if using text search!"),
+            Filter.Separator(),
+            StatusFilter(),
+            GenreFilter(),
+        )
 
     private class StatusFilter : UriPartFilter(
         "Status",

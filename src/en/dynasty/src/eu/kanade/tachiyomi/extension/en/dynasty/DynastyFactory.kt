@@ -7,10 +7,11 @@ class DynastyFactory : SourceFactory {
     override fun createSources(): List<Source> = getAllDynasty()
 }
 
-fun getAllDynasty() = listOf(
-    DynastyAnthologies(),
-    DynastyChapters(),
-    DynastyDoujins(),
-    DynastyIssues(),
-    DynastySeries(),
-)
+fun getAllDynasty() =
+    listOf(
+        DynastyAnthologies(),
+        DynastyChapters(),
+        DynastyDoujins(),
+        DynastyIssues(),
+        DynastySeries(),
+    )

@@ -46,49 +46,50 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
         query: String,
         filters: FilterList,
     ): Request {
-        val url = if (query.isNotEmpty()) {
-            "$baseUrl/?do=search&subaction=search&story=$query&search_start=$page"
-        } else {
-            var genres = ""
-            var order = ""
-            filters.forEach { filter ->
-                when (filter) {
-                    is GenreList -> {
-                        filter.state
-                            .filter { !it.isIgnored() }
-                            .forEach { f ->
-                                genres += (if (f.isExcluded()) "-" else "") + f.id + '+'
-                            }
-                    }
-
-                    else -> return@forEach
-                }
-            }
-
-            if (genres.isNotEmpty()) {
-                filters.forEach { filter ->
-                    when (filter) {
-                        is OrderBy -> {
-                            order = filter.toUriPartWithGenres()
-                        }
-
-                        else -> return@forEach
-                    }
-                }
-                "$baseUrl/tags/${genres.dropLast(1)}&sort=manga$order?offset=${20 * (page - 1)}"
+        val url =
+            if (query.isNotEmpty()) {
+                "$baseUrl/?do=search&subaction=search&story=$query&search_start=$page"
             } else {
+                var genres = ""
+                var order = ""
                 filters.forEach { filter ->
                     when (filter) {
-                        is OrderBy -> {
-                            order = filter.toUriPartWithoutGenres()
+                        is GenreList -> {
+                            filter.state
+                                .filter { !it.isIgnored() }
+                                .forEach { f ->
+                                    genres += (if (f.isExcluded()) "-" else "") + f.id + '+'
+                                }
                         }
 
                         else -> return@forEach
                     }
                 }
-                "$baseUrl/$order?offset=${20 * (page - 1)}"
+
+                if (genres.isNotEmpty()) {
+                    filters.forEach { filter ->
+                        when (filter) {
+                            is OrderBy -> {
+                                order = filter.toUriPartWithGenres()
+                            }
+
+                            else -> return@forEach
+                        }
+                    }
+                    "$baseUrl/tags/${genres.dropLast(1)}&sort=manga$order?offset=${20 * (page - 1)}"
+                } else {
+                    filters.forEach { filter ->
+                        when (filter) {
+                            is OrderBy -> {
+                                order = filter.toUriPartWithoutGenres()
+                            }
+
+                            else -> return@forEach
+                        }
+                    }
+                    "$baseUrl/$order?offset=${20 * (page - 1)}"
+                }
             }
-        }
         return GET(url, headers)
     }
 
@@ -150,11 +151,13 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
     }
 
     override fun chapterListRequest(manga: SManga): Request {
-        val url = baseUrl + if (manga.thumbnail_url?.endsWith("#") == true) {
-            manga.url
-        } else {
-            manga.url.replace("/manga/", "/related/")
-        }
+        val url =
+            baseUrl +
+                if (manga.thumbnail_url?.endsWith("#") == true) {
+                    manga.url
+                } else {
+                    manga.url.replace("/manga/", "/related/")
+                }
         return (GET(url, headers))
     }
 
@@ -171,9 +174,10 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
             chap.name = document.select("a.title_top_a").text()
             chap.chapter_number = 1F
 
-            val date = document.select("div.row4_right b")?.text()?.let {
-                SimpleDateFormat("dd MMMM yyyy", Locale("ru")).parse(it)?.time ?: 0
-            } ?: 0
+            val date =
+                document.select("div.row4_right b")?.text()?.let {
+                    SimpleDateFormat("dd MMMM yyyy", Locale("ru")).parse(it)?.time ?: 0
+                } ?: 0
             chap.date_upload = date
             return listOf(chap)
         }
@@ -182,10 +186,11 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
         if (document.select("#right > div:nth-child(4)").text().contains(" похожий на ")) {
             val chap = SChapter.create()
             chap.setUrlWithoutDomain(document.select("#left > div > a").attr("href"))
-            chap.name = document.select("#right > div:nth-child(4)").text()
-                .split(" похожий на ")[1]
-                .replace("\\\"", "\"")
-                .replace("\\'", "'")
+            chap.name =
+                document.select("#right > div:nth-child(4)").text()
+                    .split(" похожий на ")[1]
+                    .replace("\\\"", "\"")
+                    .replace("\\'", "'")
             chap.chapter_number = 1F
             chap.date_upload =
                 Date().time // setting to current date because of a sorting in the "Recent updates" section
@@ -202,10 +207,11 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
 
         var url = document.select("div#pagination_related a:contains(Вперед)").attr("href")
         while (url.isNotBlank()) {
-            val get = GET(
-                "${response.request.url}/$url",
-                headers = headers,
-            )
+            val get =
+                GET(
+                    "${response.request.url}/$url",
+                    headers = headers,
+                )
             val nextPage = client.newCall(get).execute().asJsoup()
             result.addAll(
                 nextPage.select(chapterListSelector()).map {
@@ -233,11 +239,12 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
     }
 
     override fun pageListRequest(chapter: SChapter): Request {
-        val url = if (chapter.url.contains("/manga/")) {
-            baseUrl + chapter.url.replace("/manga/", "/online/")
-        } else {
-            baseUrl + chapter.url
-        }
+        val url =
+            if (chapter.url.contains("/manga/")) {
+                baseUrl + chapter.url.replace("/manga/", "/online/")
+            } else {
+                baseUrl + chapter.url
+            }
         return GET(url, Headers.Builder().add("Accept", "image/webp,image/apng").build())
     }
 
@@ -246,9 +253,10 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
         val prefix = "fullimg\": ["
         val beginIndex = html.indexOf(prefix) + prefix.length
         val endIndex = html.indexOf("]", beginIndex)
-        val trimmedHtml = html.substring(beginIndex, endIndex)
-            .replace("\"", "")
-            .replace("\'", "")
+        val trimmedHtml =
+            html.substring(beginIndex, endIndex)
+                .replace("\"", "")
+                .replace("\'", "")
 
         val pageUrls = trimmedHtml.split(", ")
         return pageUrls.mapIndexed { i, url -> Page(i, "", url) }
@@ -284,197 +292,199 @@ class HenChan : MultiChan("HenChan", "https://xxxxx.hentaichan.live", "ru"), Con
         fun toUriPartWithoutGenres() = if (state!!.ascending) withoutGenres[state!!.index].first else withoutGenres[state!!.index].second
     }
 
-    override fun getFilterList() = FilterList(
-        OrderBy(),
-        GenreList(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            OrderBy(),
+            GenreList(getGenreList()),
+        )
 
-    private fun getGenreList() = listOf(
-        Genre("3D"),
-        Genre("action"),
-        Genre("ahegao"),
-        Genre("bdsm"),
-        Genre("corruption"),
-        Genre("foot_fetish"),
-        Genre("footfuck"),
-        Genre("gender_bender"),
-        Genre("live"),
-        Genre("lolcon"),
-        Genre("megane"),
-        Genre("mind_break"),
-        Genre("monstergirl"),
-        Genre("netorare"),
-        Genre("netori"),
-        Genre("nipple_penetration"),
-        Genre("oyakodon"),
-        Genre("paizuri_(titsfuck)"),
-        Genre("rpg"),
-        Genre("scat"),
-        Genre("shemale"),
-        Genre("shimaidon"),
-        Genre("shooter"),
-        Genre("simulation"),
-        Genre("skinsuit"),
-        Genre("tomboy"),
-        Genre("tomgirl"),
-        Genre("x-ray"),
-        Genre("алкоголь"),
-        Genre("анал"),
-        Genre("андроид"),
-        Genre("анилингус"),
-        Genre("анимация"),
-        Genre("аркада"),
-        Genre("арт"),
-        Genre("бабушка"),
-        Genre("без_текста"),
-        Genre("без_трусиков"),
-        Genre("без_цензуры"),
-        Genre("беременность"),
-        Genre("бикини"),
-        Genre("близнецы"),
-        Genre("боди-арт"),
-        Genre("больница"),
-        Genre("большая_грудь"),
-        Genre("большие_попки"),
-        Genre("бондаж"),
-        Genre("буккаке"),
-        Genre("в_ванной"),
-        Genre("в_общественном_месте"),
-        Genre("в_первый_раз"),
-        Genre("в_цвете"),
-        Genre("в_школе"),
-        Genre("вампиры"),
-        Genre("веб"),
-        Genre("вебкам"),
-        Genre("вибратор"),
-        Genre("визуальная_новелла"),
-        Genre("внучка"),
-        Genre("волосатые_женщины"),
-        Genre("гаремник"),
-        Genre("гг_девушка"),
-        Genre("гг_парень"),
-        Genre("гипноз"),
-        Genre("глубокий_минет"),
-        Genre("горячий_источник"),
-        Genre("грудастая_лоли"),
-        Genre("групповой_секс"),
-        Genre("гяру_и_гангуро"),
-        Genre("двойное_проникновение"),
-        Genre("девочки_волшебницы"),
-        Genre("девушка_туалет"),
-        Genre("демоны"),
-        Genre("дилдо"),
-        Genre("дочь"),
-        Genre("драма"),
-        Genre("дыра_в_стене"),
-        Genre("жестокость"),
-        Genre("за_деньги"),
-        Genre("зомби"),
-        Genre("зрелые_женщины"),
-        Genre("измена"),
-        Genre("изнасилование"),
-        Genre("инопланетяне"),
-        Genre("инцест"),
-        Genre("исполнение_желаний"),
-        Genre("камера"),
-        Genre("квест"),
-        Genre("кимоно"),
-        Genre("колготки"),
-        Genre("комиксы"),
-        Genre("косплей"),
-        Genre("кремпай"),
-        Genre("кудере"),
-        Genre("кузина"),
-        Genre("куннилингус"),
-        Genre("купальники"),
-        Genre("латекс_и_кожа"),
-        Genre("магия"),
-        Genre("маленькая_грудь"),
-        Genre("мастурбация"),
-        Genre("мать"),
-        Genre("мейдочки"),
-        Genre("мерзкий_дядька"),
-        Genre("минет"),
-        Genre("много_девушек"),
-        Genre("молоко"),
-        Genre("монашки"),
-        Genre("монстры"),
-        Genre("мочеиспускание"),
-        Genre("мужская_озвучка"),
-        Genre("мужчина_крепкого_телосложения"),
-        Genre("мускулистые_женщины"),
-        Genre("на_природе"),
-        Genre("наблюдение"),
-        Genre("непрямой_инцест"),
-        Genre("новелла"),
-        Genre("обмен_партнерами"),
-        Genre("обмен_телами"),
-        Genre("обычный_секс"),
-        Genre("огромная_грудь"),
-        Genre("огромный_член"),
-        Genre("оплодотворение"),
-        Genre("остановка_времени"),
-        Genre("парень_пассив"),
-        Genre("переодевание"),
-        Genre("песочница"),
-        Genre("племянница"),
-        Genre("пляж"),
-        Genre("подглядывание"),
-        Genre("подчинение"),
-        Genre("похищение"),
-        Genre("презерватив"),
-        Genre("принуждение"),
-        Genre("прозрачная_одежда"),
-        Genre("проникновение_в_матку"),
-        Genre("психические_отклонения"),
-        Genre("публично"),
-        Genre("рабыни"),
-        Genre("романтика"),
-        Genre("сверхъестественное"),
-        Genre("секс_игрушки"),
-        Genre("сестра"),
-        Genre("сетакон"),
-        Genre("скрытный_секс"),
-        Genre("спортивная_форма"),
-        Genre("спящие"),
-        Genre("страпон"),
-        Genre("суккубы"),
-        Genre("темнокожие"),
-        Genre("тентакли"),
-        Genre("толстушки"),
-        Genre("трап"),
-        Genre("тётя"),
-        Genre("умеренная_жестокость"),
-        Genre("учитель_и_ученик"),
-        Genre("ушастые"),
-        Genre("фантазии"),
-        Genre("фантастика"),
-        Genre("фемдом"),
-        Genre("фестиваль"),
-        Genre("фетиш"),
-        Genre("фистинг"),
-        Genre("фурри"),
-        Genre("футанари"),
-        Genre("футанари_имеет_парня"),
-        Genre("фэнтези"),
-        Genre("хоррор"),
-        Genre("цундере"),
-        Genre("чикан"),
-        Genre("чирлидеры"),
-        Genre("чулки"),
-        Genre("школьная_форма"),
-        Genre("школьники"),
-        Genre("школьницы"),
-        Genre("школьный_купальник"),
-        Genre("щекотка"),
-        Genre("эксгибиционизм"),
-        Genre("эльфы"),
-        Genre("эччи"),
-        Genre("юмор"),
-        Genre("юри"),
-        Genre("яндере"),
-        Genre("яой"),
-    )
+    private fun getGenreList() =
+        listOf(
+            Genre("3D"),
+            Genre("action"),
+            Genre("ahegao"),
+            Genre("bdsm"),
+            Genre("corruption"),
+            Genre("foot_fetish"),
+            Genre("footfuck"),
+            Genre("gender_bender"),
+            Genre("live"),
+            Genre("lolcon"),
+            Genre("megane"),
+            Genre("mind_break"),
+            Genre("monstergirl"),
+            Genre("netorare"),
+            Genre("netori"),
+            Genre("nipple_penetration"),
+            Genre("oyakodon"),
+            Genre("paizuri_(titsfuck)"),
+            Genre("rpg"),
+            Genre("scat"),
+            Genre("shemale"),
+            Genre("shimaidon"),
+            Genre("shooter"),
+            Genre("simulation"),
+            Genre("skinsuit"),
+            Genre("tomboy"),
+            Genre("tomgirl"),
+            Genre("x-ray"),
+            Genre("алкоголь"),
+            Genre("анал"),
+            Genre("андроид"),
+            Genre("анилингус"),
+            Genre("анимация"),
+            Genre("аркада"),
+            Genre("арт"),
+            Genre("бабушка"),
+            Genre("без_текста"),
+            Genre("без_трусиков"),
+            Genre("без_цензуры"),
+            Genre("беременность"),
+            Genre("бикини"),
+            Genre("близнецы"),
+            Genre("боди-арт"),
+            Genre("больница"),
+            Genre("большая_грудь"),
+            Genre("большие_попки"),
+            Genre("бондаж"),
+            Genre("буккаке"),
+            Genre("в_ванной"),
+            Genre("в_общественном_месте"),
+            Genre("в_первый_раз"),
+            Genre("в_цвете"),
+            Genre("в_школе"),
+            Genre("вампиры"),
+            Genre("веб"),
+            Genre("вебкам"),
+            Genre("вибратор"),
+            Genre("визуальная_новелла"),
+            Genre("внучка"),
+            Genre("волосатые_женщины"),
+            Genre("гаремник"),
+            Genre("гг_девушка"),
+            Genre("гг_парень"),
+            Genre("гипноз"),
+            Genre("глубокий_минет"),
+            Genre("горячий_источник"),
+            Genre("грудастая_лоли"),
+            Genre("групповой_секс"),
+            Genre("гяру_и_гангуро"),
+            Genre("двойное_проникновение"),
+            Genre("девочки_волшебницы"),
+            Genre("девушка_туалет"),
+            Genre("демоны"),
+            Genre("дилдо"),
+            Genre("дочь"),
+            Genre("драма"),
+            Genre("дыра_в_стене"),
+            Genre("жестокость"),
+            Genre("за_деньги"),
+            Genre("зомби"),
+            Genre("зрелые_женщины"),
+            Genre("измена"),
+            Genre("изнасилование"),
+            Genre("инопланетяне"),
+            Genre("инцест"),
+            Genre("исполнение_желаний"),
+            Genre("камера"),
+            Genre("квест"),
+            Genre("кимоно"),
+            Genre("колготки"),
+            Genre("комиксы"),
+            Genre("косплей"),
+            Genre("кремпай"),
+            Genre("кудере"),
+            Genre("кузина"),
+            Genre("куннилингус"),
+            Genre("купальники"),
+            Genre("латекс_и_кожа"),
+            Genre("магия"),
+            Genre("маленькая_грудь"),
+            Genre("мастурбация"),
+            Genre("мать"),
+            Genre("мейдочки"),
+            Genre("мерзкий_дядька"),
+            Genre("минет"),
+            Genre("много_девушек"),
+            Genre("молоко"),
+            Genre("монашки"),
+            Genre("монстры"),
+            Genre("мочеиспускание"),
+            Genre("мужская_озвучка"),
+            Genre("мужчина_крепкого_телосложения"),
+            Genre("мускулистые_женщины"),
+            Genre("на_природе"),
+            Genre("наблюдение"),
+            Genre("непрямой_инцест"),
+            Genre("новелла"),
+            Genre("обмен_партнерами"),
+            Genre("обмен_телами"),
+            Genre("обычный_секс"),
+            Genre("огромная_грудь"),
+            Genre("огромный_член"),
+            Genre("оплодотворение"),
+            Genre("остановка_времени"),
+            Genre("парень_пассив"),
+            Genre("переодевание"),
+            Genre("песочница"),
+            Genre("племянница"),
+            Genre("пляж"),
+            Genre("подглядывание"),
+            Genre("подчинение"),
+            Genre("похищение"),
+            Genre("презерватив"),
+            Genre("принуждение"),
+            Genre("прозрачная_одежда"),
+            Genre("проникновение_в_матку"),
+            Genre("психические_отклонения"),
+            Genre("публично"),
+            Genre("рабыни"),
+            Genre("романтика"),
+            Genre("сверхъестественное"),
+            Genre("секс_игрушки"),
+            Genre("сестра"),
+            Genre("сетакон"),
+            Genre("скрытный_секс"),
+            Genre("спортивная_форма"),
+            Genre("спящие"),
+            Genre("страпон"),
+            Genre("суккубы"),
+            Genre("темнокожие"),
+            Genre("тентакли"),
+            Genre("толстушки"),
+            Genre("трап"),
+            Genre("тётя"),
+            Genre("умеренная_жестокость"),
+            Genre("учитель_и_ученик"),
+            Genre("ушастые"),
+            Genre("фантазии"),
+            Genre("фантастика"),
+            Genre("фемдом"),
+            Genre("фестиваль"),
+            Genre("фетиш"),
+            Genre("фистинг"),
+            Genre("фурри"),
+            Genre("футанари"),
+            Genre("футанари_имеет_парня"),
+            Genre("фэнтези"),
+            Genre("хоррор"),
+            Genre("цундере"),
+            Genre("чикан"),
+            Genre("чирлидеры"),
+            Genre("чулки"),
+            Genre("школьная_форма"),
+            Genre("школьники"),
+            Genre("школьницы"),
+            Genre("школьный_купальник"),
+            Genre("щекотка"),
+            Genre("эксгибиционизм"),
+            Genre("эльфы"),
+            Genre("эччи"),
+            Genre("юмор"),
+            Genre("юри"),
+            Genre("яндере"),
+            Genre("яой"),
+        )
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
         EditTextPreference(screen.context).apply {

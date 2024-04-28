@@ -25,8 +25,9 @@ class ShiyuraSub : ZeistManga("ShiyuraSub", "https://shiyurasub.blogspot.com", "
         return SManga.create().apply {
             thumbnail_url = profileManga.selectFirst("div.grid img")!!.attr("abs:src")
             description = profileManga.select("#synopsis").text()
-            genre = profileManga.select("div.my-5 > a[rel=tag]")
-                .joinToString { it.text() }
+            genre =
+                profileManga.select("div.my-5 > a[rel=tag]")
+                    .joinToString { it.text() }
         }
     }
 }

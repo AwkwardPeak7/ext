@@ -23,10 +23,11 @@ class MangaRaw : MangaRawTheme("MangaRaw", ""), ConfigurableSource {
     override val id = 4572869149806246133
 
     private val isCi = System.getenv("CI") == "true"
-    override val baseUrl get() = when {
-        isCi -> MIRRORS.joinToString("#, ") { "https://$it" }
-        else -> _baseUrl
-    }
+    override val baseUrl get() =
+        when {
+            isCi -> MIRRORS.joinToString("#, ") { "https://$it" }
+            else -> _baseUrl
+        }
 
     override val supportsLatest = true
     private val _baseUrl: String
@@ -58,9 +59,10 @@ class MangaRaw : MangaRawTheme("MangaRaw", ""), ConfigurableSource {
 
     override fun popularMangaNextPageSelector() = ".nextpostslink"
 
-    override fun popularMangaFromElement(element: Element) = super.popularMangaFromElement(element).apply {
-        if (needUrlSanitize) url = mangaSlugRegex.replaceFirst(url, "/")
-    }
+    override fun popularMangaFromElement(element: Element) =
+        super.popularMangaFromElement(element).apply {
+            if (needUrlSanitize) url = mangaSlugRegex.replaceFirst(url, "/")
+        }
 
     override fun searchMangaRequest(
         page: Int,
@@ -68,11 +70,12 @@ class MangaRaw : MangaRawTheme("MangaRaw", ""), ConfigurableSource {
         filters: FilterList,
     ) = GET("$baseUrl/?s=$query&page=$page", headers)
 
-    override fun Document.getSanitizedDetails(): Element = selectFirst(selectors.detailsSelector)!!.apply {
-        val recommendClass = selectors.recommendClass
-        children().find { it.hasClass(recommendClass) }?.remove()
-        selectFirst(Evaluator.Class("list-scoll"))!!.remove()
-    }
+    override fun Document.getSanitizedDetails(): Element =
+        selectFirst(selectors.detailsSelector)!!.apply {
+            val recommendClass = selectors.recommendClass
+            children().find { it.hasClass(recommendClass) }?.remove()
+            selectFirst(Evaluator.Class("list-scoll"))!!.remove()
+        }
 
     override fun chapterListSelector() = ".list-scoll a"
 

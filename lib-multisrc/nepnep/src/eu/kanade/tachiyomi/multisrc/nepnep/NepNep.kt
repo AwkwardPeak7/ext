@@ -37,9 +37,10 @@ abstract class NepNep(
 ) : HttpSource() {
     override val supportsLatest = true
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", "$baseUrl/")
-        .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/77.0")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", "$baseUrl/")
+            .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/77.0")
 
     private val json: Json by injectLazy()
 
@@ -77,9 +78,10 @@ abstract class NepNep(
 
     // don't use ";" for substringBefore() !
     private fun directoryFromDocument(document: Document): JsonArray {
-        val str = document.select("script:containsData(MainFunction)").first()!!.data()
-            .substringAfter("vm.Directory = ").substringBefore("vm.GetIntValue").trim()
-            .replace(";", " ")
+        val str =
+            document.select("script:containsData(MainFunction)").first()!!.data()
+                .substringAfter("vm.Directory = ").substringBefore("vm.GetIntValue").trim()
+                .replace(";", " ")
         return json.parseToJsonElement(str).jsonArray
     }
 
@@ -168,15 +170,16 @@ abstract class NepNep(
         filters: FilterList,
     ): MangasPage {
         val trimmedQuery = query.trim()
-        directory = directoryFromDocument(response.asJsoup())
-            .filter {
-                // Comparing query with display name
-                it.getString("s")!!.contains(trimmedQuery, ignoreCase = true) or
-                    // Comparing query with list of alternate names
-                    it.getArray("al").any { altName ->
-                        altName.jsonPrimitive.content.contains(trimmedQuery, ignoreCase = true)
-                    }
-            }
+        directory =
+            directoryFromDocument(response.asJsoup())
+                .filter {
+                    // Comparing query with display name
+                    it.getString("s")!!.contains(trimmedQuery, ignoreCase = true) or
+                        // Comparing query with list of alternate names
+                        it.getArray("al").any { altName ->
+                            altName.jsonPrimitive.content.contains(trimmedQuery, ignoreCase = true)
+                        }
+                }
 
         val genres = mutableListOf<String>()
         val genresNo = mutableListOf<String>()
@@ -184,59 +187,74 @@ abstract class NepNep(
         for (filter in if (filters.isEmpty()) getFilterList() else filters) {
             when (filter) {
                 is Sort -> {
-                    sortBy = when (filter.state?.index) {
-                        1 -> "ls"
-                        2 -> "v"
-                        else -> "s"
-                    }
-                    directory = if (filter.state?.ascending != true) {
-                        directory.sortedByDescending { it.getString(sortBy) }
-                    } else {
-                        directory.sortedByDescending { it.getString(sortBy) }.reversed()
-                    }
-                }
-                is SelectField -> if (filter.state != 0) {
-                    directory = when (filter.name) {
-                        "Scan Status" -> directory.filter { it.getString("ss")!!.contains(filter.values[filter.state], ignoreCase = true) }
-                        "Publish Status" -> directory.filter {
-                            it.getString(
-                                "ps",
-                            )!!.contains(filter.values[filter.state], ignoreCase = true)
+                    sortBy =
+                        when (filter.state?.index) {
+                            1 -> "ls"
+                            2 -> "v"
+                            else -> "s"
                         }
-                        "Type" -> directory.filter { it.getString("t")!!.contains(filter.values[filter.state], ignoreCase = true) }
-                        "Translation" -> directory.filter { it.getString("o")!!.contains("yes", ignoreCase = true) }
-                        else -> directory
-                    }
+                    directory =
+                        if (filter.state?.ascending != true) {
+                            directory.sortedByDescending { it.getString(sortBy) }
+                        } else {
+                            directory.sortedByDescending { it.getString(sortBy) }.reversed()
+                        }
                 }
+                is SelectField ->
+                    if (filter.state != 0) {
+                        directory =
+                            when (filter.name) {
+                                "Scan Status" ->
+                                    directory.filter {
+                                        it.getString(
+                                            "ss",
+                                        )!!.contains(filter.values[filter.state], ignoreCase = true)
+                                    }
+                                "Publish Status" ->
+                                    directory.filter {
+                                        it.getString(
+                                            "ps",
+                                        )!!.contains(filter.values[filter.state], ignoreCase = true)
+                                    }
+                                "Type" -> directory.filter { it.getString("t")!!.contains(filter.values[filter.state], ignoreCase = true) }
+                                "Translation" -> directory.filter { it.getString("o")!!.contains("yes", ignoreCase = true) }
+                                else -> directory
+                            }
+                    }
                 is YearField -> if (filter.state.isNotEmpty()) directory = directory.filter { it.getString("y")!!.contains(filter.state) }
-                is AuthorField -> if (filter.state.isNotEmpty()) {
-                    directory = directory.filter { e ->
-                        e.getArray("a").any {
-                            it.jsonPrimitive.content.contains(filter.state, ignoreCase = true)
+                is AuthorField ->
+                    if (filter.state.isNotEmpty()) {
+                        directory =
+                            directory.filter { e ->
+                                e.getArray("a").any {
+                                    it.jsonPrimitive.content.contains(filter.state, ignoreCase = true)
+                                }
+                            }
+                    }
+                is GenreList ->
+                    filter.state.forEach { genre ->
+                        when (genre.state) {
+                            Filter.TriState.STATE_INCLUDE -> genres.add(genre.name)
+                            Filter.TriState.STATE_EXCLUDE -> genresNo.add(genre.name)
                         }
                     }
-                }
-                is GenreList -> filter.state.forEach { genre ->
-                    when (genre.state) {
-                        Filter.TriState.STATE_INCLUDE -> genres.add(genre.name)
-                        Filter.TriState.STATE_EXCLUDE -> genresNo.add(genre.name)
-                    }
-                }
                 else -> continue
             }
         }
         if (genres.isNotEmpty()) {
             genres.map { genre ->
-                directory = directory.filter { e ->
-                    e.getArray("g").any { it.jsonPrimitive.content.contains(genre, ignoreCase = true) }
-                }
+                directory =
+                    directory.filter { e ->
+                        e.getArray("g").any { it.jsonPrimitive.content.contains(genre, ignoreCase = true) }
+                    }
             }
         }
         if (genresNo.isNotEmpty()) {
             genresNo.map { genre ->
-                directory = directory.filterNot { e ->
-                    e.getArray("g").any { it.jsonPrimitive.content.contains(genre, ignoreCase = true) }
-                }
+                directory =
+                    directory.filterNot { e ->
+                        e.getArray("g").any { it.jsonPrimitive.content.contains(genre, ignoreCase = true) }
+                    }
             }
         }
 
@@ -256,9 +274,10 @@ abstract class NepNep(
                 description = info.select("div.Content").text()
                 thumbnail_url = info.select("img").attr("abs:src")
 
-                val genres = info.select("li.list-group-item:has(span:contains(Genre)) a")
-                    .map { element -> element.text() }
-                    .toMutableSet()
+                val genres =
+                    info.select("li.list-group-item:has(span:contains(Genre)) a")
+                        .map { element -> element.text() }
+                        .toMutableSet()
 
                 // add series type(manga/manhwa/manhua/other) thinggy to genre
                 info.select("li.list-group-item:has(span:contains(Type)) a, a[href*=type\\=]").firstOrNull()?.ownText()?.let {
@@ -273,23 +292,25 @@ abstract class NepNep(
                 val altName = "Alternative Name: "
                 info.select("li.list-group-item:has(span:contains(Alter))").firstOrNull()?.ownText()?.let {
                     if (it.isBlank().not() && it != "N/A") {
-                        description = when {
-                            description.isNullOrBlank() -> altName + it
-                            else -> description + "\n\n$altName" + it
-                        }
+                        description =
+                            when {
+                                description.isNullOrBlank() -> altName + it
+                                else -> description + "\n\n$altName" + it
+                            }
                     }
                 }
             }
         }
     }
 
-    private fun String.toStatus() = when {
-        this.contains("Ongoing", ignoreCase = true) -> SManga.ONGOING
-        this.contains("Complete", ignoreCase = true) -> SManga.COMPLETED
-        this.contains("Cancelled", ignoreCase = true) -> SManga.CANCELLED
-        this.contains("Hiatus", ignoreCase = true) -> SManga.ON_HIATUS
-        else -> SManga.UNKNOWN
-    }
+    private fun String.toStatus() =
+        when {
+            this.contains("Ongoing", ignoreCase = true) -> SManga.ONGOING
+            this.contains("Complete", ignoreCase = true) -> SManga.COMPLETED
+            this.contains("Cancelled", ignoreCase = true) -> SManga.CANCELLED
+            this.contains("Hiatus", ignoreCase = true) -> SManga.ON_HIATUS
+            else -> SManga.UNKNOWN
+        }
 
     // Chapters - Mind special cases like decimal chapters (e.g. One Punch Man) and manga with seasons (e.g. The Gamer)
 
@@ -301,15 +322,16 @@ abstract class NepNep(
         if (1 != t) {
             index = "-index-$t"
         }
-        val dgt = if (e.toInt() < 100100) {
-            4
-        } else if (e.toInt() < 101000) {
-            3
-        } else if (e.toInt() < 110000) {
-            2
-        } else {
-            1
-        }
+        val dgt =
+            if (e.toInt() < 100100) {
+                4
+            } else if (e.toInt() < 101000) {
+                3
+            } else if (e.toInt() < 110000) {
+                2
+            } else {
+                1
+            }
         val n = e.substring(dgt, e.length - 1)
         var suffix = ""
         val path = e.substring(e.length - 1).toInt()
@@ -339,8 +361,9 @@ abstract class NepNep(
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        val vmChapters = response.asJsoup().select("script:containsData(MainFunction)").first()!!.data()
-            .substringAfter("vm.Chapters = ").substringBefore(";")
+        val vmChapters =
+            response.asJsoup().select("script:containsData(MainFunction)").first()!!.data()
+                .substringAfter("vm.Chapters = ").substringBefore(";")
         val array = json.parseToJsonElement(vmChapters).jsonArray
         val hasDistinctTypes = array.map { it.getString("Type") }.distinct().count() > 1
         return array.map { json ->
@@ -351,11 +374,12 @@ abstract class NepNep(
                 url = "/read-online/" + response.request.url.toString().substringAfter("/manga/") + chapterURLEncode(indexChapter)
                 // only add type info as scanlator if there are differing types among chapter array
                 scanlator = if (hasDistinctTypes) type else null
-                date_upload = try {
-                    json.getString("Date").let { dateFormat.parse("$it +0600")?.time } ?: 0
-                } catch (_: Exception) {
-                    0L
-                }
+                date_upload =
+                    try {
+                        json.getString("Date").let { dateFormat.parse("$it +0600")?.time } ?: 0
+                    } catch (_: Exception) {
+                        0L
+                    }
             }
         }
     }
@@ -364,25 +388,28 @@ abstract class NepNep(
 
     override fun pageListParse(response: Response): List<Page> {
         val document = response.asJsoup()
-        val script = document.selectFirst("script:containsData(MainFunction)")?.data()
-            ?: client.newCall(GET(document.location().removeSuffix(".html"), headers))
-                .execute().asJsoup().selectFirst("script:containsData(MainFunction)")!!.data()
+        val script =
+            document.selectFirst("script:containsData(MainFunction)")?.data()
+                ?: client.newCall(GET(document.location().removeSuffix(".html"), headers))
+                    .execute().asJsoup().selectFirst("script:containsData(MainFunction)")!!.data()
         val curChapter = json.parseToJsonElement(script!!.substringAfter("vm.CurChapter = ").substringBefore(";")).jsonObject
 
         val pageTotal = curChapter.getString("Page")!!.toInt()
 
-        val host = "https://" +
-            script
-                .substringAfter("vm.CurPathName = \"", "")
-                .substringBefore("\"")
-                .also {
-                    if (it.isEmpty()) {
-                        throw Exception("$name is overloaded and blocking Tachiyomi right now. Wait for unblock.")
+        val host =
+            "https://" +
+                script
+                    .substringAfter("vm.CurPathName = \"", "")
+                    .substringBefore("\"")
+                    .also {
+                        if (it.isEmpty()) {
+                            throw Exception("$name is overloaded and blocking Tachiyomi right now. Wait for unblock.")
+                        }
                     }
-                }
         val titleURI = script.substringAfter("vm.IndexName = \"").substringBefore("\"")
-        val seasonURI = curChapter.getString("Directory")!!
-            .let { if (it.isEmpty()) "" else "$it/" }
+        val seasonURI =
+            curChapter.getString("Directory")!!
+                .let { if (it.isEmpty()) "" else "$it/" }
         val path = "$host/manga/$titleURI/$seasonURI"
 
         val chNum = chapterImage(curChapter.getString("Chapter")!!)
@@ -409,59 +436,61 @@ abstract class NepNep(
 
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
 
-    override fun getFilterList() = FilterList(
-        YearField(),
-        AuthorField(),
-        SelectField("Scan Status", arrayOf("Any", "Complete", "Discontinued", "Hiatus", "Incomplete", "Ongoing")),
-        SelectField(
-            "Publish Status",
-            arrayOf("Any", "Cancelled", "Complete", "Discontinued", "Hiatus", "Incomplete", "Ongoing", "Unfinished"),
-        ),
-        SelectField("Type", arrayOf("Any", "Doujinshi", "Manga", "Manhua", "Manhwa", "OEL", "One-shot")),
-        SelectField("Translation", arrayOf("Any", "Official Only")),
-        Sort(),
-        GenreList(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            YearField(),
+            AuthorField(),
+            SelectField("Scan Status", arrayOf("Any", "Complete", "Discontinued", "Hiatus", "Incomplete", "Ongoing")),
+            SelectField(
+                "Publish Status",
+                arrayOf("Any", "Cancelled", "Complete", "Discontinued", "Hiatus", "Incomplete", "Ongoing", "Unfinished"),
+            ),
+            SelectField("Type", arrayOf("Any", "Doujinshi", "Manga", "Manhua", "Manhwa", "OEL", "One-shot")),
+            SelectField("Translation", arrayOf("Any", "Official Only")),
+            Sort(),
+            GenreList(getGenreList()),
+        )
 
     // [...document.querySelectorAll("label.triStateCheckBox input")].map(el => `Filter("${el.getAttribute('name')}", "${el.nextSibling.textContent.trim()}")`).join(',\n')
     // https://manga4life.com/advanced-search/
-    private fun getGenreList() = listOf(
-        Genre("Action"),
-        Genre("Adult"),
-        Genre("Adventure"),
-        Genre("Comedy"),
-        Genre("Doujinshi"),
-        Genre("Drama"),
-        Genre("Ecchi"),
-        Genre("Fantasy"),
-        Genre("Gender Bender"),
-        Genre("Harem"),
-        Genre("Hentai"),
-        Genre("Historical"),
-        Genre("Horror"),
-        Genre("Isekai"),
-        Genre("Josei"),
-        Genre("Lolicon"),
-        Genre("Martial Arts"),
-        Genre("Mature"),
-        Genre("Mecha"),
-        Genre("Mystery"),
-        Genre("Psychological"),
-        Genre("Romance"),
-        Genre("School Life"),
-        Genre("Sci-fi"),
-        Genre("Seinen"),
-        Genre("Shotacon"),
-        Genre("Shoujo"),
-        Genre("Shoujo Ai"),
-        Genre("Shounen"),
-        Genre("Shounen Ai"),
-        Genre("Slice of Life"),
-        Genre("Smut"),
-        Genre("Sports"),
-        Genre("Supernatural"),
-        Genre("Tragedy"),
-        Genre("Yaoi"),
-        Genre("Yuri"),
-    )
+    private fun getGenreList() =
+        listOf(
+            Genre("Action"),
+            Genre("Adult"),
+            Genre("Adventure"),
+            Genre("Comedy"),
+            Genre("Doujinshi"),
+            Genre("Drama"),
+            Genre("Ecchi"),
+            Genre("Fantasy"),
+            Genre("Gender Bender"),
+            Genre("Harem"),
+            Genre("Hentai"),
+            Genre("Historical"),
+            Genre("Horror"),
+            Genre("Isekai"),
+            Genre("Josei"),
+            Genre("Lolicon"),
+            Genre("Martial Arts"),
+            Genre("Mature"),
+            Genre("Mecha"),
+            Genre("Mystery"),
+            Genre("Psychological"),
+            Genre("Romance"),
+            Genre("School Life"),
+            Genre("Sci-fi"),
+            Genre("Seinen"),
+            Genre("Shotacon"),
+            Genre("Shoujo"),
+            Genre("Shoujo Ai"),
+            Genre("Shounen"),
+            Genre("Shounen Ai"),
+            Genre("Slice of Life"),
+            Genre("Smut"),
+            Genre("Sports"),
+            Genre("Supernatural"),
+            Genre("Tragedy"),
+            Genre("Yaoi"),
+            Genre("Yuri"),
+        )
 }

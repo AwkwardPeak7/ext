@@ -15,24 +15,29 @@ class ManhwaLatino : Madara(
     "es",
     SimpleDateFormat("dd/MM/yyyy", Locale("es")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val headers = request.headers.newBuilder()
-                .removeAll("Accept-Encoding")
-                .build()
-            val response = chain.proceed(request.newBuilder().headers(headers).build())
-            if (response.headers("Content-Type").contains("application/octet-stream") && response.request.url.toString().endsWith(".jpg")) {
-                val orgBody = response.body.bytes()
-                val newBody = orgBody.toResponseBody("image/jpeg".toMediaTypeOrNull())
-                response.newBuilder()
-                    .body(newBody)
-                    .build()
-            } else {
-                response
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val headers =
+                    request.headers.newBuilder()
+                        .removeAll("Accept-Encoding")
+                        .build()
+                val response = chain.proceed(request.newBuilder().headers(headers).build())
+                if (response.headers(
+                        "Content-Type",
+                    ).contains("application/octet-stream") && response.request.url.toString().endsWith(".jpg")
+                ) {
+                    val orgBody = response.body.bytes()
+                    val newBody = orgBody.toResponseBody("image/jpeg".toMediaTypeOrNull())
+                    response.newBuilder()
+                        .body(newBody)
+                        .build()
+                } else {
+                    response
+                }
             }
-        }
-        .build()
+            .build()
 
     override val useNewChapterEndpoint = true
 
@@ -47,9 +52,10 @@ class ManhwaLatino : Madara(
 
         with(element) {
             selectFirst(chapterUrlSelector)!!.let { urlElement ->
-                chapter.url = urlElement.attr("abs:href").let {
-                    it.substringBefore("?style=paged") + if (!it.endsWith(chapterUrlSuffix)) chapterUrlSuffix else ""
-                }
+                chapter.url =
+                    urlElement.attr("abs:href").let {
+                        it.substringBefore("?style=paged") + if (!it.endsWith(chapterUrlSuffix)) chapterUrlSuffix else ""
+                    }
                 chapter.name = urlElement.wholeText().substringAfter("\n")
             }
 

@@ -8,15 +8,16 @@ import java.util.GregorianCalendar
 import java.util.Locale
 
 class WebtoonsFactory : SourceFactory {
-    override fun createSources(): List<Source> = listOf(
-        WebtoonsEN(),
-        WebtoonsID(),
-        WebtoonsTH(),
-        WebtoonsES(),
-        WebtoonsFR(),
-        WebtoonsZH(),
-        WebtoonsDE(),
-    )
+    override fun createSources(): List<Source> =
+        listOf(
+            WebtoonsEN(),
+            WebtoonsID(),
+            WebtoonsTH(),
+            WebtoonsES(),
+            WebtoonsFR(),
+            WebtoonsZH(),
+            WebtoonsDE(),
+        )
 }
 
 class WebtoonsEN : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "en")
@@ -27,20 +28,21 @@ class WebtoonsID : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "id")
 
     // Android seems to be unable to parse Indonesian dates; we'll use a short hard-coded table
     // instead.
-    private val dateMap: Array<String> = arrayOf(
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "Mei",
-        "Jun",
-        "Jul",
-        "Agu",
-        "Sep",
-        "Okt",
-        "Nov",
-        "Des",
-    )
+    private val dateMap: Array<String> =
+        arrayOf(
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "Mei",
+            "Jun",
+            "Jul",
+            "Agu",
+            "Sep",
+            "Okt",
+            "Nov",
+            "Des",
+        )
 
     override fun chapterParseDate(date: String): Long {
         val expr = Regex("""(\d{4}) ([A-Z][a-z]{2}) (\d+)""").find(date) ?: return 0
@@ -54,20 +56,21 @@ class WebtoonsTH : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "th",
 
 class WebtoonsES : WebtoonsSrc("Webtoons.com", "https://www.webtoons.com", "es") {
     // Android seems to be unable to parse es dates like Indonesian; we'll use a short hard-coded table instead.
-    private val dateMap: Array<String> = arrayOf(
-        "ene",
-        "feb",
-        "mar",
-        "abr",
-        "may",
-        "jun",
-        "jul",
-        "ago",
-        "sep",
-        "oct",
-        "nov",
-        "dic",
-    )
+    private val dateMap: Array<String> =
+        arrayOf(
+            "ene",
+            "feb",
+            "mar",
+            "abr",
+            "may",
+            "jun",
+            "jul",
+            "ago",
+            "sep",
+            "oct",
+            "nov",
+            "dic",
+        )
 
     override fun chapterParseDate(date: String): Long {
         val expr = Regex("""(\d+)-([A-Za-z]{3})-(\d{4})""").find(date) ?: return 0
@@ -83,11 +86,12 @@ class WebtoonsFR : WebtoonsSrc(
     "fr",
     dateFormat = SimpleDateFormat("d MMM yyyy", Locale.FRENCH),
 ) {
-    override fun String.toStatus(): Int = when {
-        contains("NOUVEAU") -> SManga.ONGOING
-        contains("TERMINÉ") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    override fun String.toStatus(): Int =
+        when {
+            contains("NOUVEAU") -> SManga.ONGOING
+            contains("TERMINÉ") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 }
 
 class WebtoonsZH : WebtoonsSrc(

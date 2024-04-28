@@ -103,10 +103,11 @@ class BuonDua() : ParsedHttpSource() {
         val pages = mutableListOf<Page>()
 
         numpages.forEachIndexed { index, page ->
-            val doc = when (index) {
-                0 -> document
-                else -> client.newCall(GET(page.attr("abs:href"))).execute().asJsoup()
-            }
+            val doc =
+                when (index) {
+                    0 -> document
+                    else -> client.newCall(GET(page.attr("abs:href"))).execute().asJsoup()
+                }
             doc.select(".article-fulltext img").forEach {
                 val itUrl = it.attr("abs:src")
                 pages.add(Page(pages.size, "", itUrl))
@@ -118,11 +119,12 @@ class BuonDua() : ParsedHttpSource() {
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // Filters
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("NOTE: Ignored if using text search!"),
-        Filter.Separator(),
-        TagFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("NOTE: Ignored if using text search!"),
+            Filter.Separator(),
+            TagFilter(),
+        )
 
     class TagFilter : Filter.Text("Tag ID")
 

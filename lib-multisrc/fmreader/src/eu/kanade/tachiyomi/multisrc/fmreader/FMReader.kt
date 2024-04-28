@@ -36,10 +36,11 @@ abstract class FMReader(
 
     override val client: OkHttpClient = network.cloudflareClient
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64) Gecko/20100101 Firefox/77.0")
-        add("Referer", baseUrl)
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64) Gecko/20100101 Firefox/77.0")
+            add("Referer", baseUrl)
+        }
 
     protected fun Elements.imgAttr(): String? = getImgAttr(this.firstOrNull())
 
@@ -69,9 +70,10 @@ abstract class FMReader(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/$requestPath?".toHttpUrl().newBuilder()
-            .addQueryParameter("name", query)
-            .addQueryParameter("page", page.toString())
+        val url =
+            "$baseUrl/$requestPath?".toHttpUrl().newBuilder()
+                .addQueryParameter("name", query)
+                .addQueryParameter("page", page.toString())
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
             when (filter) {
                 is Status -> {
@@ -113,13 +115,14 @@ abstract class FMReader(
         val mangas = document.select(popularMangaSelector()).map { popularMangaFromElement(it) }
 
         // check if there's a next page
-        val hasNextPage = (document.select(popularMangaNextPageSelector()).first()?.text() ?: "").let {
-            if (it.contains(Regex("""\w*\s\d*\s\w*\s\d*"""))) {
-                it.split(" ").let { pageOf -> pageOf[1] != pageOf[3] } // current page not last page
-            } else {
-                it.isNotEmpty() // standard next page check
+        val hasNextPage =
+            (document.select(popularMangaNextPageSelector()).first()?.text() ?: "").let {
+                if (it.contains(Regex("""\w*\s\d*\s\w*\s\d*"""))) {
+                    it.split(" ").let { pageOf -> pageOf[1] != pageOf[3] } // current page not last page
+                } else {
+                    it.isNotEmpty() // standard next page check
+                }
             }
-        }
 
         return MangasPage(mangas, hasNextPage)
     }
@@ -176,9 +179,10 @@ abstract class FMReader(
         val infoElement = document.select(infoElementSelector).first()!!
 
         return SManga.create().apply {
-            author = infoElement.select(mangaDetailsSelectorAuthor).eachText().filter {
-                it.equals("Updating", true).not()
-            }.joinToString().takeIf { it.isNotBlank() }
+            author =
+                infoElement.select(mangaDetailsSelectorAuthor).eachText().filter {
+                    it.equals("Updating", true).not()
+                }.joinToString().takeIf { it.isNotBlank() }
             genre = infoElement.select(mangaDetailsSelectorGenre).joinToString { it.text() }
             status = parseStatus(infoElement.select(mangaDetailsSelectorStatus).first()?.text())
             description = document.select(mangaDetailsSelectorDescription).text().trim()
@@ -187,10 +191,11 @@ abstract class FMReader(
             // add alternative name to manga description
             infoElement.select(altNameSelector).firstOrNull()?.ownText()?.let {
                 if (it.isBlank().not() && it.contains("Updating", true).not()) {
-                    description = when {
-                        description.isNullOrBlank() -> altName + it
-                        else -> description + "\n\n$altName" + it
-                    }
+                    description =
+                        when {
+                            description.isNullOrBlank() -> altName + it
+                            else -> description + "\n\n$altName" + it
+                        }
                 }
             }
         }
@@ -198,25 +203,27 @@ abstract class FMReader(
 
     // languages: en, vi, tr
     fun parseStatus(status: String?): Int {
-        val completedWords = setOf(
-            "completed",
-            "complete",
-            "đã hoàn thành",
-            "hoàn thành",
-            "tamamlandı",
-        )
-        val ongoingWords = setOf(
-            "ongoing",
-            "on going",
-            "updating",
-            "incomplete",
-            "chưa hoàn thành",
-            "đang cập nhật",
-            "Đang tiến hành",
-            "devam ediyor",
-            "Çevirisi Bırakıldı",
-            "Çevirisi Yok",
-        )
+        val completedWords =
+            setOf(
+                "completed",
+                "complete",
+                "đã hoàn thành",
+                "hoàn thành",
+                "tamamlandı",
+            )
+        val ongoingWords =
+            setOf(
+                "ongoing",
+                "on going",
+                "updating",
+                "incomplete",
+                "chưa hoàn thành",
+                "đang cập nhật",
+                "Đang tiến hành",
+                "devam ediyor",
+                "Çevirisi Bırakıldı",
+                "Çevirisi Yok",
+            )
         return when {
             status == null -> SManga.UNKNOWN
             completedWords.any { it.equals(status, ignoreCase = true) } -> SManga.COMPLETED
@@ -271,46 +278,53 @@ abstract class FMReader(
 
     open fun parseRelativeDate(date: String): Long {
         val value = date.split(' ')[dateValueIndex].toInt()
-        val dateWord = date.split(' ')[dateWordIndex].let {
-            if (it.contains("(")) {
-                it.substringBefore("(")
-            } else {
-                it.substringBefore("s")
+        val dateWord =
+            date.split(' ')[dateWordIndex].let {
+                if (it.contains("(")) {
+                    it.substringBefore("(")
+                } else {
+                    it.substringBefore("s")
+                }
             }
-        }
 
         // languages: en, vi, es, tr
         return when (dateWord) {
-            "min", "minute", "phút", "minuto", "dakika" -> Calendar.getInstance().apply {
-                add(Calendar.MINUTE, value * -1)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-            "hour", "giờ", "hora", "saat" -> Calendar.getInstance().apply {
-                add(Calendar.HOUR_OF_DAY, value * -1)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-            "day", "ngày", "día", "gün" -> Calendar.getInstance().apply {
-                add(Calendar.DATE, value * -1)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-            "week", "tuần", "semana", "hafta" -> Calendar.getInstance().apply {
-                add(Calendar.DATE, value * 7 * -1)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-            "month", "tháng", "mes", "ay" -> Calendar.getInstance().apply {
-                add(Calendar.MONTH, value * -1)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-            "year", "năm", "año", "yıl" -> Calendar.getInstance().apply {
-                add(Calendar.YEAR, value * -1)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
+            "min", "minute", "phút", "minuto", "dakika" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.MINUTE, value * -1)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            "hour", "giờ", "hora", "saat" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.HOUR_OF_DAY, value * -1)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            "day", "ngày", "día", "gün" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.DATE, value * -1)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            "week", "tuần", "semana", "hafta" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.DATE, value * 7 * -1)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            "month", "tháng", "mes", "ay" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.MONTH, value * -1)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            "year", "năm", "año", "yıl" ->
+                Calendar.getInstance().apply {
+                    add(Calendar.YEAR, value * -1)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
             else -> {
                 return 0
             }
@@ -365,152 +379,156 @@ abstract class FMReader(
     private class SortBy : Filter.Sort("Sorted By", arrayOf("A-Z", "Most vỉews", "Last updated"), Selection(1, false))
 
     // TODO: Country (leftover from original LHTranslation)
-    override fun getFilterList() = FilterList(
-        TextField("Author", "author"),
-        TextField("Group", "group"),
-        Status(),
-        SortBy(),
-        GenreList(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            TextField("Author", "author"),
+            TextField("Group", "group"),
+            Status(),
+            SortBy(),
+            GenreList(getGenreList()),
+        )
 
     // [...document.querySelectorAll("div.panel-body a")].map((el,i) => `Genre("${el.innerText.trim()}")`).join(',\n')
     //  on https://lhtranslation.net/search
-    open fun getGenreList() = listOf(
-        Genre("Action"),
-        Genre("18+"),
-        Genre("Adult"),
-        Genre("Anime"),
-        Genre("Comedy"),
-        Genre("Comic"),
-        Genre("Doujinshi"),
-        Genre("Drama"),
-        Genre("Ecchi"),
-        Genre("Fantasy"),
-        Genre("Gender Bender"),
-        Genre("Harem"),
-        Genre("Historical"),
-        Genre("Horror"),
-        Genre("Josei"),
-        Genre("Live action"),
-        Genre("Manhua"),
-        Genre("Manhwa"),
-        Genre("Martial Art"),
-        Genre("Mature"),
-        Genre("Mecha"),
-        Genre("Mystery"),
-        Genre("One shot"),
-        Genre("Psychological"),
-        Genre("Romance"),
-        Genre("School Life"),
-        Genre("Sci-fi"),
-        Genre("Seinen"),
-        Genre("Shoujo"),
-        Genre("Shojou Ai"),
-        Genre("Shounen"),
-        Genre("Shounen Ai"),
-        Genre("Slice of Life"),
-        Genre("Smut"),
-        Genre("Sports"),
-        Genre("Supernatural"),
-        Genre("Tragedy"),
-        Genre("Adventure"),
-        Genre("Yaoi"),
-    )
+    open fun getGenreList() =
+        listOf(
+            Genre("Action"),
+            Genre("18+"),
+            Genre("Adult"),
+            Genre("Anime"),
+            Genre("Comedy"),
+            Genre("Comic"),
+            Genre("Doujinshi"),
+            Genre("Drama"),
+            Genre("Ecchi"),
+            Genre("Fantasy"),
+            Genre("Gender Bender"),
+            Genre("Harem"),
+            Genre("Historical"),
+            Genre("Horror"),
+            Genre("Josei"),
+            Genre("Live action"),
+            Genre("Manhua"),
+            Genre("Manhwa"),
+            Genre("Martial Art"),
+            Genre("Mature"),
+            Genre("Mecha"),
+            Genre("Mystery"),
+            Genre("One shot"),
+            Genre("Psychological"),
+            Genre("Romance"),
+            Genre("School Life"),
+            Genre("Sci-fi"),
+            Genre("Seinen"),
+            Genre("Shoujo"),
+            Genre("Shojou Ai"),
+            Genre("Shounen"),
+            Genre("Shounen Ai"),
+            Genre("Slice of Life"),
+            Genre("Smut"),
+            Genre("Sports"),
+            Genre("Supernatural"),
+            Genre("Tragedy"),
+            Genre("Adventure"),
+            Genre("Yaoi"),
+        )
 
     // from manhwa18.com/search, removed a few that didn't return results/wouldn't be terribly useful
-    fun getAdultGenreList() = listOf(
-        Genre("18"),
-        Genre("Action"),
-        Genre("Adult"),
-        Genre("Adventure"),
-        Genre("Anime"),
-        Genre("Comedy"),
-        Genre("Comic"),
-        Genre("Doujinshi"),
-        Genre("Drama"),
-        Genre("Ecchi"),
-        Genre("Fantasy"),
-        Genre("Gender Bender"),
-        Genre("Harem"),
-        Genre("Historical"),
-        Genre("Horror"),
-        Genre("Josei"),
-        Genre("Live action"),
-        Genre("Magic"),
-        Genre("Manhua"),
-        Genre("Manhwa"),
-        Genre("Martial Arts"),
-        Genre("Mature"),
-        Genre("Mecha"),
-        Genre("Mystery"),
-        Genre("Oneshot"),
-        Genre("Psychological"),
-        Genre("Romance"),
-        Genre("School Life"),
-        Genre("Sci-fi"),
-        Genre("Seinen"),
-        Genre("Shoujo"),
-        Genre("Shoujo Ai"),
-        Genre("Shounen"),
-        Genre("Shounen Ai"),
-        Genre("Slice of life"),
-        Genre("Smut"),
-        Genre("Soft Yaoi"),
-        Genre("Soft Yuri"),
-        Genre("Sports"),
-        Genre("Supernatural"),
-        Genre("Tragedy"),
-        Genre("VnComic"),
-        Genre("Webtoon"),
-    )
+    fun getAdultGenreList() =
+        listOf(
+            Genre("18"),
+            Genre("Action"),
+            Genre("Adult"),
+            Genre("Adventure"),
+            Genre("Anime"),
+            Genre("Comedy"),
+            Genre("Comic"),
+            Genre("Doujinshi"),
+            Genre("Drama"),
+            Genre("Ecchi"),
+            Genre("Fantasy"),
+            Genre("Gender Bender"),
+            Genre("Harem"),
+            Genre("Historical"),
+            Genre("Horror"),
+            Genre("Josei"),
+            Genre("Live action"),
+            Genre("Magic"),
+            Genre("Manhua"),
+            Genre("Manhwa"),
+            Genre("Martial Arts"),
+            Genre("Mature"),
+            Genre("Mecha"),
+            Genre("Mystery"),
+            Genre("Oneshot"),
+            Genre("Psychological"),
+            Genre("Romance"),
+            Genre("School Life"),
+            Genre("Sci-fi"),
+            Genre("Seinen"),
+            Genre("Shoujo"),
+            Genre("Shoujo Ai"),
+            Genre("Shounen"),
+            Genre("Shounen Ai"),
+            Genre("Slice of life"),
+            Genre("Smut"),
+            Genre("Soft Yaoi"),
+            Genre("Soft Yuri"),
+            Genre("Sports"),
+            Genre("Supernatural"),
+            Genre("Tragedy"),
+            Genre("VnComic"),
+            Genre("Webtoon"),
+        )
 
     // taken from readcomiconline.org/search
-    fun getComicsGenreList() = listOf(
-        Genre("Action"),
-        Genre("Adventure"),
-        Genre("Anthology"),
-        Genre("Anthropomorphic"),
-        Genre("Biography"),
-        Genre("Children"),
-        Genre("Comedy"),
-        Genre("Crime"),
-        Genre("Drama"),
-        Genre("Family"),
-        Genre("Fantasy"),
-        Genre("Fighting"),
-        Genre("GraphicNovels"),
-        Genre("Historical"),
-        Genre("Horror"),
-        Genre("LeadingLadies"),
-        Genre("LGBTQ"),
-        Genre("Literature"),
-        Genre("Manga"),
-        Genre("MartialArts"),
-        Genre("Mature"),
-        Genre("Military"),
-        Genre("Mystery"),
-        Genre("Mythology"),
-        Genre("Personal"),
-        Genre("Political"),
-        Genre("Post-Apocalyptic"),
-        Genre("Psychological"),
-        Genre("Pulp"),
-        Genre("Religious"),
-        Genre("Robots"),
-        Genre("Romance"),
-        Genre("Schoollife"),
-        Genre("Sci-Fi"),
-        Genre("Sliceoflife"),
-        Genre("Sport"),
-        Genre("Spy"),
-        Genre("Superhero"),
-        Genre("Supernatural"),
-        Genre("Suspense"),
-        Genre("Thriller"),
-        Genre("Vampires"),
-        Genre("VideoGames"),
-        Genre("War"),
-        Genre("Western"),
-        Genre("Zombies"),
-    )
+    fun getComicsGenreList() =
+        listOf(
+            Genre("Action"),
+            Genre("Adventure"),
+            Genre("Anthology"),
+            Genre("Anthropomorphic"),
+            Genre("Biography"),
+            Genre("Children"),
+            Genre("Comedy"),
+            Genre("Crime"),
+            Genre("Drama"),
+            Genre("Family"),
+            Genre("Fantasy"),
+            Genre("Fighting"),
+            Genre("GraphicNovels"),
+            Genre("Historical"),
+            Genre("Horror"),
+            Genre("LeadingLadies"),
+            Genre("LGBTQ"),
+            Genre("Literature"),
+            Genre("Manga"),
+            Genre("MartialArts"),
+            Genre("Mature"),
+            Genre("Military"),
+            Genre("Mystery"),
+            Genre("Mythology"),
+            Genre("Personal"),
+            Genre("Political"),
+            Genre("Post-Apocalyptic"),
+            Genre("Psychological"),
+            Genre("Pulp"),
+            Genre("Religious"),
+            Genre("Robots"),
+            Genre("Romance"),
+            Genre("Schoollife"),
+            Genre("Sci-Fi"),
+            Genre("Sliceoflife"),
+            Genre("Sport"),
+            Genre("Spy"),
+            Genre("Superhero"),
+            Genre("Supernatural"),
+            Genre("Suspense"),
+            Genre("Thriller"),
+            Genre("Vampires"),
+            Genre("VideoGames"),
+            Genre("War"),
+            Genre("Western"),
+            Genre("Zombies"),
+        )
 }

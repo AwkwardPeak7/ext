@@ -25,15 +25,17 @@ abstract class MultiChan(
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .rateLimit(2)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("Referer", baseUrl)
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("Referer", baseUrl)
+        }
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/mostfavorites?offset=${20 * (page - 1)}", headers)
 
@@ -71,17 +73,19 @@ abstract class MultiChan(
         val document = response.asJsoup()
         var hasNextPage = false
 
-        val mangas = document.select(searchMangaSelector()).map { element ->
-            searchMangaFromElement(element)
-        }
+        val mangas =
+            document.select(searchMangaSelector()).map { element ->
+                searchMangaFromElement(element)
+            }
 
         val nextSearchPage = document.select(searchMangaNextPageSelector())
         if (nextSearchPage.isNotEmpty()) {
             val query = document.select("input#searchinput").first()!!.attr("value")
-            val pageNum = nextSearchPage.let { selector ->
-                val onClick = selector.attr("onclick")
-                onClick.split("""\\d+""")
-            }
+            val pageNum =
+                nextSearchPage.let { selector ->
+                    val onClick = selector.attr("onclick")
+                    onClick.split("""\\d+""")
+                }
             nextSearchPage.attr("href", "$baseUrl/?do=search&subaction=search&story=$query&search_start=$pageNum")
             hasNextPage = true
         }
@@ -108,11 +112,12 @@ abstract class MultiChan(
         return manga
     }
 
-    private fun parseStatus(element: String): Int = when {
-        element.contains("перевод завершен") -> SManga.COMPLETED
-        element.contains("перевод продолжается") -> SManga.ONGOING
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(element: String): Int =
+        when {
+            element.contains("перевод завершен") -> SManga.COMPLETED
+            element.contains("перевод продолжается") -> SManga.ONGOING
+            else -> SManga.UNKNOWN
+        }
 
     override fun chapterListSelector() = "table.table_cha tr:gt(1)"
 

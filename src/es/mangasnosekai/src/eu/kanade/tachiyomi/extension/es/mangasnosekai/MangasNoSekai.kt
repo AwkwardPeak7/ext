@@ -28,24 +28,26 @@ class MangasNoSekai : Madara(
 ) {
     override val useLoadMoreRequest = LoadMoreStrategy.Never
 
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2, 1)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2, 1)
+            .build()
 
     override val useNewChapterEndpoint = true
 
     private var libraryPath = ""
 
     private fun getLibraryPath() {
-        libraryPath = try {
-            val document = client.newCall(GET(baseUrl, headers)).execute().asJsoup()
-            val libraryUrl = document.selectFirst("ul > li[id^=menu-item] > a[href]")
+        libraryPath =
+            try {
+                val document = client.newCall(GET(baseUrl, headers)).execute().asJsoup()
+                val libraryUrl = document.selectFirst("ul > li[id^=menu-item] > a[href]")
 
-            libraryUrl?.attr("href")?.removeSuffix("/")?.substringAfterLast("/")
-                ?: "manganews3"
-        } catch (e: Exception) {
-            "manganews3"
-        }
+                libraryUrl?.attr("href")?.removeSuffix("/")?.substringAfterLast("/")
+                    ?: "manganews3"
+            } catch (e: Exception) {
+                "manganews3"
+            }
     }
 
     override fun popularMangaRequest(page: Int): Request {
@@ -56,9 +58,10 @@ class MangasNoSekai : Madara(
     override fun popularMangaParse(response: Response): MangasPage {
         val page = response.request.url.fragment?.toIntOrNull() ?: 1
         val document = response.asJsoup()
-        val orderValue = document.selectFirst("select#order_select > option:eq(5)")
-            ?.attr("value")
-            ?: "views2"
+        val orderValue =
+            document.selectFirst("select#order_select > option:eq(5)")
+                ?.attr("value")
+                ?: "views2"
         val url = "$baseUrl/$libraryPath/${searchPage(page)}?m_orderby=$orderValue"
         val newResponse = client.newCall(GET(url, headers)).execute()
         return super.popularMangaParse(newResponse)
@@ -72,9 +75,10 @@ class MangasNoSekai : Madara(
     override fun latestUpdatesParse(response: Response): MangasPage {
         val page = response.request.url.fragment?.toIntOrNull() ?: 1
         val document = response.asJsoup()
-        val orderValue = document.selectFirst("select#order_select > option:eq(1)")
-            ?.attr("value")
-            ?: "latest2"
+        val orderValue =
+            document.selectFirst("select#order_select > option:eq(1)")
+                ?.attr("value")
+                ?: "latest2"
         val url = "$baseUrl/$libraryPath/${searchPage(page)}?m_orderby=$orderValue"
         val newResponse = client.newCall(GET(url, headers)).execute()
         return super.popularMangaParse(newResponse)
@@ -133,36 +137,40 @@ class MangasNoSekai : Madara(
                 manga.thumbnail_url = imageFromElement(it)
             }
             selectFirst(mangaDetailsSelectorStatus)?.ownText()?.let {
-                manga.status = when (it) {
-                    in completedStatusList -> SManga.COMPLETED
-                    in ongoingStatusList -> SManga.ONGOING
-                    in hiatusStatusList -> SManga.ON_HIATUS
-                    in canceledStatusList -> SManga.CANCELLED
-                    else -> SManga.UNKNOWN
-                }
+                manga.status =
+                    when (it) {
+                        in completedStatusList -> SManga.COMPLETED
+                        in ongoingStatusList -> SManga.ONGOING
+                        in hiatusStatusList -> SManga.ON_HIATUS
+                        in canceledStatusList -> SManga.CANCELLED
+                        else -> SManga.UNKNOWN
+                    }
             }
-            val genres = select(mangaDetailsSelectorGenre)
-                .map { element -> element.text().lowercase(Locale.ROOT) }
-                .toMutableSet()
+            val genres =
+                select(mangaDetailsSelectorGenre)
+                    .map { element -> element.text().lowercase(Locale.ROOT) }
+                    .toMutableSet()
 
-            manga.genre = genres.toList().joinToString(", ") { genre ->
-                genre.replaceFirstChar {
-                    if (it.isLowerCase()) {
-                        it.titlecase(
-                            Locale.ROOT,
-                        )
-                    } else {
-                        it.toString()
+            manga.genre =
+                genres.toList().joinToString(", ") { genre ->
+                    genre.replaceFirstChar {
+                        if (it.isLowerCase()) {
+                            it.titlecase(
+                                Locale.ROOT,
+                            )
+                        } else {
+                            it.toString()
+                        }
                     }
                 }
-            }
 
             document.select(altNameSelector).firstOrNull()?.ownText()?.let {
                 if (it.isBlank().not() && it.notUpdating()) {
-                    manga.description = when {
-                        manga.description.isNullOrBlank() -> altName + it
-                        else -> manga.description + "\n\n$altName" + it
-                    }
+                    manga.description =
+                        when {
+                            manga.description.isNullOrBlank() -> altName + it
+                            else -> manga.description + "\n\n$altName" + it
+                        }
                 }
             }
         }
@@ -170,15 +178,16 @@ class MangasNoSekai : Madara(
         return manga
     }
 
-    override val orderByFilterOptions: Map<String, String> = mapOf(
-        intl["order_by_filter_relevance"] to "",
-        intl["order_by_filter_latest"] to "latest2",
-        intl["order_by_filter_az"] to "alphabet",
-        intl["order_by_filter_rating"] to "rating",
-        intl["order_by_filter_trending"] to "trending",
-        intl["order_by_filter_views"] to "views2",
-        intl["order_by_filter_new"] to "new-manga",
-    )
+    override val orderByFilterOptions: Map<String, String> =
+        mapOf(
+            intl["order_by_filter_relevance"] to "",
+            intl["order_by_filter_latest"] to "latest2",
+            intl["order_by_filter_az"] to "alphabet",
+            intl["order_by_filter_rating"] to "rating",
+            intl["order_by_filter_trending"] to "trending",
+            intl["order_by_filter_views"] to "views2",
+            intl["order_by_filter_new"] to "new-manga",
+        )
 
     private fun altChapterRequest(
         url: String,
@@ -186,9 +195,10 @@ class MangasNoSekai : Madara(
         page: Int,
         objects: List<Pair<String, String>>,
     ): Request {
-        val form = FormBody.Builder()
-            .add("mangaid", mangaId)
-            .add("page", page.toString())
+        val form =
+            FormBody.Builder()
+                .add("mangaid", mangaId)
+                .add("page", page.toString())
 
         objects.forEach { (key, value) ->
             form.add(key, value)
@@ -208,27 +218,32 @@ class MangasNoSekai : Madara(
 
         val mangaSlug = response.request.url.toString().substringAfter(baseUrl).removeSuffix("/")
         val coreScript = document.selectFirst(values[0])!!.attr("abs:src")
-        val coreScriptBody = Deobfuscator.deobfuscateScript(client.newCall(GET(coreScript, headers)).execute().body.string())
-            ?: throw Exception("No se pudo deobfuscar el script")
+        val coreScriptBody =
+            Deobfuscator.deobfuscateScript(client.newCall(GET(coreScript, headers)).execute().body.string())
+                ?: throw Exception("No se pudo deobfuscar el script")
 
-        val url = values[5].toRegex().find(coreScriptBody)?.groupValues?.get(1)
-            ?: throw Exception("No se pudo obtener la url del capítulo")
+        val url =
+            values[5].toRegex().find(coreScriptBody)?.groupValues?.get(1)
+                ?: throw Exception("No se pudo obtener la url del capítulo")
 
-        val data = values[5].toRegex().find(coreScriptBody)?.groupValues?.get(2)?.trim()
-            ?: throw Exception("No se pudo obtener la data del capítulo")
+        val data =
+            values[5].toRegex().find(coreScriptBody)?.groupValues?.get(2)?.trim()
+                ?: throw Exception("No se pudo obtener la data del capítulo")
 
-        val objects = values[6].toRegex().findAll(data)
-            .mapNotNull { matchResult ->
-                val key = matchResult.groupValues[1]
-                val value = matchResult.groupValues.getOrNull(2)
-                if (!value.isNullOrEmpty()) key to value else null
-            }.toList()
+        val objects =
+            values[6].toRegex().findAll(data)
+                .mapNotNull { matchResult ->
+                    val key = matchResult.groupValues[1]
+                    val value = matchResult.groupValues.getOrNull(2)
+                    if (!value.isNullOrEmpty()) key to value else null
+                }.toList()
 
-        val mangaId = document.selectFirst(values[1])?.data()
-            ?.let { values[7].toRegex().find(it)?.groupValues?.get(1) }
-            ?: document.selectFirst(values[2])?.data()
-                ?.let { values[8].toRegex().find(it)?.groupValues?.get(1) }
-            ?: throw Exception("No se pudo obtener el id del manga")
+        val mangaId =
+            document.selectFirst(values[1])?.data()
+                ?.let { values[7].toRegex().find(it)?.groupValues?.get(1) }
+                ?: document.selectFirst(values[2])?.data()
+                    ?.let { values[8].toRegex().find(it)?.groupValues?.get(1) }
+                ?: throw Exception("No se pudo obtener el id del manga")
 
         val chapterElements = mutableListOf<Element>()
         var page = 1
@@ -247,13 +262,14 @@ class MangasNoSekai : Madara(
         return chapterElements.map(::altChapterFromElement)
     }
 
-    private fun altChapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
-        name = element.select("div.text-sm").text()
-        date_upload = element.selectFirst("time")?.text()?.let {
-            parseChapterDate(it)
-        } ?: 0
-    }
+    private fun altChapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
+            name = element.select("div.text-sm").text()
+            date_upload = element.selectFirst("time")?.text()?.let {
+                parseChapterDate(it)
+            } ?: 0
+        }
 
     private fun chaptersFromJson(
         jsonString: String,

@@ -17,8 +17,9 @@ object ImageInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val url = chain.request().url
-        val key = url.queryParameter("key")
-            ?: return chain.proceed(chain.request())
+        val key =
+            url.queryParameter("key")
+                ?: return chain.proceed(chain.request())
         return chain.proceed(
             chain.request().newBuilder().url(
                 url.newBuilder()

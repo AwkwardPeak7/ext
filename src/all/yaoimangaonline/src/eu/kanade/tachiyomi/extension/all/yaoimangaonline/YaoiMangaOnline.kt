@@ -48,12 +48,14 @@ class YaoiMangaOnline : ParsedHttpSource() {
     ) = baseUrl.toHttpUrl().newBuilder().run {
         filters.forEach {
             when (it) {
-                is CategoryFilter -> if (it.state != 0) {
-                    addQueryParameter("cat", it.toString())
-                }
-                is TagFilter -> if (it.state != 0) {
-                    addEncodedPathSegments("tag/$it")
-                }
+                is CategoryFilter ->
+                    if (it.state != 0) {
+                        addQueryParameter("cat", it.toString())
+                    }
+                is TagFilter ->
+                    if (it.state != 0) {
+                        addEncodedPathSegments("tag/$it")
+                    }
                 else -> {}
             }
         }
@@ -62,39 +64,45 @@ class YaoiMangaOnline : ParsedHttpSource() {
         GET(toString(), headers)
     }
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        title = element.attr("title")
-        setUrlWithoutDomain(element.attr("href"))
-        thumbnail_url = element.selectFirst("img")?.attr("src")
-    }
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            title = element.attr("title")
+            setUrlWithoutDomain(element.attr("href"))
+            thumbnail_url = element.selectFirst("img")?.attr("src")
+        }
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.select("h1.entry-title").text()
-        thumbnail_url = document
-            .selectFirst(".herald-post-thumbnail img")?.attr("src")
-        description = document.select(".entry-content > p").text()
-        genre = document.select(".meta-tags > a").joinToString { it.text() }
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.select("h1.entry-title").text()
+            thumbnail_url =
+                document
+                    .selectFirst(".herald-post-thumbnail img")?.attr("src")
+            description = document.select(".entry-content > p").text()
+            genre = document.select(".meta-tags > a").joinToString { it.text() }
+        }
 
     override fun chapterListSelector() = ".mpp-toc a"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        name = element.ownText()
-        setUrlWithoutDomain(
-            element.attr("href") ?: element.baseUri(),
-        )
-    }
-
-    override fun chapterListParse(response: Response) = super.chapterListParse(response).ifEmpty {
+    override fun chapterFromElement(element: Element) =
         SChapter.create().apply {
-            name = "Chapter"
-            url = response.request.url.encodedPath
-        }.let(::listOf)
-    }.reversed()
+            name = element.ownText()
+            setUrlWithoutDomain(
+                element.attr("href") ?: element.baseUri(),
+            )
+        }
 
-    override fun pageListParse(document: Document) = document.select(".entry-content img").mapIndexed { idx, img ->
-        Page(idx, "", img.attr("src"))
-    }
+    override fun chapterListParse(response: Response) =
+        super.chapterListParse(response).ifEmpty {
+            SChapter.create().apply {
+                name = "Chapter"
+                url = response.request.url.encodedPath
+            }.let(::listOf)
+        }.reversed()
+
+    override fun pageListParse(document: Document) =
+        document.select(".entry-content img").mapIndexed { idx, img ->
+            Page(idx, "", img.attr("src"))
+        }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 

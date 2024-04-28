@@ -26,12 +26,14 @@ class ManhuaKO : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = GET(baseUrl, headers)
 
@@ -40,13 +42,14 @@ class ManhuaKO : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector(): String? = null
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        with(element.selectFirst("> a")!!) {
-            setUrlWithoutDomain(attr("href"))
-            title = selectFirst("img")!!.attr("title")
-            thumbnail_url = selectFirst("img")!!.imgAttr()
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            with(element.selectFirst("> a")!!) {
+                setUrlWithoutDomain(attr("href"))
+                title = selectFirst("img")!!.attr("title")
+                thumbnail_url = selectFirst("img")!!.imgAttr()
+            }
         }
-    }
 
     override fun latestUpdatesRequest(page: Int) = GET(baseUrl, headers)
 
@@ -111,13 +114,14 @@ class ManhuaKO : ParsedHttpSource() {
 
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.select("section > div.container > h1.center-align").text()
-        genre = document.select("div.card-panel div:has(> span:contains(Genero)) a.chip").joinToString { it.ownText() }
-        description = document.select("div.card-panel p").text()
-        thumbnail_url = document.select("section > div.container img#preview.fit-img").imgAttr()
-        author = document.selectFirst("div.card-panel div:has(> span:contains(Creador)) > a")!!.ownText()
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.select("section > div.container > h1.center-align").text()
+            genre = document.select("div.card-panel div:has(> span:contains(Genero)) a.chip").joinToString { it.ownText() }
+            description = document.select("div.card-panel p").text()
+            thumbnail_url = document.select("section > div.container img#preview.fit-img").imgAttr()
+            author = document.selectFirst("div.card-panel div:has(> span:contains(Creador)) > a")!!.ownText()
+        }
 
     override fun chapterListSelector() = "table.table-chapters tr"
 
@@ -139,11 +143,12 @@ class ManhuaKO : ParsedHttpSource() {
         return chapters
     }
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        name = "Capítulo " + element.select("a").text()
-        date_upload = parseRelativeDate(element.selectFirst("span.truncate")!!.ownText())
-        setUrlWithoutDomain(element.select("a").attr("href"))
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            name = "Capítulo " + element.select("a").text()
+            date_upload = parseRelativeDate(element.selectFirst("span.truncate")!!.ownText())
+            setUrlWithoutDomain(element.select("a").attr("href"))
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("div#pantallaCompleta img").mapIndexed { i, img ->

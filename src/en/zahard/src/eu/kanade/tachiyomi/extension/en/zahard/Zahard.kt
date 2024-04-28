@@ -27,11 +27,12 @@ class Zahard : MangaThemesia(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder()
-            .addPathSegment(mangaUrlDirectory.substring(1))
-            .addQueryParameter("search", query)
-            .addQueryParameter("page", page.toString())
-            .build()
+        val url =
+            baseUrl.toHttpUrl().newBuilder()
+                .addPathSegment(mangaUrlDirectory.substring(1))
+                .addQueryParameter("search", query)
+                .addQueryParameter("page", page.toString())
+                .build()
 
         return GET(url, headers)
     }

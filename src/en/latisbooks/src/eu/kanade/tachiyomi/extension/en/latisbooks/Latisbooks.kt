@@ -110,17 +110,18 @@ class Latisbooks : HttpSource() {
     // Pages
 
     // Adapted from the xkcd source's wordWrap function
-    private fun wordWrap(text: String) = buildString {
-        var charCount = 0
-        text.replace("\r\n", " ").split(' ').forEach { w ->
-            if (charCount > 25) {
-                append("\n")
-                charCount = 0
+    private fun wordWrap(text: String) =
+        buildString {
+            var charCount = 0
+            text.replace("\r\n", " ").split(' ').forEach { w ->
+                if (charCount > 25) {
+                    append("\n")
+                    charCount = 0
+                }
+                append(w).append(' ')
+                charCount += w.length + 1
             }
-            append(w).append(' ')
-            charCount += w.length + 1
         }
-    }
 
     override fun pageListRequest(chapter: SChapter): Request = GET(chapter.url, headers)
 
@@ -128,9 +129,10 @@ class Latisbooks : HttpSource() {
         val blocks = response.asJsoup().select("div.content-wrapper div.row div.col")
 
         // Handle multiple images per page (e.g. Page 23+24)
-        val pages = blocks.select("div.image-block-wrapper img")
-            .mapIndexed { i, it -> Page(i, "", it.attr("abs:data-src")) }
-            .toMutableList()
+        val pages =
+            blocks.select("div.image-block-wrapper img")
+                .mapIndexed { i, it -> Page(i, "", it.attr("abs:data-src")) }
+                .toMutableList()
 
         val numImages = pages.size
 

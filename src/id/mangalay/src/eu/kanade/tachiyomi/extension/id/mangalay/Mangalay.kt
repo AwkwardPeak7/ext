@@ -22,11 +22,12 @@ class Mangalay : ParsedHttpSource() {
 
     override fun popularMangaSelector() = ".post-body table"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.select("a").first()!!.attr("href"))
-        title = element.select(".tr-caption").text()
-        thumbnail_url = element.select("img").attr("src")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select("a").first()!!.attr("href"))
+            title = element.select(".tr-caption").text()
+            thumbnail_url = element.select("img").attr("src")
+        }
 
     override fun popularMangaNextPageSelector(): String? = null
 
@@ -34,10 +35,11 @@ class Mangalay : ParsedHttpSource() {
 
     override fun chapterListSelector() = ".post-body span > a"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        name = element.select("b").text()
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            name = element.select("b").text()
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select(".separator img")

@@ -28,10 +28,11 @@ class Hentairead : Madara("HentaiRead", "https://hentairead.com", "en", dateForm
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl${searchPage(page)}".toHttpUrl().newBuilder()
-            .addQueryParameter("s", query)
-            .addQueryParameter("post_type", "wp-manga")
-            .build()
+        val url =
+            "$baseUrl${searchPage(page)}".toHttpUrl().newBuilder()
+                .addQueryParameter("s", query)
+                .addQueryParameter("post_type", "wp-manga")
+                .build()
 
         return GET(url, headers)
     }
@@ -57,9 +58,10 @@ class Hentairead : Madara("HentaiRead", "https://hentairead.com", "en", dateForm
         launchIO { countViews(document) }
 
         return document.select(pageListParseSelector).mapIndexed { index, element ->
-            val pageUri: String? = element.selectFirst("img")!!.let {
-                it.absUrl(if (it.hasAttr("data-src")) "data-src" else "src")
-            }
+            val pageUri: String? =
+                element.selectFirst("img")!!.let {
+                    it.absUrl(if (it.hasAttr("data-src")) "data-src" else "src")
+                }
             Page(
                 index,
                 document.location(),

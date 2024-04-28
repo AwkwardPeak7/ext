@@ -28,23 +28,25 @@ class AsuraScans : MangaThemesiaAlt(
         }
     }
 
-    override val client = super.client.newBuilder()
-        .rateLimit(1, 3)
-        .apply {
-            val interceptors = interceptors()
-            val index = interceptors.indexOfFirst { "Brotli" in it.javaClass.simpleName }
-            if (index >= 0) {
-                interceptors.add(interceptors.removeAt(index))
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1, 3)
+            .apply {
+                val interceptors = interceptors()
+                val index = interceptors.indexOfFirst { "Brotli" in it.javaClass.simpleName }
+                if (index >= 0) {
+                    interceptors.add(interceptors.removeAt(index))
+                }
             }
-        }
-        .build()
+            .build()
 
     override val seriesDescriptionSelector = "div.desc p, div.entry-content p, div[itemprop=description]:not(:has(p))"
     override val seriesArtistSelector = ".fmed b:contains(artist)+span, .infox span:contains(artist)"
     override val seriesAuthorSelector = ".fmed b:contains(author)+span, .infox span:contains(author)"
 
-    override val pageSelector = "div.rdminimal > img, div.rdminimal > p > img, div.rdminimal > a > img, div.rdminimal > p > a > img, " +
-        "div.rdminimal > noscript > img, div.rdminimal > p > noscript > img, div.rdminimal > a > noscript > img, div.rdminimal > p > a > noscript > img"
+    override val pageSelector =
+        "div.rdminimal > img, div.rdminimal > p > img, div.rdminimal > a > img, div.rdminimal > p > a > img, " +
+            "div.rdminimal > noscript > img, div.rdminimal > p > noscript > img, div.rdminimal > a > noscript > img, div.rdminimal > p > a > noscript > img"
 
     override fun searchMangaRequest(
         page: Int,
@@ -54,12 +56,13 @@ class AsuraScans : MangaThemesiaAlt(
         val request = super.searchMangaRequest(page, query, filters)
         if (query.isBlank()) return request
 
-        val url = request.url.newBuilder()
-            .addPathSegment("page/$page/")
-            .removeAllQueryParameters("page")
-            .removeAllQueryParameters("title")
-            .addQueryParameter("s", query)
-            .build()
+        val url =
+            request.url.newBuilder()
+                .addPathSegment("page/$page/")
+                .removeAllQueryParameters("page")
+                .removeAllQueryParameters("title")
+                .addQueryParameter("s", query)
+                .build()
 
         return request.newBuilder()
             .url(url)

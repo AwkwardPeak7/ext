@@ -27,17 +27,19 @@ class MidnightMessScans : Madara("Midnight Mess Scans", "https://midnightmess.or
                 manga.thumbnail_url = imageFromElement(it)
             }
             select("div.summary-content").last()?.let {
-                manga.status = when (it.text()) {
-                    // I don't know what's the corresponding for COMPLETED and LICENSED
-                    // There's no support for "Canceled" or "On Hold"
-                    "Completed", "Completo", "Concluído", "Concluido", "Terminé" -> SManga.COMPLETED
-                    "OnGoing", "Продолжается", "Updating", "Em Lançamento", "Em andamento", "Em Andamento", "En cours", "Ativo", "Lançando" -> SManga.ONGOING
-                    else -> SManga.UNKNOWN
-                }
+                manga.status =
+                    when (it.text()) {
+                        // I don't know what's the corresponding for COMPLETED and LICENSED
+                        // There's no support for "Canceled" or "On Hold"
+                        "Completed", "Completo", "Concluído", "Concluido", "Terminé" -> SManga.COMPLETED
+                        "OnGoing", "Продолжается", "Updating", "Em Lançamento", "Em andamento", "Em Andamento", "En cours", "Ativo", "Lançando" -> SManga.ONGOING
+                        else -> SManga.UNKNOWN
+                    }
             }
-            val genres = select("div.genres-content a")
-                .map { element -> element.text().lowercase(Locale.ROOT) }
-                .toMutableSet()
+            val genres =
+                select("div.genres-content a")
+                    .map { element -> element.text().lowercase(Locale.ROOT) }
+                    .toMutableSet()
 
             // add tag(s) to genre
             select("div.tags-content a").forEach { element ->
@@ -58,10 +60,11 @@ class MidnightMessScans : Madara("Midnight Mess Scans", "https://midnightmess.or
             // add alternative name to manga description
             document.select(altNameSelector).firstOrNull()?.ownText()?.let {
                 if (it.isBlank().not() && it.notUpdating()) {
-                    manga.description = when {
-                        manga.description.isNullOrBlank() -> altName + it
-                        else -> manga.description + "\n\n$altName" + it
-                    }
+                    manga.description =
+                        when {
+                            manga.description.isNullOrBlank() -> altName + it
+                            else -> manga.description + "\n\n$altName" + it
+                        }
                 }
             }
         }

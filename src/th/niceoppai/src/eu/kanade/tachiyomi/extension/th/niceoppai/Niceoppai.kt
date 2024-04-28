@@ -31,11 +31,12 @@ class Niceoppai : ParsedHttpSource() {
 
     override val supportsLatest: Boolean = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .writeTimeout(1, TimeUnit.MINUTES)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .writeTimeout(1, TimeUnit.MINUTES)
+            .build()
 
     // Popular
     override fun popularMangaRequest(page: Int): Request {
@@ -44,13 +45,14 @@ class Niceoppai : ParsedHttpSource() {
 
     override fun popularMangaSelector() = "div.nde"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst("div.det a")!!.text()
-        element.select("div.cvr").let {
-            setUrlWithoutDomain(it.select("a").attr("href"))
-            thumbnail_url = it.select("img").attr("abs:src")
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.selectFirst("div.det a")!!.text()
+            element.select("div.cvr").let {
+                setUrlWithoutDomain(it.select("a").attr("href"))
+                thumbnail_url = it.select("img").attr("abs:src")
+            }
         }
-    }
 
     override fun popularMangaNextPageSelector() = "ul.pgg li a"
 
@@ -107,11 +109,12 @@ class Niceoppai : ParsedHttpSource() {
     }
 
     // Manga summary page
-    private fun getStatus(status: String) = when (status) {
-        "ยังไม่จบ" -> SManga.ONGOING
-        "จบแล้ว" -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun getStatus(status: String) =
+        when (status) {
+            "ยังไม่จบ" -> SManga.ONGOING
+            "จบแล้ว" -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun mangaDetailsParse(document: Document): SManga {
         val infoElement = document.select("div.det").first()!!
@@ -195,15 +198,18 @@ class Niceoppai : ParsedHttpSource() {
         val cal = Calendar.getInstance()
 
         return when {
-            WordSet("hari", "gün", "jour", "día", "dia", "day", "วัน", "ngày", "giorni", "أيام").anyWordIn(date) -> cal.apply {
-                add(Calendar.DAY_OF_MONTH, -number)
-            }.timeInMillis
-            WordSet("jam", "saat", "heure", "hora", "hour", "ชั่วโมง", "giờ", "ore", "ساعة").anyWordIn(date) -> cal.apply {
-                add(Calendar.HOUR, -number)
-            }.timeInMillis
-            WordSet("menit", "dakika", "min", "minute", "minuto", "นาที", "دقائق").anyWordIn(date) -> cal.apply {
-                add(Calendar.MINUTE, -number)
-            }.timeInMillis
+            WordSet("hari", "gün", "jour", "día", "dia", "day", "วัน", "ngày", "giorni", "أيام").anyWordIn(date) ->
+                cal.apply {
+                    add(Calendar.DAY_OF_MONTH, -number)
+                }.timeInMillis
+            WordSet("jam", "saat", "heure", "hora", "hour", "ชั่วโมง", "giờ", "ore", "ساعة").anyWordIn(date) ->
+                cal.apply {
+                    add(Calendar.HOUR, -number)
+                }.timeInMillis
+            WordSet("menit", "dakika", "min", "minute", "minuto", "นาที", "دقائق").anyWordIn(date) ->
+                cal.apply {
+                    add(Calendar.MINUTE, -number)
+                }.timeInMillis
             WordSet("detik", "segundo", "second", "วินาที").anyWordIn(date) -> cal.apply { add(Calendar.SECOND, -number) }.timeInMillis
             WordSet("week").anyWordIn(date) -> cal.apply { add(Calendar.DAY_OF_MONTH, -number * 7) }.timeInMillis
             WordSet("month").anyWordIn(date) -> cal.apply { add(Calendar.MONTH, -number) }.timeInMillis
@@ -249,10 +255,11 @@ class Niceoppai : ParsedHttpSource() {
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
-        val listPage = document.select("ul.pgg li a").toList()
-            .filter { it.text() != "Next" && it.text() != "Last" }
-            .map { it.select("a").attr("href") }
-            .distinct()
+        val listPage =
+            document.select("ul.pgg li a").toList()
+                .filter { it.text() != "Next" && it.text() != "Last" }
+                .map { it.select("a").attr("href") }
+                .distinct()
 
         val chList: MutableList<SChapter> = mutableListOf()
         if (listPage.isNotEmpty()) {
@@ -260,10 +267,11 @@ class Niceoppai : ParsedHttpSource() {
                 val res: Response = client.newCall(GET(urlPage, headers)).execute()
                 val mangaDocument = res.asJsoup()
                 if (mangaDocument.select(chapterListSelector()).isEmpty()) {
-                    val createdChapter = SChapter.create().apply {
-                        name = "Chapter 1"
-                        chapter_number = 1.0f
-                    }
+                    val createdChapter =
+                        SChapter.create().apply {
+                            name = "Chapter 1"
+                            chapter_number = 1.0f
+                        }
                     chList += listOf(createdChapter)
                 } else {
                     chList +=
@@ -296,34 +304,36 @@ class Niceoppai : ParsedHttpSource() {
 
     // Filter
     private val orderByFilterTitle: String = "Order By เรียกตาม"
-    private val orderByFilterOptions: Array<String> = arrayOf(
-        "Name (A-Z)",
-        "Name (Z-A)",
-        "Last Updated",
-        "Oldest Updated",
-        "Most Popular",
-        "Most Popular (Weekly)",
-        "Most Popular (Monthly)",
-        "Least Popular",
-        "Last Added",
-        "Early Added",
-        "Top Rating",
-        "Lowest Rating",
-    )
-    private val orderByFilterOptionsValues: Array<String> = arrayOf(
-        "name-az",
-        "name-za",
-        "last-updated",
-        "oldest-updated",
-        "most-popular",
-        "most-popular-weekly",
-        "most-popular-monthly",
-        "least-popular",
-        "last-added",
-        "early-added",
-        "top-rating",
-        "lowest-rating",
-    )
+    private val orderByFilterOptions: Array<String> =
+        arrayOf(
+            "Name (A-Z)",
+            "Name (Z-A)",
+            "Last Updated",
+            "Oldest Updated",
+            "Most Popular",
+            "Most Popular (Weekly)",
+            "Most Popular (Monthly)",
+            "Least Popular",
+            "Last Added",
+            "Early Added",
+            "Top Rating",
+            "Lowest Rating",
+        )
+    private val orderByFilterOptionsValues: Array<String> =
+        arrayOf(
+            "name-az",
+            "name-za",
+            "last-updated",
+            "oldest-updated",
+            "most-popular",
+            "most-popular-weekly",
+            "most-popular-monthly",
+            "least-popular",
+            "last-added",
+            "early-added",
+            "top-rating",
+            "lowest-rating",
+        )
 
     private class OrderByFilter(title: String, options: List<Pair<String, String>>, state: Int = 0) : UriPartFilter(
         title,
@@ -332,13 +342,14 @@ class Niceoppai : ParsedHttpSource() {
     )
 
     override fun getFilterList(): FilterList {
-        val filters = mutableListOf(
-            OrderByFilter(
-                orderByFilterTitle,
-                orderByFilterOptions.zip(orderByFilterOptionsValues),
-                0,
-            ),
-        )
+        val filters =
+            mutableListOf(
+                OrderByFilter(
+                    orderByFilterTitle,
+                    orderByFilterOptions.zip(orderByFilterOptionsValues),
+                    0,
+                ),
+            )
 
         return FilterList(filters)
     }

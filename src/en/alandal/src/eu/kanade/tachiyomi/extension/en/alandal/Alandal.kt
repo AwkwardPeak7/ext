@@ -25,24 +25,27 @@ class Alandal : HttpSource() {
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder().apply {
-        add("Referer", "$baseUrl/")
-    }
+    override fun headersBuilder() =
+        super.headersBuilder().apply {
+            add("Referer", "$baseUrl/")
+        }
 
     private val apiHeaders by lazy { apiHeadersBuilder.build() }
 
-    private val apiHeadersBuilder = headersBuilder().apply {
-        add("Accept", "application/json")
-        add("Host", apiUrl.toHttpUrl().host)
-        add("Origin", baseUrl)
-        add("Sec-Fetch-Dest", "empty")
-        add("Sec-Fetch-Mode", "cors")
-        add("Sec-Fetch-Site", "same-origin")
-    }
+    private val apiHeadersBuilder =
+        headersBuilder().apply {
+            add("Accept", "application/json")
+            add("Host", apiUrl.toHttpUrl().host)
+            add("Origin", baseUrl)
+            add("Sec-Fetch-Dest", "empty")
+            add("Sec-Fetch-Mode", "cors")
+            add("Sec-Fetch-Site", "same-origin")
+        }
 
     private val json: Json by injectLazy()
 
@@ -65,20 +68,21 @@ class Alandal : HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = apiUrl.toHttpUrl().newBuilder().apply {
-            addPathSegment("series")
-            if (query.isNotBlank()) {
-                addQueryParameter("name", query)
-            }
-            addQueryParameter("type", "comic")
+        val url =
+            apiUrl.toHttpUrl().newBuilder().apply {
+                addPathSegment("series")
+                if (query.isNotBlank()) {
+                    addQueryParameter("name", query)
+                }
+                addQueryParameter("type", "comic")
 
-            val filterList = filters.ifEmpty { getFilterList() }
-            filterList.filterIsInstance<UriFilter>().forEach {
-                it.addToUri(this)
-            }
+                val filterList = filters.ifEmpty { getFilterList() }
+                filterList.filterIsInstance<UriFilter>().forEach {
+                    it.addToUri(this)
+                }
 
-            addQueryParameter("page", page.toString())
-        }.build()
+                addQueryParameter("page", page.toString())
+            }.build()
 
         return GET(url, apiHeaders)
     }
@@ -92,21 +96,23 @@ class Alandal : HttpSource() {
 
     // =============================== Filters ==============================
 
-    override fun getFilterList(): FilterList = FilterList(
-        GenreFilter(),
-        SortFilter(),
-        StatusFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            GenreFilter(),
+            SortFilter(),
+            StatusFilter(),
+        )
 
     // =========================== Manga Details ============================
 
     override fun getMangaUrl(manga: SManga): String = baseUrl + manga.url.replace("series/", "series/comic-")
 
     override fun mangaDetailsRequest(manga: SManga): Request {
-        val url = apiUrl.toHttpUrl().newBuilder().apply {
-            addPathSegments(manga.url.substringAfter("/"))
-            addQueryParameter("type", "comic")
-        }.build()
+        val url =
+            apiUrl.toHttpUrl().newBuilder().apply {
+                addPathSegments(manga.url.substringAfter("/"))
+                addQueryParameter("type", "comic")
+            }.build()
 
         return GET(url, apiHeaders)
     }
@@ -116,28 +122,31 @@ class Alandal : HttpSource() {
     // ============================== Chapters ==============================
 
     override fun getChapterUrl(chapter: SChapter): String {
-        return baseUrl + chapter.url
-            .replace("series/", "chapter/comic-")
-            .replace("chapters/", "")
+        return baseUrl +
+            chapter.url
+                .replace("series/", "chapter/comic-")
+                .replace("chapters/", "")
     }
 
     override fun chapterListRequest(manga: SManga): Request {
-        val url = "$apiUrl${manga.url}".toHttpUrl().newBuilder().apply {
-            addPathSegment("chapters")
-            addQueryParameter("type", "comic")
-            addQueryParameter("from", "0")
-            addQueryParameter("to", "999")
-        }.build()
+        val url =
+            "$apiUrl${manga.url}".toHttpUrl().newBuilder().apply {
+                addPathSegment("chapters")
+                addQueryParameter("type", "comic")
+                addQueryParameter("from", "0")
+                addQueryParameter("to", "999")
+            }.build()
 
         return GET(url, apiHeaders)
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        val slug = response.request.url.newBuilder()
-            .query(null)
-            .removePathSegment(0) // Remove /api
-            .build()
-            .encodedPath
+        val slug =
+            response.request.url.newBuilder()
+                .query(null)
+                .removePathSegment(0) // Remove /api
+                .build()
+                .encodedPath
 
         return response.parseAs<ChapterResponseDto>().data.map {
             it.toSChapter(slug)
@@ -151,10 +160,11 @@ class Alandal : HttpSource() {
             throw Exception("Log in and unlock chapter in webview, then refresh chapter list")
         }
 
-        val url = "$apiUrl${chapter.url}".toHttpUrl().newBuilder().apply {
-            addQueryParameter("type", "comic")
-            addQueryParameter("traveler", "0")
-        }.build()
+        val url =
+            "$apiUrl${chapter.url}".toHttpUrl().newBuilder().apply {
+                addQueryParameter("type", "comic")
+                addQueryParameter("traveler", "0")
+            }.build()
 
         return GET(url, apiHeaders)
     }
@@ -170,17 +180,19 @@ class Alandal : HttpSource() {
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
-        val pageHeaders = headersBuilder().apply {
-            add("Accept", "image/avif,image/webp,*/*")
-            add("Host", page.imageUrl!!.toHttpUrl().host)
-        }.build()
+        val pageHeaders =
+            headersBuilder().apply {
+                add("Accept", "image/avif,image/webp,*/*")
+                add("Host", page.imageUrl!!.toHttpUrl().host)
+            }.build()
 
         return GET(page.imageUrl!!, pageHeaders)
     }
 
     // ============================= Utilities ==============================
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream(it.body.byteStream())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream(it.body.byteStream())
+        }
 }

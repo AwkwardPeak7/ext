@@ -28,12 +28,13 @@ class ReadM : ParsedHttpSource() {
     override val baseUrl: String = "https://readm.today"
     override val lang: String = "en"
     override val supportsLatest: Boolean = true
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .retryOnConnectionFailure(true)
-        .followRedirects(true)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .retryOnConnectionFailure(true)
+            .followRedirects(true)
+            .build()
 
     private val json: Json by injectLazy()
     // Popular
@@ -44,13 +45,14 @@ class ReadM : ParsedHttpSource() {
 
     override fun popularMangaSelector(): String = "div#discover-response li"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        thumbnail_url = element.selectFirst("img")!!.imgAttr()
-        element.select("div.subject-title a").first()!!.apply {
-            title = this.text().trim()
-            url = this.attr("href")
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            thumbnail_url = element.selectFirst("img")!!.imgAttr()
+            element.select("div.subject-title a").first()!!.apply {
+                title = this.text().trim()
+                url = this.attr("href")
+            }
         }
-    }
 
     // Latest
 
@@ -60,13 +62,14 @@ class ReadM : ParsedHttpSource() {
 
     override fun latestUpdatesSelector(): String = "ul.latest-updates > li"
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        thumbnail_url = element.selectFirst("img")!!.imgAttr()
-        element.select("h2 a").first()!!.apply {
-            title = this.text().trim()
-            url = this.attr("href")
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            thumbnail_url = element.selectFirst("img")!!.imgAttr()
+            element.select("h2 a").first()!!.apply {
+                title = this.text().trim()
+                url = this.attr("href")
+            }
         }
-    }
 
     // Search
 
@@ -75,14 +78,16 @@ class ReadM : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val formBody = FormBody.Builder()
-            .add("dataType", "json")
-            .add("phrase", query)
+        val formBody =
+            FormBody.Builder()
+                .add("dataType", "json")
+                .add("phrase", query)
 
-        val searchHeaders = headers.newBuilder()
-            .add("X-Requested-With", "XMLHttpRequest")
-            .add("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
-            .build()
+        val searchHeaders =
+            headers.newBuilder()
+                .add("X-Requested-With", "XMLHttpRequest")
+                .add("content-type", "application/x-www-form-urlencoded; charset=UTF-8")
+                .build()
         return POST("$baseUrl/service/search", searchHeaders, formBody.build())
     }
 
@@ -104,32 +109,35 @@ class ReadM : ParsedHttpSource() {
 
     // Details
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        thumbnail_url = document.selectFirst("img.series-profile-thumb")!!.imgAttr()
-        title = document.select("h1.page-title").text().trim()
-        author = document.select("span#first_episode a").text().trim()
-        artist = document.select("span#last_episode a").text().trim()
-        description = document.select("div.series-summary-wrapper p").text().trim()
-        genre = document.select("div.series-summary-wrapper div.item a").joinToString(", ") { it.text().trim() }
-        status = parseStatus(document.select("div.series-genres .series-status").firstOrNull()?.ownText())
-    }
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            thumbnail_url = document.selectFirst("img.series-profile-thumb")!!.imgAttr()
+            title = document.select("h1.page-title").text().trim()
+            author = document.select("span#first_episode a").text().trim()
+            artist = document.select("span#last_episode a").text().trim()
+            description = document.select("div.series-summary-wrapper p").text().trim()
+            genre = document.select("div.series-summary-wrapper div.item a").joinToString(", ") { it.text().trim() }
+            status = parseStatus(document.select("div.series-genres .series-status").firstOrNull()?.ownText())
+        }
 
-    private fun parseStatus(element: String?): Int = when {
-        element == null -> SManga.UNKNOWN
-        listOf("ongoing").any { it.contains(element, ignoreCase = true) } -> SManga.ONGOING
-        listOf("completed").any { it.contains(element, ignoreCase = true) } -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(element: String?): Int =
+        when {
+            element == null -> SManga.UNKNOWN
+            listOf("ongoing").any { it.contains(element, ignoreCase = true) } -> SManga.ONGOING
+            listOf("completed").any { it.contains(element, ignoreCase = true) } -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // Chapters
 
     override fun chapterListSelector(): String = "div.season_start"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        name = element.select("a").text()
-        url = element.select("a").attr("href")
-        date_upload = parseChapterDate(element.select("td.episode-date").text().trim())
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            name = element.select("a").text()
+            url = element.select("a").attr("href")
+            date_upload = parseChapterDate(element.select("td.episode-date").text().trim())
+        }
 
     private fun parseChapterDate(date: String): Long {
         val dateWords: List<String> = date.split(" ")
@@ -169,9 +177,10 @@ class ReadM : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
-    override fun pageListParse(document: Document): List<Page> = document.select("div.ch-images img").mapIndexed { index, element ->
-        Page(index, "", element.imgAttr())
-    }
+    override fun pageListParse(document: Document): List<Page> =
+        document.select("div.ch-images img").mapIndexed { index, element ->
+            Page(index, "", element.imgAttr())
+        }
 
     private fun Element.imgAttr(): String {
         return when {

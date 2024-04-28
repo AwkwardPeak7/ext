@@ -18,9 +18,10 @@ class RawINU : FMReader(
     "https://rawinu.com",
     "ja",
 ) {
-    override val client = network.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
     private val apiEndpoint = "$baseUrl/app/manga/controllers"
 
@@ -39,11 +40,12 @@ class RawINU : FMReader(
         return doc.select(chapterListSelector()).map(::chapterFromElement)
     }
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.absUrl("href"))
-        name = element.attr(chapterNameAttrSelector).trim()
-        date_upload = element.select(chapterTimeSelector).run { if (hasText()) parseRelativeDate(text()) else 0 }
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.absUrl("href"))
+            name = element.attr(chapterNameAttrSelector).trim()
+            date_upload = element.select(chapterTimeSelector).run { if (hasText()) parseRelativeDate(text()) else 0 }
+        }
 
     // =============================== Pages ================================
     override fun pageListParse(document: Document): List<Page> {

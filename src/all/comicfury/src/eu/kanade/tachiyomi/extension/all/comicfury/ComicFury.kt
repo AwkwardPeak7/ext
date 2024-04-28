@@ -182,19 +182,22 @@ class ComicFury(
         req.addQueryParameter("language", siteLang)
         filters.forEach {
             when (it) {
-                is TagsFilter -> req.addEncodedQueryParameter(
-                    "tags",
-                    it.state.replace(", ", ","),
-                )
+                is TagsFilter ->
+                    req.addEncodedQueryParameter(
+                        "tags",
+                        it.state.replace(", ", ","),
+                    )
                 is SortFilter -> req.addQueryParameter("sort", it.state.toString())
-                is CompletedComicFilter -> req.addQueryParameter(
-                    "completed",
-                    it.state.toInt().toString(),
-                )
-                is LastUpdatedFilter -> req.addQueryParameter(
-                    "lastupdate",
-                    it.state.toString(),
-                )
+                is CompletedComicFilter ->
+                    req.addQueryParameter(
+                        "completed",
+                        it.state.toInt().toString(),
+                    )
+                is LastUpdatedFilter ->
+                    req.addQueryParameter(
+                        "lastupdate",
+                        it.state.toString(),
+                    )
                 is ViolenceFilter -> req.addQueryParameter("fv", it.state.toString())
                 is NudityFilter -> req.addQueryParameter("fn", it.state.toString())
                 is StrongLangFilter -> req.addQueryParameter("fl", it.state.toString())
@@ -206,11 +209,12 @@ class ComicFury(
         return Request.Builder().url(req.build()).build()
     }
 
-    private fun Boolean.toInt(): Int = if (this) {
-        0
-    } else {
-        1
-    }
+    private fun Boolean.toInt(): Int =
+        if (this) {
+            0
+        } else {
+            1
+        }
 
     // START OF AUTHOR NOTES //
     private val preferences: SharedPreferences by lazy {
@@ -224,12 +228,13 @@ class ComicFury(
     private fun showAuthorsNotesPref() = preferences.getBoolean(SHOW_AUTHORS_NOTES_KEY, false)
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val authorsNotesPref = SwitchPreferenceCompat(screen.context).apply {
-            key = SHOW_AUTHORS_NOTES_KEY
-            title = "Show author's notes"
-            summary = "Enable to see the author's notes at the end of chapters (if they're there)."
-            setDefaultValue(false)
-        }
+        val authorsNotesPref =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = SHOW_AUTHORS_NOTES_KEY
+                title = "Show author's notes"
+                summary = "Enable to see the author's notes at the end of chapters (if they're there)."
+                setDefaultValue(false)
+            }
         screen.addPreference(authorsNotesPref)
     }
     // END OF AUTHOR NOTES //
@@ -237,20 +242,21 @@ class ComicFury(
     // START OF FILTERS //
     override fun getFilterList(): FilterList = getFilterList(0)
 
-    private fun getFilterList(sortIndex: Int): FilterList = FilterList(
-        TagsFilter(),
-        Filter.Separator(),
-        SortFilter(sortIndex),
-        Filter.Separator(),
-        LastUpdatedFilter(),
-        CompletedComicFilter(),
-        Filter.Separator(),
-        Filter.Header("Flags"),
-        ViolenceFilter(),
-        NudityFilter(),
-        StrongLangFilter(),
-        SexualFilter(),
-    )
+    private fun getFilterList(sortIndex: Int): FilterList =
+        FilterList(
+            TagsFilter(),
+            Filter.Separator(),
+            SortFilter(sortIndex),
+            Filter.Separator(),
+            LastUpdatedFilter(),
+            CompletedComicFilter(),
+            Filter.Separator(),
+            Filter.Header("Flags"),
+            ViolenceFilter(),
+            NudityFilter(),
+            StrongLangFilter(),
+            SexualFilter(),
+        )
 
     internal class SortFilter(index: Int) : Filter.Select<String>(
         "Sort By",
@@ -318,8 +324,9 @@ class ComicFury(
         }
     }
 
-    private val date = listOf("dd MMM yyyy hh:mm aa", "dd MMM yyyy", "MMM dd yyyy")
-        .map { SimpleDateFormat(it, Locale.US) }
+    private val date =
+        listOf("dd MMM yyyy hh:mm aa", "dd MMM yyyy", "MMM dd yyyy")
+            .map { SimpleDateFormat(it, Locale.US) }
 
     private fun SimpleDateFormat.parseTime(string: String): Long {
         return this.parse(string)?.time ?: 0

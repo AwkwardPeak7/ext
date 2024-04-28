@@ -7,12 +7,13 @@ import okhttp3.RequestBody
 import java.util.Calendar
 
 object MangaMonksHelper {
-    fun Headers.Builder.buildApiHeaders(requestBody: RequestBody) = this
-        .add("Content-Length", requestBody.contentLength().toString())
-        .add("Content-Type", requestBody.contentType().toString())
-        .add("Accept", "application/json")
-        .add("X-Requested-With", "XMLHttpRequest")
-        .build()
+    fun Headers.Builder.buildApiHeaders(requestBody: RequestBody) =
+        this
+            .add("Content-Length", requestBody.contentLength().toString())
+            .add("Content-Type", requestBody.contentType().toString())
+            .add("Accept", "application/json")
+            .add("X-Requested-With", "XMLHttpRequest")
+            .build()
 
     inline fun <reified T : Any> T.toFormRequestBody(): RequestBody {
         return FormBody.Builder()

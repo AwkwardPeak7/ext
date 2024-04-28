@@ -23,46 +23,52 @@ import java.io.InputStream
 class ImmortalUpdates : Madara("Immortal Updates", "https://immortalupdates.com", "en") {
     override val useNewChapterEndpoint: Boolean = true
 
-    override val client = super.client.newBuilder()
-        .rateLimit(1, 2)
-        .addInterceptor { chain ->
-            val response = chain.proceed(chain.request())
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1, 2)
+            .addInterceptor { chain ->
+                val response = chain.proceed(chain.request())
 
-            if (response.request.url.fragment?.contains(DESCRAMBLE) != true) {
-                return@addInterceptor response
-            }
-            val fragment = response.request.url.fragment!!
-            val args = fragment.substringAfter("$DESCRAMBLE=").split(",")
+                if (response.request.url.fragment?.contains(DESCRAMBLE) != true) {
+                    return@addInterceptor response
+                }
+                val fragment = response.request.url.fragment!!
+                val args = fragment.substringAfter("$DESCRAMBLE=").split(",")
 
-            val image = unscrambleImage(response.body.byteStream(), args)
-            val body = image.toResponseBody("image/jpeg".toMediaTypeOrNull())
-            return@addInterceptor response.newBuilder()
-                .body(body)
-                .build()
-        }.build()
+                val image = unscrambleImage(response.body.byteStream(), args)
+                val body = image.toResponseBody("image/jpeg".toMediaTypeOrNull())
+                return@addInterceptor response.newBuilder()
+                    .body(body)
+                    .build()
+            }.build()
 
     override fun pageListParse(document: Document): List<Page> {
         val pageList = super.pageListParse(document).toMutableList()
 
-        val unscramblingCallsPage = pageList.firstOrNull { it.imageUrl!!.contains("00-call") }
-            ?: return pageList
+        val unscramblingCallsPage =
+            pageList.firstOrNull { it.imageUrl!!.contains("00-call") }
+                ?: return pageList
 
-        val unscramblingCalls = client.newCall(GET(unscramblingCallsPage.imageUrl!!, headers))
-            .execute()
-            .use { it.body.string() }
+        val unscramblingCalls =
+            client.newCall(GET(unscramblingCallsPage.imageUrl!!, headers))
+                .execute()
+                .use { it.body.string() }
 
         unscramblingCalls.replace("\r", "").split("\n").filter { !it.isNullOrBlank() }.forEach {
-            val args = unfuckJs(it)
-                .substringAfter("[")
-                .substringBefore("]")
+            val args =
+                unfuckJs(it)
+                    .substringAfter("[")
+                    .substringBefore("]")
 
             val filenameFragment = args.split(",")[0].removeSurrounding("\"")
-            val page = pageList.firstOrNull { page -> page.imageUrl!!.contains(filenameFragment, ignoreCase = true) }
-                ?: return@forEach
-            val newPageUrl = page.imageUrl!!.toHttpUrl().newBuilder()
-                .fragment("$DESCRAMBLE=$args")
-                .build()
-                .toString()
+            val page =
+                pageList.firstOrNull { page -> page.imageUrl!!.contains(filenameFragment, ignoreCase = true) }
+                    ?: return@forEach
+            val newPageUrl =
+                page.imageUrl!!.toHttpUrl().newBuilder()
+                    .fragment("$DESCRAMBLE=$args")
+                    .build()
+                    .toString()
             pageList[page.index] = Page(page.index, document.location(), newPageUrl)
         }
         pageList.remove(unscramblingCallsPage)
@@ -130,34 +136,36 @@ class ImmortalUpdates : Madara("Immortal Updates", "https://immortalupdates.com"
         }
 
         if (isBackgroundBlack) {
-            val invertingPaint = Paint().apply {
-                colorFilter = ColorMatrixColorFilter(
-                    ColorMatrix(
-                        floatArrayOf(
-                            -1.0f,
-                            0.0f,
-                            0.0f,
-                            0.0f,
-                            255.0f,
-                            0.0f,
-                            -1.0f,
-                            0.0f,
-                            0.0f,
-                            255.0f,
-                            0.0f,
-                            0.0f,
-                            -1.0f,
-                            0.0f,
-                            255.0f,
-                            0.0f,
-                            0.0f,
-                            0.0f,
-                            1.0f,
-                            0.0f,
-                        ),
-                    ),
-                )
-            }
+            val invertingPaint =
+                Paint().apply {
+                    colorFilter =
+                        ColorMatrixColorFilter(
+                            ColorMatrix(
+                                floatArrayOf(
+                                    -1.0f,
+                                    0.0f,
+                                    0.0f,
+                                    0.0f,
+                                    255.0f,
+                                    0.0f,
+                                    -1.0f,
+                                    0.0f,
+                                    0.0f,
+                                    255.0f,
+                                    0.0f,
+                                    0.0f,
+                                    -1.0f,
+                                    0.0f,
+                                    255.0f,
+                                    0.0f,
+                                    0.0f,
+                                    0.0f,
+                                    1.0f,
+                                    0.0f,
+                                ),
+                            ),
+                        )
+                }
             canvas.drawBitmap(result, 0f, 0f, invertingPaint)
         }
 
@@ -201,10 +209,11 @@ class ImmortalUpdates : Madara("Immortal Updates", "https://immortalupdates.com"
         // fontcolor: (![]+[])[+[]]+({}+[])[+!![]]+([][[]]+[])[+!![]]+(!![]+[])[+[]]+({}+[])[!![]+!![]+!![]+!![]+!![]]+({}+[])[+!![]]+(![]+[])[!![]+!![]]+({}+[])[+!![]]+(!![]+[])[+!![]]
         // "undefined": []+[][[]]
         // Quick hack so QuickJS doesn't complain about function being called with no args
-        val input = jsf.replace(
-            "([]+[])[(![]+[])[+[]]+({}+[])[+!![]]+([][[]]+[])[+!![]]+(!![]+[])[+[]]+({}+[])[!![]+!![]+!![]+!![]+!![]]+({}+[])[+!![]]+(![]+[])[!![]+!![]]+({}+[])[+!![]]+(!![]+[])[+!![]]]()",
-            "([]+[])[(![]+[])[+[]]+({}+[])[+!![]]+([][[]]+[])[+!![]]+(!![]+[])[+[]]+({}+[])[!![]+!![]+!![]+!![]+!![]]+({}+[])[+!![]]+(![]+[])[!![]+!![]]+({}+[])[+!![]]+(!![]+[])[+!![]]]([]+[][[]])",
-        )
+        val input =
+            jsf.replace(
+                "([]+[])[(![]+[])[+[]]+({}+[])[+!![]]+([][[]]+[])[+!![]]+(!![]+[])[+[]]+({}+[])[!![]+!![]+!![]+!![]+!![]]+({}+[])[+!![]]+(![]+[])[!![]+!![]]+({}+[])[+!![]]+(!![]+[])[+!![]]]()",
+                "([]+[])[(![]+[])[+[]]+({}+[])[+!![]]+([][[]]+[])[+!![]]+(!![]+[])[+[]]+({}+[])[!![]+!![]+!![]+!![]+!![]]+({}+[])[+!![]]+(![]+[])[!![]+!![]]+({}+[])[+!![]]+(!![]+[])[+!![]]]([]+[][[]])",
+            )
         return QuickJs.create().use {
             it.execute(jsfBoilerplate)
             it.evaluate("get_img_data(${input.removePrefix("[]").removeSuffix("()")}[0])").toString()

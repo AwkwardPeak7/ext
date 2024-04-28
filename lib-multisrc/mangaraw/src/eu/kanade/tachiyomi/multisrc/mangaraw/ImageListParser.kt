@@ -21,12 +21,13 @@ class ImageListParser(
         }
 
         val data = Data(getValue(0), position, 1)
-        charMap[3] = when (getCharCode(data, position, 4)) {
-            0 -> charCodeToString(getCharCode(data, position, 256))
-            1 -> charCodeToString(getCharCode(data, position, 65536))
-            2 -> return null
-            else -> null
-        }
+        charMap[3] =
+            when (getCharCode(data, position, 4)) {
+                0 -> charCodeToString(getCharCode(data, position, 256))
+                1 -> charCodeToString(getCharCode(data, position, 65536))
+                2 -> return null
+                else -> null
+            }
 
         val imageCharList = mutableListOf(charMap[3])
 
@@ -37,32 +38,34 @@ class ImageListParser(
         while (data.index <= code.length) {
             val max = 2.0.pow(n).toInt()
 
-            val charIndex = when (val charCode = getCharCode(data, position, max)) {
-                0 -> {
-                    charMap[charaIndexCounter] = charCodeToString(getCharCode(data, position, 256))
-                    counter--
-                    charaIndexCounter++
+            val charIndex =
+                when (val charCode = getCharCode(data, position, max)) {
+                    0 -> {
+                        charMap[charaIndexCounter] = charCodeToString(getCharCode(data, position, 256))
+                        counter--
+                        charaIndexCounter++
+                    }
+                    1 -> {
+                        charMap[charaIndexCounter] = charCodeToString(getCharCode(data, position, 65536))
+                        counter--
+                        charaIndexCounter++
+                    }
+                    2 -> {
+                        return imageCharList.joinToString("").split(",")
+                    }
+                    else -> {
+                        charCode
+                    }
                 }
-                1 -> {
-                    charMap[charaIndexCounter] = charCodeToString(getCharCode(data, position, 65536))
-                    counter--
-                    charaIndexCounter++
-                }
-                2 -> {
-                    return imageCharList.joinToString("").split(",")
-                }
-                else -> {
-                    charCode
-                }
-            }
 
-            val char = if (!charMap[charIndex].isNullOrEmpty()) {
-                charMap[charIndex]!!
-            } else if (charIndex != charaIndexCounter) {
-                return null
-            } else {
-                cash + cash?.charAt(0)
-            }
+            val char =
+                if (!charMap[charIndex].isNullOrEmpty()) {
+                    charMap[charIndex]!!
+                } else if (charIndex != charaIndexCounter) {
+                    return null
+                } else {
+                    cash + cash?.charAt(0)
+                }
 
             if (counter == 0) {
                 counter = 2.0.pow(n++).toInt()

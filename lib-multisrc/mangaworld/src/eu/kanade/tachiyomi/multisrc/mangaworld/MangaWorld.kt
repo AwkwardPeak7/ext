@@ -72,9 +72,10 @@ abstract class MangaWorld(
 
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val mangas = document.select(latestUpdatesSelector()).map { element ->
-            searchMangaFromElement(element)
-        }
+        val mangas =
+            document.select(latestUpdatesSelector()).map { element ->
+                searchMangaFromElement(element)
+            }
         // nextPage is not possible because pagination is loaded after via Javascript
         // 16 is the default manga-per-page. If it is less than 16 then there's no next page
         val hasNextPage = mangas.size == 16
@@ -133,9 +134,10 @@ abstract class MangaWorld(
         }
         manga.description = description.trim()
 
-        manga.genre = infoElement.select("div.meta-data a.badge").joinToString(", ") {
-            it.text()
-        }
+        manga.genre =
+            infoElement.select("div.meta-data a.badge").joinToString(", ") {
+                it.text()
+            }
 
         val status = infoElement.select("a[href*=/archive?status=]").first()?.text()
         manga.status = parseStatus(status)
@@ -161,8 +163,9 @@ abstract class MangaWorld(
     override fun chapterFromElement(element: Element): SChapter {
         val chapter = SChapter.create()
 
-        val url = element.select("a.chap").first()?.attr("href")
-            ?: throw throw Exception("Url not found")
+        val url =
+            element.select("a.chap").first()?.attr("href")
+                ?: throw throw Exception("Url not found")
         chapter.setUrlWithoutDomain(fixChapterUrl(url))
 
         val name = element.select("span.d-inline-block").first()?.text() ?: ""
@@ -216,23 +219,25 @@ abstract class MangaWorld(
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
-        val imgHeader = Headers.Builder().apply {
-            add(
-                "User-Agent",
-                "Mozilla/5.0 (Linux; U; Android 4.1.1; en-gb; Build/KLP) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30",
-            )
-            add("Referer", baseUrl)
-        }.build()
+        val imgHeader =
+            Headers.Builder().apply {
+                add(
+                    "User-Agent",
+                    "Mozilla/5.0 (Linux; U; Android 4.1.1; en-gb; Build/KLP) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Safari/534.30",
+                )
+                add("Referer", baseUrl)
+            }.build()
         return GET(page.imageUrl!!, imgHeader)
     }
 
-    override fun getFilterList() = FilterList(
-        TextField("Anno di uscita", "year"),
-        SortBy(),
-        StatusList(getStatusList()),
-        GenreList(getGenreList()),
-        MTypeList(getTypesList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            TextField("Anno di uscita", "year"),
+            SortBy(),
+            StatusList(getStatusList()),
+            GenreList(getGenreList()),
+            MTypeList(getTypesList()),
+        )
 
     private class SortBy : UriPartFilter(
         "Ordina per",
@@ -261,61 +266,64 @@ abstract class MangaWorld(
 
     private class StatusList(statuses: List<Status>) : Filter.Group<Status>("Stato", statuses)
 
-    protected fun getGenreList() = listOf(
-        Genre("Adulti", "adulti"),
-        Genre("Arti Marziali", "arti-marziali"),
-        Genre("Avventura", "avventura"),
-        Genre("Azione", "azione"),
-        Genre("Commedia", "commedia"),
-        Genre("Doujinshi", "doujinshi"),
-        Genre("Drammatico", "drammatico"),
-        Genre("Ecchi", "ecchi"),
-        Genre("Fantasy", "fantasy"),
-        Genre("Gender Bender", "gender-bender"),
-        Genre("Harem", "harem"),
-        Genre("Hentai", "hentai"),
-        Genre("Horror", "horror"),
-        Genre("Josei", "josei"),
-        Genre("Lolicon", "lolicon"),
-        Genre("Maturo", "maturo"),
-        Genre("Mecha", "mecha"),
-        Genre("Mistero", "mistero"),
-        Genre("Psicologico", "psicologico"),
-        Genre("Romantico", "romantico"),
-        Genre("Sci-fi", "sci-fi"),
-        Genre("Scolastico", "scolastico"),
-        Genre("Seinen", "seinen"),
-        Genre("Shotacon", "shotacon"),
-        Genre("Shoujo", "shoujo"),
-        Genre("Shoujo Ai", "shoujo-ai"),
-        Genre("Shounen", "shounen"),
-        Genre("Shounen Ai", "shounen-ai"),
-        Genre("Slice of Life", "slice-of-life"),
-        Genre("Smut", "smut"),
-        Genre("Soprannaturale", "soprannaturale"),
-        Genre("Sport", "sport"),
-        Genre("Storico", "storico"),
-        Genre("Tragico", "tragico"),
-        Genre("Yaoi", "yaoi"),
-        Genre("Yuri", "yuri"),
-    )
+    protected fun getGenreList() =
+        listOf(
+            Genre("Adulti", "adulti"),
+            Genre("Arti Marziali", "arti-marziali"),
+            Genre("Avventura", "avventura"),
+            Genre("Azione", "azione"),
+            Genre("Commedia", "commedia"),
+            Genre("Doujinshi", "doujinshi"),
+            Genre("Drammatico", "drammatico"),
+            Genre("Ecchi", "ecchi"),
+            Genre("Fantasy", "fantasy"),
+            Genre("Gender Bender", "gender-bender"),
+            Genre("Harem", "harem"),
+            Genre("Hentai", "hentai"),
+            Genre("Horror", "horror"),
+            Genre("Josei", "josei"),
+            Genre("Lolicon", "lolicon"),
+            Genre("Maturo", "maturo"),
+            Genre("Mecha", "mecha"),
+            Genre("Mistero", "mistero"),
+            Genre("Psicologico", "psicologico"),
+            Genre("Romantico", "romantico"),
+            Genre("Sci-fi", "sci-fi"),
+            Genre("Scolastico", "scolastico"),
+            Genre("Seinen", "seinen"),
+            Genre("Shotacon", "shotacon"),
+            Genre("Shoujo", "shoujo"),
+            Genre("Shoujo Ai", "shoujo-ai"),
+            Genre("Shounen", "shounen"),
+            Genre("Shounen Ai", "shounen-ai"),
+            Genre("Slice of Life", "slice-of-life"),
+            Genre("Smut", "smut"),
+            Genre("Soprannaturale", "soprannaturale"),
+            Genre("Sport", "sport"),
+            Genre("Storico", "storico"),
+            Genre("Tragico", "tragico"),
+            Genre("Yaoi", "yaoi"),
+            Genre("Yuri", "yuri"),
+        )
 
-    protected fun getTypesList() = listOf(
-        MType("Manga", "manga"),
-        MType("Manhua", "manhua"),
-        MType("Manhwa", "manhwa"),
-        MType("Oneshot", "oneshot"),
-        MType("Thai", "thai"),
-        MType("Vietnamita", "vietnamese"),
-    )
+    protected fun getTypesList() =
+        listOf(
+            MType("Manga", "manga"),
+            MType("Manhua", "manhua"),
+            MType("Manhwa", "manhwa"),
+            MType("Oneshot", "oneshot"),
+            MType("Thai", "thai"),
+            MType("Vietnamita", "vietnamese"),
+        )
 
-    protected fun getStatusList() = listOf(
-        Status("In corso", "ongoing"),
-        Status("Finito", "completed"),
-        Status("Droppato", "dropped"),
-        Status("In pausa", "paused"),
-        Status("Cancellato", "canceled"),
-    )
+    protected fun getStatusList() =
+        listOf(
+            Status("In corso", "ongoing"),
+            Status("Finito", "completed"),
+            Status("Droppato", "dropped"),
+            Status("In pausa", "paused"),
+            Status("Cancellato", "canceled"),
+        )
 
     private open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {

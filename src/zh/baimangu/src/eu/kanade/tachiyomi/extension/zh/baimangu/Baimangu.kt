@@ -36,17 +36,19 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
 
     override val baseUrl = preferences.getString(MAINSITE_URL_PREF, MAINSITE_URL_PREF_DEFAULT)!!
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimitHost(
-            baseUrl.toHttpUrl(),
-            preferences.getString(MAINSITE_RATEPERMITS_PREF, MAINSITE_RATEPERMITS_PREF_DEFAULT)!!.toInt(),
-            preferences.getString(MAINSITE_RATEPERIOD_PREF, MAINSITE_RATEPERIOD_PREF_DEFAULT)!!.toLong(),
-            TimeUnit.MILLISECONDS,
-        )
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(
+                baseUrl.toHttpUrl(),
+                preferences.getString(MAINSITE_RATEPERMITS_PREF, MAINSITE_RATEPERMITS_PREF_DEFAULT)!!.toInt(),
+                preferences.getString(MAINSITE_RATEPERIOD_PREF, MAINSITE_RATEPERIOD_PREF_DEFAULT)!!.toLong(),
+                TimeUnit.MILLISECONDS,
+            )
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", baseUrl)
 
     // The following images don't seem to work, hence we do not bother to retrieve them
     private val invalidCoverImageDomains = arrayOf("serial-online", "res.cocomanga.com")
@@ -58,13 +60,14 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
     private fun commonMangaFromElement(element: Element): SManga {
         val picElement = element.select("a.fed-list-pics").first()!!
         val picUrl = picElement.attr("data-original")
-        val manga = SManga.create().apply {
-            title = element.select("a.fed-list-title").first()!!.text()
+        val manga =
+            SManga.create().apply {
+                title = element.select("a.fed-list-title").first()!!.text()
 
-            if (!invalidCoverImageDomains.any { picUrl.contains(it) }) {
-                thumbnail_url = picUrl
+                if (!invalidCoverImageDomains.any { picUrl.contains(it) }) {
+                    thumbnail_url = picUrl
+                }
             }
-        }
 
         manga.setUrlWithoutDomain(picElement.attr("href"))
 
@@ -107,10 +110,11 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
 
     private class SortFilter : Filter.Select<String>("排序", arrayOf("按时间", "按人气", "按评分"), 0)
 
-    override fun getFilterList() = FilterList(
-        ChannelFilter(),
-        SortFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            ChannelFilter(),
+            SortFilter(),
+        )
 
     // Search
     override fun searchMangaRequest(
@@ -180,9 +184,10 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
             genre = detailElements.select("li.fed-show-md-block:nth-last-child(2) a:not(:empty)").joinToString { it.text().trim() }
 
             // It has both "简介：" and "简介" in the description
-            description = detailElements.select("li.fed-show-md-block:nth-last-child(1)")
-                .firstOrNull()?.text()?.replace("简介：", "", ignoreCase = true)
-                ?.replace("简介", "", ignoreCase = true)?.trim()
+            description =
+                detailElements.select("li.fed-show-md-block:nth-last-child(1)")
+                    .firstOrNull()?.text()?.replace("简介：", "", ignoreCase = true)
+                    ?.replace("简介", "", ignoreCase = true)?.trim()
         }
     }
 
@@ -214,8 +219,9 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
     }
 
     private fun extractOScriptUrl(document: Document): String {
-        val theScriptData = document.selectFirst("script:containsData(oScript.src)")?.data()
-            ?: throw Exception("Unable to find OScript")
+        val theScriptData =
+            document.selectFirst("script:containsData(oScript.src)")?.data()
+                ?: throw Exception("Unable to find OScript")
 
         val pattern = Pattern.compile("src(\\s*)=(\\s*)\"(.+)\";")
         val matcher = pattern.matcher(theScriptData)
@@ -244,63 +250,66 @@ class Baimangu : ConfigurableSource, ParsedHttpSource() {
     }
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        val mainSiteUrlPreference = androidx.preference.EditTextPreference(screen.context).apply {
-            key = MAINSITE_URL_PREF
-            title = MAINSITE_URL_PREF_TITLE
-            summary = MAINSITE_URL_PREF_SUMMARY
+        val mainSiteUrlPreference =
+            androidx.preference.EditTextPreference(screen.context).apply {
+                key = MAINSITE_URL_PREF
+                title = MAINSITE_URL_PREF_TITLE
+                summary = MAINSITE_URL_PREF_SUMMARY
 
-            setDefaultValue(MAINSITE_URL_PREF_DEFAULT)
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val setting = preferences.edit().putString(MAINSITE_URL_PREF, newValue as String).commit()
-                    Toast.makeText(screen.context, TOAST_RESTART, Toast.LENGTH_LONG).show()
-                    setting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setDefaultValue(MAINSITE_URL_PREF_DEFAULT)
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val setting = preferences.edit().putString(MAINSITE_URL_PREF, newValue as String).commit()
+                        Toast.makeText(screen.context, TOAST_RESTART, Toast.LENGTH_LONG).show()
+                        setting
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
-        val mainSiteRatePermitsPreference = androidx.preference.ListPreference(screen.context).apply {
-            key = MAINSITE_RATEPERMITS_PREF
-            title = MAINSITE_RATEPERMITS_PREF_TITLE
-            entries = MAINSITE_RATEPERMITS_PREF_ENTRIES_ARRAY
-            entryValues = MAINSITE_RATEPERMITS_PREF_ENTRIES_ARRAY
-            summary = MAINSITE_RATEPERMITS_PREF_SUMMARY
+        val mainSiteRatePermitsPreference =
+            androidx.preference.ListPreference(screen.context).apply {
+                key = MAINSITE_RATEPERMITS_PREF
+                title = MAINSITE_RATEPERMITS_PREF_TITLE
+                entries = MAINSITE_RATEPERMITS_PREF_ENTRIES_ARRAY
+                entryValues = MAINSITE_RATEPERMITS_PREF_ENTRIES_ARRAY
+                summary = MAINSITE_RATEPERMITS_PREF_SUMMARY
 
-            setDefaultValue(MAINSITE_RATEPERMITS_PREF_DEFAULT)
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val setting = preferences.edit().putString(MAINSITE_RATEPERMITS_PREF, newValue as String).commit()
-                    Toast.makeText(screen.context, TOAST_RESTART, Toast.LENGTH_LONG).show()
-                    setting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setDefaultValue(MAINSITE_RATEPERMITS_PREF_DEFAULT)
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val setting = preferences.edit().putString(MAINSITE_RATEPERMITS_PREF, newValue as String).commit()
+                        Toast.makeText(screen.context, TOAST_RESTART, Toast.LENGTH_LONG).show()
+                        setting
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
-        val mainSiteRatePeriodPreference = androidx.preference.ListPreference(screen.context).apply {
-            key = MAINSITE_RATEPERIOD_PREF
-            title = MAINSITE_RATEPERIOD_PREF_TITLE
-            entries = MAINSITE_RATEPERIOD_PREF_ENTRIES_ARRAY
-            entryValues = MAINSITE_RATEPERIOD_PREF_ENTRIES_ARRAY
-            summary = MAINSITE_RATEPERIOD_PREF_SUMMARY
+        val mainSiteRatePeriodPreference =
+            androidx.preference.ListPreference(screen.context).apply {
+                key = MAINSITE_RATEPERIOD_PREF
+                title = MAINSITE_RATEPERIOD_PREF_TITLE
+                entries = MAINSITE_RATEPERIOD_PREF_ENTRIES_ARRAY
+                entryValues = MAINSITE_RATEPERIOD_PREF_ENTRIES_ARRAY
+                summary = MAINSITE_RATEPERIOD_PREF_SUMMARY
 
-            setDefaultValue(MAINSITE_RATEPERIOD_PREF_DEFAULT)
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val setting = preferences.edit().putString(MAINSITE_RATEPERIOD_PREF, newValue as String).commit()
-                    Toast.makeText(screen.context, TOAST_RESTART, Toast.LENGTH_LONG).show()
-                    setting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setDefaultValue(MAINSITE_RATEPERIOD_PREF_DEFAULT)
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val setting = preferences.edit().putString(MAINSITE_RATEPERIOD_PREF, newValue as String).commit()
+                        Toast.makeText(screen.context, TOAST_RESTART, Toast.LENGTH_LONG).show()
+                        setting
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
         screen.addPreference(mainSiteUrlPreference)
         screen.addPreference(mainSiteRatePermitsPreference)

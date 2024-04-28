@@ -16,10 +16,11 @@ abstract class SelectFilter(
 abstract class TextFilter(name: String) : Filter.Text(name)
 
 abstract class TagFilter(name: String) : TextFilter(name) {
-    val tags get() = state.split(",")
-        .map { it.trim().lowercase() }
-        .filter { it.isNotEmpty() }
-        .takeUnless { it.isEmpty() }
+    val tags get() =
+        state.split(",")
+            .map { it.trim().lowercase() }
+            .filter { it.isNotEmpty() }
+            .takeUnless { it.isEmpty() }
 }
 
 abstract class PageFilter(name: String) : TextFilter(name) {
@@ -56,14 +57,15 @@ class IncludedTagFilter : TagFilter("Include Tags")
 
 class ExcludedTagFilter : TagFilter("Exclude Tags")
 
-fun getFilters() = FilterList(
-    SortFilter(),
-    FormatFilter(),
-    Filter.Separator(),
-    MinPageFilter(),
-    MaxPageFilter(),
-    Filter.Separator(),
-    IncludedTagFilter(),
-    ExcludedTagFilter(),
-    Filter.Header("comma (,) separated tag/parody/character/artist/group"),
-)
+fun getFilters() =
+    FilterList(
+        SortFilter(),
+        FormatFilter(),
+        Filter.Separator(),
+        MinPageFilter(),
+        MaxPageFilter(),
+        Filter.Separator(),
+        IncludedTagFilter(),
+        ExcludedTagFilter(),
+        Filter.Header("comma (,) separated tag/parody/character/artist/group"),
+    )

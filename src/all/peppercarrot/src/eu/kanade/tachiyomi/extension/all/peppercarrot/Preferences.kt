@@ -19,15 +19,16 @@ import org.jsoup.select.Evaluator
 import uy.kohesive.injekt.injectLazy
 import java.util.Locale
 
-fun getPreferences(context: Context) = arrayOf(
-    SwitchPreferenceCompat(context).apply {
-        key = HI_RES_PREF
-        title = "High resolution images"
-        summary = "Changes will not be applied to images that are already cached or downloaded " +
-            "until you clear the chapter cache or delete the chapter download."
-        setDefaultValue(false)
-    },
-)
+fun getPreferences(context: Context) =
+    arrayOf(
+        SwitchPreferenceCompat(context).apply {
+            key = HI_RES_PREF
+            title = "High resolution images"
+            summary = "Changes will not be applied to images that are already cached or downloaded " +
+                "until you clear the chapter cache or delete the chapter download."
+            setDefaultValue(false)
+        },
+    )
 
 val SharedPreferences.isHiRes get() = getBoolean(HI_RES_PREF, false)
 val SharedPreferences.lastUpdated get() = getLong(LAST_UPDATED_PREF, 0)
@@ -54,38 +55,42 @@ fun updateLangData(
     headers: Headers,
     preferences: SharedPreferences,
 ) {
-    val lastUpdated = client.newCall(GET("$BASE_URL/0_sources/last_updated.txt", headers))
-        .execute().body.string().substringBefore('\n').toLong()
+    val lastUpdated =
+        client.newCall(GET("$BASE_URL/0_sources/last_updated.txt", headers))
+            .execute().body.string().substringBefore('\n').toLong()
     if (lastUpdated <= preferences.lastUpdated) return
 
     val editor = preferences.edit().putLong(LAST_UPDATED_PREF, lastUpdated)
 
-    val episodes = client.newCall(GET("$BASE_URL/0_sources/episodes.json", headers))
-        .execute().parseAs<List<EpisodeDto>>()
+    val episodes =
+        client.newCall(GET("$BASE_URL/0_sources/episodes.json", headers))
+            .execute().parseAs<List<EpisodeDto>>()
     val total = episodes.size
-    val translatedCount = episodes.flatMap { it.translated_languages }
-        .groupingBy { it }.eachCount()
+    val translatedCount =
+        episodes.flatMap { it.translated_languages }
+            .groupingBy { it }.eachCount()
 
     val titles = fetchTitles(client, headers)
 
-    val langs = client.newCall(GET("$BASE_URL/0_sources/langs.json", headers))
-        .execute().parseAs<LangsDto>().entries.map { (key, dto) ->
-            Lang(
-                key = key,
-                name = dto.local_name,
-                code = dto.iso_code.ifEmpty { key },
-                translators = dto.translators.joinToString(),
-                translatedCount = translatedCount[key] ?: 0,
-            )
-        }
-        .filter { it.translatedCount > 0 }
-        .groupBy { it.code }.values
-        .flatMap { it.sortedByDescending { lang -> lang.translatedCount } }
-        .also { if (preferences.lang.isEmpty()) editor.chooseLang(it) }
-        .map {
-            val progress = "${it.translatedCount}/$total translated"
-            LangData(it.key, it.name, progress, it.translators, titles[it.key])
-        }
+    val langs =
+        client.newCall(GET("$BASE_URL/0_sources/langs.json", headers))
+            .execute().parseAs<LangsDto>().entries.map { (key, dto) ->
+                Lang(
+                    key = key,
+                    name = dto.local_name,
+                    code = dto.iso_code.ifEmpty { key },
+                    translators = dto.translators.joinToString(),
+                    translatedCount = translatedCount[key] ?: 0,
+                )
+            }
+            .filter { it.translatedCount > 0 }
+            .groupBy { it.code }.values
+            .flatMap { it.sortedByDescending { lang -> lang.translatedCount } }
+            .also { if (preferences.lang.isEmpty()) editor.chooseLang(it) }
+            .map {
+                val progress = "${it.translatedCount}/$total translated"
+                LangData(it.key, it.name, progress, it.translators, titles[it.key])
+            }
 
     editor.putString(LANG_DATA_PREF, ProtoBuf.encodeToBase64(langs)).apply()
 }

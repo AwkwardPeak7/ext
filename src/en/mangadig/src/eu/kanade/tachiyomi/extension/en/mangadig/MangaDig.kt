@@ -14,13 +14,14 @@ class MangaDig : ColaManga("MangaDig", "https://mangadig.com", "en") {
     override val statusCompleted = "Complete"
 
     override fun getFilterList(): FilterList {
-        val filters = buildList {
-            addAll(super.getFilterList().list)
-            add(SortFilter())
-            add(CategoryFilter())
-            add(CharFilter())
-            add(StatusFilter())
-        }
+        val filters =
+            buildList {
+                addAll(super.getFilterList().list)
+                add(SortFilter())
+                add(CategoryFilter())
+                add(CharFilter())
+                add(StatusFilter())
+            }
 
         return FilterList(filters)
     }

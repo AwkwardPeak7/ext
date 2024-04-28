@@ -25,40 +25,43 @@ class IMHentai(
     override val supportAdvancedSearch: Boolean = true
     override val supportSpeechless: Boolean = true
 
-    override fun Element.mangaLang() = select("a:has(.thumb_flag)").attr("href")
-        .removeSuffix("/").substringAfterLast("/")
-        .let {
-            // Include Speechless in search results
-            if (it == LANGUAGE_SPEECHLESS) mangaLang else it
-        }
+    override fun Element.mangaLang() =
+        select("a:has(.thumb_flag)").attr("href")
+            .removeSuffix("/").substringAfterLast("/")
+            .let {
+                // Include Speechless in search results
+                if (it == LANGUAGE_SPEECHLESS) mangaLang else it
+            }
 
-    override val client: OkHttpClient = network.cloudflareClient
-        .newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val headers = request.headers.newBuilder()
-                .removeAll("Accept-Encoding")
-                .build()
-            chain.proceed(request.newBuilder().headers(headers).build())
-        }
-        .addInterceptor(
-            fun(chain): Response {
-                val response = chain.proceed(chain.request())
-                if (!response.headers("Content-Type").toString().contains("text/html")) return response
+    override val client: OkHttpClient =
+        network.cloudflareClient
+            .newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val headers =
+                    request.headers.newBuilder()
+                        .removeAll("Accept-Encoding")
+                        .build()
+                chain.proceed(request.newBuilder().headers(headers).build())
+            }
+            .addInterceptor(
+                fun(chain): Response {
+                    val response = chain.proceed(chain.request())
+                    if (!response.headers("Content-Type").toString().contains("text/html")) return response
 
-                val responseContentType = response.body.contentType()
-                val responseString = response.body.string()
+                    val responseContentType = response.body.contentType()
+                    val responseString = response.body.string()
 
-                if (responseString.contains("Overload... Please use the advanced search")) {
-                    response.close()
-                    throw IOException("IMHentai search is overloaded try again later")
-                }
+                    if (responseString.contains("Overload... Please use the advanced search")) {
+                        response.close()
+                        throw IOException("IMHentai search is overloaded try again later")
+                    }
 
-                return response.newBuilder()
-                    .body(responseString.toResponseBody(responseContentType))
-                    .build()
-            },
-        ).build()
+                    return response.newBuilder()
+                        .body(responseString.toResponseBody(responseContentType))
+                        .build()
+                },
+            ).build()
 
     override val favoritePath = "user/fav_pags.php"
 

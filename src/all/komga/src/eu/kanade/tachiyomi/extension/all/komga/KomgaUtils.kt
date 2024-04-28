@@ -11,22 +11,26 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
-val formatterDate = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-    .apply { timeZone = TimeZone.getTimeZone("UTC") }
-val formatterDateTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
-    .apply { timeZone = TimeZone.getTimeZone("UTC") }
+val formatterDate =
+    SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        .apply { timeZone = TimeZone.getTimeZone("UTC") }
+val formatterDateTime =
+    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+        .apply { timeZone = TimeZone.getTimeZone("UTC") }
 
-fun parseDate(date: String): Long = try {
-    formatterDate.parse(date)!!.time
-} catch (_: ParseException) {
-    0L
-}
+fun parseDate(date: String): Long =
+    try {
+        formatterDate.parse(date)!!.time
+    } catch (_: ParseException) {
+        0L
+    }
 
-fun parseDateTime(date: String) = try {
-    formatterDateTime.parse(date)!!.time
-} catch (_: ParseException) {
-    0L
-}
+fun parseDateTime(date: String) =
+    try {
+        formatterDateTime.parse(date)!!.time
+    } catch (_: ParseException) {
+        0L
+    }
 
 fun PreferenceScreen.addEditTextPreference(
     title: String,

@@ -31,8 +31,9 @@ class HentaiCosplay : HttpSource() {
 
     override val client = network.cloudflareClient
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
 
     private val dateCache = mutableMapOf<String, String>()
 
@@ -56,36 +57,40 @@ class HentaiCosplay : HttpSource() {
     }
 
     private fun parseMobileListing(document: Document): MangasPage {
-        val entries = document.select("#entry_list > li > a[href*=/image/]")
-            .map { element ->
-                SManga.create().apply {
-                    setUrlWithoutDomain(element.absUrl("href"))
-                    thumbnail_url = element.selectFirst("img")
-                        ?.absUrl("data-original")
-                        ?.replace("http://", "https://")
-                    title = element.selectFirst("span:not(.posted)")!!.text()
-                    element.selectFirst("span.posted")
-                        ?.text()?.also { dateCache[url] = it }
+        val entries =
+            document.select("#entry_list > li > a[href*=/image/]")
+                .map { element ->
+                    SManga.create().apply {
+                        setUrlWithoutDomain(element.absUrl("href"))
+                        thumbnail_url =
+                            element.selectFirst("img")
+                                ?.absUrl("data-original")
+                                ?.replace("http://", "https://")
+                        title = element.selectFirst("span:not(.posted)")!!.text()
+                        element.selectFirst("span.posted")
+                            ?.text()?.also { dateCache[url] = it }
+                    }
                 }
-            }
         val hasNextPage = document.selectFirst("a.paginator_page[rel=next]") != null
 
         return MangasPage(entries, hasNextPage)
     }
 
     private fun parseDesktopListing(document: Document): MangasPage {
-        val entries = document.select("div.image-list-item:has(a[href*=/image/])")
-            .map { element ->
-                SManga.create().apply {
-                    setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
-                    thumbnail_url = element.selectFirst("img")
-                        ?.absUrl("src")
-                        ?.replace("http://", "https://")
-                    title = element.select(".image-list-item-title").text()
-                    element.selectFirst(".image-list-item-regist-date")
-                        ?.text()?.also { dateCache[url] = it }
+        val entries =
+            document.select("div.image-list-item:has(a[href*=/image/])")
+                .map { element ->
+                    SManga.create().apply {
+                        setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
+                        thumbnail_url =
+                            element.selectFirst("img")
+                                ?.absUrl("src")
+                                ?.replace("http://", "https://")
+                        title = element.select(".image-list-item-title").text()
+                        element.selectFirst(".image-list-item-regist-date")
+                            ?.text()?.also { dateCache[url] = it }
+                    }
                 }
-            }
         val hasNextPage = document.selectFirst("div.wp-pagenavi > a[rel=next]") != null
 
         return MangasPage(entries, hasNextPage)
@@ -149,17 +154,18 @@ class HentaiCosplay : HttpSource() {
                 client.newCall(GET("$baseUrl/ranking-tag/", headers))
                     .execute().asJsoup()
                     .run {
-                        tagCache = buildList {
-                            add(Pair("", ""))
-                            select("#tags a").map {
-                                Pair(
-                                    it.text()
-                                        .replace(tagNumRegex, "")
-                                        .trim(),
-                                    it.attr("href"),
-                                ).let(::add)
+                        tagCache =
+                            buildList {
+                                add(Pair("", ""))
+                                select("#tags a").map {
+                                    Pair(
+                                        it.text()
+                                            .replace(tagNumRegex, "")
+                                            .trim(),
+                                        it.attr("href"),
+                                    ).let(::add)
+                                }
                             }
-                        }
                     }
             }
         }
@@ -202,15 +208,17 @@ class HentaiCosplay : HttpSource() {
         }
     }
 
-    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> = Observable.fromCallable {
-        SChapter.create().apply {
-            name = "Gallery"
-            url = manga.url.removeSuffix("/").plus("/attachment/1/")
-            date_upload = runCatching {
-                dateFormat.parse(dateCache[manga.url]!!)!!.time
-            }.getOrDefault(0L)
-        }.let(::listOf)
-    }
+    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> =
+        Observable.fromCallable {
+            SChapter.create().apply {
+                name = "Gallery"
+                url = manga.url.removeSuffix("/").plus("/attachment/1/")
+                date_upload =
+                    runCatching {
+                        dateFormat.parse(dateCache[manga.url]!!)!!.time
+                    }.getOrDefault(0L)
+            }.let(::listOf)
+        }
 
     override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
 
@@ -218,15 +226,17 @@ class HentaiCosplay : HttpSource() {
         val document = response.asJsoup()
         val pageUrl = document.location().substringBeforeLast("/1/")
 
-        val totalPages = document.selectFirst("#right_sidebar > h3, #title > h2")
-            ?.text()?.trim()
-            ?.run { pagesRegex.find(this)?.groupValues?.get(1) }
-            ?.toIntOrNull()
-            ?: return emptyList()
+        val totalPages =
+            document.selectFirst("#right_sidebar > h3, #title > h2")
+                ?.text()?.trim()
+                ?.run { pagesRegex.find(this)?.groupValues?.get(1) }
+                ?.toIntOrNull()
+                ?: return emptyList()
 
-        val pages = (1..totalPages).map {
-            Page(it, "$pageUrl/$it/")
-        }
+        val pages =
+            (1..totalPages).map {
+                Page(it, "$pageUrl/$it/")
+            }
 
         pages[0].imageUrl = imageUrlParse(document)
 

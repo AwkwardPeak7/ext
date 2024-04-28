@@ -28,9 +28,10 @@ class Hiperdex :
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    override val client = super.client.newBuilder()
-        .addInterceptor(::domainChangeIntercept)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .addInterceptor(::domainChangeIntercept)
+            .build()
 
     private var lastDomain = ""
 
@@ -42,9 +43,10 @@ class Hiperdex :
         }
 
         if (lastDomain.isNotEmpty()) {
-            val newUrl = request.url.newBuilder()
-                .host(preferences.baseUrlHost)
-                .build()
+            val newUrl =
+                request.url.newBuilder()
+                    .host(preferences.baseUrlHost)
+                    .build()
 
             return chain.proceed(
                 request.newBuilder()
@@ -63,9 +65,10 @@ class Hiperdex :
 
         lastDomain = request.url.host
 
-        val newUrl = request.url.newBuilder()
-            .host(response.request.url.host)
-            .build()
+        val newUrl =
+            request.url.newBuilder()
+                .host(response.request.url.host)
+                .build()
 
         return chain.proceed(
             request.newBuilder()
@@ -83,24 +86,25 @@ class Hiperdex :
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val baseUrlPref = EditTextPreference(screen.context).apply {
-            key = BASE_URL_PREF
-            title = BASE_URL_PREF_TITLE
-            summary = BASE_URL_PREF_SUMMARY
-            this.setDefaultValue(defaultBaseUrlHost)
-            dialogTitle = BASE_URL_PREF_TITLE
+        val baseUrlPref =
+            EditTextPreference(screen.context).apply {
+                key = BASE_URL_PREF
+                title = BASE_URL_PREF_TITLE
+                summary = BASE_URL_PREF_SUMMARY
+                this.setDefaultValue(defaultBaseUrlHost)
+                dialogTitle = BASE_URL_PREF_TITLE
 
-            setOnPreferenceChangeListener { _, newVal ->
-                val url = newVal as String
-                runCatching {
-                    val host = url.toHttpUrl().host
+                setOnPreferenceChangeListener { _, newVal ->
+                    val url = newVal as String
+                    runCatching {
+                        val host = url.toHttpUrl().host
 
-                    Toast.makeText(screen.context, RESTART_TACHIYOMI, Toast.LENGTH_LONG).show()
-                    preferences.edit().putString(BASE_URL_PREF, host).commit()
+                        Toast.makeText(screen.context, RESTART_TACHIYOMI, Toast.LENGTH_LONG).show()
+                        preferences.edit().putString(BASE_URL_PREF, host).commit()
+                    }
+                    false
                 }
-                false
             }
-        }
         screen.addPreference(baseUrlPref)
     }
 

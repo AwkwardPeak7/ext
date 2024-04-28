@@ -32,13 +32,15 @@ class Yidan : HttpSource(), ConfigurableSource {
 
     init {
         val mirrors = MIRRORS
-        val index = Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
-            .getString(MIRROR_PREF, "0")!!.toInt().coerceAtMost(mirrors.size - 1)
+        val index =
+            Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
+                .getString(MIRROR_PREF, "0")!!.toInt().coerceAtMost(mirrors.size - 1)
         baseUrl = "https://" + mirrors[index]
     }
 
-    override fun headersBuilder() = Headers.Builder()
-        .add("User-Agent", System.getProperty("http.agent")!!)
+    override fun headersBuilder() =
+        Headers.Builder()
+            .add("User-Agent", System.getProperty("http.agent")!!)
 
     private val json: Json by injectLazy()
 
@@ -48,12 +50,13 @@ class Yidan : HttpSource(), ConfigurableSource {
     override fun popularMangaParse(response: Response): MangasPage {
         val listing: ListingDto = response.parseAs()
         val mangas = listing.list.map { it.toSManga(baseUrl) }
-        val hasNextPage = run {
-            val url = response.request.url
-            val pageSize = url.queryParameter("pageSize")!!.toInt()
-            val pageNumber = url.queryParameter("pageNo")!!.toInt()
-            pageSize * pageNumber < listing.totalCount
-        }
+        val hasNextPage =
+            run {
+                val url = response.request.url
+                val pageSize = url.queryParameter("pageSize")!!.toInt()
+                val pageNumber = url.queryParameter("pageNo")!!.toInt()
+                pageSize * pageNumber < listing.totalCount
+            }
         return MangasPage(mangas, hasNextPage)
     }
 
@@ -67,12 +70,13 @@ class Yidan : HttpSource(), ConfigurableSource {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/prod-api/app-api/vv/mh-list/page".toHttpUrl().newBuilder()
-            .apply { if (query.isNotBlank()) addQueryParameter("word", query) }
-            .apply { parseFilters(filters, this) }
-            .addEncodedQueryParameter("pageSize", "50")
-            .addEncodedQueryParameter("pageNo", page.toString())
-            .build()
+        val url =
+            "$baseUrl/prod-api/app-api/vv/mh-list/page".toHttpUrl().newBuilder()
+                .apply { if (query.isNotBlank()) addQueryParameter("word", query) }
+                .apply { parseFilters(filters, this) }
+                .addEncodedQueryParameter("pageSize", "50")
+                .addEncodedQueryParameter("pageNo", page.toString())
+                .build()
         return Request.Builder().url(url).headers(headers).build()
     }
 
@@ -104,16 +108,18 @@ class Yidan : HttpSource(), ConfigurableSource {
         return client.newCall(GET(url, headers)).asObservableSuccess().map { pageListParse(it) }
     }
 
-    override fun pageListParse(response: Response) = response.parseAs<PageListDto>().images.mapIndexed { index, url ->
-        val imageUrl = if (url.startsWith("http")) url else baseUrl + url
-        Page(index, imageUrl = imageUrl)
-    }
+    override fun pageListParse(response: Response) =
+        response.parseAs<PageListDto>().images.mapIndexed { index, url ->
+            val imageUrl = if (url.startsWith("http")) url else baseUrl + url
+            Page(index, imageUrl = imageUrl)
+        }
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream<ResponseDto<T>>(body.byteStream()).data
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream<ResponseDto<T>>(body.byteStream()).data
+        }
 
     override fun getFilterList() = getFilterListInternal()
 

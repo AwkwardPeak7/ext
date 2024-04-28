@@ -29,17 +29,19 @@ class MangaDemon : ParsedHttpSource() {
     override val name = "Manga Demon"
     override val baseUrl = "https://comicdemons.com"
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(1)
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val headers = request.headers.newBuilder()
-                .removeAll("Accept-Encoding")
-                .build()
-            chain.proceed(request.newBuilder().headers(headers).build())
-        }
-        .addInterceptor(::dynamicUrlInterceptor)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1)
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val headers =
+                    request.headers.newBuilder()
+                        .removeAll("Accept-Encoding")
+                        .build()
+                chain.proceed(request.newBuilder().headers(headers).build())
+            }
+            .addInterceptor(::dynamicUrlInterceptor)
+            .build()
 
     // Cache suffix
     private var dynamicUrlSuffix = ""
@@ -60,35 +62,40 @@ class MangaDemon : ParsedHttpSource() {
                 }
             }
 
-            val newPath = request.url
-                .encodedPath
-                .replaceAfterLast("-", dynamicUrlSuffix)
+            val newPath =
+                request.url
+                    .encodedPath
+                    .replaceAfterLast("-", dynamicUrlSuffix)
 
-            val newUrl = request.url.newBuilder()
-                .encodedPath(newPath)
-                .build()
+            val newUrl =
+                request.url.newBuilder()
+                    .encodedPath(newPath)
+                    .build()
 
-            val newRequest = request.newBuilder()
-                .url(newUrl)
-                .build()
+            val newRequest =
+                request.newBuilder()
+                    .url(newUrl)
+                    .build()
 
             return chain.proceed(newRequest)
         }
 
         // Always update suffix
         val response = chain.proceed(request)
-        val document = Jsoup.parse(
-            response.peekBody(Long.MAX_VALUE).string(),
-            request.url.toString(),
-        )
+        val document =
+            Jsoup.parse(
+                response.peekBody(Long.MAX_VALUE).string(),
+                request.url.toString(),
+            )
 
         val links = document.select("a[href^='/manga/']")
 
         // Get the most popular suffix after last `-`
-        val suffix = links.map { it.attr("href").substringAfterLast("-") }
-            .groupBy { it }
-            .maxByOrNull { it.value.size }
-            ?.key
+        val suffix =
+            links.map { it.attr("href").substringAfterLast("-") }
+                .groupBy { it }
+                .maxByOrNull { it.value.size }
+                ?.key
 
         if (suffix != null) {
             dynamicUrlSuffix = suffix
@@ -98,8 +105,9 @@ class MangaDemon : ParsedHttpSource() {
         return response
     }
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", baseUrl)
 
     // latest
     override fun latestUpdatesRequest(page: Int): Request {
@@ -110,14 +118,15 @@ class MangaDemon : ParsedHttpSource() {
 
     override fun latestUpdatesSelector() = "div.leftside"
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        element.select("a").apply {
-            title = attr("title")
-            val url = URLEncoder.encode(attr("href"), "UTF-8")
-            setUrlWithoutDomain(url)
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            element.select("a").apply {
+                title = attr("title")
+                val url = URLEncoder.encode(attr("href"), "UTF-8")
+                setUrlWithoutDomain(url)
+            }
+            thumbnail_url = element.select("img").attr("abs:src")
         }
-        thumbnail_url = element.select("img").attr("abs:src")
-    }
 
     // Popular
     override fun popularMangaRequest(page: Int): Request {
@@ -149,25 +158,26 @@ class MangaDemon : ParsedHttpSource() {
         page: Int,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/browse.php".toHttpUrl().newBuilder().apply {
-            addQueryParameter("list", page.toString())
-            filters.forEach { filter ->
-                when (filter) {
-                    is GenreFilter -> {
-                        filter.checked.forEach { genre ->
-                            addQueryParameter("genre[]", genre)
+        val url =
+            "$baseUrl/browse.php".toHttpUrl().newBuilder().apply {
+                addQueryParameter("list", page.toString())
+                filters.forEach { filter ->
+                    when (filter) {
+                        is GenreFilter -> {
+                            filter.checked.forEach { genre ->
+                                addQueryParameter("genre[]", genre)
+                            }
                         }
+                        is StatusFilter -> {
+                            addQueryParameter("status", filter.selected)
+                        }
+                        is SortFilter -> {
+                            addQueryParameter("orderby", filter.selected)
+                        }
+                        else -> {}
                     }
-                    is StatusFilter -> {
-                        addQueryParameter("status", filter.selected)
-                    }
-                    is SortFilter -> {
-                        addQueryParameter("orderby", filter.selected)
-                    }
-                    else -> {}
                 }
-            }
-        }.build()
+            }.build()
 
         return GET(url, headers)
     }
@@ -181,21 +191,23 @@ class MangaDemon : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/search.php".toHttpUrl().newBuilder()
-            .addQueryParameter("manga", query)
-            .build()
+        val url =
+            "$baseUrl/search.php".toHttpUrl().newBuilder()
+                .addQueryParameter("manga", query)
+                .build()
         return GET(url, headers)
     }
 
     override fun searchMangaSelector() = "a.boxsizing"
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        title = element.text()
-        val url = URLEncoder.encode(element.attr("href"), "UTF-8")
-        setUrlWithoutDomain(url)
-        val urlSorter = title.replace(":", "%20")
-        thumbnail_url = ("https://readermc.org/images/thumbnails/$urlSorter.webp")
-    }
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            title = element.text()
+            val url = URLEncoder.encode(element.attr("href"), "UTF-8")
+            setUrlWithoutDomain(url)
+            val urlSorter = title.replace(":", "%20")
+            thumbnail_url = ("https://readermc.org/images/thumbnails/$urlSorter.webp")
+        }
 
     override fun searchMangaNextPageSelector() = null
 
@@ -213,12 +225,13 @@ class MangaDemon : ParsedHttpSource() {
         }
     }
 
-    private fun parseStatus(status: String?) = when {
-        status == null -> SManga.UNKNOWN
-        status.contains("Ongoing", ignoreCase = true) -> SManga.ONGOING
-        status.contains("Completed", ignoreCase = true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String?) =
+        when {
+            status == null -> SManga.UNKNOWN
+            status.contains("Ongoing", ignoreCase = true) -> SManga.ONGOING
+            status.contains("Completed", ignoreCase = true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun chapterListSelector() = "ul.chapter-list li"
 
@@ -249,9 +262,10 @@ class MangaDemon : ParsedHttpSource() {
     }
 
     override fun pageListParse(document: Document): List<Page> {
-        val baseImages = document.select("img.imgholder")
-            .map { it.attr("abs:src") }
-            .toMutableList()
+        val baseImages =
+            document.select("img.imgholder")
+                .map { it.attr("abs:src") }
+                .toMutableList()
 
         baseImages.addAll(loadMoreImages(document))
 
@@ -259,17 +273,19 @@ class MangaDemon : ParsedHttpSource() {
     }
 
     private fun loadMoreImages(document: Document): List<String> {
-        val buttonHtml = document.selectFirst("img.imgholder ~ button")
-            ?.attr("onclick")?.replace("\"", "\'")
-            ?: return emptyList()
+        val buttonHtml =
+            document.selectFirst("img.imgholder ~ button")
+                ?.attr("onclick")?.replace("\"", "\'")
+                ?: return emptyList()
 
         val id = buttonHtml.substringAfter("\'").substringBefore("\'").trim()
         val funcName = buttonHtml.substringBefore("(").trim()
 
-        val endpoint = document.selectFirst("script:containsData($funcName)")
-            ?.data()
-            ?.let { loadMoreEndpointRegex.find(it)?.groupValues?.get(1) }
-            ?: return emptyList()
+        val endpoint =
+            document.selectFirst("script:containsData($funcName)")
+                ?.data()
+                ?.let { loadMoreEndpointRegex.find(it)?.groupValues?.get(1) }
+                ?: return emptyList()
 
         val response = client.newCall(GET("$baseUrl$endpoint=$id", headers)).execute()
 

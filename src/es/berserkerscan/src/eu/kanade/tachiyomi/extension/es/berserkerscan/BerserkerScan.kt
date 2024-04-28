@@ -12,7 +12,8 @@ class BerserkerScan : MangaThemesia(
     "es",
     dateFormat = SimpleDateFormat("MMMM d, yyyy", Locale("es")),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(2, 1, TimeUnit.SECONDS)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2, 1, TimeUnit.SECONDS)
+            .build()
 }

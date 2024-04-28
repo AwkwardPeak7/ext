@@ -19,10 +19,11 @@ class YANPFansub : Madara(
     // Scanlator changed the theme from WpMangaReader to Madara.
     override val versionId: Int = 2
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .addInterceptor(::checkPasswordProtectedIntercept)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .addInterceptor(::checkPasswordProtectedIntercept)
+            .build()
 
     private fun checkPasswordProtectedIntercept(chain: Interceptor.Chain): Response {
         val response = chain.proceed(chain.request())

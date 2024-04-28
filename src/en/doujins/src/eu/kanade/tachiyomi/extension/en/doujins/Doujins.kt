@@ -78,19 +78,21 @@ class Doujins : HttpSource() {
     }
 
     private fun getLatestPageUrl(page: Int): String {
-        val endDate = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-            add(Calendar.DATE, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-            add(Calendar.DATE, -1 * PAGE_DAYS * (page - 1))
-        }
+        val endDate =
+            Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                add(Calendar.DATE, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+                add(Calendar.DATE, -1 * PAGE_DAYS * (page - 1))
+            }
 
         val endDateSec = endDate.timeInMillis / 1000
-        val startDateSec = endDate.apply {
-            add(Calendar.DATE, -1 * PAGE_DAYS)
-        }.timeInMillis / 1000
+        val startDateSec =
+            endDate.apply {
+                add(Calendar.DATE, -1 * PAGE_DAYS)
+            }.timeInMillis / 1000
 
         return "$baseUrl/folders?start=$startDateSec&end=$endDateSec"
     }
@@ -151,8 +153,9 @@ class Doujins : HttpSource() {
                 SManga.create().apply {
                     setUrlWithoutDomain(it.attr("href"))
                     title = it.select("div.title .text").text()
-                    artist = it.parent()!!.nextElementSibling()!!.select(".single-line strong").last()
-                        ?.text()?.substringAfter("Artist: ")
+                    artist =
+                        it.parent()!!.nextElementSibling()!!.select(".single-line strong").last()
+                            ?.text()?.substringAfter("Artist: ")
                     author = artist
                     thumbnail_url = it.select("img").attr("srcset")
                 }
@@ -165,18 +168,19 @@ class Doujins : HttpSource() {
         )
     }
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("Text search ignores series and period filters"),
-        Filter.Separator(),
-        Filter.Header("Series filter overrides period filter"),
-        SeriesFilter(),
-        Filter.Separator(),
-        Filter.Header("Period filter only applies at initial page"),
-        PopularityPeriodFilter(),
-        Filter.Separator(),
-        Filter.Header("Sort only works with text search and series filter"),
-        SortFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("Text search ignores series and period filters"),
+            Filter.Separator(),
+            Filter.Header("Series filter overrides period filter"),
+            SeriesFilter(),
+            Filter.Separator(),
+            Filter.Header("Period filter only applies at initial page"),
+            PopularityPeriodFilter(),
+            Filter.Separator(),
+            Filter.Header("Sort only works with text search and series filter"),
+            SortFilter(),
+        )
 
     private class SeriesFilter : UriPartFilter(
         "Series",
@@ -246,8 +250,9 @@ class Doujins : HttpSource() {
     companion object {
         private const val PAGE_DAYS = 3
         private val ORDINAL_SUFFIXES = listOf("th", "st", "nd", "rd")
-        private val MANGA_DETAILS_DATE_FORMAT = ORDINAL_SUFFIXES.map {
-            SimpleDateFormat("MMMM dd'$it', yyyy", Locale.US)
-        }
+        private val MANGA_DETAILS_DATE_FORMAT =
+            ORDINAL_SUFFIXES.map {
+                SimpleDateFormat("MMMM dd'$it', yyyy", Locale.US)
+            }
     }
 }

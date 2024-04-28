@@ -44,8 +44,9 @@ internal fun parseCover(
     thumbnailUrl: String?,
     mdCovers: List<MDcovers>,
 ): String? {
-    val b2key = mdCovers.firstOrNull()?.b2key
-        ?: return thumbnailUrl
+    val b2key =
+        mdCovers.firstOrNull()?.b2key
+            ?: return thumbnailUrl
     val vol = mdCovers.firstOrNull()?.vol.orEmpty()
 
     return thumbnailUrl?.replaceAfterLast("/", "$b2key#$vol")

@@ -14,9 +14,10 @@ class TopReadManhwa : Madara(
     "en",
     SimpleDateFormat("MM/dd/yyyy", Locale.ENGLISH),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1)
+            .build()
 
     override val useNewChapterEndpoint = true
 
@@ -39,17 +40,18 @@ class TopReadManhwa : Madara(
             }
 
             // Attempt to filter out things that aren't part of the series description
-            description = description?.run {
-                split("\n\n").filterNot { block ->
-                    block.contains("topreadmanhwa", true) ||
-                        block.contains("topreadmanwha", true) ||
-                        block.contains("Please share your thoughts", true) ||
-                        block.contains("If you're a fan of", true) ||
-                        block.contains("Happy reading", true)
+            description =
+                description?.run {
+                    split("\n\n").filterNot { block ->
+                        block.contains("topreadmanhwa", true) ||
+                            block.contains("topreadmanwha", true) ||
+                            block.contains("Please share your thoughts", true) ||
+                            block.contains("If you're a fan of", true) ||
+                            block.contains("Happy reading", true)
+                    }
+                        .distinct() // Edge case where the element in `descriptionSelector` can contain <p> tags
+                        .joinToString("\n\n")
                 }
-                    .distinct() // Edge case where the element in `descriptionSelector` can contain <p> tags
-                    .joinToString("\n\n")
-            }
         }
     }
 }

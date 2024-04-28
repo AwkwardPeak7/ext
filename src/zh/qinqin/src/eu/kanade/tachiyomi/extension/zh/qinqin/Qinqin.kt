@@ -20,10 +20,11 @@ class Qinqin : SinMH("亲亲漫画", "http://www.acgwd.com") {
     override fun parsePageImages(chapterImages: String): List<String> {
         val key = SecretKeySpec("cxNB23W8xzKJV26O".toByteArray(), "AES")
         val iv = IvParameterSpec("opb4x7z21vg1f3gI".toByteArray())
-        val result = Cipher.getInstance("AES/CBC/PKCS7Padding").run {
-            init(Cipher.DECRYPT_MODE, key, iv)
-            doFinal(Base64.decode(chapterImages, Base64.DEFAULT))
-        }
+        val result =
+            Cipher.getInstance("AES/CBC/PKCS7Padding").run {
+                init(Cipher.DECRYPT_MODE, key, iv)
+                doFinal(Base64.decode(chapterImages, Base64.DEFAULT))
+            }
         return super.parsePageImages(String(result))
     }
 }

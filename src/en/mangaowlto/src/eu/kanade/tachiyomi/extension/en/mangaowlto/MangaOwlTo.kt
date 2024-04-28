@@ -40,14 +40,15 @@ class MangaOwlTo(
     private val apiUrl = "https://api.$defaultDomain/v1"
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val mirrorPref = ListPreference(screen.context).apply {
-            key = MIRROR_PREF_KEY
-            title = "Mirror (Requires Restart)"
-            entries = MIRROR_PREF_ENTRIES
-            entryValues = MIRROR_PREF_ENTRY_VALUES
-            setDefaultValue(MIRROR_PREF_DEFAULT_VALUE)
-            summary = "%s"
-        }
+        val mirrorPref =
+            ListPreference(screen.context).apply {
+                key = MIRROR_PREF_KEY
+                title = "Mirror (Requires Restart)"
+                entries = MIRROR_PREF_ENTRIES
+                entryValues = MIRROR_PREF_ENTRY_VALUES
+                setDefaultValue(MIRROR_PREF_DEFAULT_VALUE)
+                summary = "%s"
+            }
         screen.addPreference(mirrorPref)
     }
 
@@ -74,21 +75,24 @@ class MangaOwlTo(
     ): Request {
         return if (query.isNotEmpty() || filters.isEmpty()) {
             // Search won't work together with filter
-            val url = "$apiUrl/search".toHttpUrl().newBuilder()
-                .addQueryParameter("q", query)
-                .addQueryParameter("page", page.toString())
-                .build()
+            val url =
+                "$apiUrl/search".toHttpUrl().newBuilder()
+                    .addQueryParameter("q", query)
+                    .addQueryParameter("page", page.toString())
+                    .build()
             GET(url, headers)
         } else {
             val url = "$apiUrl/stories?type=$collection".toHttpUrl().newBuilder()
             filters.forEach { filter ->
                 when (filter) {
-                    is SortFilter -> if (!filter.toUriPart().isNullOrEmpty()) {
-                        url.addQueryParameter("ordering", filter.toUriPart())
-                    }
-                    is StatusFilter -> if (!filter.toUriPart().isNullOrEmpty()) {
-                        url.addQueryParameter("status", filter.toUriPart())
-                    }
+                    is SortFilter ->
+                        if (!filter.toUriPart().isNullOrEmpty()) {
+                            url.addQueryParameter("ordering", filter.toUriPart())
+                        }
+                    is StatusFilter ->
+                        if (!filter.toUriPart().isNullOrEmpty()) {
+                            url.addQueryParameter("status", filter.toUriPart())
+                        }
                     is GenresFilter ->
                         filter.state
                             .filter { it.state }
@@ -135,31 +139,34 @@ class MangaOwlTo(
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     // Filters
-    override fun getFilterList() = FilterList(
-        Filter.Header("Search query won't use filters"),
-        GenresFilter(genresList),
-        StatusFilter(),
-        SortFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Search query won't use filters"),
+            GenresFilter(genresList),
+            StatusFilter(),
+            SortFilter(),
+        )
 
     companion object {
         private const val MIRROR_PREF_KEY = "MIRROR"
-        private val MIRROR_PREF_ENTRIES get() = arrayOf(
-            "mangaowl.to",
-            "mangabuddy.to",
-            "mangafreak.to",
-            "toonily.to",
-            "manganato.so",
-            "mangakakalot.so", // Redirected from mangago.to
-        )
-        private val MIRROR_PREF_ENTRY_VALUES get() = arrayOf(
-            "mangaowl.to",
-            "mangabuddy.to",
-            "mangafreak.to",
-            "toonily.to",
-            "manganato.so",
-            "mangago.to", // API for domain mangakakalot.so
-        )
+        private val MIRROR_PREF_ENTRIES get() =
+            arrayOf(
+                "mangaowl.to",
+                "mangabuddy.to",
+                "mangafreak.to",
+                "toonily.to",
+                "manganato.so",
+                "mangakakalot.so", // Redirected from mangago.to
+            )
+        private val MIRROR_PREF_ENTRY_VALUES get() =
+            arrayOf(
+                "mangaowl.to",
+                "mangabuddy.to",
+                "mangafreak.to",
+                "toonily.to",
+                "manganato.so",
+                "mangago.to", // API for domain mangakakalot.so
+            )
         private val MIRROR_PREF_DEFAULT_VALUE get() = MIRROR_PREF_ENTRY_VALUES[0]
 
         const val ONGOING = "ongoing"

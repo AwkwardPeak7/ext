@@ -46,25 +46,27 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
 
     private val json: Json by injectLazy()
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .rateLimit(2, 1)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .rateLimit(2, 1)
+            .build()
 
     override fun headersBuilder(): Headers.Builder {
-        val builder = super.headersBuilder().apply {
-            set("Referer", "$baseUrl/")
+        val builder =
+            super.headersBuilder().apply {
+                set("Referer", "$baseUrl/")
 
-            // Headers for homepage + serie page
-            set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-            set("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
-            set("Connection", "keep-alive")
-            set("Sec-Fetch-Dest", "document")
-            set("Sec-Fetch-Mode", "navigate")
-            set("Sec-Fetch-Site", "same-origin")
-            set("Sec-Fetch-User", "?1")
-        }
+                // Headers for homepage + serie page
+                set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+                set("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
+                set("Connection", "keep-alive")
+                set("Sec-Fetch-Dest", "document")
+                set("Sec-Fetch-Mode", "navigate")
+                set("Sec-Fetch-Site", "same-origin")
+                set("Sec-Fetch-User", "?1")
+            }
 
         val preferences = Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
         val userAgent = preferences.getString(USER_AGENT_PREF, "")!!
@@ -78,11 +80,13 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
     // Generic (used by popular/latest/search)
     private fun mangaListFromElement(element: Element): SManga {
         return SManga.create().apply {
-            title = element.select("div").select("div.manga_header h1")
-                .text()
+            title =
+                element.select("div").select("div.manga_header h1")
+                    .text()
             setUrlWithoutDomain(element.select("a").attr("href"))
-            thumbnail_url = element.select("div").select("img[alt=couverture manga]")
-                .attr("src")
+            thumbnail_url =
+                element.select("div").select("img[alt=couverture manga]")
+                    .attr("src")
         }
     }
 
@@ -119,20 +123,21 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
         filters: FilterList,
     ): Request {
         // If there is any search text, use text search, otherwise use filter search
-        val uri = if (query.isNotBlank()) {
-            Uri.parse("$baseUrl/manga_list?withoutTypes=5")
-                .buildUpon()
-                .appendQueryParameter("search", query)
-        } else {
-            val uri = Uri.parse("$baseUrl/manga_list?withoutTypes=5").buildUpon()
-            // Append uri filters
-            filters.forEach {
-                if (it is UriFilter) {
-                    it.addToUri(uri)
+        val uri =
+            if (query.isNotBlank()) {
+                Uri.parse("$baseUrl/manga_list?withoutTypes=5")
+                    .buildUpon()
+                    .appendQueryParameter("search", query)
+            } else {
+                val uri = Uri.parse("$baseUrl/manga_list?withoutTypes=5").buildUpon()
+                // Append uri filters
+                filters.forEach {
+                    if (it is UriFilter) {
+                        it.addToUri(uri)
+                    }
                 }
+                uri
             }
-            uri
-        }
         // Append page number
         uri.appendQueryParameter("limit", (page - 1).toString())
         return GET(uri.toString())
@@ -148,13 +153,15 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
 
     override fun mangaDetailsParse(document: Document): SManga {
         return SManga.create().apply {
-            title = document.select("div.manga div.manga-infos div.component-manga-title div.component-manga-title_main h1 ")
-                .text()
+            title =
+                document.select("div.manga div.manga-infos div.component-manga-title div.component-manga-title_main h1 ")
+                    .text()
             artist = document.select("div.datas div.datas_more-artists div.datas_more-artists-people a").text()
             author = document.select("div.datas div.datas_more-authors div.datas_more-authors-peoples div a").text()
             description = document.select("div.datas div.datas_synopsis").text()
-            genre = document.select("div.manga div.manga-infos div.component-manga-categories a")
-                .joinToString(" , ") { it.text() }
+            genre =
+                document.select("div.manga div.manga-infos div.component-manga-categories a")
+                    .joinToString(" , ") { it.text() }
             status = document.select("div.datas div.datas_more div.datas_more-status div.datas_more-status-data")?.first()?.text()?.let {
                 when {
                     it.contains("En cours") -> SManga.ONGOING
@@ -170,13 +177,14 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
         }
     }
 
-    private fun apiHeaders(refererURL: String) = headers.newBuilder().apply {
-        set("Referer", refererURL)
-        set("x-requested-with", "XMLHttpRequest")
-        // without this we get 404 but I don't know why, I cannot find any information about this 'a' header.
-        // In chrome the value is constantly changing on each request, but giving this fixed value seems to work
-        set("a", "1df19bce590b")
-    }.build()
+    private fun apiHeaders(refererURL: String) =
+        headers.newBuilder().apply {
+            set("Referer", refererURL)
+            set("x-requested-with", "XMLHttpRequest")
+            // without this we get 404 but I don't know why, I cannot find any information about this 'a' header.
+            // In chrome the value is constantly changing on each request, but giving this fixed value seems to work
+            set("a", "1df19bce590b")
+        }.build()
 
     // Chapters
     // Subtract relative date
@@ -210,11 +218,12 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        val requestUrl = if (manga.url.startsWith("http")) {
-            "${manga.url}"
-        } else {
-            "$baseUrl${manga.url}"
-        }
+        val requestUrl =
+            if (manga.url.startsWith("http")) {
+                "${manga.url}"
+            } else {
+                "$baseUrl${manga.url}"
+            }
         return client.newCall(GET(requestUrl, headers))
             .asObservableSuccess()
             .map { response ->
@@ -230,12 +239,13 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
         var document = response.asJsoup()
         var moreChapters = true
         var nextPage = 1
-        val pagemax = if (!document.select(".paginator button:contains(>>)").isNullOrEmpty()) {
-            document.select(".paginator button:contains(>>)")?.first()?.attr("data-limit")?.toInt()?.plus(1)
-                ?: 1
-        } else {
-            1
-        }
+        val pagemax =
+            if (!document.select(".paginator button:contains(>>)").isNullOrEmpty()) {
+                document.select(".paginator button:contains(>>)")?.first()?.attr("data-limit")?.toInt()?.plus(1)
+                    ?: 1
+            } else {
+                1
+            }
         // chapters are paginated
         while (moreChapters && nextPage <= pagemax) {
             document.select(chapterListSelector()).map { chapters.add(chapterFromElement(it)) }
@@ -317,27 +327,29 @@ class BentoManga : ParsedHttpSource(), ConfigurableSource {
     override fun imageUrlParse(document: Document) = ""
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headers.newBuilder().apply {
-            set("Referer", page.url)
-            set("Accept", "image/avif,image/webp,*/*")
-            set("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
-            set("Connection", "keep-alive")
-            set("Sec-Fetch-Dest", "document")
-            set("Sec-Fetch-Mode", "navigate")
-            set("Sec-Fetch-Site", "same-origin")
-            set("Sec-Fetch-User", "?1")
-        }.build()
+        val newHeaders =
+            headers.newBuilder().apply {
+                set("Referer", page.url)
+                set("Accept", "image/avif,image/webp,*/*")
+                set("Accept-Language", "fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3")
+                set("Connection", "keep-alive")
+                set("Sec-Fetch-Dest", "document")
+                set("Sec-Fetch-Mode", "navigate")
+                set("Sec-Fetch-Site", "same-origin")
+                set("Sec-Fetch-User", "?1")
+            }.build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
 
     // Filters
-    override fun getFilterList() = FilterList(
-        SortFilter(),
-        TypeFilter(),
-        StatusFilter(),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            SortFilter(),
+            TypeFilter(),
+            StatusFilter(),
+            GenreFilter(),
+        )
 
     private class SortFilter : UriSelectFilter(
         "Tri",

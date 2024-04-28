@@ -49,10 +49,11 @@ class ArgosScan : HttpSource(), ConfigurableSource {
 
     override val supportsLatest = false
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .addInterceptor(::loginIntercept)
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor(::loginIntercept)
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -62,28 +63,32 @@ class ArgosScan : HttpSource(), ConfigurableSource {
 
     private var token: String? = null
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Token", "")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Token", "")
 
-    private fun genericMangaFromObject(project: ArgosProjectDto): SManga = SManga.create().apply {
-        title = project.name!!
-        url = "/obras/${project.id}"
-        thumbnail_url = if (project.cover!! == "default.jpg") {
-            "$baseUrl/img/default.jpg"
-        } else {
-            "$baseUrl/images/${project.id}/${project.cover}"
+    private fun genericMangaFromObject(project: ArgosProjectDto): SManga =
+        SManga.create().apply {
+            title = project.name!!
+            url = "/obras/${project.id}"
+            thumbnail_url =
+                if (project.cover!! == "default.jpg") {
+                    "$baseUrl/img/default.jpg"
+                } else {
+                    "$baseUrl/images/${project.id}/${project.cover}"
+                }
         }
-    }
 
     override fun popularMangaRequest(page: Int): Request {
         val payload = buildPopularQueryPayload(page)
 
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)
 
-        val newHeaders = headersBuilder()
-            .add("Content-Length", body.contentLength().toString())
-            .add("Content-Type", body.contentType().toString())
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Content-Length", body.contentLength().toString())
+                .add("Content-Type", body.contentType().toString())
+                .build()
 
         return POST(GRAPHQL_URL, newHeaders, body)
     }
@@ -97,8 +102,9 @@ class ArgosScan : HttpSource(), ConfigurableSource {
 
         val projectList = result.data["getProjects"]!!
 
-        val mangaList = projectList.projects
-            .map(::genericMangaFromObject)
+        val mangaList =
+            projectList.projects
+                .map(::genericMangaFromObject)
 
         val hasNextPage = projectList.currentPage < projectList.totalPages
 
@@ -118,10 +124,11 @@ class ArgosScan : HttpSource(), ConfigurableSource {
 
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)
 
-        val newHeaders = headersBuilder()
-            .add("Content-Length", body.contentLength().toString())
-            .add("Content-Type", body.contentType().toString())
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Content-Length", body.contentLength().toString())
+                .add("Content-Type", body.contentType().toString())
+                .build()
 
         return POST(GRAPHQL_URL, newHeaders, body)
     }
@@ -137,34 +144,37 @@ class ArgosScan : HttpSource(), ConfigurableSource {
 
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)
 
-        val newHeaders = headersBuilder()
-            .add("Content-Length", body.contentLength().toString())
-            .add("Content-Type", body.contentType().toString())
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Content-Length", body.contentLength().toString())
+                .add("Content-Type", body.contentType().toString())
+                .build()
 
         return POST(GRAPHQL_URL, newHeaders, body)
     }
 
-    override fun mangaDetailsParse(response: Response): SManga = SManga.create().apply {
-        val result = response.parseAs<ArgosResponseDto<ArgosProjectDto>>()
+    override fun mangaDetailsParse(response: Response): SManga =
+        SManga.create().apply {
+            val result = response.parseAs<ArgosResponseDto<ArgosProjectDto>>()
 
-        if (result.data == null) {
-            throw Exception(REQUEST_ERROR)
+            if (result.data == null) {
+                throw Exception(REQUEST_ERROR)
+            }
+
+            val project = result.data["project"]!!
+
+            title = project.name!!
+            thumbnail_url =
+                if (project.cover!! == "default.jpg") {
+                    "$baseUrl/img/default.jpg"
+                } else {
+                    "$baseUrl/images/${project.id}/${project.cover}"
+                }
+            description = project.description.orEmpty()
+            author = project.authors.orEmpty().joinToString()
+            status = SManga.ONGOING
+            genre = project.tags.orEmpty().sortedBy(ArgosTagDto::name).joinToString { it.name }
         }
-
-        val project = result.data["project"]!!
-
-        title = project.name!!
-        thumbnail_url = if (project.cover!! == "default.jpg") {
-            "$baseUrl/img/default.jpg"
-        } else {
-            "$baseUrl/images/${project.id}/${project.cover}"
-        }
-        description = project.description.orEmpty()
-        author = project.authors.orEmpty().joinToString()
-        status = SManga.ONGOING
-        genre = project.tags.orEmpty().sortedBy(ArgosTagDto::name).joinToString { it.name }
-    }
 
     override fun chapterListRequest(manga: SManga): Request = mangaDetailsRequest(manga)
 
@@ -178,13 +188,14 @@ class ArgosScan : HttpSource(), ConfigurableSource {
         return result.data["project"]!!.chapters.map(::chapterFromObject)
     }
 
-    private fun chapterFromObject(chapter: ArgosChapterDto): SChapter = SChapter.create().apply {
-        name = chapter.title!!
-        chapter_number = chapter.number?.toFloat() ?: -1f
-        scanlator = this@ArgosScan.name
-        date_upload = chapter.createAt!!.toDate()
-        url = "/leitor/${chapter.id}"
-    }
+    private fun chapterFromObject(chapter: ArgosChapterDto): SChapter =
+        SChapter.create().apply {
+            name = chapter.title!!
+            chapter_number = chapter.number?.toFloat() ?: -1f
+            scanlator = this@ArgosScan.name
+            date_upload = chapter.createAt!!.toDate()
+            url = "/leitor/${chapter.id}"
+        }
 
     override fun getChapterUrl(chapter: SChapter): String = baseUrl + chapter.url
 
@@ -199,10 +210,11 @@ class ArgosScan : HttpSource(), ConfigurableSource {
 
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)
 
-        val newHeaders = headersBuilder()
-            .add("Content-Length", body.contentLength().toString())
-            .add("Content-Type", body.contentType().toString())
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Content-Length", body.contentLength().toString())
+                .add("Content-Type", body.contentType().toString())
+                .build()
 
         return POST(GRAPHQL_URL, newHeaders, body)
     }
@@ -214,8 +226,9 @@ class ArgosScan : HttpSource(), ConfigurableSource {
             throw Exception(REQUEST_ERROR)
         }
 
-        val chapterDto = result["data"]!!.jsonObject["getChapters"]!!.jsonObject["chapters"]!!.jsonArray[0]
-            .let { json.decodeFromJsonElement<ArgosChapterDto>(it) }
+        val chapterDto =
+            result["data"]!!.jsonObject["getChapters"]!!.jsonObject["chapters"]!!.jsonArray[0]
+                .let { json.decodeFromJsonElement<ArgosChapterDto>(it) }
 
         val referer = "$baseUrl/leitor/${chapterDto.id}"
 
@@ -227,55 +240,58 @@ class ArgosScan : HttpSource(), ConfigurableSource {
     override fun imageUrlParse(response: Response): String = ""
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", page.url)
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", page.url)
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val emailPref = EditTextPreference(screen.context).apply {
-            key = EMAIL_PREF_KEY
-            title = EMAIL_PREF_TITLE
-            summary = EMAIL_PREF_SUMMARY
-            setDefaultValue("")
-            dialogTitle = EMAIL_PREF_TITLE
-            dialogMessage = EMAIL_PREF_DIALOG
+        val emailPref =
+            EditTextPreference(screen.context).apply {
+                key = EMAIL_PREF_KEY
+                title = EMAIL_PREF_TITLE
+                summary = EMAIL_PREF_SUMMARY
+                setDefaultValue("")
+                dialogTitle = EMAIL_PREF_TITLE
+                dialogMessage = EMAIL_PREF_DIALOG
 
-            setOnBindEditTextListener {
-                it.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                setOnBindEditTextListener {
+                    it.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                }
+
+                setOnPreferenceChangeListener { _, newValue ->
+                    token = null
+
+                    preferences.edit()
+                        .putString(EMAIL_PREF_KEY, newValue as String)
+                        .commit()
+                }
             }
 
-            setOnPreferenceChangeListener { _, newValue ->
-                token = null
+        val passwordPref =
+            EditTextPreference(screen.context).apply {
+                key = PASSWORD_PREF_KEY
+                title = PASSWORD_PREF_TITLE
+                summary = PASSWORD_PREF_SUMMARY
+                setDefaultValue("")
+                dialogTitle = PASSWORD_PREF_TITLE
+                dialogMessage = PASSWORD_PREF_DIALOG
 
-                preferences.edit()
-                    .putString(EMAIL_PREF_KEY, newValue as String)
-                    .commit()
+                setOnBindEditTextListener {
+                    it.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                }
+
+                setOnPreferenceChangeListener { _, newValue ->
+                    token = null
+
+                    preferences.edit()
+                        .putString(PASSWORD_PREF_KEY, newValue as String)
+                        .commit()
+                }
             }
-        }
-
-        val passwordPref = EditTextPreference(screen.context).apply {
-            key = PASSWORD_PREF_KEY
-            title = PASSWORD_PREF_TITLE
-            summary = PASSWORD_PREF_SUMMARY
-            setDefaultValue("")
-            dialogTitle = PASSWORD_PREF_TITLE
-            dialogMessage = PASSWORD_PREF_DIALOG
-
-            setOnBindEditTextListener {
-                it.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            }
-
-            setOnPreferenceChangeListener { _, newValue ->
-                token = null
-
-                preferences.edit()
-                    .putString(PASSWORD_PREF_KEY, newValue as String)
-                    .commit()
-            }
-        }
 
         screen.addPreference(emailPref)
         screen.addPreference(passwordPref)
@@ -303,25 +319,28 @@ class ArgosScan : HttpSource(), ConfigurableSource {
             if (loginResult["errors"] != null) {
                 loginResponse.close()
 
-                val errorMessage = runCatching {
-                    loginResult["errors"]!!.jsonArray[0].jsonObject["message"]?.jsonPrimitive?.content
-                }
+                val errorMessage =
+                    runCatching {
+                        loginResult["errors"]!!.jsonArray[0].jsonObject["message"]?.jsonPrimitive?.content
+                    }
 
                 throw IOException(errorMessage.getOrNull() ?: REQUEST_ERROR)
             }
 
-            token = loginResult["data"]!!
-                .jsonObject["login"]!!
-                .jsonObject["token"]!!
-                .jsonPrimitive.content
+            token =
+                loginResult["data"]!!
+                    .jsonObject["login"]!!
+                    .jsonObject["token"]!!
+                    .jsonPrimitive.content
 
             loginResponse.close()
         }
 
         if (!token.isNullOrEmpty()) {
-            val authorizedRequest = chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer $token")
-                .build()
+            val authorizedRequest =
+                chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
 
             return chain.proceed(authorizedRequest)
         }
@@ -337,17 +356,19 @@ class ArgosScan : HttpSource(), ConfigurableSource {
 
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)
 
-        val newHeaders = headersBuilder()
-            .add("Content-Length", body.contentLength().toString())
-            .add("Content-Type", body.contentType().toString())
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Content-Length", body.contentLength().toString())
+                .add("Content-Type", body.contentType().toString())
+                .build()
 
         return POST(GRAPHQL_URL, newHeaders, body)
     }
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromString(it.body.string())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromString(it.body.string())
+        }
 
     private fun String.toDate(): Long {
         return runCatching { DATE_PARSER.parse(this)?.time }

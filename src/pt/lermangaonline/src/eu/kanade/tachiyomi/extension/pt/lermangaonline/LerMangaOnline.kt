@@ -31,44 +31,49 @@ class LerMangaOnline : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 1, 1, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 1, 1, TimeUnit.SECONDS)
+            .build()
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        name = element.selectFirst("div.capitulo")!!.ownText()
-        date_upload = (element.selectFirst("span")?.text() ?: "").toDate()
-        setUrlWithoutDomain(element.absUrl("href"))
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            name = element.selectFirst("div.capitulo")!!.ownText()
+            date_upload = (element.selectFirst("span")?.text() ?: "").toDate()
+            setUrlWithoutDomain(element.absUrl("href"))
+        }
 
     override fun chapterListSelector() = "div.capitulos a"
 
     override fun imageUrlParse(document: Document) = ""
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        title = element.selectFirst("section h3")!!.text()
-        thumbnail_url = element.selectFirst("div.poster img")?.absUrl("src")
-        setUrlWithoutDomain(element.selectFirst("div.poster a")!!.absUrl("href"))
-    }
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            title = element.selectFirst("section h3")!!.text()
+            thumbnail_url = element.selectFirst("div.poster img")?.absUrl("src")
+            setUrlWithoutDomain(element.selectFirst("div.poster a")!!.absUrl("href"))
+        }
 
     override fun latestUpdatesNextPageSelector() = "div.wp-pagenavi [aria-current] + a"
 
     override fun latestUpdatesRequest(page: Int): Request {
-        val url = "$baseUrl/capitulo/page/$page".toHttpUrl().newBuilder()
-            .build()
+        val url =
+            "$baseUrl/capitulo/page/$page".toHttpUrl().newBuilder()
+                .build()
         return GET(url, headers)
     }
 
     override fun latestUpdatesSelector() = "div.box-indx section.materias article"
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        val info = document.selectFirst("div.box-flex")
-        title = info!!.selectFirst("div.sinopse a")!!.text()
-        description = info.selectFirst("div.sinopse div:nth-child(2)")?.text()
-        thumbnail_url = info.selectFirst("div.poster img")?.srcAttr()
-        genre = document.select("div.categorias-blog a").joinToString { it.text() }
-        status = SManga.UNKNOWN
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            val info = document.selectFirst("div.box-flex")
+            title = info!!.selectFirst("div.sinopse a")!!.text()
+            description = info.selectFirst("div.sinopse div:nth-child(2)")?.text()
+            thumbnail_url = info.selectFirst("div.poster img")?.srcAttr()
+            genre = document.select("div.categorias-blog a").joinToString { it.text() }
+            status = SManga.UNKNOWN
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         val elements = document.select("div.images img")
@@ -82,8 +87,9 @@ class LerMangaOnline : ParsedHttpSource() {
     override fun popularMangaNextPageSelector() = latestUpdatesNextPageSelector()
 
     override fun popularMangaRequest(page: Int): Request {
-        val url = "$baseUrl/page/$page".toHttpUrl().newBuilder()
-            .build()
+        val url =
+            "$baseUrl/page/$page".toHttpUrl().newBuilder()
+                .build()
         return GET(url, headers)
     }
 
@@ -100,9 +106,10 @@ class LerMangaOnline : ParsedHttpSource() {
     ): Request {
         val filter = filters.first() as GenreFilter<*>
         val genre = filter.selected
-        val url = "$baseUrl/${if (genre.isGlobal()) "" else genre.slug + "/"}page/$page".toHttpUrl().newBuilder()
-            .addQueryParameter("s", query)
-            .build()
+        val url =
+            "$baseUrl/${if (genre.isGlobal()) "" else genre.slug + "/"}page/$page".toHttpUrl().newBuilder()
+                .addQueryParameter("s", query)
+                .build()
         return GET(url, headers)
     }
 
@@ -127,10 +134,11 @@ class LerMangaOnline : ParsedHttpSource() {
 
     override fun searchMangaSelector() = latestUpdatesSelector()
 
-    private fun Element.srcAttr(): String = when {
-        hasAttr("data-src") -> absUrl("data-src")
-        else -> absUrl("src")
-    }
+    private fun Element.srcAttr(): String =
+        when {
+            hasAttr("data-src") -> absUrl("data-src")
+            else -> absUrl("src")
+        }
 
     private fun String.toDate(): Long {
         return runCatching { DATE_FORMATTER.parse(trim())?.time }

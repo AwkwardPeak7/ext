@@ -53,10 +53,11 @@ class Anchira : HttpSource(), ConfigurableSource {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(3, 1, TimeUnit.SECONDS)
-        .addInterceptor { apiInterceptor(it) }
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(3, 1, TimeUnit.SECONDS)
+            .addInterceptor { apiInterceptor(it) }
+            .build()
 
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -82,11 +83,13 @@ class Anchira : HttpSource(), ConfigurableSource {
                     url = "/g/${it.id}/${it.key}"
                     title = it.title
                     thumbnail_url = "$cdnUrl/${it.id}/${it.key}/m/${it.thumbnailIndex + 1}"
-                    val art = it.tags.filter { it.namespace == 1 }.joinToString(", ") { it.name }
-                        .ifEmpty { null }
+                    val art =
+                        it.tags.filter { it.namespace == 1 }.joinToString(", ") { it.name }
+                            .ifEmpty { null }
                     artist = art
-                    author = it.tags.filter { it.namespace == 2 }.joinToString(", ") { it.name }
-                        .ifEmpty { art }
+                    author =
+                        it.tags.filter { it.namespace == 2 }.joinToString(", ") { it.name }
+                            .ifEmpty { art }
                     genre = prepareTags(it.tags, preferences.useTagGrouping)
                     update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
                     status = SManga.COMPLETED
@@ -118,13 +121,15 @@ class Anchira : HttpSource(), ConfigurableSource {
             }
         } else if (query.startsWith(SLUG_BUNDLE_PREFIX)) {
             // bundle entries as chapters
-            val url = applyFilters(
-                page,
-                query.substringAfter(SLUG_BUNDLE_PREFIX),
-                filters,
-            ).removeAllQueryParameters("page")
-            val manga = SManga.create()
-                .apply { this.url = "?${url.build().query}" }
+            val url =
+                applyFilters(
+                    page,
+                    query.substringAfter(SLUG_BUNDLE_PREFIX),
+                    filters,
+                ).removeAllQueryParameters("page")
+            val manga =
+                SManga.create()
+                    .apply { this.url = "?${url.build().query}" }
             fetchMangaDetails(manga).map {
                 MangasPage(listOf(it), false)
             }
@@ -153,15 +158,17 @@ class Anchira : HttpSource(), ConfigurableSource {
         var url = libraryUrl.toHttpUrl().newBuilder()
 
         if (trendingFilter?.state == true) {
-            val interval = when (sortTrendingFilter?.state) {
-                1 -> "3"
-                else -> ""
-            }
+            val interval =
+                when (sortTrendingFilter?.state) {
+                    1 -> "3"
+                    else -> ""
+                }
 
             if (interval.isNotBlank()) url.setQueryParameter("interval", interval)
 
-            url = url.toString().replace("library", "trending").toHttpUrl()
-                .newBuilder()
+            url =
+                url.toString().replace("library", "trending").toHttpUrl()
+                    .newBuilder()
         } else {
             if (query.isNotBlank()) {
                 url.setQueryParameter("s", query)
@@ -184,13 +191,14 @@ class Anchira : HttpSource(), ConfigurableSource {
                     }
 
                     is SortFilter -> {
-                        val sort = when (filter.state?.index) {
-                            0 -> "1"
-                            1 -> "2"
-                            2 -> "4"
-                            4 -> "32"
-                            else -> ""
-                        }
+                        val sort =
+                            when (filter.state?.index) {
+                                0 -> "1"
+                                1 -> "2"
+                                2 -> "4"
+                                4 -> "32"
+                                else -> ""
+                            }
 
                         if (sort.isNotEmpty()) url.setQueryParameter("sort", sort)
                         if (filter.state?.ascending == true) url.setQueryParameter("order", "1")
@@ -202,8 +210,9 @@ class Anchira : HttpSource(), ConfigurableSource {
                                 throw IOException("No login cookie found")
                             }
 
-                            url = url.toString().replace("library", "user/favorites").toHttpUrl()
-                                .newBuilder()
+                            url =
+                                url.toString().replace("library", "user/favorites").toHttpUrl()
+                                    .newBuilder()
                         }
                     }
 
@@ -250,11 +259,13 @@ class Anchira : HttpSource(), ConfigurableSource {
                 title = data.title
                 thumbnail_url =
                     "$cdnUrl/${data.id}/${data.key}/b/${data.thumbnailIndex + 1}"
-                val art = data.tags.filter { it.namespace == 1 }.joinToString(", ") { it.name }
-                    .ifEmpty { null }
+                val art =
+                    data.tags.filter { it.namespace == 1 }.joinToString(", ") { it.name }
+                        .ifEmpty { null }
                 artist = art
-                author = data.tags.filter { it.namespace == 2 }.joinToString(", ") { it.name }
-                    .ifEmpty { art }
+                author =
+                    data.tags.filter { it.namespace == 2 }.joinToString(", ") { it.name }
+                        .ifEmpty { art }
                 genre = prepareTags(data.tags, preferences.useTagGrouping)
                 update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
                 status = SManga.COMPLETED
@@ -262,12 +273,13 @@ class Anchira : HttpSource(), ConfigurableSource {
         }
     }
 
-    override fun getMangaUrl(manga: SManga) = if (preferences.openSource && !manga.url.startsWith("?")) {
-        val id = manga.url.split("/").reversed()[1].toInt()
-        anchiraData.find { it.id == id }?.url ?: "$baseUrl${manga.url}"
-    } else {
-        "$baseUrl${manga.url}"
-    }
+    override fun getMangaUrl(manga: SManga) =
+        if (preferences.openSource && !manga.url.startsWith("?")) {
+            val id = manga.url.split("/").reversed()[1].toInt()
+            anchiraData.find { it.id == id }?.url ?: "$baseUrl${manga.url}"
+        } else {
+            "$baseUrl${manga.url}"
+        }
 
     // Chapter
 
@@ -291,15 +303,16 @@ class Anchira : HttpSource(), ConfigurableSource {
                     )
                 }
                 if (page < pages) {
-                    results = json.decodeFromString<LibraryResponse>(
-                        client.newCall(
-                            GET(
-                                response.request.url.newBuilder()
-                                    .setQueryParameter("page", (page + 1).toString()).build(),
-                                headers,
-                            ),
-                        ).execute().body.string(),
-                    )
+                    results =
+                        json.decodeFromString<LibraryResponse>(
+                            client.newCall(
+                                GET(
+                                    response.request.url.newBuilder()
+                                        .setQueryParameter("page", (page + 1).toString()).build(),
+                                    headers,
+                                ),
+                            ).execute().body.string(),
+                        )
                 }
             }
         } else {
@@ -356,45 +369,49 @@ class Anchira : HttpSource(), ConfigurableSource {
 
     @SuppressLint("SetTextI18n")
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val imageQualityPref = ListPreference(screen.context).apply {
-            key = IMAGE_QUALITY_PREF
-            title = "Image quality"
-            entries = arrayOf("Original", "Resampled")
-            entryValues = arrayOf("a", "b")
-            setDefaultValue("b")
-            summary = "%s"
-        }
+        val imageQualityPref =
+            ListPreference(screen.context).apply {
+                key = IMAGE_QUALITY_PREF
+                title = "Image quality"
+                entries = arrayOf("Original", "Resampled")
+                entryValues = arrayOf("a", "b")
+                setDefaultValue("b")
+                summary = "%s"
+            }
 
-        val openSourcePref = SwitchPreferenceCompat(screen.context).apply {
-            key = OPEN_SOURCE_PREF
-            title = "Open source website in WebView"
-            summary =
-                "Enable to open the original source website of the gallery (if available) instead of Anchira."
-            setDefaultValue(false)
-        }
+        val openSourcePref =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = OPEN_SOURCE_PREF
+                title = "Open source website in WebView"
+                summary =
+                    "Enable to open the original source website of the gallery (if available) instead of Anchira."
+                setDefaultValue(false)
+            }
 
-        val useTagGrouping = SwitchPreferenceCompat(screen.context).apply {
-            key = USE_TAG_GROUPING
-            title = "Group tags"
-            summary =
-                "Enable to group tags together by artist, circle, parody, magazine and general tags"
-            setDefaultValue(false)
-        }
+        val useTagGrouping =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = USE_TAG_GROUPING
+                title = "Group tags"
+                summary =
+                    "Enable to group tags together by artist, circle, parody, magazine and general tags"
+                setDefaultValue(false)
+            }
 
         screen.addPreference(imageQualityPref)
         screen.addPreference(openSourcePref)
         screen.addPreference(useTagGrouping)
     }
 
-    override fun getFilterList() = FilterList(
-        CategoryGroup(),
-        SortFilter(),
-        FavoritesFilter(),
-        Filter.Separator(),
-        Filter.Header("Others are ignored if trending only"),
-        TrendingFilter(),
-        SortTrendingFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            CategoryGroup(),
+            SortFilter(),
+            FavoritesFilter(),
+            Filter.Separator(),
+            Filter.Header("Others are ignored if trending only"),
+            TrendingFilter(),
+            SortTrendingFilter(),
+        )
 
     private class CategoryFilter(name: String) : Filter.CheckBox(name, false)
 
@@ -461,9 +478,10 @@ class Anchira : HttpSource(), ConfigurableSource {
         }
     }
 
-    private fun isLoggedIn() = client.cookieJar.loadForRequest(baseUrl.toHttpUrl()).any {
-        it.name == "session"
-    }
+    private fun isLoggedIn() =
+        client.cookieJar.loadForRequest(baseUrl.toHttpUrl()).any {
+            it.name == "session"
+        }
 
     private val anchiraData by lazy {
         client.newCall(GET(DATA_JSON, headers)).execute()

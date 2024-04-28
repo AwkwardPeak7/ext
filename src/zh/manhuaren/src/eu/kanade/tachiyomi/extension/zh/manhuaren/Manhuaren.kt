@@ -64,11 +64,12 @@ class Manhuaren : HttpSource(), ConfigurableSource {
     private var userId: String = preferences.getString(USER_ID_PREF, null) ?: "-1"
     private val lastUsedTime: String by lazy { generateLastUsedTime() }
 
-    override val client: OkHttpClient = network.client
-        .newBuilder()
-        .apply { interceptors().removeAll { it.javaClass.simpleName == "BrotliInterceptor" } }
-        .addInterceptor(ErrorResponseInterceptor(baseUrl, preferences))
-        .build()
+    override val client: OkHttpClient =
+        network.client
+            .newBuilder()
+            .apply { interceptors().removeAll { it.javaClass.simpleName == "BrotliInterceptor" } }
+            .addInterceptor(ErrorResponseInterceptor(baseUrl, preferences))
+            .build()
 
     private fun randomString(
         length: Int,
@@ -87,16 +88,17 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         var sum = 0
         str.toCharArray().forEachIndexed { i, it ->
             var v = Character.getNumericValue(it)
-            sum += if (i % 2 == 0) {
-                v
-            } else {
-                v *= 2
-                if (v < 10) {
+            sum +=
+                if (i % 2 == 0) {
                     v
                 } else {
-                    v - 9
+                    v *= 2
+                    if (v < 10) {
+                        v
+                    } else {
+                        v - 9
+                    }
                 }
-            }
         }
         var checkDigit = sum % 10
         if (checkDigit != 0) {
@@ -168,53 +170,57 @@ class Manhuaren : HttpSource(), ConfigurableSource {
 
     @OptIn(ExperimentalUnsignedTypes::class)
     private fun getAnonyUser(): Request {
-        val url = baseHttpUrl.newBuilder()
-            .addPathSegments("v1/user/createAnonyUser2")
-            .build()
+        val url =
+            baseHttpUrl.newBuilder()
+                .addPathSegments("v1/user/createAnonyUser2")
+                .build()
 
         // val simSerialNumber = generateSimSerialNumber()
         // val mac = Random.nextUBytes(6)
         //     .joinToString(":") { it.toString(16).padStart(2, '0') }
-        val androidId = Random.nextUBytes(8)
-            .joinToString("") { it.toString(16).padStart(2, '0') }
-            .replaceFirst("^0+".toRegex(), "")
-            .uppercase()
+        val androidId =
+            Random.nextUBytes(8)
+                .joinToString("") { it.toString(16).padStart(2, '0') }
+                .replaceFirst("^0+".toRegex(), "")
+                .uppercase()
 
-        val keysMap = ArrayList<HashMap<String, Any?>>().apply {
-            add(
-                HashMap<String, Any?>().apply {
-                    put("key", encrypt(imei))
-                    put("keyType", "0")
-                },
-            )
-            // add(
-            //     HashMap<String, Any?>().apply {
-            //         put("key", encrypt("mac: $mac"))
-            //         put("keyType", "1")
-            //     },
-            // )
-            add(
-                HashMap<String, Any?>().apply {
-                    put("key", encrypt(androidId)) // https://developer.android.com/reference/android/provider/Settings.Secure#ANDROID_ID
-                    put("keyType", "2")
-                },
-            )
-            // add(
-            //     HashMap<String, Any?>().apply {
-            //         put("key", encrypt(simSerialNumber)) // https://developer.android.com/reference/android/telephony/TelephonyManager#getSimSerialNumber()
-            //         put("keyType", "3")
-            //     },
-            // )
-            add(
-                HashMap<String, Any?>().apply {
-                    put("key", encrypt(UUID.randomUUID().toString()))
-                    put("keyType", "-1")
-                },
-            )
-        }
-        val bodyMap = HashMap<String, Any?>().apply {
-            put("keys", keysMap)
-        }
+        val keysMap =
+            ArrayList<HashMap<String, Any?>>().apply {
+                add(
+                    HashMap<String, Any?>().apply {
+                        put("key", encrypt(imei))
+                        put("keyType", "0")
+                    },
+                )
+                // add(
+                //     HashMap<String, Any?>().apply {
+                //         put("key", encrypt("mac: $mac"))
+                //         put("keyType", "1")
+                //     },
+                // )
+                add(
+                    HashMap<String, Any?>().apply {
+                        put("key", encrypt(androidId)) // https://developer.android.com/reference/android/provider/Settings.Secure#ANDROID_ID
+                        put("keyType", "2")
+                    },
+                )
+                // add(
+                //     HashMap<String, Any?>().apply {
+                //         put("key", encrypt(simSerialNumber)) // https://developer.android.com/reference/android/telephony/TelephonyManager#getSimSerialNumber()
+                //         put("keyType", "3")
+                //     },
+                // )
+                add(
+                    HashMap<String, Any?>().apply {
+                        put("key", encrypt(UUID.randomUUID().toString()))
+                        put("keyType", "-1")
+                    },
+                )
+            }
+        val bodyMap =
+            HashMap<String, Any?>().apply {
+                put("keys", keysMap)
+            }
 
         return myPost(
             url,
@@ -244,9 +250,10 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         str += gsnSalt
 
         val gsn = hashString("MD5", str)
-        val newUrl = request.url.newBuilder()
-            .addQueryParameter("gsn", gsn)
-            .build()
+        val newUrl =
+            request.url.newBuilder()
+                .addQueryParameter("gsn", gsn)
+                .build()
 
         return request.newBuilder()
             .url(newUrl)
@@ -259,42 +266,43 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         body: RequestBody?,
     ): Request {
         val now = DateFormat.format("yyyy-MM-dd+HH:mm:ss", Date()).toString()
-        val newUrl = url.newBuilder()
-            .setQueryParameter("gsm", "md5")
-            .setQueryParameter("gft", "json")
-            .setQueryParameter("gak", "android_manhuaren2")
-            .setQueryParameter("gat", "")
-            .setQueryParameter("gui", userId)
-            .setQueryParameter("gts", now)
-            .setQueryParameter("gut", "0") // user type
-            .setQueryParameter("gem", "1")
-            .setQueryParameter("gaui", userId)
-            .setQueryParameter("gln", "") // location
-            .setQueryParameter("gcy", "US") // country
-            .setQueryParameter("gle", "zh") // language
-            .setQueryParameter("gcl", "dm5") // Umeng channel
-            .setQueryParameter("gos", "1") // OS (int)
-            .setQueryParameter("gov", "33_13") // "{Build.VERSION.SDK_INT}_{Build.VERSION.RELEASE}"
-            .setQueryParameter("gav", "7.0.1") // app version
-            .setQueryParameter("gdi", imei)
-            .setQueryParameter("gfcl", "dm5") // Umeng channel config
-            .setQueryParameter("gfut", lastUsedTime) // first used time
-            .setQueryParameter("glut", lastUsedTime) // last used time
-            .setQueryParameter("gpt", "com.mhr.mangamini") // package name
-            .setQueryParameter("gciso", "us") // https://developer.android.com/reference/android/telephony/TelephonyManager#getSimCountryIso()
-            .setQueryParameter("glot", "") // longitude
-            .setQueryParameter("glat", "") // latitude
-            .setQueryParameter("gflot", "") // first location longitude
-            .setQueryParameter("gflat", "") // first location latitude
-            .setQueryParameter("glbsaut", "0") // is allow location (0 or 1)
-            .setQueryParameter("gac", "") // area code
-            .setQueryParameter("gcut", "GMT+8") // time zone
-            .setQueryParameter("gfcc", "") // first country code
-            .setQueryParameter("gflg", "") // first language
-            .setQueryParameter("glcn", "") // country name
-            .setQueryParameter("glcc", "") // country code
-            .setQueryParameter("gflcc", "") // first location country code
-            .build()
+        val newUrl =
+            url.newBuilder()
+                .setQueryParameter("gsm", "md5")
+                .setQueryParameter("gft", "json")
+                .setQueryParameter("gak", "android_manhuaren2")
+                .setQueryParameter("gat", "")
+                .setQueryParameter("gui", userId)
+                .setQueryParameter("gts", now)
+                .setQueryParameter("gut", "0") // user type
+                .setQueryParameter("gem", "1")
+                .setQueryParameter("gaui", userId)
+                .setQueryParameter("gln", "") // location
+                .setQueryParameter("gcy", "US") // country
+                .setQueryParameter("gle", "zh") // language
+                .setQueryParameter("gcl", "dm5") // Umeng channel
+                .setQueryParameter("gos", "1") // OS (int)
+                .setQueryParameter("gov", "33_13") // "{Build.VERSION.SDK_INT}_{Build.VERSION.RELEASE}"
+                .setQueryParameter("gav", "7.0.1") // app version
+                .setQueryParameter("gdi", imei)
+                .setQueryParameter("gfcl", "dm5") // Umeng channel config
+                .setQueryParameter("gfut", lastUsedTime) // first used time
+                .setQueryParameter("glut", lastUsedTime) // last used time
+                .setQueryParameter("gpt", "com.mhr.mangamini") // package name
+                .setQueryParameter("gciso", "us") // https://developer.android.com/reference/android/telephony/TelephonyManager#getSimCountryIso()
+                .setQueryParameter("glot", "") // longitude
+                .setQueryParameter("glat", "") // latitude
+                .setQueryParameter("gflot", "") // first location longitude
+                .setQueryParameter("gflat", "") // first location latitude
+                .setQueryParameter("glbsaut", "0") // is allow location (0 or 1)
+                .setQueryParameter("gac", "") // area code
+                .setQueryParameter("gcut", "GMT+8") // time zone
+                .setQueryParameter("gfcc", "") // first country code
+                .setQueryParameter("gflg", "") // first language
+                .setQueryParameter("glcn", "") // country name
+                .setQueryParameter("glcc", "") // country code
+                .setQueryParameter("gflcc", "") // first location country code
+                .build()
 
         return addGsnHash(
             Request.Builder()
@@ -323,43 +331,45 @@ class Manhuaren : HttpSource(), ConfigurableSource {
     }
 
     override fun headersBuilder(): Headers.Builder {
-        val yqciMap = HashMap<String, Any?>().apply {
-            put("at", -1)
-            put("av", "7.0.1") // app version
-            put("ciso", "us") // https://developer.android.com/reference/android/telephony/TelephonyManager#getSimCountryIso()
-            put("cl", "dm5") // Umeng channel
-            put("cy", "US") // country
-            put("di", imei)
-            put("dm", Build.MODEL)
-            put("fcl", "dm5") // Umeng channel config
-            put("ft", "mhr") // from type
-            put("fut", lastUsedTime) // first used time
-            put("installation", "dm5")
-            put("le", "zh") // language
-            put("ln", "") // location
-            put("lut", lastUsedTime) // last used time
-            put("nt", 3)
-            put("os", 1) // OS (int)
-            put("ov", "33_13") // "{Build.VERSION.SDK_INT}_{Build.VERSION.RELEASE}"
-            put("pt", "com.mhr.mangamini") // package name
-            put("rn", "1080x1920") // screen "{width}x{height}"
-            put("st", 0)
-        }
-        val yqppMap = HashMap<String, Any?>().apply {
-            put("ciso", "us") // https://developer.android.com/reference/android/telephony/TelephonyManager#getSimCountryIso()
-            put("laut", "0") // is allow location ("0" or "1")
-            put("lot", "") // longitude
-            put("lat", "") // latitude
-            put("cut", "GMT+8") // time zone
-            put("fcc", "") // first country code
-            put("flg", "") // first language
-            put("lcc", "") // country code
-            put("lcn", "") // country name
-            put("flcc", "") // first location country code
-            put("flot", "") // first location longitude
-            put("flat", "") // first location latitude
-            put("ac", "") // area code
-        }
+        val yqciMap =
+            HashMap<String, Any?>().apply {
+                put("at", -1)
+                put("av", "7.0.1") // app version
+                put("ciso", "us") // https://developer.android.com/reference/android/telephony/TelephonyManager#getSimCountryIso()
+                put("cl", "dm5") // Umeng channel
+                put("cy", "US") // country
+                put("di", imei)
+                put("dm", Build.MODEL)
+                put("fcl", "dm5") // Umeng channel config
+                put("ft", "mhr") // from type
+                put("fut", lastUsedTime) // first used time
+                put("installation", "dm5")
+                put("le", "zh") // language
+                put("ln", "") // location
+                put("lut", lastUsedTime) // last used time
+                put("nt", 3)
+                put("os", 1) // OS (int)
+                put("ov", "33_13") // "{Build.VERSION.SDK_INT}_{Build.VERSION.RELEASE}"
+                put("pt", "com.mhr.mangamini") // package name
+                put("rn", "1080x1920") // screen "{width}x{height}"
+                put("st", 0)
+            }
+        val yqppMap =
+            HashMap<String, Any?>().apply {
+                put("ciso", "us") // https://developer.android.com/reference/android/telephony/TelephonyManager#getSimCountryIso()
+                put("laut", "0") // is allow location ("0" or "1")
+                put("lot", "") // longitude
+                put("lat", "") // latitude
+                put("cut", "GMT+8") // time zone
+                put("fcc", "") // first country code
+                put("flg", "") // first language
+                put("lcc", "") // country code
+                put("lcn", "") // country name
+                put("flcc", "") // first location country code
+                put("flot", "") // first location longitude
+                put("flat", "") // first location latitude
+                put("ac", "") // area code
+            }
 
         return Headers.Builder().apply {
             add("X-Yq-Yqci", JSONObject(yqciMap).toString())
@@ -376,9 +386,10 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         input: String,
     ): String {
         val hexChars = "0123456789abcdef"
-        val bytes = MessageDigest
-            .getInstance(type)
-            .digest(input.toByteArray())
+        val bytes =
+            MessageDigest
+                .getInstance(type)
+                .digest(input.toByteArray())
         val result = StringBuilder(bytes.size * 2)
 
         bytes.forEach {
@@ -407,11 +418,12 @@ class Manhuaren : HttpSource(), ConfigurableSource {
                     title = obj.getString("mangaName")
                     thumbnail_url = obj.getString("mangaCoverimageUrl")
                     author = obj.optString("mangaAuthor")
-                    status = when (obj.getInt("mangaIsOver")) {
-                        1 -> SManga.COMPLETED
-                        0 -> SManga.ONGOING
-                        else -> SManga.UNKNOWN
-                    }
+                    status =
+                        when (obj.getInt("mangaIsOver")) {
+                            1 -> SManga.COMPLETED
+                            0 -> SManga.ONGOING
+                            else -> SManga.UNKNOWN
+                        }
                     url = "/v1/manga/getDetail?mangaId=$id"
                 },
             )
@@ -426,26 +438,28 @@ class Manhuaren : HttpSource(), ConfigurableSource {
     }
 
     override fun popularMangaRequest(page: Int): Request {
-        val url = baseHttpUrl.newBuilder()
-            .addQueryParameter("subCategoryType", "0")
-            .addQueryParameter("subCategoryId", "0")
-            .addQueryParameter("start", (pageSize * (page - 1)).toString())
-            .addQueryParameter("limit", pageSize.toString())
-            .addQueryParameter("sort", "0")
-            .addPathSegments("v2/manga/getCategoryMangas")
-            .build()
+        val url =
+            baseHttpUrl.newBuilder()
+                .addQueryParameter("subCategoryType", "0")
+                .addQueryParameter("subCategoryId", "0")
+                .addQueryParameter("start", (pageSize * (page - 1)).toString())
+                .addQueryParameter("limit", pageSize.toString())
+                .addQueryParameter("sort", "0")
+                .addPathSegments("v2/manga/getCategoryMangas")
+                .build()
         return myGet(url)
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
-        val url = baseHttpUrl.newBuilder()
-            .addQueryParameter("subCategoryType", "0")
-            .addQueryParameter("subCategoryId", "0")
-            .addQueryParameter("start", (pageSize * (page - 1)).toString())
-            .addQueryParameter("limit", pageSize.toString())
-            .addQueryParameter("sort", "1")
-            .addPathSegments("v2/manga/getCategoryMangas")
-            .build()
+        val url =
+            baseHttpUrl.newBuilder()
+                .addQueryParameter("subCategoryType", "0")
+                .addQueryParameter("subCategoryId", "0")
+                .addQueryParameter("start", (pageSize * (page - 1)).toString())
+                .addQueryParameter("limit", pageSize.toString())
+                .addQueryParameter("sort", "1")
+                .addPathSegments("v2/manga/getCategoryMangas")
+                .build()
         return myGet(url)
     }
 
@@ -462,12 +476,14 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         query: String,
         filters: FilterList,
     ): Request {
-        var url = baseHttpUrl.newBuilder()
-            .addQueryParameter("start", (pageSize * (page - 1)).toString())
-            .addQueryParameter("limit", pageSize.toString())
+        var url =
+            baseHttpUrl.newBuilder()
+                .addQueryParameter("start", (pageSize * (page - 1)).toString())
+                .addQueryParameter("limit", pageSize.toString())
         if (query != "") {
-            url = url.addQueryParameter("keywords", query)
-                .addPathSegments("v1/search/getSearchManga")
+            url =
+                url.addQueryParameter("keywords", query)
+                    .addPathSegments("v1/search/getSearchManga")
         } else {
             filters.forEach { filter ->
                 when (filter) {
@@ -475,8 +491,9 @@ class Manhuaren : HttpSource(), ConfigurableSource {
                         url = url.setQueryParameter("sort", filter.getId())
                     }
                     is CategoryFilter -> {
-                        url = url.setQueryParameter("subCategoryId", filter.getId())
-                            .setQueryParameter("subCategoryType", filter.getType())
+                        url =
+                            url.setQueryParameter("subCategoryId", filter.getId())
+                                .setQueryParameter("subCategoryType", filter.getType())
                     }
                     else -> {}
                 }
@@ -496,48 +513,50 @@ class Manhuaren : HttpSource(), ConfigurableSource {
         )
     }
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val res = response.body.string()
-        val obj = JSONObject(res).getJSONObject("response")
-        title = obj.getString("mangaName")
-        thumbnail_url = ""
-        obj.optString("mangaCoverimageUrl").let {
-            if (it != "") {
-                thumbnail_url = it
-            }
-        }
-        if (thumbnail_url == "" || thumbnail_url == "http://mhfm5.tel.cdndm5.com/tag/category/nopic.jpg") {
-            obj.optString("mangaPicimageUrl").let {
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val res = response.body.string()
+            val obj = JSONObject(res).getJSONObject("response")
+            title = obj.getString("mangaName")
+            thumbnail_url = ""
+            obj.optString("mangaCoverimageUrl").let {
                 if (it != "") {
                     thumbnail_url = it
                 }
             }
-        }
-        if (thumbnail_url == "") {
-            obj.optString("shareIcon").let {
-                if (it != "") {
-                    thumbnail_url = it
+            if (thumbnail_url == "" || thumbnail_url == "http://mhfm5.tel.cdndm5.com/tag/category/nopic.jpg") {
+                obj.optString("mangaPicimageUrl").let {
+                    if (it != "") {
+                        thumbnail_url = it
+                    }
                 }
             }
+            if (thumbnail_url == "") {
+                obj.optString("shareIcon").let {
+                    if (it != "") {
+                        thumbnail_url = it
+                    }
+                }
+            }
+
+            val arr = obj.getJSONArray("mangaAuthors")
+            val tmparr = ArrayList<String>(arr.length())
+            for (i in 0 until arr.length()) {
+                tmparr.add(arr.getString(i))
+            }
+            author = tmparr.joinToString(", ")
+
+            genre = obj.getString("mangaTheme").replace(" ", ", ")
+
+            status =
+                when (obj.getInt("mangaIsOver")) {
+                    1 -> SManga.COMPLETED
+                    0 -> SManga.ONGOING
+                    else -> SManga.UNKNOWN
+                }
+
+            description = obj.getString("mangaIntro")
         }
-
-        val arr = obj.getJSONArray("mangaAuthors")
-        val tmparr = ArrayList<String>(arr.length())
-        for (i in 0 until arr.length()) {
-            tmparr.add(arr.getString(i))
-        }
-        author = tmparr.joinToString(", ")
-
-        genre = obj.getString("mangaTheme").replace(" ", ", ")
-
-        status = when (obj.getInt("mangaIsOver")) {
-            1 -> SManga.COMPLETED
-            0 -> SManga.ONGOING
-            else -> SManga.UNKNOWN
-        }
-
-        description = obj.getString("mangaIntro")
-    }
 
     override fun mangaDetailsRequest(manga: SManga): Request {
         return myGet((baseUrl + manga.url).toHttpUrl())
@@ -603,77 +622,80 @@ class Manhuaren : HttpSource(), ConfigurableSource {
     }
 
     override fun pageListRequest(chapter: SChapter): Request {
-        val url = (baseUrl + chapter.url).toHttpUrl().newBuilder()
-            .addQueryParameter("netType", "4")
-            .addQueryParameter("loadreal", "1")
-            .addQueryParameter("imageQuality", "2")
-            .build()
+        val url =
+            (baseUrl + chapter.url).toHttpUrl().newBuilder()
+                .addQueryParameter("netType", "4")
+                .addQueryParameter("loadreal", "1")
+                .addQueryParameter("imageQuality", "2")
+                .build()
         return myGet(url)
     }
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", "http://www.dm5.com/dm5api/")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", "http://www.dm5.com/dm5api/")
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
 
-    override fun getFilterList() = FilterList(
-        SortFilter(
-            "状态",
-            arrayOf(
-                Pair("热门", "0"),
-                Pair("更新", "1"),
-                Pair("新作", "2"),
-                Pair("完结", "3"),
+    override fun getFilterList() =
+        FilterList(
+            SortFilter(
+                "状态",
+                arrayOf(
+                    Pair("热门", "0"),
+                    Pair("更新", "1"),
+                    Pair("新作", "2"),
+                    Pair("完结", "3"),
+                ),
             ),
-        ),
-        CategoryFilter(
-            "分类",
-            arrayOf(
-                Category("全部", "0", "0"),
-                Category("热血", "0", "31"),
-                Category("恋爱", "0", "26"),
-                Category("校园", "0", "1"),
-                Category("百合", "0", "3"),
-                Category("耽美", "0", "27"),
-                Category("伪娘", "0", "5"),
-                Category("冒险", "0", "2"),
-                Category("职场", "0", "6"),
-                Category("后宫", "0", "8"),
-                Category("治愈", "0", "9"),
-                Category("科幻", "0", "25"),
-                Category("励志", "0", "10"),
-                Category("生活", "0", "11"),
-                Category("战争", "0", "12"),
-                Category("悬疑", "0", "17"),
-                Category("推理", "0", "33"),
-                Category("搞笑", "0", "37"),
-                Category("奇幻", "0", "14"),
-                Category("魔法", "0", "15"),
-                Category("恐怖", "0", "29"),
-                Category("神鬼", "0", "20"),
-                Category("萌系", "0", "21"),
-                Category("历史", "0", "4"),
-                Category("美食", "0", "7"),
-                Category("同人", "0", "30"),
-                Category("运动", "0", "34"),
-                Category("绅士", "0", "36"),
-                Category("机甲", "0", "40"),
-                Category("限制级", "0", "61"),
-                Category("少年向", "1", "1"),
-                Category("少女向", "1", "2"),
-                Category("青年向", "1", "3"),
-                Category("港台", "2", "35"),
-                Category("日韩", "2", "36"),
-                Category("大陆", "2", "37"),
-                Category("欧美", "2", "52"),
+            CategoryFilter(
+                "分类",
+                arrayOf(
+                    Category("全部", "0", "0"),
+                    Category("热血", "0", "31"),
+                    Category("恋爱", "0", "26"),
+                    Category("校园", "0", "1"),
+                    Category("百合", "0", "3"),
+                    Category("耽美", "0", "27"),
+                    Category("伪娘", "0", "5"),
+                    Category("冒险", "0", "2"),
+                    Category("职场", "0", "6"),
+                    Category("后宫", "0", "8"),
+                    Category("治愈", "0", "9"),
+                    Category("科幻", "0", "25"),
+                    Category("励志", "0", "10"),
+                    Category("生活", "0", "11"),
+                    Category("战争", "0", "12"),
+                    Category("悬疑", "0", "17"),
+                    Category("推理", "0", "33"),
+                    Category("搞笑", "0", "37"),
+                    Category("奇幻", "0", "14"),
+                    Category("魔法", "0", "15"),
+                    Category("恐怖", "0", "29"),
+                    Category("神鬼", "0", "20"),
+                    Category("萌系", "0", "21"),
+                    Category("历史", "0", "4"),
+                    Category("美食", "0", "7"),
+                    Category("同人", "0", "30"),
+                    Category("运动", "0", "34"),
+                    Category("绅士", "0", "36"),
+                    Category("机甲", "0", "40"),
+                    Category("限制级", "0", "61"),
+                    Category("少年向", "1", "1"),
+                    Category("少女向", "1", "2"),
+                    Category("青年向", "1", "3"),
+                    Category("港台", "2", "35"),
+                    Category("日韩", "2", "36"),
+                    Category("大陆", "2", "37"),
+                    Category("欧美", "2", "52"),
+                ),
             ),
-        ),
-    )
+        )
 
     private data class Category(val name: String, val type: String, val id: String)
 

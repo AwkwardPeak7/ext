@@ -43,9 +43,10 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
 
     private val json: Json by injectLazy()
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .addNetworkInterceptor(::captchaInterceptor)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .addNetworkInterceptor(::captchaInterceptor)
+            .build()
 
     private fun captchaInterceptor(chain: Interceptor.Chain): Response {
         val request = chain.request()
@@ -62,9 +63,10 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
 
     private var captchaUrl: String? = null
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)")
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)")
+        }
 
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
@@ -103,61 +105,64 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request { // publisher > writer > artist + sorting for both if else
-        if (query.isEmpty() && (if (filters.isEmpty()) getFilterList() else filters).filterIsInstance<GenreList>().all {
+        if (query.isEmpty() &&
+            (if (filters.isEmpty()) getFilterList() else filters).filterIsInstance<GenreList>().all {
                 it.included.isEmpty() && it.excluded.isEmpty()
             }
         ) {
-            val url = baseUrl.toHttpUrl().newBuilder().apply {
-                var pathSegmentAdded = false
+            val url =
+                baseUrl.toHttpUrl().newBuilder().apply {
+                    var pathSegmentAdded = false
 
-                for (filter in if (filters.isEmpty()) getFilterList() else filters) {
-                    when (filter) {
-                        is PublisherFilter -> {
-                            if (filter.state.isNotEmpty()) {
-                                addPathSegments("Publisher/${filter.state.replace(" ", "-")}")
-                                pathSegmentAdded = true
+                    for (filter in if (filters.isEmpty()) getFilterList() else filters) {
+                        when (filter) {
+                            is PublisherFilter -> {
+                                if (filter.state.isNotEmpty()) {
+                                    addPathSegments("Publisher/${filter.state.replace(" ", "-")}")
+                                    pathSegmentAdded = true
+                                }
                             }
-                        }
-                        is WriterFilter -> {
-                            if (filter.state.isNotEmpty()) {
-                                addPathSegments("Writer/${filter.state.replace(" ", "-")}")
-                                pathSegmentAdded = true
+                            is WriterFilter -> {
+                                if (filter.state.isNotEmpty()) {
+                                    addPathSegments("Writer/${filter.state.replace(" ", "-")}")
+                                    pathSegmentAdded = true
+                                }
                             }
-                        }
-                        is ArtistFilter -> {
-                            if (filter.state.isNotEmpty()) {
-                                addPathSegments("Artist/${filter.state.replace(" ", "-")}")
-                                pathSegmentAdded = true
+                            is ArtistFilter -> {
+                                if (filter.state.isNotEmpty()) {
+                                    addPathSegments("Artist/${filter.state.replace(" ", "-")}")
+                                    pathSegmentAdded = true
+                                }
                             }
+                            else -> {}
                         }
-                        else -> {}
-                    }
 
-                    if (pathSegmentAdded) {
-                        break
+                        if (pathSegmentAdded) {
+                            break
+                        }
                     }
-                }
-                addPathSegment(
-                    (if (filters.isEmpty()) getFilterList() else filters).filterIsInstance<SortFilter>().first().selected.toString(),
-                )
-                addQueryParameter("page", page.toString())
-            }.build()
+                    addPathSegment(
+                        (if (filters.isEmpty()) getFilterList() else filters).filterIsInstance<SortFilter>().first().selected.toString(),
+                    )
+                    addQueryParameter("page", page.toString())
+                }.build()
             return GET(url, headers)
         } else {
-            val url = "$baseUrl/AdvanceSearch".toHttpUrl().newBuilder().apply {
-                addQueryParameter("comicName", query.trim())
-                addQueryParameter("page", page.toString())
-                for (filter in if (filters.isEmpty()) getFilterList() else filters) {
-                    when (filter) {
-                        is Status -> addQueryParameter("status", arrayOf("", "Completed", "Ongoing")[filter.state])
-                        is GenreList -> {
-                            addQueryParameter("ig", filter.included.joinToString(","))
-                            addQueryParameter("eg", filter.excluded.joinToString(","))
+            val url =
+                "$baseUrl/AdvanceSearch".toHttpUrl().newBuilder().apply {
+                    addQueryParameter("comicName", query.trim())
+                    addQueryParameter("page", page.toString())
+                    for (filter in if (filters.isEmpty()) getFilterList() else filters) {
+                        when (filter) {
+                            is Status -> addQueryParameter("status", arrayOf("", "Completed", "Ongoing")[filter.state])
+                            is GenreList -> {
+                                addQueryParameter("ig", filter.included.joinToString(","))
+                                addQueryParameter("eg", filter.excluded.joinToString(","))
+                            }
+                            else -> {}
                         }
-                        else -> {}
                     }
-                }
-            }.build()
+                }.build()
             return GET(url, headers)
         }
     }
@@ -193,14 +198,16 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
 
     private fun realMangaDetailsRequest(manga: SManga): Request = super.mangaDetailsRequest(manga)
 
-    override fun mangaDetailsRequest(manga: SManga): Request = captchaUrl?.let { GET(it, headers) }.also { captchaUrl = null }
-        ?: super.mangaDetailsRequest(manga)
+    override fun mangaDetailsRequest(manga: SManga): Request =
+        captchaUrl?.let { GET(it, headers) }.also { captchaUrl = null }
+            ?: super.mangaDetailsRequest(manga)
 
-    private fun parseStatus(status: String) = when {
-        status.contains("Ongoing") -> SManga.ONGOING
-        status.contains("Completed") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String) =
+        when {
+            status.contains("Ongoing") -> SManga.ONGOING
+            status.contains("Completed") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun chapterListSelector() = "table.listing tr:gt(1)"
 
@@ -226,8 +233,9 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
             rguardUrl = document.selectFirst("script[src*='rguard.min.js']")?.absUrl("src")
         }
 
-        val script = document.selectFirst("script:containsData(lstImages.push)")?.data()
-            ?: throw Exception("Failed to find image URLs")
+        val script =
+            document.selectFirst("script:containsData(lstImages.push)")?.data()
+                ?: throw Exception("Failed to find image URLs")
 
         return CHAPTER_IMAGES_REGEX.findAll(script).toList()
             .let { matches -> urlDecode(matches.map { it.groupValues[1] }) }
@@ -271,102 +279,106 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
         ),
     )
 
-    override fun getFilterList() = FilterList(
-        Status(),
-        GenreList(getGenreList()),
-        Filter.Separator(),
-        Filter.Header("Filters below is ignored when Status,Genre or the queue is not empty."),
-        SortFilter(),
-        PublisherFilter(),
-        WriterFilter(),
-        ArtistFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Status(),
+            GenreList(getGenreList()),
+            Filter.Separator(),
+            Filter.Header("Filters below is ignored when Status,Genre or the queue is not empty."),
+            SortFilter(),
+            PublisherFilter(),
+            WriterFilter(),
+            ArtistFilter(),
+        )
 
     // $("select[name=\"genres\"]").map((i,el) => `Genre("${$(el).next().text().trim()}", ${i})`).get().join(',\n')
     // on https://readcomiconline.li/AdvanceSearch
-    private fun getGenreList() = listOf(
-        Genre("Action", "1"),
-        Genre("Adventure", "2"),
-        Genre("Anthology", "38"),
-        Genre("Anthropomorphic", "46"),
-        Genre("Biography", "41"),
-        Genre("Children", "49"),
-        Genre("Comedy", "3"),
-        Genre("Crime", "17"),
-        Genre("Drama", "19"),
-        Genre("Family", "25"),
-        Genre("Fantasy", "20"),
-        Genre("Fighting", "31"),
-        Genre("Graphic Novels", "5"),
-        Genre("Historical", "28"),
-        Genre("Horror", "15"),
-        Genre("Leading Ladies", "35"),
-        Genre("LGBTQ", "51"),
-        Genre("Literature", "44"),
-        Genre("Manga", "40"),
-        Genre("Martial Arts", "4"),
-        Genre("Mature", "8"),
-        Genre("Military", "33"),
-        Genre("Mini-Series", "56"),
-        Genre("Movies & TV", "47"),
-        Genre("Music", "55"),
-        Genre("Mystery", "23"),
-        Genre("Mythology", "21"),
-        Genre("Personal", "48"),
-        Genre("Political", "42"),
-        Genre("Post-Apocalyptic", "43"),
-        Genre("Psychological", "27"),
-        Genre("Pulp", "39"),
-        Genre("Religious", "53"),
-        Genre("Robots", "9"),
-        Genre("Romance", "32"),
-        Genre("School Life", "52"),
-        Genre("Sci-Fi", "16"),
-        Genre("Slice of Life", "50"),
-        Genre("Sport", "54"),
-        Genre("Spy", "30"),
-        Genre("Superhero", "22"),
-        Genre("Supernatural", "24"),
-        Genre("Suspense", "29"),
-        Genre("Thriller", "18"),
-        Genre("Vampires", "34"),
-        Genre("Video Games", "37"),
-        Genre("War", "26"),
-        Genre("Western", "45"),
-        Genre("Zombies", "36"),
-    )
+    private fun getGenreList() =
+        listOf(
+            Genre("Action", "1"),
+            Genre("Adventure", "2"),
+            Genre("Anthology", "38"),
+            Genre("Anthropomorphic", "46"),
+            Genre("Biography", "41"),
+            Genre("Children", "49"),
+            Genre("Comedy", "3"),
+            Genre("Crime", "17"),
+            Genre("Drama", "19"),
+            Genre("Family", "25"),
+            Genre("Fantasy", "20"),
+            Genre("Fighting", "31"),
+            Genre("Graphic Novels", "5"),
+            Genre("Historical", "28"),
+            Genre("Horror", "15"),
+            Genre("Leading Ladies", "35"),
+            Genre("LGBTQ", "51"),
+            Genre("Literature", "44"),
+            Genre("Manga", "40"),
+            Genre("Martial Arts", "4"),
+            Genre("Mature", "8"),
+            Genre("Military", "33"),
+            Genre("Mini-Series", "56"),
+            Genre("Movies & TV", "47"),
+            Genre("Music", "55"),
+            Genre("Mystery", "23"),
+            Genre("Mythology", "21"),
+            Genre("Personal", "48"),
+            Genre("Political", "42"),
+            Genre("Post-Apocalyptic", "43"),
+            Genre("Psychological", "27"),
+            Genre("Pulp", "39"),
+            Genre("Religious", "53"),
+            Genre("Robots", "9"),
+            Genre("Romance", "32"),
+            Genre("School Life", "52"),
+            Genre("Sci-Fi", "16"),
+            Genre("Slice of Life", "50"),
+            Genre("Sport", "54"),
+            Genre("Spy", "30"),
+            Genre("Superhero", "22"),
+            Genre("Supernatural", "24"),
+            Genre("Suspense", "29"),
+            Genre("Thriller", "18"),
+            Genre("Vampires", "34"),
+            Genre("Video Games", "37"),
+            Genre("War", "26"),
+            Genre("Western", "45"),
+            Genre("Zombies", "36"),
+        )
     // Preferences Code
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        val qualitypref = androidx.preference.ListPreference(screen.context).apply {
-            key = QUALITY_PREF_Title
-            title = QUALITY_PREF_Title
-            entries = arrayOf("High Quality", "Low Quality")
-            entryValues = arrayOf("hq", "lq")
-            summary = "%s"
+        val qualitypref =
+            androidx.preference.ListPreference(screen.context).apply {
+                key = QUALITY_PREF_Title
+                title = QUALITY_PREF_Title
+                entries = arrayOf("High Quality", "Low Quality")
+                entryValues = arrayOf("hq", "lq")
+                summary = "%s"
 
-            setOnPreferenceChangeListener { _, newValue ->
-                val selected = newValue as String
-                val index = this.findIndexOfValue(selected)
-                val entry = entryValues[index] as String
-                preferences.edit().putString(QUALITY_PREF, entry).commit()
+                setOnPreferenceChangeListener { _, newValue ->
+                    val selected = newValue as String
+                    val index = this.findIndexOfValue(selected)
+                    val entry = entryValues[index] as String
+                    preferences.edit().putString(QUALITY_PREF, entry).commit()
+                }
             }
-        }
         screen.addPreference(qualitypref)
-        val serverpref = androidx.preference.ListPreference(screen.context).apply {
-            key = SERVER_PREF_TITLE
-            title = SERVER_PREF_TITLE
-            entries = arrayOf("Server 1", "Server 2")
-            entryValues = arrayOf("", "s2")
-            summary = "%s"
+        val serverpref =
+            androidx.preference.ListPreference(screen.context).apply {
+                key = SERVER_PREF_TITLE
+                title = SERVER_PREF_TITLE
+                entries = arrayOf("Server 1", "Server 2")
+                entryValues = arrayOf("", "s2")
+                summary = "%s"
 
-            setOnPreferenceChangeListener { _, newValue ->
-                val selected = newValue as String
-                val index = this.findIndexOfValue(selected)
-                val entry = entryValues[index] as String
-                preferences.edit().putString(SERVER_PREF, entry).commit()
+                setOnPreferenceChangeListener { _, newValue ->
+                    val selected = newValue as String
+                    val index = this.findIndexOfValue(selected)
+                    val entry = entryValues[index] as String
+                    preferences.edit().putString(SERVER_PREF, entry).commit()
+                }
             }
-        }
         screen.addPreference(serverpref)
     }
 
@@ -378,20 +390,23 @@ class Readcomiconline : ConfigurableSource, ParsedHttpSource() {
 
     private val rguardBytecode: ByteArray by lazy {
         val cacheDays = if (rguardUrl == null) 1 else 7
-        val cacheControl = CacheControl.Builder()
-            .maxAge(cacheDays, TimeUnit.DAYS)
-            .build()
+        val cacheControl =
+            CacheControl.Builder()
+                .maxAge(cacheDays, TimeUnit.DAYS)
+                .build()
 
         val scriptUrl = rguardUrl ?: "$baseUrl/Scripts/rguard.min.js"
         val scriptRequest = GET(scriptUrl, headers, cache = cacheControl)
         val scriptResponse = client.newCall(scriptRequest).execute()
         val scriptBody = scriptResponse.body.string()
 
-        val deobfuscatedBody = Deobfuscator.deobfuscateScript(scriptBody)
-            ?: throw Exception("Unable to de-obfuscate rguard script")
+        val deobfuscatedBody =
+            Deobfuscator.deobfuscateScript(scriptBody)
+                ?: throw Exception("Unable to de-obfuscate rguard script")
 
-        val beauFunc = RGUARD_REGEX.find(deobfuscatedBody)?.groupValues
-            ?: throw Exception("Unable to parse rguard script")
+        val beauFunc =
+            RGUARD_REGEX.find(deobfuscatedBody)?.groupValues
+                ?: throw Exception("Unable to parse rguard script")
 
         QuickJs.create().use {
             it.compile(beauFunc.joinToString("") + ATOB_SCRIPT, "?")

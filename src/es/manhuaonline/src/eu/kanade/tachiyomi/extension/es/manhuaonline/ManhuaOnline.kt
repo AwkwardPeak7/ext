@@ -17,7 +17,8 @@ class ManhuaOnline : Madara(
 
     override val mangaSubString = "l"
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(3)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(3)
+            .build()
 }

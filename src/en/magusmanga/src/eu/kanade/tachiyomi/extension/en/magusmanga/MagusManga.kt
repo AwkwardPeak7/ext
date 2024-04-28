@@ -15,7 +15,8 @@ class MagusManga : MangaThemesia(
 ) {
     override val id = 7792477462646075400
 
-    override val client = super.client.newBuilder()
-        .rateLimit(1, 1, TimeUnit.SECONDS)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1, 1, TimeUnit.SECONDS)
+            .build()
 }

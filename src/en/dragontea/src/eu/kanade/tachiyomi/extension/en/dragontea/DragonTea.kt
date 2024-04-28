@@ -19,9 +19,10 @@ class DragonTea : Madara(
     "en",
     dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1)
+            .build()
 
     override val mangaSubString = "novel"
 
@@ -30,8 +31,9 @@ class DragonTea : Madara(
     private val pageIndexRegex = Regex("""image-(\d+)[a-z]+""", RegexOption.IGNORE_CASE)
 
     override fun pageListParse(document: Document): List<Page> {
-        val dataId = document.selectFirst(".entry-header.header")?.attr("data-id")?.toInt()
-            ?: return super.pageListParse(document)
+        val dataId =
+            document.selectFirst(".entry-header.header")?.attr("data-id")?.toInt()
+                ?: return super.pageListParse(document)
         val elements = document.select(".reading-content .page-break img")
         val pageCount = elements.size
 
@@ -41,16 +43,21 @@ class DragonTea : Madara(
             it.attr("id", decryptedId)
         }
 
-        val orderedElements = elements.sortedBy {
-            pageIndexRegex.find(it.attr("id"))?.groupValues?.get(1)?.toInt() ?: 0
-        }
+        val orderedElements =
+            elements.sortedBy {
+                pageIndexRegex.find(it.attr("id"))?.groupValues?.get(1)?.toInt() ?: 0
+            }
 
-        val dtaKey = "15" + orderedElements.joinToString(
-            "",
-        ) { it.attr("id").takeLast(1) } + (((dataId + 88) * 2) - pageCount - 5).toString()
-        val srcKey = (dataId + 20).toString() + orderedElements.joinToString("") {
-            decryptAesJson(it.attr("dta"), dtaKey).jsonPrimitive.content.takeLast(2)
-        } + (pageCount * 4).toString()
+        val dtaKey =
+            "15" +
+                orderedElements.joinToString(
+                    "",
+                ) { it.attr("id").takeLast(1) } + (((dataId + 88) * 2) - pageCount - 5).toString()
+        val srcKey =
+            (dataId + 20).toString() +
+                orderedElements.joinToString("") {
+                    decryptAesJson(it.attr("dta"), dtaKey).jsonPrimitive.content.takeLast(2)
+                } + (pageCount * 4).toString()
 
         return orderedElements.mapIndexed { i, element ->
             val src = decryptAesJson(element.attr("data-src"), srcKey).jsonPrimitive.content

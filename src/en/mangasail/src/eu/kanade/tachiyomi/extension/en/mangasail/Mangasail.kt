@@ -43,33 +43,36 @@ class Mangasail : ParsedHttpSource() {
 
     override fun popularMangaSelector() = "tbody tr"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        element.selectFirst("td:first-of-type a")!!.let {
-            setUrlWithoutDomain(it.attr("href"))
-            title = it.text()
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            element.selectFirst("td:first-of-type a")!!.let {
+                setUrlWithoutDomain(it.attr("href"))
+                title = it.text()
+            }
+            thumbnail_url = element.selectFirst("td img")!!.attr("src")
         }
-        thumbnail_url = element.selectFirst("td img")!!.attr("src")
-    }
 
     override fun popularMangaNextPageSelector() = "table + div.text-center ul.pagination li.next a"
 
     // Latest
 
-    override fun latestUpdatesRequest(page: Int) = GET(
-        "$baseUrl/sites/all/modules/authcache/modules/authcache_p13n/frontcontroller/authcache.php?r=frag/block/showmanga-lastest_list&o[q]=node",
-        headers,
-    )
+    override fun latestUpdatesRequest(page: Int) =
+        GET(
+            "$baseUrl/sites/all/modules/authcache/modules/authcache_p13n/frontcontroller/authcache.php?r=frag/block/showmanga-lastest_list&o[q]=node",
+            headers,
+        )
 
     override fun latestUpdatesSelector() = "ul#latest-list > li"
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        title = element.select("a strong").text()
-        element.select("a:has(img)").let {
-            url = it.attr("href")
-            // Thumbnails are kind of low-res on latest updates page, transform the img url to get a better version
-            thumbnail_url = it.select("img").first()!!.attr("src").substringBefore("?").replace("styles/minicover/public/", "")
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            title = element.select("a strong").text()
+            element.select("a:has(img)").let {
+                url = it.attr("href")
+                // Thumbnails are kind of low-res on latest updates page, transform the img url to get a better version
+                thumbnail_url = it.select("img").first()!!.attr("src").substringBefore("?").replace("styles/minicover/public/", "")
+            }
         }
-    }
 
     override fun latestUpdatesNextPageSelector(): String = "There is no next page"
 
@@ -146,22 +149,24 @@ class Mangasail : ParsedHttpSource() {
         }
     }
 
-    private fun String?.toStatus() = when {
-        this == null -> SManga.UNKNOWN
-        this.contains("Ongoing") -> SManga.ONGOING
-        this.contains("Completed") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun String?.toStatus() =
+        when {
+            this == null -> SManga.UNKNOWN
+            this.contains("Ongoing") -> SManga.ONGOING
+            this.contains("Completed") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // Chapters
 
     override fun chapterListSelector() = "tbody tr"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.select("a").first()!!.attr("href"))
-        name = element.select("a").text()
-        date_upload = parseChapterDate(element.select("td + td").text())
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.select("a").first()!!.attr("href"))
+            name = element.select("a").text()
+            date_upload = parseChapterDate(element.select("td + td").text())
+        }
 
     private fun parseChapterDate(string: String): Long {
         return dateFormat.parse(string.substringAfter("on "))?.time ?: 0L
@@ -170,8 +175,9 @@ class Mangasail : ParsedHttpSource() {
     // Page List
 
     override fun pageListParse(document: Document): List<Page> {
-        val imgUrlArray = document.selectFirst("script:containsData(paths)")!!.data()
-            .substringAfter("paths\":").substringBefore(",\"count_p")
+        val imgUrlArray =
+            document.selectFirst("script:containsData(paths)")!!.data()
+                .substringAfter("paths\":").substringBefore(",\"count_p")
         return json.parseToJsonElement(imgUrlArray).jsonArray.mapIndexed { i, el ->
             Page(i, "", el.jsonPrimitive.content)
         }
@@ -181,10 +187,11 @@ class Mangasail : ParsedHttpSource() {
 
     // Filters
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("Text search ignores filters"),
-        GenreFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("Text search ignores filters"),
+            GenreFilter(),
+        )
 
     // From https://www.sailmg.com/tagclouds/chunk/1
     private class GenreFilter : UriPartFilter(

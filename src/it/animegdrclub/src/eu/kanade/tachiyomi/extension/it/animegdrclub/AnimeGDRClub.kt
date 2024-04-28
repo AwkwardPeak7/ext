@@ -90,22 +90,24 @@ class AnimeGDRClub : ParsedHttpSource() {
 
         if ((encFrags[0].isNotEmpty()) and (encFrags[0] != "null")) {
             nume = 1
-            sele = if (encFrags[0].startsWith("stati=")) {
-                encFrags.joinToString(", ") {
-                    ".${it.replace("stati=", "")} > .manga"
+            sele =
+                if (encFrags[0].startsWith("stati=")) {
+                    encFrags.joinToString(", ") {
+                        ".${it.replace("stati=", "")} > .manga"
+                    }
+                } else {
+                    "div.manga:contains(${encFrags.joinToString("-")})"
                 }
-            } else {
-                "div.manga:contains(${encFrags.joinToString("-")})"
-            }
         }
 
-        val mangas = document.select(sele).map { element ->
-            when (nume) {
-                1 -> popularMangaFromElement(element)
-                2 -> latestUpdatesFromElement(element)
-                else -> searchMangaFromElement(element)
+        val mangas =
+            document.select(sele).map { element ->
+                when (nume) {
+                    1 -> popularMangaFromElement(element)
+                    2 -> latestUpdatesFromElement(element)
+                    else -> searchMangaFromElement(element)
+                }
             }
-        }
         return MangasPage(mangas, false)
     }
 
@@ -149,15 +151,17 @@ class AnimeGDRClub : ParsedHttpSource() {
         val infoElement = document.select(".tabellaalta")
         val manga = SManga.create()
 
-        manga.status = when {
-            infoElement.text().contains("In Corso") -> SManga.ONGOING
-            infoElement.text().contains("Concluso") -> SManga.COMPLETED
-            infoElement.text().contains("Interrotto") -> SManga.ON_HIATUS
-            else -> SManga.UNKNOWN
-        }
-        manga.genre = infoElement.select("span.generi > a").joinToString(", ") {
-            it.text()
-        }
+        manga.status =
+            when {
+                infoElement.text().contains("In Corso") -> SManga.ONGOING
+                infoElement.text().contains("Concluso") -> SManga.COMPLETED
+                infoElement.text().contains("Interrotto") -> SManga.ON_HIATUS
+                else -> SManga.UNKNOWN
+            }
+        manga.genre =
+            infoElement.select("span.generi > a").joinToString(", ") {
+                it.text()
+            }
         manga.description = document.select("span.trama").text().substringAfter("Trama: ")
 
         return manga
@@ -212,9 +216,10 @@ class AnimeGDRClub : ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = ""
 
     override fun imageRequest(page: Page): Request {
-        val imgHeader = Headers.Builder().apply {
-            add("Referer", baseUrl)
-        }.build()
+        val imgHeader =
+            Headers.Builder().apply {
+                add("Referer", baseUrl)
+            }.build()
         return GET(page.imageUrl!!, imgHeader)
     }
     //endregion
@@ -228,43 +233,46 @@ class AnimeGDRClub : ParsedHttpSource() {
 
     private class StatusList(statuses: List<Status>) : Filter.Group<Status>("Stato", statuses)
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("La ricerca non accetta i filtri e viceversa"),
-        SelezType(listOf("Stato", "Genere")),
-        StatusList(getStatusList()),
-        GenreSelez(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("La ricerca non accetta i filtri e viceversa"),
+            SelezType(listOf("Stato", "Genere")),
+            StatusList(getStatusList()),
+            GenreSelez(getGenreList()),
+        )
 
-    private fun getStatusList() = listOf(
-        Status("In corso", "progettiincorso"),
-        Status("Finito", "progetticonclusi-progettioneshot"),
-        Status("Interrotto", "progettiinterrotti"),
-    )
+    private fun getStatusList() =
+        listOf(
+            Status("In corso", "progettiincorso"),
+            Status("Finito", "progetticonclusi-progettioneshot"),
+            Status("Interrotto", "progettiinterrotti"),
+        )
 
-    private fun getGenreList() = listOf(
-        "Avventura",
-        "Azione",
-        "Comico",
-        "Commedia",
-        "Drammatico",
-        "Ecchi",
-        "Fantascienza",
-        "Fantasy",
-        "Guerra",
-        "Harem",
-        "Horror",
-        "Isekai",
-        "Mecha",
-        "Mistero",
-        "Musica",
-        "Psicologico",
-        "Scolastico",
-        "Sentimentale",
-        "Slice of Life",
-        "Sovrannaturale",
-        "Sperimentale",
-        "Storico",
-        "Thriller",
-    )
+    private fun getGenreList() =
+        listOf(
+            "Avventura",
+            "Azione",
+            "Comico",
+            "Commedia",
+            "Drammatico",
+            "Ecchi",
+            "Fantascienza",
+            "Fantasy",
+            "Guerra",
+            "Harem",
+            "Horror",
+            "Isekai",
+            "Mecha",
+            "Mistero",
+            "Musica",
+            "Psicologico",
+            "Scolastico",
+            "Sentimentale",
+            "Slice of Life",
+            "Sovrannaturale",
+            "Sperimentale",
+            "Storico",
+            "Thriller",
+        )
     //endregion
 }

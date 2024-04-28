@@ -12,26 +12,30 @@ class MdUserAgentInterceptor(
     private val dexLang: String,
 ) : Interceptor {
     private val SharedPreferences.customUserAgent
-        get() = getString(
-            MDConstants.getCustomUserAgentPrefKey(dexLang),
-            MDConstants.defaultUserAgent,
-        )
+        get() =
+            getString(
+                MDConstants.getCustomUserAgentPrefKey(dexLang),
+                MDConstants.defaultUserAgent,
+            )
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
-        val newUserAgent = preferences.customUserAgent
-            ?: return chain.proceed(originalRequest)
+        val newUserAgent =
+            preferences.customUserAgent
+                ?: return chain.proceed(originalRequest)
 
         val originalHeaders = originalRequest.headers
 
-        val modifiedHeaders = originalHeaders.newBuilder()
-            .set("User-Agent", newUserAgent)
-            .build()
+        val modifiedHeaders =
+            originalHeaders.newBuilder()
+                .set("User-Agent", newUserAgent)
+                .build()
 
-        val modifiedRequest = originalRequest.newBuilder()
-            .headers(modifiedHeaders)
-            .build()
+        val modifiedRequest =
+            originalRequest.newBuilder()
+                .headers(modifiedHeaders)
+                .build()
 
         return chain.proceed(modifiedRequest)
     }

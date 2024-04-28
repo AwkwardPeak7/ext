@@ -19,11 +19,12 @@ class LibUrlActivity : Activity() {
         val pathSegments = intent?.data?.pathSegments
         if (pathSegments != null && pathSegments.size > 0) {
             val titleid = pathSegments[0]
-            val mainIntent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", "${LibGroup.PREFIX_SLUG_SEARCH}$titleid")
-                putExtra("filter", packageName)
-            }
+            val mainIntent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra("query", "${LibGroup.PREFIX_SLUG_SEARCH}$titleid")
+                    putExtra("filter", packageName)
+                }
 
             try {
                 startActivity(mainIntent)

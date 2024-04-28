@@ -29,11 +29,12 @@ object ApiV3 {
 
     fun mangaInfoUrlV1(id: String) = "$apiUrl/dynamic/comicinfo/$id.json"
 
-    private fun parseMangaInfoV1(response: Response): ResponseDto = try {
-        response.parseAs()
-    } catch (_: Throwable) {
-        throw Exception("获取漫画信息失败")
-    }
+    private fun parseMangaInfoV1(response: Response): ResponseDto =
+        try {
+            response.parseAs()
+        } catch (_: Throwable) {
+            throw Exception("获取漫画信息失败")
+        }
 
     fun parseMangaDetailsV1(response: Response): SManga {
         return parseMangaInfoV1(response).data.info.toSManga()
@@ -63,9 +64,10 @@ object ApiV3 {
     ): List<String> {
         val result: List<ChapterCommentDto> = response.parseAs()
         if (result.isEmpty()) return listOf("没有吐槽")
-        val aggregated = result.groupBy({ it.content }, { it.num }).map { (content, likes) ->
-            ChapterCommentDto(Parser.unescapeEntities(content, false), likes.sum())
-        } as ArrayList
+        val aggregated =
+            result.groupBy({ it.content }, { it.num }).map { (content, likes) ->
+                ChapterCommentDto(Parser.unescapeEntities(content, false), likes.sum())
+            } as ArrayList
         aggregated.sort()
         return aggregated.take(count).map { it.toString() }
     }
@@ -80,18 +82,19 @@ object ApiV3 {
         private val types: String,
         private val description: String? = null,
     ) {
-        fun toSManga() = SManga.create().apply {
-            url = getMangaUrl(id.content)
-            title = this@MangaDto.title
-            author = authors?.formatList()
-            genre = types.formatList()
-            status = parseStatus(this@MangaDto.status)
-            thumbnail_url = cover
+        fun toSManga() =
+            SManga.create().apply {
+                url = getMangaUrl(id.content)
+                title = this@MangaDto.title
+                author = authors?.formatList()
+                genre = types.formatList()
+                status = parseStatus(this@MangaDto.status)
+                thumbnail_url = cover
 
-            val desc = this@MangaDto.description ?: return@apply
-            description = "$desc\n\n漫画 ID (2): ${id.content}" // hidden
-            initialized = true
-        }
+                val desc = this@MangaDto.description ?: return@apply
+                description = "$desc\n\n漫画 ID (2): ${id.content}" // hidden
+                initialized = true
+            }
     }
 
     @Serializable
@@ -101,11 +104,12 @@ object ApiV3 {
         private val chapter_name: String,
         private val updatetime: String,
     ) {
-        fun toSChapter() = SChapter.create().apply {
-            url = "$comic_id/$id"
-            name = chapter_name.formatChapterName()
-            date_upload = updatetime.toLong() * 1000
-        }
+        fun toSChapter() =
+            SChapter.create().apply {
+                url = "$comic_id/$id"
+                name = chapter_name.formatChapterName()
+                date_upload = updatetime.toLong() * 1000
+            }
     }
 
     @Serializable

@@ -14,11 +14,12 @@ class LerMangaOnlineUrlActivity : Activity() {
 
         if (pathSegments != null && pathSegments.size > 1) {
             val slug = pathSegments[1]
-            val intent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", "${LerMangaOnline.PREFIX_SLUG_SEARCH}$slug")
-                putExtra("filter", packageName)
-            }
+            val intent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra("query", "${LerMangaOnline.PREFIX_SLUG_SEARCH}$slug")
+                    putExtra("filter", packageName)
+                }
 
             try {
                 startActivity(intent)

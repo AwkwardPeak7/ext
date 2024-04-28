@@ -29,14 +29,16 @@ abstract class MangaReader : HttpSource(), ConfigurableSource {
         val document = response.asJsoup()
         var entries = document.select(searchMangaSelector()).map(::searchMangaFromElement)
         if (preferences.getBoolean(SHOW_VOLUME_PREF, false)) {
-            entries = entries.flatMapTo(ArrayList(entries.size * 2)) { manga ->
-                val volume = SManga.create().apply {
-                    url = manga.url + VOLUME_URL_SUFFIX
-                    title = VOLUME_TITLE_PREFIX + manga.title
-                    thumbnail_url = manga.thumbnail_url
+            entries =
+                entries.flatMapTo(ArrayList(entries.size * 2)) { manga ->
+                    val volume =
+                        SManga.create().apply {
+                            url = manga.url + VOLUME_URL_SUFFIX
+                            title = VOLUME_TITLE_PREFIX + manga.title
+                            thumbnail_url = manga.thumbnail_url
+                        }
+                    listOf(manga, volume)
                 }
-                listOf(manga, volume)
-            }
         }
         val hasNextPage = document.selectFirst(searchMangaNextPageSelector()) != null
         return MangasPage(entries, hasNextPage)
@@ -81,33 +83,35 @@ abstract class MangaReader : HttpSource(), ConfigurableSource {
         chapters: List<SChapter>,
     ) = Unit
 
-    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> = Observable.fromCallable {
-        val path = manga.url
-        val isVolume = path.endsWith(VOLUME_URL_SUFFIX)
-        val type = if (isVolume) volumeType else chapterType
-        val request = chapterListRequest(path.removeSuffix(VOLUME_URL_SUFFIX), type)
-        val response = client.newCall(request).execute()
+    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> =
+        Observable.fromCallable {
+            val path = manga.url
+            val isVolume = path.endsWith(VOLUME_URL_SUFFIX)
+            val type = if (isVolume) volumeType else chapterType
+            val request = chapterListRequest(path.removeSuffix(VOLUME_URL_SUFFIX), type)
+            val response = client.newCall(request).execute()
 
-        val abbrPrefix = if (isVolume) "Vol" else "Chap"
-        val fullPrefix = if (isVolume) "Volume" else "Chapter"
-        val linkSelector = Evaluator.Tag("a")
-        parseChapterElements(response, isVolume).map { element ->
-            SChapter.create().apply {
-                val number = element.attr("data-number")
-                chapter_number = number.toFloatOrNull() ?: -1f
+            val abbrPrefix = if (isVolume) "Vol" else "Chap"
+            val fullPrefix = if (isVolume) "Volume" else "Chapter"
+            val linkSelector = Evaluator.Tag("a")
+            parseChapterElements(response, isVolume).map { element ->
+                SChapter.create().apply {
+                    val number = element.attr("data-number")
+                    chapter_number = number.toFloatOrNull() ?: -1f
 
-                val link = element.selectFirst(linkSelector)!!
-                name = run {
-                    val name = link.text()
-                    val prefix = "$abbrPrefix $number: "
-                    if (!name.startsWith(prefix)) return@run name
-                    val realName = name.removePrefix(prefix)
-                    if (realName.contains(number)) realName else "$fullPrefix $number: $realName"
+                    val link = element.selectFirst(linkSelector)!!
+                    name =
+                        run {
+                            val name = link.text()
+                            val prefix = "$abbrPrefix $number: "
+                            if (!name.startsWith(prefix)) return@run name
+                            val realName = name.removePrefix(prefix)
+                            if (realName.contains(number)) realName else "$fullPrefix $number: $realName"
+                        }
+                    setUrlWithoutDomain(link.attr("href") + '#' + type + '/' + element.attr("data-id"))
                 }
-                setUrlWithoutDomain(link.attr("href") + '#' + type + '/' + element.attr("data-id"))
-            }
-        }.also { if (!isVolume && it.isNotEmpty()) updateChapterList(manga, it) }
-    }
+            }.also { if (!isVolume && it.isNotEmpty()) updateChapterList(manga, it) }
+        }
 
     final override fun getChapterUrl(chapter: SChapter) = baseUrl + chapter.url.substringBeforeLast('#')
 

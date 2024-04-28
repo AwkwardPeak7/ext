@@ -17,13 +17,14 @@ val regexDate = Regex("""\d\D\D""")
 val regexNotNumber = Regex("""\D""")
 val regexRelativeDateTime = Regex("""\d*[^0-9]*(\d+)""")
 
-fun Element.imgAttr() = when {
-    hasAttr("data-cfsrc") -> absUrl("data-cfsrc")
-    hasAttr("data-src") -> absUrl("data-src")
-    hasAttr("data-lazy-src") -> absUrl("data-lazy-src")
-    hasAttr("srcset") -> absUrl("srcset").substringBefore(" ")
-    else -> absUrl("src")
-}!!
+fun Element.imgAttr() =
+    when {
+        hasAttr("data-cfsrc") -> absUrl("data-cfsrc")
+        hasAttr("data-src") -> absUrl("data-src")
+        hasAttr("data-lazy-src") -> absUrl("data-lazy-src")
+        hasAttr("srcset") -> absUrl("srcset").substringBefore(" ")
+        else -> absUrl("src")
+    }!!
 
 fun Element.cleanTag(): String = text().cleanTag()
 
@@ -100,12 +101,13 @@ private fun parseDate(date: String?): Long {
 
 // Parses dates in this form: 21 hours ago OR "2 days ago (Updated 19 hours ago)"
 private fun parseRelativeDate(date: String): Long {
-    val number = regexRelativeDateTime.find(date)?.value?.toIntOrNull()
-        ?: date.split(" ").firstOrNull()
-            ?.replace("one", "1")
-            ?.replace("a", "1")
-            ?.toIntOrNull()
-        ?: return 0L
+    val number =
+        regexRelativeDateTime.find(date)?.value?.toIntOrNull()
+            ?: date.split(" ").firstOrNull()
+                ?.replace("one", "1")
+                ?.replace("a", "1")
+                ?.toIntOrNull()
+            ?: return 0L
     val now = Calendar.getInstance()
 
     // Sort by order

@@ -47,28 +47,30 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
 
-    private val rewriteOctetStream: Interceptor = Interceptor { chain ->
-        val originalResponse: Response = chain.proceed(chain.request())
-        if (originalResponse.request.url.toString().endsWith("?v=20220724")) {
-            // Decrypt images in mangas
-            val orgBody = originalResponse.body.bytes()
-            val key = "my2ecret782ecret".toByteArray()
-            val aesKey = SecretKeySpec(key, "AES")
-            val cipher = Cipher.getInstance("AES/CBC/NOPADDING")
-            cipher.init(Cipher.DECRYPT_MODE, aesKey, IvParameterSpec(key))
-            val result = cipher.doFinal(orgBody)
-            val newBody = result.toResponseBody("image/webp".toMediaTypeOrNull())
-            originalResponse.newBuilder()
-                .body(newBody)
-                .build()
-        } else {
-            originalResponse
+    private val rewriteOctetStream: Interceptor =
+        Interceptor { chain ->
+            val originalResponse: Response = chain.proceed(chain.request())
+            if (originalResponse.request.url.toString().endsWith("?v=20220724")) {
+                // Decrypt images in mangas
+                val orgBody = originalResponse.body.bytes()
+                val key = "my2ecret782ecret".toByteArray()
+                val aesKey = SecretKeySpec(key, "AES")
+                val cipher = Cipher.getInstance("AES/CBC/NOPADDING")
+                cipher.init(Cipher.DECRYPT_MODE, aesKey, IvParameterSpec(key))
+                val result = cipher.doFinal(orgBody)
+                val newBody = result.toResponseBody("image/webp".toMediaTypeOrNull())
+                originalResponse.newBuilder()
+                    .body(newBody)
+                    .build()
+            } else {
+                originalResponse
+            }
         }
-    }
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .addNetworkInterceptor(rewriteOctetStream)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .addNetworkInterceptor(rewriteOctetStream)
+            .build()
 
     private val baseHttpUrl = baseUrl.toHttpUrlOrNull()
 
@@ -79,32 +81,35 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
 
     override fun popularMangaSelector(): String = "#rankList_2 > a"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.attr("title")
-        url = element.attr("href")
-        thumbnail_url = element.select("img").attr("data-original")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.attr("title")
+            url = element.attr("href")
+            thumbnail_url = element.select("img").attr("data-original")
+        }
 
     // Latest
     override fun latestUpdatesRequest(page: Int) = GET("$baseUrl/getUpdate?page=${page * 15 - 15}&date=", headers)
 
     override fun latestUpdatesParse(response: Response): MangasPage {
         // Get image host
-        val resp = client.newCall(
-            GET("$baseUrl/update?img_host=${preferences.getString(IMAGE_HOST_KEY, IMAGE_HOST_ENTRY_VALUES[0])}"),
-        ).execute()
+        val resp =
+            client.newCall(
+                GET("$baseUrl/update?img_host=${preferences.getString(IMAGE_HOST_KEY, IMAGE_HOST_ENTRY_VALUES[0])}"),
+            ).execute()
         val document = resp.asJsoup()
         val imgHost = document.selectFirst(".manga-list-2-cover-img")!!.attr(":src").drop(1).substringBefore("'")
 
         val jsonObject = json.parseToJsonElement(response.body.string()).jsonObject
-        val mangas = jsonObject["books"]!!.jsonArray.map {
-            SManga.create().apply {
-                val obj = it.jsonObject
-                title = obj["book_name"]!!.jsonPrimitive.content
-                url = "/book/${obj["id"]!!.jsonPrimitive.content}"
-                thumbnail_url = imgHost + obj["cover_url"]!!.jsonPrimitive.content
+        val mangas =
+            jsonObject["books"]!!.jsonArray.map {
+                SManga.create().apply {
+                    val obj = it.jsonObject
+                    title = obj["book_name"]!!.jsonPrimitive.content
+                    url = "/book/${obj["id"]!!.jsonPrimitive.content}"
+                    thumbnail_url = imgHost + obj["cover_url"]!!.jsonPrimitive.content
+                }
             }
-        }
 
         val currentPage = response.request.url.toString().substringAfter("page=").substringBefore("&").toInt()
         val totalPage = jsonObject["total"]!!.jsonPrimitive.int
@@ -134,31 +139,34 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
 
     override fun searchMangaSelector(): String = "ul.book-list > li"
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst("p.book-list-info-title")!!.text()
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
-        thumbnail_url = element.selectFirst("img")!!.attr("data-original")
-    }
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.selectFirst("p.book-list-info-title")!!.text()
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
+            thumbnail_url = element.selectFirst("img")!!.attr("data-original")
+        }
 
     // Details
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.selectFirst(".detail-main-info-title")!!.text()
-        thumbnail_url = document.selectFirst("div.detail-main-cover > img")!!.attr("data-original")
-        author = document.select("p.detail-main-info-author > span.detail-main-info-value > a").text()
-        artist = author
-        genre = document.select("div.detail-main-info-class > a.info-tag").eachText().joinToString(", ")
-        description = document.selectFirst("#detail > p.detail-desc")!!.text()
-    }
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.selectFirst(".detail-main-info-title")!!.text()
+            thumbnail_url = document.selectFirst("div.detail-main-cover > img")!!.attr("data-original")
+            author = document.select("p.detail-main-info-author > span.detail-main-info-value > a").text()
+            artist = author
+            genre = document.select("div.detail-main-info-class > a.info-tag").eachText().joinToString(", ")
+            description = document.selectFirst("#detail > p.detail-desc")!!.text()
+        }
 
     // Chapters
 
     override fun chapterListSelector(): String = "ul#detail-list-select > li > a"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        url = element.attr("href")
-        name = element.text()
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            url = element.attr("href")
+            name = element.text()
+        }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).reversed()
@@ -174,24 +182,25 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
         return GET("$baseUrl${chapter.url}?img_host=${preferences.getString(IMAGE_HOST_KEY, IMAGE_HOST_ENTRY_VALUES[0])}", headers)
     }
 
-    override fun pageListParse(document: Document): List<Page> = mutableListOf<Page>().apply {
-        val cssQuery = "#cp_img > div.img-content > img[data-r-src]"
-        val elements = document.select(cssQuery)
-        if (elements.size == 3) {
-            val darkReader = document.selectFirst("#cp_img p")
-            if (darkReader != null) {
-                if (preferences.getBoolean(AUTO_CLEAR_COOKIE_KEY, false)) {
-                    clearCookies()
-                }
+    override fun pageListParse(document: Document): List<Page> =
+        mutableListOf<Page>().apply {
+            val cssQuery = "#cp_img > div.img-content > img[data-r-src]"
+            val elements = document.select(cssQuery)
+            if (elements.size == 3) {
+                val darkReader = document.selectFirst("#cp_img p")
+                if (darkReader != null) {
+                    if (preferences.getBoolean(AUTO_CLEAR_COOKIE_KEY, false)) {
+                        clearCookies()
+                    }
 
-                throw Exception(darkReader.text())
+                    throw Exception(darkReader.text())
+                }
+            }
+
+            elements.forEachIndexed { index, it ->
+                add(Page(index, "", it.attr("data-r-src")))
             }
         }
-
-        elements.forEachIndexed { index, it ->
-            add(Page(index, "", it.attr("data-r-src")))
-        }
-    }
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
@@ -217,10 +226,11 @@ class Manwa : ParsedHttpSource(), ConfigurableSource {
             return
         }
         val cookies = client.cookieJar.loadForRequest(baseHttpUrl)
-        val obsoletedCookies = cookies.map {
-            val cookie = Cookie.parse(baseHttpUrl, "${it.name}=; Max-Age=-1")!!
-            cookie
-        }
+        val obsoletedCookies =
+            cookies.map {
+                val cookie = Cookie.parse(baseHttpUrl, "${it.name}=; Max-Age=-1")!!
+                cookie
+            }
         client.cookieJar.saveFromResponse(baseHttpUrl, obsoletedCookies)
     }
 

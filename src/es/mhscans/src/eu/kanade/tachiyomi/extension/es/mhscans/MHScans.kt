@@ -13,9 +13,10 @@ class MHScans : Madara(
     "es",
     dateFormat = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale("es")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 3, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 3, TimeUnit.SECONDS)
+            .build()
 
     override val useNewChapterEndpoint = true
     override val useLoadMoreRequest = LoadMoreStrategy.Always

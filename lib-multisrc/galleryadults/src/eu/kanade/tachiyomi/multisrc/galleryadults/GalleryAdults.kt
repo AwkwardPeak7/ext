@@ -50,9 +50,10 @@ abstract class GalleryAdults(
 ) : ConfigurableSource, ParsedHttpSource() {
     override val client: OkHttpClient = network.cloudflareClient
 
-    protected open val xhrHeaders = headers.newBuilder()
-        .add("X-Requested-With", "XMLHttpRequest")
-        .build()
+    protected open val xhrHeaders =
+        headers.newBuilder()
+            .add("X-Requested-With", "XMLHttpRequest")
+            .build()
 
     protected val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
@@ -73,9 +74,10 @@ abstract class GalleryAdults(
         }.also(screen::addPreference)
     }
 
-    protected open fun Element.mangaTitle(selector: String = ".caption"): String? = mangaFullTitle(selector).let {
-        if (preferences.shortTitle) it?.shortenTitle() else it
-    }
+    protected open fun Element.mangaTitle(selector: String = ".caption"): String? =
+        mangaFullTitle(selector).let {
+            if (preferences.shortTitle) it?.shortenTitle() else it
+        }
 
     protected fun Element.mangaFullTitle(selector: String) = selectFirst(selector)?.text()
 
@@ -108,11 +110,12 @@ abstract class GalleryAdults(
 
     // Popular
     override fun popularMangaRequest(page: Int): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            if (mangaLang.isNotBlank()) addPathSegments("language/$mangaLang")
-            if (supportsLatest) addPathSegment("popular")
-            addPageUri(page)
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                if (mangaLang.isNotBlank()) addPathSegments("language/$mangaLang")
+                if (supportsLatest) addPathSegment("popular")
+                addPageUri(page)
+            }
         return GET(url.build(), headers)
     }
 
@@ -130,10 +133,11 @@ abstract class GalleryAdults(
 
     // Latest
     override fun latestUpdatesRequest(page: Int): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            if (mangaLang.isNotBlank()) addPathSegments("language/$mangaLang")
-            addPageUri(page)
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                if (mangaLang.isNotBlank()) addPathSegments("language/$mangaLang")
+                addPageUri(page)
+            }
         return GET(url.build(), headers)
     }
 
@@ -172,10 +176,11 @@ abstract class GalleryAdults(
     protected open val idPrefixUri = "g"
 
     protected open fun searchMangaByIdRequest(id: String): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegment(idPrefixUri)
-            addPathSegments("$id/")
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegment(idPrefixUri)
+                addPathSegments("$id/")
+            }
         return GET(url.build(), headers)
     }
 
@@ -261,12 +266,13 @@ abstract class GalleryAdults(
         // Basic search
         val sortOrderFilter = filters.filterIsInstance<SortOrderFilter>().firstOrNull()
 
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegment("language")
-            addPathSegment(LANGUAGE_SPEECHLESS)
-            if (sortOrderFilter?.state == 0) addPathSegment("popular")
-            addPageUri(page)
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegment("language")
+                addPathSegment(LANGUAGE_SPEECHLESS)
+                if (sortOrderFilter?.state == 0) addPathSegment("popular")
+                addPageUri(page)
+            }
         return GET(url.build(), headers)
     }
 
@@ -281,12 +287,13 @@ abstract class GalleryAdults(
         val selectedGenres = genresFilter?.state?.filter { it.state } ?: emptyList()
 
         // Browsing single tag's catalog
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegment("tag")
-            addPathSegment(selectedGenres.single().uri)
-            if (sortOrderFilter?.state == 0) addPathSegment("popular")
-            addPageUri(page)
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegment("tag")
+                addPathSegment(selectedGenres.single().uri)
+                if (sortOrderFilter?.state == 0) addPathSegment("popular")
+                addPageUri(page)
+            }
         return GET(url.build(), headers)
     }
 
@@ -303,13 +310,14 @@ abstract class GalleryAdults(
         val genresFilter = filters.filterIsInstance<GenresFilter>().firstOrNull()
         val selectedGenres = genresFilter?.state?.filter { it.state } ?: emptyList()
 
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegments("search/")
-            addEncodedQueryParameter("q", buildQueryString(selectedGenres.map { it.name }, query))
-            // Search results sorting is not supported by AsmHentai
-            if (sortOrderFilter?.state == 0) addQueryParameter("sort", "popular")
-            addPageUri(page)
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegments("search/")
+                addEncodedQueryParameter("q", buildQueryString(selectedGenres.map { it.name }, query))
+                // Search results sorting is not supported by AsmHentai
+                if (sortOrderFilter?.state == 0) addQueryParameter("sort", "popular")
+                addPageUri(page)
+            }
         return GET(url.build(), headers)
     }
 
@@ -331,22 +339,23 @@ abstract class GalleryAdults(
         val categoryFilters = filters.filterIsInstance<CategoryFilters>().firstOrNull()
 
         // Only for query string or multiple tags
-        val url = "$baseUrl/search".toHttpUrl().newBuilder().apply {
-            getSortOrderURIs().forEachIndexed { index, pair ->
-                addQueryParameter(pair.second, toBinary(sortOrderFilter?.state == index))
+        val url =
+            "$baseUrl/search".toHttpUrl().newBuilder().apply {
+                getSortOrderURIs().forEachIndexed { index, pair ->
+                    addQueryParameter(pair.second, toBinary(sortOrderFilter?.state == index))
+                }
+                categoryFilters?.state?.forEach {
+                    addQueryParameter(it.uri, toBinary(it.state))
+                }
+                getLanguageURIs().forEach { pair ->
+                    addQueryParameter(
+                        pair.second,
+                        toBinary(mangaLang == pair.first || mangaLang == LANGUAGE_MULTI),
+                    )
+                }
+                addEncodedQueryParameter("key", buildQueryString(selectedGenres.map { it.name }, query))
+                addPageUri(page)
             }
-            categoryFilters?.state?.forEach {
-                addQueryParameter(it.uri, toBinary(it.state))
-            }
-            getLanguageURIs().forEach { pair ->
-                addQueryParameter(
-                    pair.second,
-                    toBinary(mangaLang == pair.first || mangaLang == LANGUAGE_MULTI),
-                )
-            }
-            addEncodedQueryParameter("key", buildQueryString(selectedGenres.map { it.name }, query))
-            addPageUri(page)
-        }
         return GET(url.build())
     }
 
@@ -369,54 +378,56 @@ abstract class GalleryAdults(
         // Advanced search
         val advancedSearchFilters = filters.filterIsInstance<AdvancedTextFilter>()
 
-        val url = "$baseUrl/advsearch".toHttpUrl().newBuilder().apply {
-            getSortOrderURIs().forEachIndexed { index, pair ->
-                addQueryParameter(pair.second, toBinary(sortOrderFilter?.state == index))
-            }
-            categoryFilters?.state?.forEach {
-                addQueryParameter(it.uri, toBinary(it.state))
-            }
-            getLanguageURIs().forEach { pair ->
-                addQueryParameter(
-                    pair.second,
-                    toBinary(
-                        mangaLang == pair.first ||
-                            mangaLang == LANGUAGE_MULTI,
-                    ),
-                )
-            }
-
-            // Build this query string: +tag:"bat+man"+-tag:"cat"+artist:"Joe"...
-            // +tag must be encoded into %2Btag while the rest are not needed to encode
-            val keys = emptyList<String>().toMutableList()
-            keys.addAll(selectedGenres.map { "%2Btag:\"${it.name}\"" })
-            advancedSearchFilters.forEach { filter ->
-                val key = when (filter) {
-                    is TagsFilter -> "tag"
-                    is ParodiesFilter -> "parody"
-                    is ArtistsFilter -> "artist"
-                    is CharactersFilter -> "character"
-                    is GroupsFilter -> "group"
-                    else -> null
+        val url =
+            "$baseUrl/advsearch".toHttpUrl().newBuilder().apply {
+                getSortOrderURIs().forEachIndexed { index, pair ->
+                    addQueryParameter(pair.second, toBinary(sortOrderFilter?.state == index))
                 }
-                if (key != null) {
-                    keys.addAll(
-                        filter.state.trim()
-                            .replace(regexSpaceNotAfterComma, "+")
-                            .replace(" ", "")
-                            .split(',')
-                            .mapNotNull {
-                                val match = regexExcludeTerm.find(it)
-                                match?.groupValues?.let { groups ->
-                                    "${if (groups[1].isNotBlank()) "-" else "%2B"}$key:\"${groups[2]}\""
-                                }
-                            },
+                categoryFilters?.state?.forEach {
+                    addQueryParameter(it.uri, toBinary(it.state))
+                }
+                getLanguageURIs().forEach { pair ->
+                    addQueryParameter(
+                        pair.second,
+                        toBinary(
+                            mangaLang == pair.first ||
+                                mangaLang == LANGUAGE_MULTI,
+                        ),
                     )
                 }
+
+                // Build this query string: +tag:"bat+man"+-tag:"cat"+artist:"Joe"...
+                // +tag must be encoded into %2Btag while the rest are not needed to encode
+                val keys = emptyList<String>().toMutableList()
+                keys.addAll(selectedGenres.map { "%2Btag:\"${it.name}\"" })
+                advancedSearchFilters.forEach { filter ->
+                    val key =
+                        when (filter) {
+                            is TagsFilter -> "tag"
+                            is ParodiesFilter -> "parody"
+                            is ArtistsFilter -> "artist"
+                            is CharactersFilter -> "character"
+                            is GroupsFilter -> "group"
+                            else -> null
+                        }
+                    if (key != null) {
+                        keys.addAll(
+                            filter.state.trim()
+                                .replace(regexSpaceNotAfterComma, "+")
+                                .replace(" ", "")
+                                .split(',')
+                                .mapNotNull {
+                                    val match = regexExcludeTerm.find(it)
+                                    match?.groupValues?.let { groups ->
+                                        "${if (groups[1].isNotBlank()) "-" else "%2B"}$key:\"${groups[2]}\""
+                                    }
+                                },
+                        )
+                    }
+                }
+                addEncodedQueryParameter("key", keys.joinToString("+"))
+                addPageUri(page)
             }
-            addEncodedQueryParameter("key", keys.joinToString("+"))
-            addPageUri(page)
-        }
         return GET(url.build())
     }
 
@@ -456,27 +467,28 @@ abstract class GalleryAdults(
             throw Exception("Log in via WebView to view favorites")
         } else {
             val hasNextPage = document.select(searchMangaNextPageSelector()).isNotEmpty()
-            val mangas = document.select(searchMangaSelector())
-                .map {
-                    SMangaDto(
-                        title = it.mangaTitle()!!,
-                        url = it.mangaUrl()!!,
-                        thumbnail = it.mangaThumbnail(),
-                        lang = it.mangaLang(),
-                    )
-                }
-                .let { unfiltered ->
-                    val results = unfiltered.filter { mangaLang.isBlank() || it.lang == mangaLang }
-                    // return at least 1 title if all mangas in current page is of other languages
-                    if (results.isEmpty() && hasNextPage) listOf(unfiltered[0]) else results
-                }
-                .map {
-                    SManga.create().apply {
-                        title = it.title
-                        setUrlWithoutDomain(it.url)
-                        thumbnail_url = it.thumbnail
+            val mangas =
+                document.select(searchMangaSelector())
+                    .map {
+                        SMangaDto(
+                            title = it.mangaTitle()!!,
+                            url = it.mangaUrl()!!,
+                            thumbnail = it.mangaThumbnail(),
+                            lang = it.mangaLang(),
+                        )
                     }
-                }
+                    .let { unfiltered ->
+                        val results = unfiltered.filter { mangaLang.isBlank() || it.lang == mangaLang }
+                        // return at least 1 title if all mangas in current page is of other languages
+                        if (results.isEmpty() && hasNextPage) listOf(unfiltered[0]) else results
+                    }
+                    .map {
+                        SManga.create().apply {
+                            title = it.title
+                            setUrlWithoutDomain(it.url)
+                            thumbnail_url = it.thumbnail
+                        }
+                    }
 
             return MangasPage(mangas, hasNextPage)
         }
@@ -496,17 +508,18 @@ abstract class GalleryAdults(
             .joinToString { it.ownText() }
     }
 
-    protected open fun Element.getDescription(): String = (
-        listOf("Parodies", "Characters", "Languages", "Categories")
-            .mapNotNull { tag ->
-                getInfo(tag)
-                    .let { if (it.isNotBlank()) "$tag: $it" else null }
-            } +
-            listOfNotNull(
-                selectFirst(".pages:contains(Pages:)")?.ownText(),
-            )
-    )
-        .joinToString("\n\n")
+    protected open fun Element.getDescription(): String =
+        (
+            listOf("Parodies", "Characters", "Languages", "Categories")
+                .mapNotNull { tag ->
+                    getInfo(tag)
+                        .let { if (it.isNotBlank()) "$tag: $it" else null }
+                } +
+                listOfNotNull(
+                    selectFirst(".pages:contains(Pages:)")?.ownText(),
+                )
+        )
+            .joinToString("\n\n")
 
     protected open val mangaDetailInfoSelector = ".gallery_top"
     protected open val timeSelector = "time[datetime]"
@@ -537,8 +550,9 @@ abstract class GalleryAdults(
         return listOf(
             SChapter.create().apply {
                 name = "Chapter"
-                scanlator = document.selectFirst(mangaDetailInfoSelector)
-                    ?.getInfo("Groups")
+                scanlator =
+                    document.selectFirst(mangaDetailInfoSelector)
+                        ?.getInfo("Groups")
                 date_upload = document.getTime()
                 setUrlWithoutDomain(response.request.url.encodedPath)
             },
@@ -574,9 +588,10 @@ abstract class GalleryAdults(
     }
 
     override fun pageListParse(document: Document): List<Page> {
-        val json = document.selectFirst("script:containsData(parseJSON)")?.data()
-            ?.substringAfter("$.parseJSON('")
-            ?.substringBefore("');")?.trim()
+        val json =
+            document.selectFirst("script:containsData(parseJSON)")?.data()
+                ?.substringAfter("$.parseJSON('")
+                ?.substringBefore("');")?.trim()
 
         if (json != null) {
             val loadDir = document.inputIdValueOf(loadDirSelector)
@@ -594,12 +609,13 @@ abstract class GalleryAdults(
                 // JSON string in this form: {"1":"j,1100,1148","2":"j,728,689",...
                 for (image in images) {
                     val ext = image.value.toString().replace("\"", "").split(",")[0]
-                    val imageExt = when (ext) {
-                        "p" -> "png"
-                        "b" -> "bmp"
-                        "g" -> "gif"
-                        else -> "jpg"
-                    }
+                    val imageExt =
+                        when (ext) {
+                            "p" -> "png"
+                            "b" -> "bmp"
+                            "g" -> "gif"
+                            else -> "jpg"
+                        }
                     val idx = image.key.toInt()
                     pages.add(
                         Page(
@@ -639,23 +655,8 @@ abstract class GalleryAdults(
         val galleryId = document.inputIdValueOf(galleryIdSelector)
         val pageUrl = "$baseUrl/$pageUri/$galleryId"
 
-        val pages = document.select("$pageSelector a")
-            .map {
-                if (parsingImagePageByPage) {
-                    it.absUrl("href")
-                } else {
-                    it.selectFirst("img")!!.imgAttr()
-                }
-            }
-            .toMutableList()
-
-        if (totalPages.isNotBlank()) {
-            val form = pageRequestForm(document, totalPages)
-
-            val morePages = client.newCall(POST("$baseUrl/$pagesRequest", xhrHeaders, form))
-                .execute()
-                .asJsoup()
-                .select("a")
+        val pages =
+            document.select("$pageSelector a")
                 .map {
                     if (parsingImagePageByPage) {
                         it.absUrl("href")
@@ -663,6 +664,23 @@ abstract class GalleryAdults(
                         it.selectFirst("img")!!.imgAttr()
                     }
                 }
+                .toMutableList()
+
+        if (totalPages.isNotBlank()) {
+            val form = pageRequestForm(document, totalPages)
+
+            val morePages =
+                client.newCall(POST("$baseUrl/$pagesRequest", xhrHeaders, form))
+                    .execute()
+                    .asJsoup()
+                    .select("a")
+                    .map {
+                        if (parsingImagePageByPage) {
+                            it.absUrl("href")
+                        } else {
+                            it.selectFirst("img")!!.imgAttr()
+                        }
+                    }
             if (morePages.isNotEmpty()) {
                 pages.addAll(morePages)
             } else {
@@ -703,8 +721,9 @@ abstract class GalleryAdults(
         val totalPages = document.inputIdValueOf(totalPagesSelector)
 
         if (totalPages.isNotBlank()) {
-            val imagesExt = images.first()?.imgAttr()!!
-                .substringAfterLast('.')
+            val imagesExt =
+                images.first()?.imgAttr()!!
+                    .substringAfterLast('.')
 
             thumbUrls.addAll(
                 listOf((images.size + 1)..totalPages.toInt()).flatten().map {
@@ -724,14 +743,15 @@ abstract class GalleryAdults(
     protected open fun pageRequestForm(
         document: Document,
         totalPages: String,
-    ): FormBody = FormBody.Builder()
-        .add("u_id", document.inputIdValueOf(galleryIdSelector))
-        .add("g_id", document.inputIdValueOf(loadIdSelector))
-        .add("img_dir", document.inputIdValueOf(loadDirSelector))
-        .add("visible_pages", "10")
-        .add("total_pages", totalPages)
-        .add("type", "2") // 1 would be "more", 2 is "all remaining"
-        .build()
+    ): FormBody =
+        FormBody.Builder()
+            .add("u_id", document.inputIdValueOf(galleryIdSelector))
+            .add("g_id", document.inputIdValueOf(loadIdSelector))
+            .add("img_dir", document.inputIdValueOf(loadDirSelector))
+            .add("visible_pages", "10")
+            .add("total_pages", totalPages)
+            .add("type", "2") // 1 would be "more", 2 is "all remaining"
+            .build()
 
     override fun imageUrlParse(document: Document): String {
         return document.selectFirst("img#gimg, img#fimg")?.imgAttr()!!
@@ -746,10 +766,11 @@ abstract class GalleryAdults(
     private var genres = emptyList<Genre>()
 
     private fun tagsRequest(page: Int): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegments("tags/popular")
-            addPageUri(page)
-        }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegments("tags/popular")
+                addPageUri(page)
+            }
         return GET(url.build(), headers)
     }
 
@@ -842,36 +863,40 @@ abstract class GalleryAdults(
         return FilterList(filters)
     }
 
-    protected open fun getSortOrderURIs() = listOf(
-        Pair("Popular", "pp"),
-        Pair("Latest", "lt"),
-    ) + if (useIntermediateSearch || supportAdvancedSearch) {
+    protected open fun getSortOrderURIs() =
         listOf(
-            Pair("Downloads", "dl"),
-            Pair("Top Rated", "tr"),
+            Pair("Popular", "pp"),
+            Pair("Latest", "lt"),
+        ) +
+            if (useIntermediateSearch || supportAdvancedSearch) {
+                listOf(
+                    Pair("Downloads", "dl"),
+                    Pair("Top Rated", "tr"),
+                )
+            } else {
+                emptyList()
+            }
+
+    protected open fun getCategoryURIs() =
+        listOf(
+            SearchFlagFilter("Manga", "m"),
+            SearchFlagFilter("Doujinshi", "d"),
+            SearchFlagFilter("Western", "w"),
+            SearchFlagFilter("Image Set", "i"),
+            SearchFlagFilter("Artist CG", "a"),
+            SearchFlagFilter("Game CG", "g"),
         )
-    } else {
-        emptyList()
-    }
 
-    protected open fun getCategoryURIs() = listOf(
-        SearchFlagFilter("Manga", "m"),
-        SearchFlagFilter("Doujinshi", "d"),
-        SearchFlagFilter("Western", "w"),
-        SearchFlagFilter("Image Set", "i"),
-        SearchFlagFilter("Artist CG", "a"),
-        SearchFlagFilter("Game CG", "g"),
-    )
-
-    protected open fun getLanguageURIs() = listOf(
-        Pair(LANGUAGE_ENGLISH, "en"),
-        Pair(LANGUAGE_JAPANESE, "jp"),
-        Pair(LANGUAGE_SPANISH, "es"),
-        Pair(LANGUAGE_FRENCH, "fr"),
-        Pair(LANGUAGE_KOREAN, "kr"),
-        Pair(LANGUAGE_GERMAN, "de"),
-        Pair(LANGUAGE_RUSSIAN, "ru"),
-    )
+    protected open fun getLanguageURIs() =
+        listOf(
+            Pair(LANGUAGE_ENGLISH, "en"),
+            Pair(LANGUAGE_JAPANESE, "jp"),
+            Pair(LANGUAGE_SPANISH, "es"),
+            Pair(LANGUAGE_FRENCH, "fr"),
+            Pair(LANGUAGE_KOREAN, "kr"),
+            Pair(LANGUAGE_GERMAN, "de"),
+            Pair(LANGUAGE_RUSSIAN, "ru"),
+        )
 
     companion object {
         const val PREFIX_ID_SEARCH = "id:"

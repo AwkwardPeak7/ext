@@ -31,8 +31,9 @@ class OppaiStream : ParsedHttpSource() {
 
     override val client = network.cloudflareClient
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     // popular
     override fun popularMangaRequest(page: Int): Request {
@@ -82,23 +83,24 @@ class OppaiStream : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/api-search.php".toHttpUrl().newBuilder().apply {
-            addQueryParameter("text", query)
-            filters.forEach { filter ->
-                when (filter) {
-                    is OrderByFilter -> {
-                        addQueryParameter("order", filter.selectedValue())
+        val url =
+            "$baseUrl/api-search.php".toHttpUrl().newBuilder().apply {
+                addQueryParameter("text", query)
+                filters.forEach { filter ->
+                    when (filter) {
+                        is OrderByFilter -> {
+                            addQueryParameter("order", filter.selectedValue())
+                        }
+                        is GenreListFilter -> {
+                            addQueryParameter("genres", filter.state.filter { it.isIncluded() }.joinToString(",") { it.value })
+                            addQueryParameter("blacklist", filter.state.filter { it.isExcluded() }.joinToString(",") { it.value })
+                        }
+                        else -> {}
                     }
-                    is GenreListFilter -> {
-                        addQueryParameter("genres", filter.state.filter { it.isIncluded() }.joinToString(",") { it.value })
-                        addQueryParameter("blacklist", filter.state.filter { it.isExcluded() }.joinToString(",") { it.value })
-                    }
-                    else -> {}
                 }
-            }
-            addQueryParameter("page", "$page")
-            addQueryParameter("limit", "$SEARCH_LIMIT")
-        }.build()
+                addQueryParameter("page", "$page")
+                addQueryParameter("limit", "$SEARCH_LIMIT")
+            }.build()
 
         return GET(url, headers)
     }
@@ -109,9 +111,10 @@ class OppaiStream : ParsedHttpSource() {
         val document = response.asJsoup()
         val elements = document.select(searchMangaSelector())
 
-        val mangas = elements.map { element ->
-            searchMangaFromElement(element)
-        }
+        val mangas =
+            elements.map { element ->
+                searchMangaFromElement(element)
+            }
 
         val hasNextPage = elements.size >= SEARCH_LIMIT
 
@@ -204,84 +207,86 @@ class OppaiStream : ParsedHttpSource() {
 
     internal class TriState(name: String, val value: String) : Filter.TriState(name)
 
-    private fun getGenreList(): List<TriState> = listOf(
-        TriState("Adventure", "adventure"),
-        TriState("Beach", "beach"),
-        TriState("Blackmail", "blackmail"),
-        TriState("Cheating", "cheating"),
-        TriState("Comedy", "comedy"),
-        TriState("Cooking", "cooking"),
-        TriState("Drama", "drama"),
-        TriState("Fantasy", "fantasy"),
-        TriState("Harem", "harem"),
-        TriState("Historical", "historical"),
-        TriState("Horror", "horror"),
-        TriState("Incest", "incest"),
-        TriState("Mind Break", "mindbreak"),
-        TriState("Mind Control", "mindcontrol"),
-        TriState("Monster", "monster"),
-        TriState("Mystery", "mystery"),
-        TriState("NTR", "ntr"),
-        TriState("Psychological", "psychological"),
-        TriState("Rape", "rape"),
-        TriState("Reverse Rape", "reverserape"),
-        TriState("Romance", "romance"),
-        TriState("School Life", "schoollife"),
-        TriState("Sci-fi", "sci-fi"),
-        TriState("Secret Relationship", "secretrelationship"),
-        TriState("Slice of Life", "sliceoflife"),
-        TriState("Smut", "smut"),
-        TriState("Sports", "sports"),
-        TriState("Supernatural", "supernatural"),
-        TriState("Tragedy", "tragedy"),
-        TriState("Yaoi", "yaoi"),
-        TriState("Yuri", "yuri"),
-        TriState("Big Boobs", "bigboobs"),
-        TriState("Black Hair", "blackhair"),
-        TriState("Blonde Hair", "blondehair"),
-        TriState("Blue Hair", "bluehair"),
-        TriState("Brown Hair", "brownhair"),
-        TriState("Cosplay", "cosplay"),
-        TriState("Dark Skin", "darkskin"),
-        TriState("Demon", "demon"),
-        TriState("Dominant Girl", "dominantgirl"),
-        TriState("Elf", "elf"),
-        TriState("Futanari", "futanari"),
-        TriState("Glasses", "glasses"),
-        TriState("Green Hair", "greenhair"),
-        TriState("Gyaru", "gyaru"),
-        TriState("Inverted Nipples", "invertednipples"),
-        TriState("Loli", "loli"),
-        TriState("Maid", "maid"),
-        TriState("Milf", "milf"),
-        TriState("Nekomimi", "nekomimi"),
-        TriState("Nurse", "nurse"),
-        TriState("Pink Hair", "pinkhair"),
-        TriState("Pregnant", "pregnant"),
-        TriState("Purple Hair", "purplehair"),
-        TriState("Red Hair", "redhair"),
-        TriState("School Girl", "schoolgirl"),
-        TriState("Short Hair", "shorthair"),
-        TriState("Small Boobs", "smallboobs"),
-        TriState("Succubus", "succubus"),
-        TriState("Swimsuit", "swimsuit"),
-        TriState("Teacher", "teacher"),
-        TriState("Tsundere", "tsundere"),
-        TriState("Vampire", "vampire"),
-        TriState("Virgin", "virgin"),
-        TriState("White Hair", "whitehair"),
-        TriState("Old", "old"),
-        TriState("Shota", "shota"),
-        TriState("Trap", "trap"),
-        TriState("Ugly Bastard", "uglybastard"),
-    )
+    private fun getGenreList(): List<TriState> =
+        listOf(
+            TriState("Adventure", "adventure"),
+            TriState("Beach", "beach"),
+            TriState("Blackmail", "blackmail"),
+            TriState("Cheating", "cheating"),
+            TriState("Comedy", "comedy"),
+            TriState("Cooking", "cooking"),
+            TriState("Drama", "drama"),
+            TriState("Fantasy", "fantasy"),
+            TriState("Harem", "harem"),
+            TriState("Historical", "historical"),
+            TriState("Horror", "horror"),
+            TriState("Incest", "incest"),
+            TriState("Mind Break", "mindbreak"),
+            TriState("Mind Control", "mindcontrol"),
+            TriState("Monster", "monster"),
+            TriState("Mystery", "mystery"),
+            TriState("NTR", "ntr"),
+            TriState("Psychological", "psychological"),
+            TriState("Rape", "rape"),
+            TriState("Reverse Rape", "reverserape"),
+            TriState("Romance", "romance"),
+            TriState("School Life", "schoollife"),
+            TriState("Sci-fi", "sci-fi"),
+            TriState("Secret Relationship", "secretrelationship"),
+            TriState("Slice of Life", "sliceoflife"),
+            TriState("Smut", "smut"),
+            TriState("Sports", "sports"),
+            TriState("Supernatural", "supernatural"),
+            TriState("Tragedy", "tragedy"),
+            TriState("Yaoi", "yaoi"),
+            TriState("Yuri", "yuri"),
+            TriState("Big Boobs", "bigboobs"),
+            TriState("Black Hair", "blackhair"),
+            TriState("Blonde Hair", "blondehair"),
+            TriState("Blue Hair", "bluehair"),
+            TriState("Brown Hair", "brownhair"),
+            TriState("Cosplay", "cosplay"),
+            TriState("Dark Skin", "darkskin"),
+            TriState("Demon", "demon"),
+            TriState("Dominant Girl", "dominantgirl"),
+            TriState("Elf", "elf"),
+            TriState("Futanari", "futanari"),
+            TriState("Glasses", "glasses"),
+            TriState("Green Hair", "greenhair"),
+            TriState("Gyaru", "gyaru"),
+            TriState("Inverted Nipples", "invertednipples"),
+            TriState("Loli", "loli"),
+            TriState("Maid", "maid"),
+            TriState("Milf", "milf"),
+            TriState("Nekomimi", "nekomimi"),
+            TriState("Nurse", "nurse"),
+            TriState("Pink Hair", "pinkhair"),
+            TriState("Pregnant", "pregnant"),
+            TriState("Purple Hair", "purplehair"),
+            TriState("Red Hair", "redhair"),
+            TriState("School Girl", "schoolgirl"),
+            TriState("Short Hair", "shorthair"),
+            TriState("Small Boobs", "smallboobs"),
+            TriState("Succubus", "succubus"),
+            TriState("Swimsuit", "swimsuit"),
+            TriState("Teacher", "teacher"),
+            TriState("Tsundere", "tsundere"),
+            TriState("Vampire", "vampire"),
+            TriState("Virgin", "virgin"),
+            TriState("White Hair", "whitehair"),
+            TriState("Old", "old"),
+            TriState("Shota", "shota"),
+            TriState("Trap", "trap"),
+            TriState("Ugly Bastard", "uglybastard"),
+        )
 
     private class GenreListFilter(genres: List<OppaiStream.TriState>) : Filter.Group<TriState>("Genre", genres)
 
-    override fun getFilterList() = FilterList(
-        OrderByFilter(),
-        GenreListFilter(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            OrderByFilter(),
+            GenreListFilter(getGenreList()),
+        )
 
     // Unused
     override fun imageUrlParse(document: Document): String {
@@ -290,20 +295,22 @@ class OppaiStream : ParsedHttpSource() {
 
     // helpers
     private fun String.parseRelativeDate(): Long {
-        val now = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
+        val now =
+            Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
 
         var parsedDate = 0L
 
-        val relativeDate = try {
-            this.split(" ")[0].trim().toInt()
-        } catch (e: NumberFormatException) {
-            return 0L
-        }
+        val relativeDate =
+            try {
+                this.split(" ")[0].trim().toInt()
+            } catch (e: NumberFormatException) {
+                return 0L
+            }
 
         when {
             // parse: 30 seconds ago

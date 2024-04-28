@@ -12,9 +12,10 @@ class RichtoScan : Madara(
     "es",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.ROOT),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(2, 1, TimeUnit.SECONDS)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2, 1, TimeUnit.SECONDS)
+            .build()
 
     override val useNewChapterEndpoint = true
     override val useLoadMoreRequest = LoadMoreStrategy.Always

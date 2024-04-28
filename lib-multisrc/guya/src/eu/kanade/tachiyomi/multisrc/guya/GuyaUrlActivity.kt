@@ -28,11 +28,12 @@ class GuyaUrlActivity : Activity() {
                 exitProcess(1)
             }
 
-            val mainIntent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", query)
-                putExtra("filter", packageName)
-            }
+            val mainIntent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra("query", query)
+                    putExtra("filter", packageName)
+                }
 
             try {
                 startActivity(mainIntent)

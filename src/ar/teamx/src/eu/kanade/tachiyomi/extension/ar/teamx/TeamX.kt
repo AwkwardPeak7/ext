@@ -27,11 +27,12 @@ class TeamX : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .rateLimit(10, 1, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .rateLimit(10, 1, TimeUnit.SECONDS)
+            .build()
 
     // Popular
 
@@ -45,13 +46,14 @@ class TeamX : ParsedHttpSource() {
         return SManga.create().apply {
             title = element.select("a").attr("title")
             setUrlWithoutDomain(element.select("a").first()!!.attr("href"))
-            thumbnail_url = element.select("img").let {
-                if (it.hasAttr("data-src")) {
-                    it.attr("abs:data-src")
-                } else {
-                    it.attr("abs:src")
+            thumbnail_url =
+                element.select("img").let {
+                    if (it.hasAttr("data-src")) {
+                        it.attr("abs:data-src")
+                    } else {
+                        it.attr("abs:src")
+                    }
                 }
-            }
         }
     }
 
@@ -72,13 +74,14 @@ class TeamX : ParsedHttpSource() {
 
         val unfilteredManga = document.select(latestUpdatesSelector())
 
-        val mangaList = unfilteredManga.map { element ->
-            latestUpdatesFromElement(element)
-        }.distinctBy {
-            it.title
-        }.filter {
-            !titlesAdded.contains(it.title)
-        }
+        val mangaList =
+            unfilteredManga.map { element ->
+                latestUpdatesFromElement(element)
+            }.distinctBy {
+                it.title
+            }.filter {
+                !titlesAdded.contains(it.title)
+            }
 
         titlesAdded.addAll(mangaList.map { it.title })
 
@@ -173,10 +176,11 @@ class TeamX : ParsedHttpSource() {
             val chpNum = element.select("div.epl-num").text()
             val chpTitle = element.select("div.epl-title").text()
 
-            name = when (chpNum.isNullOrBlank()) {
-                true -> chpTitle
-                false -> "$chpNum - $chpTitle"
-            }
+            name =
+                when (chpNum.isNullOrBlank()) {
+                    true -> chpTitle
+                    false -> "$chpNum - $chpTitle"
+                }
 
             date_upload = parseChapterDate(element.select("div.epl-date").text())
 

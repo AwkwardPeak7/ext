@@ -28,20 +28,21 @@ class KingdomBrasilScantrad : HttpSource() {
 
     override val supportsLatest = false
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val response = chain.proceed(request)
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val response = chain.proceed(request)
 
-            if (request.url.pathSegments[0] != "blog-frontend-adapter-public" || response.code != 403) {
-                return@addInterceptor response
+                if (request.url.pathSegments[0] != "blog-frontend-adapter-public" || response.code != 403) {
+                    return@addInterceptor response
+                }
+
+                response.close()
+                getWixCookies()
+                chain.proceed(request)
             }
-
-            response.close()
-            getWixCookies()
-            chain.proceed(request)
-        }
-        .build()
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -49,21 +50,23 @@ class KingdomBrasilScantrad : HttpSource() {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
     }
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        val manga = SManga.create().apply {
-            url = "/capitulos"
-            title = "Kingdom"
-            author = "Hara Yasuhisa"
-            artist = "Hara Yasuhisa"
-            description = "Durante o período dos Reinos Combatentes na China, Li Xin e Piao são dois jovens irmãos que sonham em se tornar grandes generais, apesar de seu baixo status de escravos órfãos. Um dia, eles encontram um homem de nobreza, que dá a Piao a oportunidade de realizar um importante dever dentro do palácio real de Qin. Separando-se, Xin e Piao prometem um dia se tornarem os maiores generais do mundo. No entanto, após um feroz golpe de estado ocorrer no palácio, Xin se encontra com um Piao moribundo, cujas últimas palavras o estimulam a entrar em ação e o levam a encontrar o jovem e futuro rei de Qin, Ying Zheng."
-            genre = "Ação, Aventura, Drama, Histórico, Seinen"
-            status = SManga.ONGOING
-            thumbnail_url = "https://i.imgur.com/jomSsRZ.jpeg"
-            initialized = true
-        }
+        val manga =
+            SManga.create().apply {
+                url = "/capitulos"
+                title = "Kingdom"
+                author = "Hara Yasuhisa"
+                artist = "Hara Yasuhisa"
+                description = "Durante o período dos Reinos Combatentes na China, Li Xin e Piao são dois jovens irmãos que sonham em se tornar grandes generais, apesar de seu baixo status de escravos órfãos. Um dia, eles encontram um homem de nobreza, que dá a Piao a oportunidade de realizar um importante dever dentro do palácio real de Qin. Separando-se, Xin e Piao prometem um dia se tornarem os maiores generais do mundo. No entanto, após um feroz golpe de estado ocorrer no palácio, Xin se encontra com um Piao moribundo, cujas últimas palavras o estimulam a entrar em ação e o levam a encontrar o jovem e futuro rei de Qin, Ying Zheng."
+                genre = "Ação, Aventura, Drama, Histórico, Seinen"
+                status = SManga.ONGOING
+                thumbnail_url = "https://i.imgur.com/jomSsRZ.jpeg"
+                initialized = true
+            }
 
         return Observable.just(MangasPage(listOf(manga), false))
     }
@@ -100,10 +103,11 @@ class KingdomBrasilScantrad : HttpSource() {
 
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
-    private fun pagedChapterListRequest(page: Int) = GET(
-        "$baseUrl/blog-frontend-adapter-public/v2/post-feed-page?includeContent=false&languageCode=pt&page=$page&pageSize=50&type=ALL_POSTS",
-        headers,
-    )
+    private fun pagedChapterListRequest(page: Int) =
+        GET(
+            "$baseUrl/blog-frontend-adapter-public/v2/post-feed-page?includeContent=false&languageCode=pt&page=$page&pageSize=50&type=ALL_POSTS",
+            headers,
+        )
 
     override fun chapterListRequest(manga: SManga) = pagedChapterListRequest(1)
 
@@ -116,11 +120,12 @@ class KingdomBrasilScantrad : HttpSource() {
 
             while (data.pagingMetaData.offset + 50 < data.pagingMetaData.total) {
                 page++
-                data = client.newCall(pagedChapterListRequest(page))
-                    .execute()
-                    .parseAs<PostFeedPageResponse>()
-                    .postFeedPage
-                    .posts
+                data =
+                    client.newCall(pagedChapterListRequest(page))
+                        .execute()
+                        .parseAs<PostFeedPageResponse>()
+                        .postFeedPage
+                        .posts
                 addAll(data.posts.map { it.toSChapter() })
             }
         }
@@ -153,11 +158,13 @@ class KingdomBrasilScantrad : HttpSource() {
 
     private inline fun <reified T> Response.parseAs(): T = json.decodeFromString(body.string())
 
-    private fun PostDto.toSChapter() = SChapter.create().apply {
-        url = this@toSChapter.url.path
-        name = title
-        date_upload = runCatching {
-            dateFormat.parse(firstPublishedDate)!!.time
-        }.getOrDefault(0L)
-    }
+    private fun PostDto.toSChapter() =
+        SChapter.create().apply {
+            url = this@toSChapter.url.path
+            name = title
+            date_upload =
+                runCatching {
+                    dateFormat.parse(firstPublishedDate)!!.time
+                }.getOrDefault(0L)
+        }
 }

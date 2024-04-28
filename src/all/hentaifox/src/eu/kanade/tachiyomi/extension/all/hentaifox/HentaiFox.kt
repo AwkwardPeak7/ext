@@ -22,25 +22,27 @@ class HentaiFox(
     ) {
     override val supportsLatest = mangaLang.isNotBlank()
 
-    private val languages: List<Pair<String, String>> = listOf(
-        Pair(LANGUAGE_ENGLISH, "1"),
-        Pair(LANGUAGE_TRANSLATED, "2"),
-        Pair(LANGUAGE_JAPANESE, "5"),
-        Pair(LANGUAGE_CHINESE, "6"),
-        Pair(LANGUAGE_KOREAN, "11"),
-    )
+    private val languages: List<Pair<String, String>> =
+        listOf(
+            Pair(LANGUAGE_ENGLISH, "1"),
+            Pair(LANGUAGE_TRANSLATED, "2"),
+            Pair(LANGUAGE_JAPANESE, "5"),
+            Pair(LANGUAGE_CHINESE, "6"),
+            Pair(LANGUAGE_KOREAN, "11"),
+        )
     private val langCode = languages.firstOrNull { lang -> lang.first == mangaLang }?.second
 
-    override fun Element.mangaLang() = attr("data-languages")
-        .split(' ').let {
-            when {
-                it.contains(langCode) -> mangaLang
-                // search result doesn't have "data-languages" which will return a list with 1 blank element
-                it.size > 1 || (it.size == 1 && it.first().isNotBlank()) -> "other"
-                // if we don't know which language to filter then set to mangaLang to not filter at all
-                else -> mangaLang
+    override fun Element.mangaLang() =
+        attr("data-languages")
+            .split(' ').let {
+                when {
+                    it.contains(langCode) -> mangaLang
+                    // search result doesn't have "data-languages" which will return a list with 1 blank element
+                    it.size > 1 || (it.size == 1 && it.first().isNotBlank()) -> "other"
+                    // if we don't know which language to filter then set to mangaLang to not filter at all
+                    else -> mangaLang
+                }
             }
-        }
 
     override fun Element.mangaTitle(selector: String): String? = mangaFullTitle(selector)
 
@@ -93,11 +95,12 @@ class HentaiFox(
         }
     }
 
-    override fun getFilterList() = FilterList(
-        listOf(
-            Filter.Header("HINT: Use double quote (\") for exact match"),
-        ) + super.getFilterList().list,
-    )
+    override fun getFilterList() =
+        FilterList(
+            listOf(
+                Filter.Header("HINT: Use double quote (\") for exact match"),
+            ) + super.getFilterList().list,
+        )
 
     override val idPrefixUri = "gallery"
 }

@@ -6,43 +6,44 @@ import eu.kanade.tachiyomi.source.SourceFactory
 import okhttp3.OkHttpClient
 
 class NHentaiComFactory : SourceFactory {
-    override fun createSources(): List<Source> = listOf(
-        // https://nhentai.com/api/languages?per_page=50
-        NHentaiComAll(),
-        NHentaiComEn(),
-        NHentaiComZh(),
-        NHentaiComJa(),
-        NHentaiComNoText(),
-        NHentaiComEo(),
-        NHentaiComCeb(),
-        NHentaiComCs(),
-        NHentaiComAr(),
-        NHentaiComSk(),
-        NHentaiComMn(),
-        NHentaiComUk(),
-        NHentaiComLa(),
-        NHentaiComTl(),
-        NHentaiComEs(),
-        NHentaiComIt(),
-        NHentaiComKo(),
-        NHentaiComTh(),
-        NHentaiComPl(),
-        NHentaiComFr(),
-        NHentaiComPtBr(),
-        NHentaiComDe(),
-        NHentaiComFi(),
-        NHentaiComRu(),
-        NHentaiComHu(),
-        NHentaiComId(),
-        NHentaiComVi(),
-        NHentaiComNl(),
-        NHentaiComTr(),
-        NHentaiComEl(),
-        NHentaiComBg(),
-        NHentaiComSr(),
-        NHentaiComJv(),
-        NHentaiComHi(),
-    )
+    override fun createSources(): List<Source> =
+        listOf(
+            // https://nhentai.com/api/languages?per_page=50
+            NHentaiComAll(),
+            NHentaiComEn(),
+            NHentaiComZh(),
+            NHentaiComJa(),
+            NHentaiComNoText(),
+            NHentaiComEo(),
+            NHentaiComCeb(),
+            NHentaiComCs(),
+            NHentaiComAr(),
+            NHentaiComSk(),
+            NHentaiComMn(),
+            NHentaiComUk(),
+            NHentaiComLa(),
+            NHentaiComTl(),
+            NHentaiComEs(),
+            NHentaiComIt(),
+            NHentaiComKo(),
+            NHentaiComTh(),
+            NHentaiComPl(),
+            NHentaiComFr(),
+            NHentaiComPtBr(),
+            NHentaiComDe(),
+            NHentaiComFi(),
+            NHentaiComRu(),
+            NHentaiComHu(),
+            NHentaiComId(),
+            NHentaiComVi(),
+            NHentaiComNl(),
+            NHentaiComTr(),
+            NHentaiComEl(),
+            NHentaiComBg(),
+            NHentaiComSr(),
+            NHentaiComJv(),
+            NHentaiComHi(),
+        )
 }
 
 abstract class NHentaiComCommon(
@@ -50,9 +51,10 @@ abstract class NHentaiComCommon(
     hhLangId: List<Int> = emptyList(),
     // altLangId: Int? = null
 ) : HentaiHand("nHentai.com (unoriginal)", "https://nhentai.com", lang, false, hhLangId) {
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .addInterceptor { authIntercept(it) }
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor { authIntercept(it) }
+            .build()
 }
 
 class NHentaiComAll : NHentaiComCommon("all") {

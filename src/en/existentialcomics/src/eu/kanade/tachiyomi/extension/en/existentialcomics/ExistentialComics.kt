@@ -22,15 +22,16 @@ class ExistentialComics : ParsedHttpSource() {
     override val supportsLatest = false
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        val manga = SManga.create().apply {
-            title = "Existential Comics"
-            artist = "Corey Mohler"
-            author = "Corey Mohler"
-            status = SManga.ONGOING
-            url = "/archive/byDate"
-            description = "A philosophy comic about the inevitable anguish of living a brief life in an absurd world. Also Jokes."
-            thumbnail_url = "https://i.ibb.co/pykMVYM/existential-comics.png"
-        }
+        val manga =
+            SManga.create().apply {
+                title = "Existential Comics"
+                artist = "Corey Mohler"
+                author = "Corey Mohler"
+                status = SManga.ONGOING
+                url = "/archive/byDate"
+                description = "A philosophy comic about the inevitable anguish of living a brief life in an absurd world. Also Jokes."
+                thumbnail_url = "https://i.ibb.co/pykMVYM/existential-comics.png"
+            }
 
         return Observable.just(MangasPage(arrayListOf(manga), false))
     }

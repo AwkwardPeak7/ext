@@ -33,8 +33,9 @@ class RawZ : HttpSource() {
 
     override val client = network.cloudflareClient
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", SortFilter.POPULAR)
 
@@ -49,14 +50,15 @@ class RawZ : HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$apiUrl/manga".toHttpUrl().newBuilder().apply {
-            addQueryParameter("name", query.trim())
-            filters.filterIsInstance<UriPartFilter>().forEach {
-                it.addQueryParameter(this)
-            }
-            addQueryParameter("page", page.toString())
-            addQueryParameter("limit", LIMIT.toString())
-        }.build()
+        val url =
+            "$apiUrl/manga".toHttpUrl().newBuilder().apply {
+                addQueryParameter("name", query.trim())
+                filters.filterIsInstance<UriPartFilter>().forEach {
+                    it.addQueryParameter(this)
+                }
+                addQueryParameter("page", page.toString())
+                addQueryParameter("limit", LIMIT.toString())
+            }.build()
 
         return GET(url, headers)
     }
@@ -78,16 +80,17 @@ class RawZ : HttpSource() {
 
     private fun fetchGenres() {
         if ((genreCache.isEmpty() || genreFetchFailed) && genreFetchAttempts < 3) {
-            val genres = runCatching {
-                client.newCall(
-                    GET("$apiUrl/taxonomy-browse?type=genres&limit=100&page=1", headers),
-                )
-                    .execute()
-                    .parseAs<Data<Taxonomy>>()
-                    .data.genres.map {
-                        Pair(it.name, it.id.toString())
-                    }
-            }
+            val genres =
+                runCatching {
+                    client.newCall(
+                        GET("$apiUrl/taxonomy-browse?type=genres&limit=100&page=1", headers),
+                    )
+                        .execute()
+                        .parseAs<Data<Taxonomy>>()
+                        .data.genres.map {
+                            Pair(it.name, it.id.toString())
+                        }
+                }
 
             genreCache = genres.getOrNull().orEmpty()
             genreFetchFailed = genres.isFailure
@@ -96,23 +99,25 @@ class RawZ : HttpSource() {
     }
 
     override fun getFilterList(): FilterList {
-        val filters = mutableListOf<Filter<*>>(
-            SortFilter(),
-            TypeFilter(),
-            StatusFilter(),
-            ChapterNumFilter(),
-        )
+        val filters =
+            mutableListOf<Filter<*>>(
+                SortFilter(),
+                TypeFilter(),
+                StatusFilter(),
+                ChapterNumFilter(),
+            )
 
-        filters += if (genreCache.isEmpty()) {
-            listOf(
-                Filter.Separator(),
-                Filter.Header("Press Reset to attempt to display genre"),
-            )
-        } else {
-            listOf(
-                GenreFilter(genreCache),
-            )
-        }
+        filters +=
+            if (genreCache.isEmpty()) {
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Press Reset to attempt to display genre"),
+                )
+            } else {
+                listOf(
+                    GenreFilter(genreCache),
+                )
+            }
 
         return FilterList(filters)
     }
@@ -128,9 +133,10 @@ class RawZ : HttpSource() {
     }
 
     override fun chapterListRequest(manga: SManga): Request {
-        val slug = manga.url
-            .substringAfter("/manga/")
-            .substringBefore(".")
+        val slug =
+            manga.url
+                .substringAfter("/manga/")
+                .substringBefore(".")
 
         val id = manga.url.substringAfterLast(".")
 
@@ -145,9 +151,10 @@ class RawZ : HttpSource() {
             SChapter.create().apply {
                 url = "/read/$mangaSlug.${it.id}/${it.slug}"
                 name = it.name
-                date_upload = runCatching {
-                    dateFormat.parse(it.createdAt!!)!!.time
-                }.getOrDefault(0L)
+                date_upload =
+                    runCatching {
+                        dateFormat.parse(it.createdAt!!)!!.time
+                    }.getOrDefault(0L)
             }
         }
     }
@@ -155,9 +162,10 @@ class RawZ : HttpSource() {
     override fun getChapterUrl(chapter: SChapter) = "$baseUrl${chapter.url}"
 
     override fun pageListRequest(chapter: SChapter): Request {
-        val id = chapter.url
-            .substringBeforeLast("/")
-            .substringAfterLast(".")
+        val id =
+            chapter.url
+                .substringBeforeLast("/")
+                .substringAfterLast(".")
 
         return GET("$apiUrl/child-detail/$id", headers)
     }
@@ -172,9 +180,10 @@ class RawZ : HttpSource() {
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromString(body.string())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromString(body.string())
+        }
 
     companion object {
         private const val LIMIT = 30

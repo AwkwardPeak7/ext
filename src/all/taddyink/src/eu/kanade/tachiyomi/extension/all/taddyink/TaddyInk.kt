@@ -51,12 +51,13 @@ open class TaddyInk(
     override fun latestUpdatesParse(response: Response): MangasPage = throw UnsupportedOperationException()
 
     override fun popularMangaRequest(page: Int): Request {
-        val url = "$baseUrl/feeds/directory/list".toHttpUrl().newBuilder()
-            .addQueryParameter("lang", taddyLang)
-            .addQueryParameter("taddyType", "comicseries")
-            .addQueryParameter("ua", "tc")
-            .addQueryParameter("page", page.toString())
-            .addQueryParameter("limit", POPULAR_MANGA_LIMIT.toString())
+        val url =
+            "$baseUrl/feeds/directory/list".toHttpUrl().newBuilder()
+                .addQueryParameter("lang", taddyLang)
+                .addQueryParameter("taddyType", "comicseries")
+                .addQueryParameter("ua", "tc")
+                .addQueryParameter("page", page.toString())
+                .addQueryParameter("limit", POPULAR_MANGA_LIMIT.toString())
         return GET(url.build(), headers)
     }
 
@@ -72,13 +73,14 @@ open class TaddyInk(
         val shouldFilterByCreator = filterList.findInstance<CreatorFilter>()?.state?.isNotBlank() ?: false
         val shouldFilterForTags = filterList.findInstance<TagFilter>()?.state?.isNotBlank() ?: false
 
-        val url = "$baseUrl/feeds/directory/search".toHttpUrl().newBuilder()
-            .addQueryParameter("q", query)
-            .addQueryParameter("lang", taddyLang)
-            .addQueryParameter("taddyType", "comicseries")
-            .addQueryParameter("ua", "tc")
-            .addQueryParameter("page", page.toString())
-            .addQueryParameter("limit", SEARCH_MANGA_LIMIT.toString())
+        val url =
+            "$baseUrl/feeds/directory/search".toHttpUrl().newBuilder()
+                .addQueryParameter("q", query)
+                .addQueryParameter("lang", taddyLang)
+                .addQueryParameter("taddyType", "comicseries")
+                .addQueryParameter("ua", "tc")
+                .addQueryParameter("page", page.toString())
+                .addQueryParameter("limit", SEARCH_MANGA_LIMIT.toString())
 
         if (shouldFilterByGenre) {
             filterList.findInstance<GenreFilter>()?.let { f ->
@@ -127,14 +129,15 @@ open class TaddyInk(
         val comic = json.decodeFromString<Comic>(response.body.string())
         val sssUrl = comic.url
 
-        val chapters = comic.issues.orEmpty().mapIndexed { i, chapter ->
-            SChapter.create().apply {
-                url = "$sssUrl#${chapter.identifier}"
-                name = chapter.name
-                date_upload = TaddyUtils.getTime(chapter.datePublished)
-                chapter_number = (comic.issues.orEmpty().size - i).toFloat()
+        val chapters =
+            comic.issues.orEmpty().mapIndexed { i, chapter ->
+                SChapter.create().apply {
+                    url = "$sssUrl#${chapter.identifier}"
+                    name = chapter.name
+                    date_upload = TaddyUtils.getTime(chapter.datePublished)
+                    chapter_number = (comic.issues.orEmpty().size - i).toFloat()
+                }
             }
-        }
 
         return chapters.reversed()
     }
@@ -157,13 +160,14 @@ open class TaddyInk(
 
     override fun imageUrlParse(response: Response) = ""
 
-    override fun getFilterList(): FilterList = FilterList(
-        GenreFilter(),
-        Filter.Separator(),
-        Filter.Header("Filter by the creator or tags:"),
-        CreatorFilter(),
-        TagFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            GenreFilter(),
+            Filter.Separator(),
+            Filter.Header("Filter by the creator or tags:"),
+            CreatorFilter(),
+            TagFilter(),
+        )
 
     class CreatorFilter : AdvSearchEntryFilter("Creator")
 

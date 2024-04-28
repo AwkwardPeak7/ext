@@ -168,12 +168,13 @@ object ManaToki : NewToki("ManaToki", "comic", manaTokiPreferences) {
         Selection(0, false),
     )
 
-    override fun getFilterList() = FilterList(
-        SearchSortTypeList(),
-        Filter.Separator(),
-        Filter.Header(ignoredForTextSearch()),
-        SearchPublishTypeList(),
-        SearchJaumTypeList(),
-        SearchGenreTypeList(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            SearchSortTypeList(),
+            Filter.Separator(),
+            Filter.Header(ignoredForTextSearch()),
+            SearchPublishTypeList(),
+            SearchJaumTypeList(),
+            SearchGenreTypeList(),
+        )
 }

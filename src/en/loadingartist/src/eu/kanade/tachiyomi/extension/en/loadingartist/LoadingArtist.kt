@@ -99,19 +99,21 @@ class LoadingArtist : HttpSource() {
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        val comics = json.parseToJsonElement(response.body.string()).jsonObject.map {
-            json.decodeFromJsonElement<Comic>(it.value)
-        }
+        val comics =
+            json.parseToJsonElement(response.body.string()).jsonObject.map {
+                json.decodeFromJsonElement<Comic>(it.value)
+            }
         val validTypes = listOf("comic", "game", "art")
         return comics.filter { validTypes.any { type -> it.section == type } }.map {
             SChapter.create().apply {
                 setUrlWithoutDomain(it.url)
                 name = it.title
-                date_upload = try {
-                    SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(it.date)?.time ?: 0
-                } catch (_: ParseException) {
-                    0
-                }
+                date_upload =
+                    try {
+                        SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(it.date)?.time ?: 0
+                    } catch (_: ParseException) {
+                        0
+                    }
             }
         }
     }
@@ -119,8 +121,9 @@ class LoadingArtist : HttpSource() {
     // Pages
 
     override fun pageListParse(response: Response): List<Page> {
-        val imageUrl = response.asJsoup().selectFirst("div.main-image-container img")!!
-            .attr("abs:src")
+        val imageUrl =
+            response.asJsoup().selectFirst("div.main-image-container img")!!
+                .attr("abs:src")
         return listOf(Page(0, response.request.url.toString(), imageUrl))
     }
 

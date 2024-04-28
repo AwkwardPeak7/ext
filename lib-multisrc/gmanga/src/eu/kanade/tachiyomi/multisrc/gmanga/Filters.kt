@@ -23,9 +23,10 @@ abstract class ValidatingTextFilter(name: String) : Filter.Text(name) {
     abstract fun isValid(): Boolean
 }
 
-private val DATE_FITLER_FORMAT = SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH).apply {
-    isLenient = false
-}
+private val DATE_FITLER_FORMAT =
+    SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH).apply {
+        isLenient = false
+    }
 
 private fun SimpleDateFormat.isValid(date: String): Boolean {
     return try {

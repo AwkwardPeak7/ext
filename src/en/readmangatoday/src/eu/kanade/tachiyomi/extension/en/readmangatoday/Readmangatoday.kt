@@ -39,11 +39,12 @@ class Readmangatoday : ParsedHttpSource() {
      * Search only returns data with user-agent and x-requeted-with set
      * Referer needed due to some chapters linking images from other domains
      */
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)")
-        add("X-Requested-With", "XMLHttpRequest")
-        add("Referer", baseUrl)
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64)")
+            add("X-Requested-With", "XMLHttpRequest")
+            add("Referer", baseUrl)
+        }
 
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/hot-manga/$page", headers)
@@ -89,12 +90,13 @@ class Readmangatoday : ParsedHttpSource() {
                 is TextField -> builder.add(filter.key, filter.state)
                 is Type -> builder.add("type", arrayOf("all", "japanese", "korean", "chinese")[filter.state])
                 is Status -> builder.add("status", arrayOf("both", "completed", "ongoing")[filter.state])
-                is GenreList -> filter.state.forEach { genre ->
-                    when (genre.state) {
-                        Filter.TriState.STATE_INCLUDE -> builder.add("include[]", genre.id.toString())
-                        Filter.TriState.STATE_EXCLUDE -> builder.add("exclude[]", genre.id.toString())
+                is GenreList ->
+                    filter.state.forEach { genre ->
+                        when (genre.state) {
+                            Filter.TriState.STATE_INCLUDE -> builder.add("include[]", genre.id.toString())
+                            Filter.TriState.STATE_EXCLUDE -> builder.add("exclude[]", genre.id.toString())
+                        }
                     }
-                }
                 else -> {}
             }
         }
@@ -124,11 +126,12 @@ class Readmangatoday : ParsedHttpSource() {
         return manga
     }
 
-    private fun parseStatus(status: String) = when {
-        status.contains("Ongoing") -> SManga.ONGOING
-        status.contains("Completed") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String) =
+        when {
+            status.contains("Ongoing") -> SManga.ONGOING
+            status.contains("Completed") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun chapterListSelector() = "div#chapters-tabContent div.cardFlex div.checkBoxCard"
 
@@ -188,10 +191,11 @@ class Readmangatoday : ParsedHttpSource() {
         val imageList = json.parseToJsonElement(imageListJson).jsonArray
         val baseResolver = baseUrl.toHttpUrl()
 
-        val scriptPages = imageList.mapIndexed { i, jsonEl ->
-            val imageUrl = jsonEl.jsonPrimitive.content
-            Page(i, "", baseResolver.resolve(imageUrl).toString())
-        }
+        val scriptPages =
+            imageList.mapIndexed { i, jsonEl ->
+                val imageUrl = jsonEl.jsonPrimitive.content
+                Page(i, "", baseResolver.resolve(imageUrl).toString())
+            }
 
         return scriptPages.distinctBy { it.imageUrl }
     }
@@ -208,51 +212,53 @@ class Readmangatoday : ParsedHttpSource() {
 
     private class GenreList(genres: List<Genre>) : Filter.Group<Genre>("Genres", genres)
 
-    override fun getFilterList() = FilterList(
-        TextField("Author", "author-name"),
-        TextField("Artist", "artist-name"),
-        Type(),
-        Status(),
-        GenreList(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            TextField("Author", "author-name"),
+            TextField("Artist", "artist-name"),
+            Type(),
+            Status(),
+            GenreList(getGenreList()),
+        )
 
     // [...document.querySelectorAll("ul.manga-cat span")].map(el => `Genre("${el.nextSibling.textContent.trim()}", ${el.getAttribute('data-id')})`).join(',\n')
     // https://www.readmng.com/advanced-search
-    private fun getGenreList() = listOf(
-        Genre("Action", 2),
-        Genre("Adventure", 4),
-        Genre("Comedy", 5),
-        Genre("Doujinshi", 6),
-        Genre("Drama", 7),
-        Genre("Ecchi", 8),
-        Genre("Fantasy", 9),
-        Genre("Gender Bender", 10),
-        Genre("Harem", 11),
-        Genre("Historical", 12),
-        Genre("Horror", 13),
-        Genre("Josei", 14),
-        Genre("Lolicon", 15),
-        Genre("Martial Arts", 16),
-        Genre("Mature", 17),
-        Genre("Mecha", 18),
-        Genre("Mystery", 19),
-        Genre("One shot", 20),
-        Genre("Psychological", 21),
-        Genre("Romance", 22),
-        Genre("School Life", 23),
-        Genre("Sci-fi", 24),
-        Genre("Seinen", 25),
-        Genre("Shotacon", 26),
-        Genre("Shoujo", 27),
-        Genre("Shoujo Ai", 28),
-        Genre("Shounen", 29),
-        Genre("Shounen Ai", 30),
-        Genre("Slice of Life", 31),
-        Genre("Smut", 32),
-        Genre("Sports", 33),
-        Genre("Supernatural", 34),
-        Genre("Tragedy", 35),
-        Genre("Yaoi", 36),
-        Genre("Yuri", 37),
-    )
+    private fun getGenreList() =
+        listOf(
+            Genre("Action", 2),
+            Genre("Adventure", 4),
+            Genre("Comedy", 5),
+            Genre("Doujinshi", 6),
+            Genre("Drama", 7),
+            Genre("Ecchi", 8),
+            Genre("Fantasy", 9),
+            Genre("Gender Bender", 10),
+            Genre("Harem", 11),
+            Genre("Historical", 12),
+            Genre("Horror", 13),
+            Genre("Josei", 14),
+            Genre("Lolicon", 15),
+            Genre("Martial Arts", 16),
+            Genre("Mature", 17),
+            Genre("Mecha", 18),
+            Genre("Mystery", 19),
+            Genre("One shot", 20),
+            Genre("Psychological", 21),
+            Genre("Romance", 22),
+            Genre("School Life", 23),
+            Genre("Sci-fi", 24),
+            Genre("Seinen", 25),
+            Genre("Shotacon", 26),
+            Genre("Shoujo", 27),
+            Genre("Shoujo Ai", 28),
+            Genre("Shounen", 29),
+            Genre("Shounen Ai", 30),
+            Genre("Slice of Life", 31),
+            Genre("Smut", 32),
+            Genre("Sports", 33),
+            Genre("Supernatural", 34),
+            Genre("Tragedy", 35),
+            Genre("Yaoi", 36),
+            Genre("Yuri", 37),
+        )
 }

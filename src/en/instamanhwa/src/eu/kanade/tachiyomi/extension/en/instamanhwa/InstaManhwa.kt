@@ -59,15 +59,17 @@ class InstaManhwa : Madara(
         cookie: String,
         token: String,
     ): Document {
-        val headers = headersBuilder()
-            .add("Host", baseUrl.substringAfter("https://"))
-            .add("Cookie", cookie)
-            .build()
-        val body = FormBody.Builder()
-            .addEncoded("_token", token)
-            .addEncoded("action", "manga_get_chapters")
-            .addEncoded("manga", mangaId)
-            .build()
+        val headers =
+            headersBuilder()
+                .add("Host", baseUrl.substringAfter("https://"))
+                .add("Cookie", cookie)
+                .build()
+        val body =
+            FormBody.Builder()
+                .addEncoded("_token", token)
+                .addEncoded("action", "manga_get_chapters")
+                .addEncoded("manga", mangaId)
+                .build()
         return client.newCall(POST("$baseUrl/ajax", headers, body)).execute().asJsoup()
     }
 

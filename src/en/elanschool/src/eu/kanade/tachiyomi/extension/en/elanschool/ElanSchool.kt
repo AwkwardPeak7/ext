@@ -22,15 +22,16 @@ class ElanSchool : HttpSource() {
     override val supportsLatest = false
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        val manga = SManga.create().apply {
-            url = "/chapters/?dps_paged=$page"
-            title = "Elan School"
-            thumbnail_url = "$baseUrl/wp-content/uploads/2018/11/The-Elan-School-Comic-1cNEW-1-768x1491.jpg"
-            description = "A 16 year old boy named Joe gets indoctrinated into a sick cult that is run by imprisoned teenagers. Based on the true story of the Elan School."
-            status = SManga.ONGOING
-            author = "Joe Nobody"
-            artist = "Joe Nobody"
-        }
+        val manga =
+            SManga.create().apply {
+                url = "/chapters/?dps_paged=$page"
+                title = "Elan School"
+                thumbnail_url = "$baseUrl/wp-content/uploads/2018/11/The-Elan-School-Comic-1cNEW-1-768x1491.jpg"
+                description = "A 16 year old boy named Joe gets indoctrinated into a sick cult that is run by imprisoned teenagers. Based on the true story of the Elan School."
+                status = SManga.ONGOING
+                author = "Joe Nobody"
+                artist = "Joe Nobody"
+            }
 
         return Observable.just(MangasPage(listOf(manga), false))
     }
@@ -41,8 +42,9 @@ class ElanSchool : HttpSource() {
         filters: FilterList,
     ) = fetchPopularManga(page)
 
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> = fetchPopularManga(1)
-        .map { it.mangas.first().apply { initialized = true } }
+    override fun fetchMangaDetails(manga: SManga): Observable<SManga> =
+        fetchPopularManga(1)
+            .map { it.mangas.first().apply { initialized = true } }
 
     private fun chapterNextPageSelector() = "a.next"
 
@@ -51,9 +53,10 @@ class ElanSchool : HttpSource() {
         var document = response.asJsoup()
 
         while (true) {
-            val chapters = document.select(chapterListSelector()).map {
-                chapterFromElement(it)
-            }
+            val chapters =
+                document.select(chapterListSelector()).map {
+                    chapterFromElement(it)
+                }
             if (chapters.isEmpty()) {
                 break
             }

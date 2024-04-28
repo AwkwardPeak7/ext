@@ -21,9 +21,10 @@ class DongmanManhua : Webtoons(
     "",
     dateFormat = SimpleDateFormat("yyyy-M-d", Locale.ENGLISH),
 ) {
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .removeAll("Referer")
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .removeAll("Referer")
+            .add("Referer", baseUrl)
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/dailySchedule", headers)
 

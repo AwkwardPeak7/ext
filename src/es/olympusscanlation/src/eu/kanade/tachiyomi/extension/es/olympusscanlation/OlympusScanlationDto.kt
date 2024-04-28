@@ -45,17 +45,19 @@ class MangaDto(
     private val status: MangaStatusDto? = null,
     private val genres: List<FilterDto>? = null,
 ) {
-    fun toSManga() = SManga.create().apply {
-        title = name
-        url = "/series/comic-$slug"
-        thumbnail_url = cover
-    }
+    fun toSManga() =
+        SManga.create().apply {
+            title = name
+            url = "/series/comic-$slug"
+            thumbnail_url = cover
+        }
 
-    fun toSMangaDetails() = toSManga().apply {
-        description = summary
-        status = parseStatus()
-        genre = genres?.joinToString { it.name.trim() }
-    }
+    fun toSMangaDetails() =
+        toSManga().apply {
+            description = summary
+            status = parseStatus()
+            genre = genres?.joinToString { it.name.trim() }
+        }
 
     private fun parseStatus(): Int {
         val status = this.status ?: return SManga.UNKNOWN
@@ -83,11 +85,12 @@ class LatestMangaDto(
     private val cover: String? = null,
     val type: String? = null,
 ) {
-    fun toSManga() = SManga.create().apply {
-        title = name
-        url = "/series/comic-$slug"
-        thumbnail_url = cover
-    }
+    fun toSManga() =
+        SManga.create().apply {
+            title = name
+            url = "/series/comic-$slug"
+            thumbnail_url = cover
+        }
 }
 
 @Serializable
@@ -110,11 +113,12 @@ class ChapterDto(
     ) = SChapter.create().apply {
         name = "Capitulo ${this@ChapterDto.name}"
         url = "/capitulo/$id/comic-$mangaSlug"
-        date_upload = try {
-            dateFormat.parse(date)!!.time
-        } catch (e: ParseException) {
-            0L
-        }
+        date_upload =
+            try {
+                dateFormat.parse(date)!!.time
+            } catch (e: ParseException) {
+                0L
+            }
     }
 }
 

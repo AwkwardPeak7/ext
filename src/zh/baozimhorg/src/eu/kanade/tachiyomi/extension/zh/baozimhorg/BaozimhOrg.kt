@@ -37,16 +37,18 @@ class BaozimhOrg : HttpSource(), ConfigurableSource {
 
     init {
         val mirrors = MIRRORS
-        val mirrorIndex = Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
-            .getString(MIRROR_PREF, "0")!!.toInt().coerceAtMost(mirrors.size - 1)
+        val mirrorIndex =
+            Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
+                .getString(MIRROR_PREF, "0")!!.toInt().coerceAtMost(mirrors.size - 1)
         baseUrl = "https://" + mirrors[mirrorIndex]
         baseHttpUrl = baseUrl.toHttpUrl()
         enableGenres = mirrorIndex == 0
     }
 
-    override val client = network.client.newBuilder()
-        .addInterceptor(UrlInterceptor)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .addInterceptor(UrlInterceptor)
+            .build()
 
     private fun getKey(link: String): String {
         val pathSegments = baseHttpUrl.resolve(link)!!.pathSegments
@@ -61,16 +63,18 @@ class BaozimhOrg : HttpSource(), ConfigurableSource {
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup().also(::parseGenres)
-        val mangas = document.select("article.wp-manga").map { element ->
-            SManga.create().apply {
-                val link = element.selectFirst(Evaluator.Tag("h2"))!!.child(0)
-                url = getKey(link.attr("href"))
-                title = link.ownText()
-                thumbnail_url = element.selectFirst(Evaluator.Tag("img"))!!.imgSrc
+        val mangas =
+            document.select("article.wp-manga").map { element ->
+                SManga.create().apply {
+                    val link = element.selectFirst(Evaluator.Tag("h2"))!!.child(0)
+                    url = getKey(link.attr("href"))
+                    title = link.ownText()
+                    thumbnail_url = element.selectFirst(Evaluator.Tag("img"))!!.imgSrc
+                }
             }
-        }
-        val hasNextPage = document.selectFirst(Evaluator.Class("next"))?.tagName() == "a" ||
-            document.selectFirst(".gb-button[aria-label=Next page]") != null
+        val hasNextPage =
+            document.selectFirst(Evaluator.Class("next"))?.tagName() == "a" ||
+                document.selectFirst(".gb-button[aria-label=Next page]") != null
         return MangasPage(mangas, hasNextPage)
     }
 
@@ -84,8 +88,9 @@ class BaozimhOrg : HttpSource(), ConfigurableSource {
         filters: FilterList,
     ): Request {
         if (query.isNotEmpty()) {
-            val url = "$baseUrl/page/$page/".toHttpUrl().newBuilder()
-                .addQueryParameter("s", query)
+            val url =
+                "$baseUrl/page/$page/".toHttpUrl().newBuilder()
+                    .addQueryParameter("s", query)
             return Request.Builder().url(url.build()).headers(headers).build()
         }
         for (filter in filters) {
@@ -102,24 +107,26 @@ class BaozimhOrg : HttpSource(), ConfigurableSource {
         return GET("$baseUrl/manga/$url/", headers)
     }
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val document = response.asJsoup()
-        title = document.selectFirst(Evaluator.Tag("h1"))!!.ownText()
-        author = document.selectFirst(Evaluator.Class("author-content"))!!.children().joinToString { it.ownText() }
-        description = document.selectFirst(".descrip_manga_info, .wp-block-stackable-text")!!.text()
-        thumbnail_url = document.selectFirst("img.wp-post-image")!!.imgSrc
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val document = response.asJsoup()
+            title = document.selectFirst(Evaluator.Tag("h1"))!!.ownText()
+            author = document.selectFirst(Evaluator.Class("author-content"))!!.children().joinToString { it.ownText() }
+            description = document.selectFirst(".descrip_manga_info, .wp-block-stackable-text")!!.text()
+            thumbnail_url = document.selectFirst("img.wp-post-image")!!.imgSrc
 
-        val genreList = document.selectFirst(Evaluator.Class("genres-content"))!!
-            .children().eachText().toMutableSet()
-        if ("连载中" in genreList) {
-            genreList.remove("连载中")
-            status = SManga.ONGOING
-        } else if ("已完结" in genreList) {
-            genreList.remove("已完结")
-            status = SManga.COMPLETED
+            val genreList =
+                document.selectFirst(Evaluator.Class("genres-content"))!!
+                    .children().eachText().toMutableSet()
+            if ("连载中" in genreList) {
+                genreList.remove("连载中")
+                status = SManga.ONGOING
+            } else if ("已完结" in genreList) {
+                genreList.remove("已完结")
+                status = SManga.COMPLETED
+            }
+            genre = genreList.joinToString()
         }
-        genre = genreList.joinToString()
-    }
 
     override fun chapterListRequest(manga: SManga): Request {
         val url = manga.url
@@ -161,26 +168,29 @@ class BaozimhOrg : HttpSource(), ConfigurableSource {
         if (!enableGenres || genres.isNotEmpty()) return
         val box = document.selectFirst(Evaluator.Class("wp-block-navigation__container")) ?: return
         val items = box.children()
-        genres = buildList(items.size + 1) {
-            add(Pair("全部", "/allmanga/"))
-            items.mapTo(this) {
-                val link = it.child(0)
-                Pair(link.text(), link.attr("href"))
-            }
-        }.toTypedArray()
+        genres =
+            buildList(items.size + 1) {
+                add(Pair("全部", "/allmanga/"))
+                items.mapTo(this) {
+                    val link = it.child(0)
+                    Pair(link.text(), link.attr("href"))
+                }
+            }.toTypedArray()
     }
 
-    override fun getFilterList(): FilterList = if (!enableGenres) {
-        FilterList()
-    } else if (genres.isEmpty()) {
-        FilterList(listOf(Filter.Header("点击“重置”刷新分类")))
-    } else {
-        val list = listOf(
-            Filter.Header("分类（搜索文本时无效）"),
-            UriPartFilter("分类", genres),
-        )
-        FilterList(list)
-    }
+    override fun getFilterList(): FilterList =
+        if (!enableGenres) {
+            FilterList()
+        } else if (genres.isEmpty()) {
+            FilterList(listOf(Filter.Header("点击“重置”刷新分类")))
+        } else {
+            val list =
+                listOf(
+                    Filter.Header("分类（搜索文本时无效）"),
+                    UriPartFilter("分类", genres),
+                )
+            FilterList(list)
+        }
 
     class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
@@ -209,10 +219,11 @@ class BaozimhOrg : HttpSource(), ConfigurableSource {
 
         private val dateFormat by lazy { SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH) }
 
-        fun parseChapterDate(text: String): Long = try {
-            dateFormat.parse(text)!!.time
-        } catch (_: Throwable) {
-            0
-        }
+        fun parseChapterDate(text: String): Long =
+            try {
+                dateFormat.parse(text)!!.time
+            } catch (_: Throwable) {
+                0
+            }
     }
 }

@@ -12,9 +12,10 @@ class CulturedWorks : MangaThemesia(
     "https://culturedworks.com",
     "en",
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 
     override val seriesDetailsSelector = ".main-info"
     override val seriesStatusSelector = ".info-right .status, ${super.seriesStatusSelector}"
@@ -23,15 +24,16 @@ class CulturedWorks : MangaThemesia(
     override fun imageRequest(page: Page): Request {
         val host = page.imageUrl!!.toHttpUrl().host
 
-        val headers = headersBuilder().apply {
-            add("Accept", "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
-            add("Host", host)
-            if (host.contains("kumacdn")) { // This doesn't load on the website, but removing referer seems to fix it
-                removeAll("Referer")
-            } else {
-                set("Referer", "$baseUrl/")
-            }
-        }.build()
+        val headers =
+            headersBuilder().apply {
+                add("Accept", "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
+                add("Host", host)
+                if (host.contains("kumacdn")) { // This doesn't load on the website, but removing referer seems to fix it
+                    removeAll("Referer")
+                } else {
+                    set("Referer", "$baseUrl/")
+                }
+            }.build()
 
         return GET(page.imageUrl!!, headers)
     }

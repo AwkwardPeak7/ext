@@ -23,10 +23,11 @@ class MangaRawClub : ParsedHttpSource() {
     override val baseUrl = "https://www.mgeko.com"
     override val lang = "en"
     override val supportsLatest = true
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
 
     companion object {
         private const val altName = "Alternative Name:"
@@ -87,25 +88,28 @@ class MangaRawClub : ParsedHttpSource() {
         }
         manga.description = description.trim()
 
-        manga.genre = document.select(".categories a[href*=genre]").joinToString(", ") {
-            it.attr("title").removeSuffix("Genre").trim()
-                .split(" ").joinToString(" ") { char ->
-                    char.lowercase().replaceFirstChar { c -> c.uppercase() }
-                }
-        }
+        manga.genre =
+            document.select(".categories a[href*=genre]").joinToString(", ") {
+                it.attr("title").removeSuffix("Genre").trim()
+                    .split(" ").joinToString(" ") { char ->
+                        char.lowercase().replaceFirstChar { c -> c.uppercase() }
+                    }
+            }
 
         val statusElement = document.select("div.header-stats")
-        manga.status = when {
-            statusElement.select("strong.completed").isNotEmpty() -> SManga.COMPLETED
-            statusElement.select("strong.ongoing").isNotEmpty() -> SManga.ONGOING
-            else -> SManga.UNKNOWN
-        }
+        manga.status =
+            when {
+                statusElement.select("strong.completed").isNotEmpty() -> SManga.COMPLETED
+                statusElement.select("strong.ongoing").isNotEmpty() -> SManga.ONGOING
+                else -> SManga.UNKNOWN
+            }
 
         val coverElement = document.select(".cover img")
-        manga.thumbnail_url = when {
-            coverElement.attr("data-src").isNotEmpty() -> coverElement.attr("data-src")
-            else -> coverElement.attr("src")
-        }
+        manga.thumbnail_url =
+            when {
+                coverElement.attr("data-src").isNotEmpty() -> coverElement.attr("data-src")
+                else -> coverElement.attr("src")
+            }
         return manga
     }
 
@@ -189,15 +193,16 @@ class MangaRawClub : ParsedHttpSource() {
         // return POST("$baseUrl/search", headers, requestBody.build()) // csrfmiddlewaretoken required
     }
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("NOTE: Ignored if using text search!"),
-        Filter.Separator(),
-        Order(),
-        GenrePairList(),
-        // Action(),
-        // Status(),
-        // GenreList(getGenreList())
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("NOTE: Ignored if using text search!"),
+            Filter.Separator(),
+            Order(),
+            GenrePairList(),
+            // Action(),
+            // Status(),
+            // GenreList(getGenreList())
+        )
 
     private class Action : UriPartFilter(
         "Action",

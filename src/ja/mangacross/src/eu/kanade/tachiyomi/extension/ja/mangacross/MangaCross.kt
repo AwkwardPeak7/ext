@@ -53,8 +53,9 @@ class MangaCross : HttpSource() {
 
     override fun searchMangaParse(response: Response) = popularMangaParse(response)
 
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> = client.newCall(chapterListRequest(manga)).asObservableSuccess()
-        .map { mangaDetailsParse(it).apply { initialized = true } }
+    override fun fetchMangaDetails(manga: SManga): Observable<SManga> =
+        client.newCall(chapterListRequest(manga)).asObservableSuccess()
+            .map { mangaDetailsParse(it).apply { initialized = true } }
 
     // mangaDetailsRequest untouched in order to let WebView open web page instead of json
 
@@ -95,18 +96,19 @@ class MangaCross : HttpSource() {
         }
     }
 
-    override fun getFilterList() = if (::tags.isInitialized) {
-        FilterList(
-            Filter.Header("NOTE: Ignored if using text search!"),
-            TagFilter("Tag", tags),
-        )
-    } else {
-        fetchTags()
-        FilterList(
-            Filter.Header("Fetching tags..."),
-            Filter.Header("Go back to previous screen and retry."),
-        )
-    }
+    override fun getFilterList() =
+        if (::tags.isInitialized) {
+            FilterList(
+                Filter.Header("NOTE: Ignored if using text search!"),
+                TagFilter("Tag", tags),
+            )
+        } else {
+            fetchTags()
+            FilterList(
+                Filter.Header("Fetching tags..."),
+                Filter.Header("Go back to previous screen and retry."),
+            )
+        }
 
     private class TagFilter(name: String, private val tags: List<Pair<String, MCComicTag?>>) :
         Filter.Select<String>(name, tags.map { it.first }.toTypedArray()) {

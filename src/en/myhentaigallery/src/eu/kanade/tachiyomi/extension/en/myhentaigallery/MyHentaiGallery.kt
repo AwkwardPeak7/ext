@@ -123,12 +123,14 @@ class MyHentaiGallery : ParsedHttpSource() {
                 genre = info.select("div:containsOwn(categories) a").joinToString { it.text() }
                 artist = info.select("div:containsOwn(artists) a").text()
                 thumbnail_url = document.selectFirst(".comic-listing .comic-inner img")?.attr("src")
-                description = info.select("div:containsOwn(groups) a").let { groups ->
-                    if (groups.isNotEmpty()) "Groups: ${groups.joinToString { it.text() }}\n" else ""
-                }
-                description += info.select("div:containsOwn(parodies) a").let { groups ->
-                    if (groups.isNotEmpty()) "Parodies: ${groups.joinToString { it.text() }}" else ""
-                }
+                description =
+                    info.select("div:containsOwn(groups) a").let { groups ->
+                        if (groups.isNotEmpty()) "Groups: ${groups.joinToString { it.text() }}\n" else ""
+                    }
+                description +=
+                    info.select("div:containsOwn(parodies) a").let { groups ->
+                        if (groups.isNotEmpty()) "Parodies: ${groups.joinToString { it.text() }}" else ""
+                    }
             }
         }
     }
@@ -160,11 +162,12 @@ class MyHentaiGallery : ParsedHttpSource() {
 
     // Filters
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("NOTE: Ignored if using text search!"),
-        Filter.Separator(),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("NOTE: Ignored if using text search!"),
+            Filter.Separator(),
+            GenreFilter(),
+        )
 
     private class GenreFilter : UriPartFilter(
         "Category",

@@ -12,7 +12,8 @@ class MangaYu : MangaThemesia(
     "id",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("id")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(20, 5)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(20, 5)
+            .build()
 }

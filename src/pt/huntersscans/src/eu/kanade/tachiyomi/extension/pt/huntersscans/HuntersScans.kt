@@ -11,9 +11,10 @@ class HuntersScans : Madara(
     "pt-BR",
     SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(1, 2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1, 2)
+            .build()
 
     override val mangaSubString = "series"
     override val useNewChapterEndpoint = true

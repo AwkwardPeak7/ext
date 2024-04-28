@@ -30,9 +30,10 @@ class BacaKomik : ParsedHttpSource() {
     // Formerly "Bacakomik" -> now "BacaKomik"
     override val id = 4383360263234319058
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(12, 3)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(12, 3)
+            .build()
 
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/daftar-komik/page/$page/?order=popular", headers)
@@ -85,11 +86,12 @@ class BacaKomik : ParsedHttpSource() {
                     url.addQueryParameter("yearx", filter.state)
                 }
                 is StatusFilter -> {
-                    val status = when (filter.state) {
-                        Filter.TriState.STATE_INCLUDE -> "completed"
-                        Filter.TriState.STATE_EXCLUDE -> "ongoing"
-                        else -> ""
-                    }
+                    val status =
+                        when (filter.state) {
+                            Filter.TriState.STATE_INCLUDE -> "completed"
+                            Filter.TriState.STATE_EXCLUDE -> "ongoing"
+                            else -> ""
+                        }
                     url.addQueryParameter("status", status)
                 }
                 is TypeFilter -> {
@@ -128,11 +130,12 @@ class BacaKomik : ParsedHttpSource() {
         return manga
     }
 
-    private fun parseStatus(element: String): Int = when {
-        element.lowercase().contains("berjalan") -> SManga.ONGOING
-        element.lowercase().contains("tamat") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(element: String): Int =
+        when {
+            element.lowercase().contains("berjalan") -> SManga.ONGOING
+            element.lowercase().contains("tamat") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun chapterListSelector() = "#chapter_list li"
 
@@ -149,27 +152,34 @@ class BacaKomik : ParsedHttpSource() {
         return if (date.contains("yang lalu")) {
             val value = date.split(' ')[0].toInt()
             when {
-                "detik" in date -> Calendar.getInstance().apply {
-                    add(Calendar.SECOND, value * -1)
-                }.timeInMillis
-                "menit" in date -> Calendar.getInstance().apply {
-                    add(Calendar.MINUTE, value * -1)
-                }.timeInMillis
-                "jam" in date -> Calendar.getInstance().apply {
-                    add(Calendar.HOUR_OF_DAY, value * -1)
-                }.timeInMillis
-                "hari" in date -> Calendar.getInstance().apply {
-                    add(Calendar.DATE, value * -1)
-                }.timeInMillis
-                "minggu" in date -> Calendar.getInstance().apply {
-                    add(Calendar.DATE, value * 7 * -1)
-                }.timeInMillis
-                "bulan" in date -> Calendar.getInstance().apply {
-                    add(Calendar.MONTH, value * -1)
-                }.timeInMillis
-                "tahun" in date -> Calendar.getInstance().apply {
-                    add(Calendar.YEAR, value * -1)
-                }.timeInMillis
+                "detik" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.SECOND, value * -1)
+                    }.timeInMillis
+                "menit" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.MINUTE, value * -1)
+                    }.timeInMillis
+                "jam" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.HOUR_OF_DAY, value * -1)
+                    }.timeInMillis
+                "hari" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.DATE, value * -1)
+                    }.timeInMillis
+                "minggu" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.DATE, value * 7 * -1)
+                    }.timeInMillis
+                "bulan" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.MONTH, value * -1)
+                    }.timeInMillis
+                "tahun" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.YEAR, value * -1)
+                    }.timeInMillis
                 else -> {
                     0L
                 }
@@ -216,10 +226,11 @@ class BacaKomik : ParsedHttpSource() {
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Accept", "image/avif,image/webp,image/png,image/jpeg,*/*")
-            .set("Referer", page.url)
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Accept", "image/avif,image/webp,image/png,image/jpeg,*/*")
+                .set("Referer", page.url)
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
@@ -264,84 +275,87 @@ class BacaKomik : ParsedHttpSource() {
 
     private class GenreListFilter(genres: List<Genre>) : Filter.Group<Genre>("Genre", genres)
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("NOTE: Ignored if using text search!"),
-        Filter.Separator(),
-        AuthorFilter(),
-        YearFilter(),
-        StatusFilter(),
-        TypeFilter(),
-        SortByFilter(),
-        GenreListFilter(getGenreList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("NOTE: Ignored if using text search!"),
+            Filter.Separator(),
+            AuthorFilter(),
+            YearFilter(),
+            StatusFilter(),
+            TypeFilter(),
+            SortByFilter(),
+            GenreListFilter(getGenreList()),
+        )
 
-    private fun getGenreList() = listOf(
-        Genre("4-Koma", "4-koma"),
-        Genre("4-Koma. Comedy", "4-koma-comedy"),
-        Genre("Action", "action"),
-        Genre("Action. Adventure", "action-adventure"),
-        Genre("Adult", "adult"),
-        Genre("Adventure", "adventure"),
-        Genre("Comedy", "comedy"),
-        Genre("Cooking", "cooking"),
-        Genre("Demons", "demons"),
-        Genre("Doujinshi", "doujinshi"),
-        Genre("Drama", "drama"),
-        Genre("Ecchi", "ecchi"),
-        Genre("Echi", "echi"),
-        Genre("Fantasy", "fantasy"),
-        Genre("Game", "game"),
-        Genre("Gender Bender", "gender-bender"),
-        Genre("Gore", "gore"),
-        Genre("Harem", "harem"),
-        Genre("Historical", "historical"),
-        Genre("Horror", "horror"),
-        Genre("Isekai", "isekai"),
-        Genre("Josei", "josei"),
-        Genre("Magic", "magic"),
-        Genre("Manga", "manga"),
-        Genre("Manhua", "manhua"),
-        Genre("Manhwa", "manhwa"),
-        Genre("Martial Arts", "martial-arts"),
-        Genre("Mature", "mature"),
-        Genre("Mecha", "mecha"),
-        Genre("Medical", "medical"),
-        Genre("Military", "military"),
-        Genre("Music", "music"),
-        Genre("Mystery", "mystery"),
-        Genre("One Shot", "one-shot"),
-        Genre("Oneshot", "oneshot"),
-        Genre("Parody", "parody"),
-        Genre("Police", "police"),
-        Genre("Psychological", "psychological"),
-        Genre("Romance", "romance"),
-        Genre("Samurai", "samurai"),
-        Genre("School", "school"),
-        Genre("School Life", "school-life"),
-        Genre("Sci-fi", "sci-fi"),
-        Genre("Seinen", "seinen"),
-        Genre("Shoujo", "shoujo"),
-        Genre("Shoujo Ai", "shoujo-ai"),
-        Genre("Shounen", "shounen"),
-        Genre("Shounen Ai", "shounen-ai"),
-        Genre("Slice of Life", "slice-of-life"),
-        Genre("Smut", "smut"),
-        Genre("Sports", "sports"),
-        Genre("Super Power", "super-power"),
-        Genre("Supernatural", "supernatural"),
-        Genre("Thriller", "thriller"),
-        Genre("Tragedy", "tragedy"),
-        Genre("Vampire", "vampire"),
-        Genre("Webtoon", "webtoon"),
-        Genre("Webtoons", "webtoons"),
-        Genre("Yuri", "yuri"),
-    )
+    private fun getGenreList() =
+        listOf(
+            Genre("4-Koma", "4-koma"),
+            Genre("4-Koma. Comedy", "4-koma-comedy"),
+            Genre("Action", "action"),
+            Genre("Action. Adventure", "action-adventure"),
+            Genre("Adult", "adult"),
+            Genre("Adventure", "adventure"),
+            Genre("Comedy", "comedy"),
+            Genre("Cooking", "cooking"),
+            Genre("Demons", "demons"),
+            Genre("Doujinshi", "doujinshi"),
+            Genre("Drama", "drama"),
+            Genre("Ecchi", "ecchi"),
+            Genre("Echi", "echi"),
+            Genre("Fantasy", "fantasy"),
+            Genre("Game", "game"),
+            Genre("Gender Bender", "gender-bender"),
+            Genre("Gore", "gore"),
+            Genre("Harem", "harem"),
+            Genre("Historical", "historical"),
+            Genre("Horror", "horror"),
+            Genre("Isekai", "isekai"),
+            Genre("Josei", "josei"),
+            Genre("Magic", "magic"),
+            Genre("Manga", "manga"),
+            Genre("Manhua", "manhua"),
+            Genre("Manhwa", "manhwa"),
+            Genre("Martial Arts", "martial-arts"),
+            Genre("Mature", "mature"),
+            Genre("Mecha", "mecha"),
+            Genre("Medical", "medical"),
+            Genre("Military", "military"),
+            Genre("Music", "music"),
+            Genre("Mystery", "mystery"),
+            Genre("One Shot", "one-shot"),
+            Genre("Oneshot", "oneshot"),
+            Genre("Parody", "parody"),
+            Genre("Police", "police"),
+            Genre("Psychological", "psychological"),
+            Genre("Romance", "romance"),
+            Genre("Samurai", "samurai"),
+            Genre("School", "school"),
+            Genre("School Life", "school-life"),
+            Genre("Sci-fi", "sci-fi"),
+            Genre("Seinen", "seinen"),
+            Genre("Shoujo", "shoujo"),
+            Genre("Shoujo Ai", "shoujo-ai"),
+            Genre("Shounen", "shounen"),
+            Genre("Shounen Ai", "shounen-ai"),
+            Genre("Slice of Life", "slice-of-life"),
+            Genre("Smut", "smut"),
+            Genre("Sports", "sports"),
+            Genre("Super Power", "super-power"),
+            Genre("Supernatural", "supernatural"),
+            Genre("Thriller", "thriller"),
+            Genre("Tragedy", "tragedy"),
+            Genre("Vampire", "vampire"),
+            Genre("Webtoon", "webtoon"),
+            Genre("Webtoons", "webtoons"),
+            Genre("Yuri", "yuri"),
+        )
 
-    private fun Element.imgAttr(): String = when {
-        hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
-        hasAttr("data-src") -> attr("abs:data-src")
-        else -> attr("abs:src")
-    }
+    private fun Element.imgAttr(): String =
+        when {
+            hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
+            hasAttr("data-src") -> attr("abs:data-src")
+            else -> attr("abs:src")
+        }
 
     private fun Elements.imgAttr(): String = this.first()!!.imgAttr()
 

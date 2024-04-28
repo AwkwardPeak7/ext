@@ -11,9 +11,10 @@ import okhttp3.Request
 import java.util.concurrent.TimeUnit
 
 class CosmicScansID : MangaThemesia("CosmicScans.id", "https://cosmicscans.id", "id", "/semua-komik") {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(20, 4, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(20, 4, TimeUnit.SECONDS)
+            .build()
 
     override val hasProjectPage = true
     override val projectPageString = "/semua-komik"
@@ -26,9 +27,10 @@ class CosmicScansID : MangaThemesia("CosmicScans.id", "https://cosmicscans.id", 
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder()
-            .addPathSegments("page/$page/")
-            .addQueryParameter("s", query)
+        val url =
+            baseUrl.toHttpUrl().newBuilder()
+                .addPathSegments("page/$page/")
+                .addQueryParameter("s", query)
 
         filters.forEach { filter ->
             when (filter) {
@@ -47,12 +49,13 @@ class CosmicScansID : MangaThemesia("CosmicScans.id", "https://cosmicscans.id", 
     override fun searchMangaSelector() = ".bixbox:not(.hothome):has(.hpage) .utao .uta .imgu, .bixbox:not(.hothome) .listupd .bs .bsx"
 
     override fun getFilterList(): FilterList {
-        val filters = mutableListOf<Filter<*>>(
-            Filter.Separator(),
-            Filter.Header("$name Project List page"),
-            ProjectFilter(intl["project_filter_title"], projectFilterOptions),
-            OrderByFilter(intl["order_by_filter_title"], orderByFilterOptions),
-        )
+        val filters =
+            mutableListOf<Filter<*>>(
+                Filter.Separator(),
+                Filter.Header("$name Project List page"),
+                ProjectFilter(intl["project_filter_title"], projectFilterOptions),
+                OrderByFilter(intl["order_by_filter_title"], orderByFilterOptions),
+            )
         return FilterList(filters)
     }
 

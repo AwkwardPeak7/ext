@@ -31,12 +31,14 @@ open class TodayManga : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
 
@@ -46,11 +48,12 @@ open class TodayManga : ParsedHttpSource() {
 
     override fun popularMangaSelector(): String = "section div.serie"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a[href]")!!.attr("abs:href"))
-        thumbnail_url = element.selectFirst("img")!!.imgAttr()
-        title = element.selectFirst("h2")!!.text()
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a[href]")!!.attr("abs:href"))
+            thumbnail_url = element.selectFirst("img")!!.imgAttr()
+            title = element.selectFirst("h2")!!.text()
+        }
 
     override fun popularMangaNextPageSelector(): String = ".pagination > ul > li.active + li:has(a)"
 
@@ -60,13 +63,14 @@ open class TodayManga : ParsedHttpSource() {
 
     override fun latestUpdatesSelector(): String = "ul.series > li"
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        with(element.selectFirst("a[title][href]")!!) {
-            setUrlWithoutDomain(attr("abs:href"))
-            title = attr("title")
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            with(element.selectFirst("a[title][href]")!!) {
+                setUrlWithoutDomain(attr("abs:href"))
+                title = attr("title")
+            }
+            thumbnail_url = element.selectFirst("img")!!.imgAttr()
         }
-        thumbnail_url = element.selectFirst("img")!!.imgAttr()
-    }
 
     override fun latestUpdatesNextPageSelector(): String = popularMangaNextPageSelector()
 
@@ -81,29 +85,30 @@ open class TodayManga : ParsedHttpSource() {
         val categoryFilter = filterList.filterIsInstance<CategoryFilter>().first()
         val genreFilter = filterList.filterIsInstance<GenreFilter>().first()
 
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            when {
-                categoryFilter.state != 0 -> {
-                    addPathSegment("category")
-                    addPathSegments(categoryFilter.toUriPart())
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                when {
+                    categoryFilter.state != 0 -> {
+                        addPathSegment("category")
+                        addPathSegments(categoryFilter.toUriPart())
+                    }
+                    genreFilter.state != 0 -> {
+                        addPathSegment("genre")
+                        addPathSegment(genreFilter.toUriPart())
+                    }
+                    query.isNotBlank() -> {
+                        addPathSegment("search")
+                        addQueryParameter("q", query)
+                    }
+                    else -> { // Default to popular
+                        addPathSegments("category/most-popular")
+                    }
                 }
-                genreFilter.state != 0 -> {
-                    addPathSegment("genre")
-                    addPathSegment(genreFilter.toUriPart())
-                }
-                query.isNotBlank() -> {
-                    addPathSegment("search")
-                    addQueryParameter("q", query)
-                }
-                else -> { // Default to popular
-                    addPathSegments("category/most-popular")
-                }
-            }
 
-            if (page > 1) {
-                addQueryParameter("page", page.toString())
-            }
-        }.build()
+                if (page > 1) {
+                    addQueryParameter("page", page.toString())
+                }
+            }.build()
 
         return GET(url, headers)
     }
@@ -117,12 +122,13 @@ open class TodayManga : ParsedHttpSource() {
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangaList = document.select(searchMangaSelector())
-            .map(::searchMangaFromElement)
-            .ifEmpty {
-                document.select(latestUpdatesSelector())
-                    .map(::latestUpdatesFromElement)
-            }
+        val mangaList =
+            document.select(searchMangaSelector())
+                .map(::searchMangaFromElement)
+                .ifEmpty {
+                    document.select(latestUpdatesSelector())
+                        .map(::latestUpdatesFromElement)
+                }
 
         val hasNextPage = document.selectFirst(searchMangaNextPageSelector()) != null
         return MangasPage(mangaList, hasNextPage)
@@ -130,13 +136,14 @@ open class TodayManga : ParsedHttpSource() {
 
     // =============================== Filters ==============================
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("Ignored when using text search"),
-        Filter.Header("NOTE: Only one filter will be applied!"),
-        Filter.Separator(),
-        CategoryFilter(),
-        GenreFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("Ignored when using text search"),
+            Filter.Header("NOTE: Only one filter will be applied!"),
+            Filter.Separator(),
+            CategoryFilter(),
+            GenreFilter(),
+        )
 
     class CategoryFilter : UriPartFilter(
         "Category",
@@ -200,65 +207,71 @@ open class TodayManga : ParsedHttpSource() {
 
     // =========================== Manga Details ============================
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        with(document.selectFirst(".serie")!!) {
-            title = selectFirst("h1")!!.text()
-            thumbnail_url = selectFirst("img")!!.imgAttr()
-            genre = select(".serie-info-head .tags > .tag-item").joinToString { it.text() }
-            author = select(".authors a").joinToString { it.text() }
-            status = selectFirst("li:contains(status) span").parseStatus()
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            with(document.selectFirst(".serie")!!) {
+                title = selectFirst("h1")!!.text()
+                thumbnail_url = selectFirst("img")!!.imgAttr()
+                genre = select(".serie-info-head .tags > .tag-item").joinToString { it.text() }
+                author = select(".authors a").joinToString { it.text() }
+                status = selectFirst("li:contains(status) span").parseStatus()
+            }
+
+            description =
+                buildString {
+                    val summary = document.selectFirst(".serie-summary")!!
+                    summary.childNodes().forEach { node ->
+                        if (node is TextNode) {
+                            append(node.text())
+                        }
+                        if (node.nodeName() == "br") {
+                            appendLine()
+                        }
+                    }
+                    summary.selectFirst("div[style]")?.also {
+                        append("\n\n")
+                        append(it.text())
+                    }
+                }.trim()
         }
 
-        description = buildString {
-            val summary = document.selectFirst(".serie-summary")!!
-            summary.childNodes().forEach { node ->
-                if (node is TextNode) {
-                    append(node.text())
-                }
-                if (node.nodeName() == "br") {
-                    appendLine()
-                }
-            }
-            summary.selectFirst("div[style]")?.also {
-                append("\n\n")
-                append(it.text())
-            }
-        }.trim()
-    }
-
-    private fun Element?.parseStatus(): Int = when (this?.text()?.lowercase()) {
-        "complete" -> SManga.COMPLETED
-        "on going" -> SManga.ONGOING
-        else -> SManga.UNKNOWN
-    }
+    private fun Element?.parseStatus(): Int =
+        when (this?.text()?.lowercase()) {
+            "complete" -> SManga.COMPLETED
+            "on going" -> SManga.ONGOING
+            else -> SManga.UNKNOWN
+        }
 
     // ============================== Chapters ==============================
 
     override fun chapterListRequest(manga: SManga): Request {
-        val chapterHeaders = headersBuilder().apply {
-            add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-            set("Referer", baseUrl + manga.url)
-        }.build()
+        val chapterHeaders =
+            headersBuilder().apply {
+                add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+                set("Referer", baseUrl + manga.url)
+            }.build()
         return GET("$baseUrl${manga.url}/chapter-list", chapterHeaders)
     }
 
     override fun chapterListSelector() = "ul.chapters-list > li"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        with(element.selectFirst("a")!!) {
-            name = text()
-            setUrlWithoutDomain(attr("abs:href"))
-        }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            with(element.selectFirst("a")!!) {
+                name = text()
+                setUrlWithoutDomain(attr("abs:href"))
+            }
 
-        val dateText = element.selectFirst(".subtitle")?.text()
-        date_upload = if (dateText == null) {
-            0L
-        } else if (dateText.contains("ago")) {
-            dateText.parseRelativeDate()
-        } else {
-            parseDate(dateText)
+            val dateText = element.selectFirst(".subtitle")?.text()
+            date_upload =
+                if (dateText == null) {
+                    0L
+                } else if (dateText.contains("ago")) {
+                    dateText.parseRelativeDate()
+                } else {
+                    parseDate(dateText)
+                }
         }
-    }
 
     private fun parseDate(dateStr: String): Long {
         return try {
@@ -270,18 +283,20 @@ open class TodayManga : ParsedHttpSource() {
 
     // From OppaiStream
     private fun String.parseRelativeDate(): Long {
-        val now = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
+        val now =
+            Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
 
-        val relativeDate = this.split(" ").firstOrNull()
-            ?.replace("one", "1")
-            ?.replace("a", "1")
-            ?.toIntOrNull()
-            ?: return 0L
+        val relativeDate =
+            this.split(" ").firstOrNull()
+                ?.replace("one", "1")
+                ?.replace("a", "1")
+                ?.toIntOrNull()
+                ?: return 0L
 
         when {
             "second" in this -> now.add(Calendar.SECOND, -relativeDate) // parse: 30 seconds ago
@@ -308,10 +323,11 @@ open class TodayManga : ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = ""
 
     override fun imageRequest(page: Page): Request {
-        val imgHeaders = headersBuilder().apply {
-            add("Accept", "image/avif,image/webp,*/*")
-            add("Host", page.imageUrl!!.toHttpUrl().host)
-        }.build()
+        val imgHeaders =
+            headersBuilder().apply {
+                add("Accept", "image/avif,image/webp,*/*")
+                add("Host", page.imageUrl!!.toHttpUrl().host)
+            }.build()
         return GET(page.imageUrl!!, imgHeaders)
     }
 
@@ -325,9 +341,10 @@ open class TodayManga : ParsedHttpSource() {
         }.build()
     }
 
-    private fun Element.imgAttr(): String = when {
-        hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
-        hasAttr("data-src") -> attr("abs:data-src")
-        else -> attr("abs:src")
-    }
+    private fun Element.imgAttr(): String =
+        when {
+            hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
+            hasAttr("data-src") -> attr("abs:data-src")
+            else -> attr("abs:src")
+        }
 }

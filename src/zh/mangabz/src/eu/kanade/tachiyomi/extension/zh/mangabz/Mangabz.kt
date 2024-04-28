@@ -39,33 +39,39 @@ class Mangabz : MangabzTheme("Mangabz"), ConfigurableSource {
         urlSuffix = mirror.urlSuffix
 
         val cookieInterceptor = CookieInterceptor(mirror.domain, mirror.langCookie to preferences.lang)
-        client = network.client.newBuilder()
-            .rateLimit(5)
-            .addNetworkInterceptor(cookieInterceptor)
-            .build()
+        client =
+            network.client.newBuilder()
+                .rateLimit(5)
+                .addNetworkInterceptor(cookieInterceptor)
+                .build()
     }
 
     private val isCi = System.getenv("CI") == "true"
-    override val baseUrl get() = when {
-        isCi -> MIRRORS.joinToString("#, ") { "https://" + it.domain }
-        else -> _baseUrl
-    }
-
-    override fun headersBuilder() = Headers.Builder()
-        .add("Referer", _baseUrl)
-        .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0")
-
-    private fun SManga.stripMirror() = apply {
-        val old = url
-        url = buildString(old.length) {
-            append(old, 0, old.length - urlSuffix.length).append("bz/")
+    override val baseUrl get() =
+        when {
+            isCi -> MIRRORS.joinToString("#, ") { "https://" + it.domain }
+            else -> _baseUrl
         }
-    }
 
-    private fun String.toMirror() = buildString {
-        val old = this@toMirror // ...bz/
-        append(old, 0, old.length - 3).append(urlSuffix)
-    }
+    override fun headersBuilder() =
+        Headers.Builder()
+            .add("Referer", _baseUrl)
+            .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0")
+
+    private fun SManga.stripMirror() =
+        apply {
+            val old = url
+            url =
+                buildString(old.length) {
+                    append(old, 0, old.length - urlSuffix.length).append("bz/")
+                }
+        }
+
+    private fun String.toMirror() =
+        buildString {
+            val old = this@toMirror // ...bz/
+            append(old, 0, old.length - 3).append(urlSuffix)
+        }
 
     override fun fetchSearchManga(
         page: Int,
@@ -80,20 +86,22 @@ class Mangabz : MangabzTheme("Mangabz"), ConfigurableSource {
                 .asObservableSuccess().map(::searchMangaParse)
         }
 
-        val path = when {
-            query.startsWith(PREFIX_ID_SEARCH) -> query.removePrefix(PREFIX_ID_SEARCH)
-            query.startsWith(baseUrl) -> query.removePrefix(baseUrl).trim('/')
-            else -> return super.fetchSearchManga(page, query, filters)
-        }
+        val path =
+            when {
+                query.startsWith(PREFIX_ID_SEARCH) -> query.removePrefix(PREFIX_ID_SEARCH)
+                query.startsWith(baseUrl) -> query.removePrefix(baseUrl).trim('/')
+                else -> return super.fetchSearchManga(page, query, filters)
+            }
         val mirrorPath = "$path/".toMirror()
 
         return client.newCall(GET("$baseUrl/$mirrorPath", headers))
             .asObservableSuccess().map { MangasPage(listOf(mangaDetailsParse(it)), false) }
     }
 
-    override fun searchMangaParse(response: Response) = super.searchMangaParse(response).apply {
-        for (manga in mangas) manga.stripMirror()
-    }
+    override fun searchMangaParse(response: Response) =
+        super.searchMangaParse(response).apply {
+            for (manga in mangas) manga.stripMirror()
+        }
 
     override fun mangaDetailsRequest(manga: SManga) = GET(baseUrl + manga.url.toMirror(), headers)
 
@@ -106,8 +114,9 @@ class Mangabz : MangabzTheme("Mangabz"), ConfigurableSource {
     ): String {
         val text = element.ownText()
         val start = if (text.startsWith(title)) title.length + 4 else 0
-        val collapsed = element.selectFirst(Evaluator.Tag("span"))?.ownText()
-            ?: return text.substring(start)
+        val collapsed =
+            element.selectFirst(Evaluator.Tag("span"))?.ownText()
+                ?: return text.substring(start)
         return buildString { append(text, start, text.length - 1).append(collapsed) }
     }
 
@@ -127,10 +136,11 @@ class Mangabz : MangabzTheme("Mangabz"), ConfigurableSource {
     override fun pageListParse(response: Response) = throw UnsupportedOperationException()
 
     // key is chapterId, value[0] is URL prefix, value[1..pageCount] are paths
-    private val imageUrlCache = object : LinkedHashMap<Int, Array<String?>>() {
-        // limit cache to 10 chapters
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Array<String?>>?) = size > 10
-    }
+    private val imageUrlCache =
+        object : LinkedHashMap<Int, Array<String?>>() {
+            // limit cache to 10 chapters
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Array<String?>>?) = size > 10
+        }
 
     override fun fetchImageUrl(page: Page): Observable<String> {
         val url = page.url.toHttpUrl()

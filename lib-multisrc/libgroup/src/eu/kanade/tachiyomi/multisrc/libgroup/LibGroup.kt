@@ -76,27 +76,28 @@ abstract class LibGroup(
         }
     }
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(3)
-        .connectTimeout(5, TimeUnit.MINUTES)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(15, TimeUnit.SECONDS)
-        .addNetworkInterceptor { imageContentTypeIntercept(it) }
-        .addInterceptor { chain ->
-            val response = chain.proceed(chain.request())
-            if (response.code == 419) {
-                throw IOException(
-                    "HTTP error ${response.code}. Проверьте сайт. Для завершения авторизации необходимо перезапустить приложение с полной остановкой.",
-                )
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(3)
+            .connectTimeout(5, TimeUnit.MINUTES)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .addNetworkInterceptor { imageContentTypeIntercept(it) }
+            .addInterceptor { chain ->
+                val response = chain.proceed(chain.request())
+                if (response.code == 419) {
+                    throw IOException(
+                        "HTTP error ${response.code}. Проверьте сайт. Для завершения авторизации необходимо перезапустить приложение с полной остановкой.",
+                    )
+                }
+                if (response.code == 404) {
+                    throw IOException(
+                        "HTTP error ${response.code}. Проверьте сайт. Попробуйте авторизоваться через WebView\uD83C\uDF0E︎ и обновите список глав.",
+                    )
+                }
+                return@addInterceptor response
             }
-            if (response.code == 404) {
-                throw IOException(
-                    "HTTP error ${response.code}. Проверьте сайт. Попробуйте авторизоваться через WebView\uD83C\uDF0E︎ и обновите список глав.",
-                )
-            }
-            return@addInterceptor response
-        }
-        .build()
+            .build()
 
     private val userAgentMobile = "Mozilla/5.0 (Linux; Android 10; SM-G980F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36"
 
@@ -104,30 +105,33 @@ abstract class LibGroup(
 
     protected var csrfToken: String = ""
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        // User-Agent required for authorization through third-party accounts (mobile version for correct display in WebView)
-        add("User-Agent", userAgentMobile)
-        add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-        add("Referer", baseUrl)
-    }
-
-    private fun imgHeader() = Headers.Builder().apply {
-        add("User-Agent", userAgentMobile)
-        add("Accept", "image/avif,image/webp,*/*")
-        add("Referer", baseUrl)
-    }.build()
-
-    protected fun catalogHeaders() = Headers.Builder()
-        .apply {
-            add(
-                "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer",
-            )
-            add("Accept", "application/json, text/plain, */*")
-            add("X-Requested-With", "XMLHttpRequest")
-            add("x-csrf-token", csrfToken)
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            // User-Agent required for authorization through third-party accounts (mobile version for correct display in WebView)
+            add("User-Agent", userAgentMobile)
+            add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+            add("Referer", baseUrl)
         }
-        .build()
+
+    private fun imgHeader() =
+        Headers.Builder().apply {
+            add("User-Agent", userAgentMobile)
+            add("Accept", "image/avif,image/webp,*/*")
+            add("Referer", baseUrl)
+        }.build()
+
+    protected fun catalogHeaders() =
+        Headers.Builder()
+            .apply {
+                add(
+                    "User-Agent",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer",
+                )
+                add("Accept", "application/json, text/plain, */*")
+                add("X-Requested-With", "XMLHttpRequest")
+                add("x-csrf-token", csrfToken)
+            }
+            .build()
 
     // Latest
     override fun latestUpdatesRequest(page: Int) = throw UnsupportedOperationException() // popularMangaRequest()
@@ -194,36 +198,40 @@ abstract class LibGroup(
     }
 
     // Popular cross Latest
-    private fun popularMangaFromElement(el: JsonElement) = SManga.create().apply {
-        val slug = el.jsonObject["slug"]!!.jsonPrimitive.content
-        title = when {
-            isEng.equals(
-                "rus",
-            ) && el.jsonObject["rus_name"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> el.jsonObject["rus_name"]!!.jsonPrimitive.content
-            isEng.equals(
-                "eng",
-            ) && el.jsonObject["eng_name"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> el.jsonObject["eng_name"]!!.jsonPrimitive.content
-            else -> el.jsonObject["name"]!!.jsonPrimitive.content
+    private fun popularMangaFromElement(el: JsonElement) =
+        SManga.create().apply {
+            val slug = el.jsonObject["slug"]!!.jsonPrimitive.content
+            title =
+                when {
+                    isEng.equals(
+                        "rus",
+                    ) && el.jsonObject["rus_name"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> el.jsonObject["rus_name"]!!.jsonPrimitive.content
+                    isEng.equals(
+                        "eng",
+                    ) && el.jsonObject["eng_name"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> el.jsonObject["eng_name"]!!.jsonPrimitive.content
+                    else -> el.jsonObject["name"]!!.jsonPrimitive.content
+                }
+            thumbnail_url =
+                if (el.jsonObject["coverImage"] != null) {
+                    el.jsonObject["coverImage"]!!.jsonPrimitive.content
+                } else {
+                    "/uploads/cover/" + slug + "/cover/" + el.jsonObject["cover"]!!.jsonPrimitive.content + "_250x350.jpg"
+                }
+            if (!thumbnail_url!!.contains("://")) {
+                thumbnail_url = baseUrl + thumbnail_url
+            }
+            url = "/$slug"
         }
-        thumbnail_url = if (el.jsonObject["coverImage"] != null) {
-            el.jsonObject["coverImage"]!!.jsonPrimitive.content
-        } else {
-            "/uploads/cover/" + slug + "/cover/" + el.jsonObject["cover"]!!.jsonPrimitive.content + "_250x350.jpg"
-        }
-        if (!thumbnail_url!!.contains("://")) {
-            thumbnail_url = baseUrl + thumbnail_url
-        }
-        url = "/$slug"
-    }
 
     // Details
     override fun mangaDetailsParse(response: Response): SManga {
         val document = response.asJsoup()
-        val dataStr = document
-            .toString()
-            .substringAfter("window.__DATA__ = ")
-            .substringBefore("window._SITE_COLOR_")
-            .substringBeforeLast(";")
+        val dataStr =
+            document
+                .toString()
+                .substringAfter("window.__DATA__ = ")
+                .substringBefore("window._SITE_COLOR_")
+                .substringBeforeLast(";")
 
         val dataManga = json.decodeFromString<JsonObject>(dataStr)["manga"]
 
@@ -231,39 +239,42 @@ abstract class LibGroup(
 
         val body = document.select("div.media-info-list").first()!!
         val rawCategory = document.select(".media-short-info a.media-short-info__item").text()
-        val category = when {
-            rawCategory == "Комикс западный" -> "Комикс"
-            rawCategory.isNotBlank() -> rawCategory
-            else -> "Манга"
-        }
+        val category =
+            when {
+                rawCategory == "Комикс западный" -> "Комикс"
+                rawCategory.isNotBlank() -> rawCategory
+                else -> "Манга"
+            }
 
         val rawAgeStop = document.select(".media-short-info .media-short-info__item[data-caution]").text()
 
         val ratingValue = document.select(".media-rating__value").last()!!.text().toFloat()
         val ratingVotes = document.select(".media-rating__votes").last()!!.text()
-        val ratingStar = when {
-            ratingValue > 9.5 -> "★★★★★"
-            ratingValue > 8.5 -> "★★★★✬"
-            ratingValue > 7.5 -> "★★★★☆"
-            ratingValue > 6.5 -> "★★★✬☆"
-            ratingValue > 5.5 -> "★★★☆☆"
-            ratingValue > 4.5 -> "★★✬☆☆"
-            ratingValue > 3.5 -> "★★☆☆☆"
-            ratingValue > 2.5 -> "★✬☆☆☆"
-            ratingValue > 1.5 -> "★☆☆☆☆"
-            ratingValue > 0.5 -> "✬☆☆☆☆"
-            else -> "☆☆☆☆☆"
-        }
+        val ratingStar =
+            when {
+                ratingValue > 9.5 -> "★★★★★"
+                ratingValue > 8.5 -> "★★★★✬"
+                ratingValue > 7.5 -> "★★★★☆"
+                ratingValue > 6.5 -> "★★★✬☆"
+                ratingValue > 5.5 -> "★★★☆☆"
+                ratingValue > 4.5 -> "★★✬☆☆"
+                ratingValue > 3.5 -> "★★☆☆☆"
+                ratingValue > 2.5 -> "★✬☆☆☆"
+                ratingValue > 1.5 -> "★☆☆☆☆"
+                ratingValue > 0.5 -> "✬☆☆☆☆"
+                else -> "☆☆☆☆☆"
+            }
         val genres = document.select(".media-tags > a").map { it.text().capitalize() }
-        manga.title = when {
-            isEng.equals(
-                "rus",
-            ) && dataManga!!.jsonObject["rusName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["rusName"]!!.jsonPrimitive.content
-            isEng.equals(
-                "eng",
-            ) && dataManga!!.jsonObject["engName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["engName"]!!.jsonPrimitive.content
-            else -> dataManga!!.jsonObject["name"]!!.jsonPrimitive.content
-        }
+        manga.title =
+            when {
+                isEng.equals(
+                    "rus",
+                ) && dataManga!!.jsonObject["rusName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["rusName"]!!.jsonPrimitive.content
+                isEng.equals(
+                    "eng",
+                ) && dataManga!!.jsonObject["engName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["engName"]!!.jsonPrimitive.content
+                else -> dataManga!!.jsonObject["name"]!!.jsonPrimitive.content
+            }
         manga.thumbnail_url = document.select(".media-header__cover").attr("src")
         manga.author = body.select("div.media-info-list__title:contains(Автор) + div a").joinToString { it.text() }
         manga.artist = body.select("div.media-info-list__title:contains(Художник) + div a").joinToString { it.text() }
@@ -271,51 +282,58 @@ abstract class LibGroup(
         val statusTranslate = body.select("div.media-info-list__title:contains(Статус перевода) + div").text().lowercase(Locale.ROOT)
         val statusTitle = body.select("div.media-info-list__title:contains(Статус тайтла) + div").text().lowercase(Locale.ROOT)
 
-        manga.status = if (document.html().contains("paper empty section")
-        ) {
-            SManga.LICENSED
-        } else {
-            when {
-                statusTranslate.contains(
-                    "завершен",
-                ) && statusTitle.contains(
-                    "приостановлен",
-                ) || statusTranslate.contains("заморожен") || statusTranslate.contains("заброшен") -> SManga.ON_HIATUS
-                statusTranslate.contains("завершен") && statusTitle.contains("выпуск прекращён") -> SManga.CANCELLED
-                statusTranslate.contains("продолжается") -> SManga.ONGOING
-                statusTranslate.contains("завершен") -> SManga.COMPLETED
-                else -> when (statusTitle) {
-                    "онгоинг" -> SManga.ONGOING
-                    "анонс" -> SManga.ONGOING
-                    "завершён" -> SManga.COMPLETED
-                    "приостановлен" -> SManga.ON_HIATUS
-                    "выпуск прекращён" -> SManga.CANCELLED
-                    else -> SManga.UNKNOWN
+        manga.status =
+            if (document.html().contains("paper empty section")
+            ) {
+                SManga.LICENSED
+            } else {
+                when {
+                    statusTranslate.contains(
+                        "завершен",
+                    ) &&
+                        statusTitle.contains(
+                            "приостановлен",
+                        ) || statusTranslate.contains("заморожен") || statusTranslate.contains("заброшен") -> SManga.ON_HIATUS
+                    statusTranslate.contains("завершен") && statusTitle.contains("выпуск прекращён") -> SManga.CANCELLED
+                    statusTranslate.contains("продолжается") -> SManga.ONGOING
+                    statusTranslate.contains("завершен") -> SManga.COMPLETED
+                    else ->
+                        when (statusTitle) {
+                            "онгоинг" -> SManga.ONGOING
+                            "анонс" -> SManga.ONGOING
+                            "завершён" -> SManga.COMPLETED
+                            "приостановлен" -> SManga.ON_HIATUS
+                            "выпуск прекращён" -> SManga.CANCELLED
+                            else -> SManga.UNKNOWN
+                        }
                 }
             }
-        }
         manga.genre = category + ", " + rawAgeStop + ", " + genres.joinToString { it.trim() }
 
-        val altName = if (dataManga.jsonObject["altNames"]?.jsonArray.orEmpty().isNotEmpty()) {
-            "Альтернативные названия:\n" + dataManga.jsonObject["altNames"]!!.jsonArray.joinToString(
-                " / ",
-            ) { it.jsonPrimitive.content } + "\n\n"
-        } else {
-            ""
-        }
+        val altName =
+            if (dataManga.jsonObject["altNames"]?.jsonArray.orEmpty().isNotEmpty()) {
+                "Альтернативные названия:\n" +
+                    dataManga.jsonObject["altNames"]!!.jsonArray.joinToString(
+                        " / ",
+                    ) { it.jsonPrimitive.content } + "\n\n"
+            } else {
+                ""
+            }
 
-        val mediaNameLanguage = when {
-            isEng.equals(
-                "eng",
-            ) && dataManga.jsonObject["rusName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["rusName"]!!.jsonPrimitive.content + "\n"
-            isEng.equals(
-                "rus",
-            ) && dataManga.jsonObject["engName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["engName"]!!.jsonPrimitive.content + "\n"
-            else -> ""
-        }
-        manga.description = mediaNameLanguage + ratingStar + " " + ratingValue + " (голосов: " + ratingVotes + ")\n" + altName + document.select(
-            ".media-description__text",
-        ).text()
+        val mediaNameLanguage =
+            when {
+                isEng.equals(
+                    "eng",
+                ) && dataManga.jsonObject["rusName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["rusName"]!!.jsonPrimitive.content + "\n"
+                isEng.equals(
+                    "rus",
+                ) && dataManga.jsonObject["engName"]?.jsonPrimitive?.content.orEmpty().isNotEmpty() -> dataManga.jsonObject["engName"]!!.jsonPrimitive.content + "\n"
+                else -> ""
+            }
+        manga.description = mediaNameLanguage + ratingStar + " " + ratingValue + " (голосов: " + ratingVotes + ")\n" + altName +
+            document.select(
+                ".media-description__text",
+            ).text()
         return manga
     }
 
@@ -323,7 +341,8 @@ abstract class LibGroup(
         return client.newCall(mangaDetailsRequest(manga))
             .asObservable().doOnNext { response ->
                 if (!response.isSuccessful) {
-                    if (response.code == 404 && response.asJsoup().select(
+                    if (response.code == 404 &&
+                        response.asJsoup().select(
                             ".m-menu__sign-in",
                         ).isNotEmpty()
                     ) {
@@ -351,11 +370,12 @@ abstract class LibGroup(
         if (redirect.contains("paper empty section")) {
             throw Exception("Лицензировано - Нет глав")
         }
-        val dataStr = document
-            .toString()
-            .substringAfter("window.__DATA__ = ")
-            .substringBefore("window._SITE_COLOR_")
-            .substringBeforeLast(";")
+        val dataStr =
+            document
+                .toString()
+                .substringAfter("window.__DATA__ = ")
+                .substringBefore("window._SITE_COLOR_")
+                .substringBeforeLast(";")
 
         val data = json.decodeFromString<JsonObject>(dataStr)
         val chaptersList = data["chapters"]!!.jsonObject["list"]?.jsonArray
@@ -366,13 +386,14 @@ abstract class LibGroup(
         val auth = data["auth"]!!.jsonPrimitive.content
         val userId = if (auth == "true") data["user"]!!.jsonObject["id"]!!.jsonPrimitive.content else "not"
 
-        val chapters: List<SChapter>? = if (branches.isNotEmpty()) {
-            sortChaptersByTranslator(sortingList, chaptersList, slug, userId, branches)
-        } else {
-            chaptersList
-                ?.filter { it.jsonObject["status"]?.jsonPrimitive?.intOrNull != 2 && it.jsonObject["price"]?.jsonPrimitive?.intOrNull == 0 }
-                ?.map { chapterFromElement(it, sortingList, slug, userId, null, null, teams, chaptersList) }
-        }
+        val chapters: List<SChapter>? =
+            if (branches.isNotEmpty()) {
+                sortChaptersByTranslator(sortingList, chaptersList, slug, userId, branches)
+            } else {
+                chaptersList
+                    ?.filter { it.jsonObject["status"]?.jsonPrimitive?.intOrNull != 2 && it.jsonObject["price"]?.jsonPrimitive?.intOrNull == 0 }
+                    ?.map { chapterFromElement(it, sortingList, slug, userId, null, null, teams, chaptersList) }
+            }
 
         return chapters ?: emptyList()
     }
@@ -381,7 +402,8 @@ abstract class LibGroup(
         return client.newCall(mangaDetailsRequest(manga))
             .asObservable().doOnNext { response ->
                 if (!response.isSuccessful) {
-                    if (response.code == 404 && response.asJsoup().select(
+                    if (response.code == 404 &&
+                        response.asJsoup().select(
                             ".m-menu__sign-in",
                         ).isNotEmpty()
                     ) {
@@ -413,16 +435,18 @@ abstract class LibGroup(
             val teamId = branch.jsonObject["id"]!!.jsonPrimitive.int
             val teams = branch.jsonObject["teams"]!!.jsonArray
             val isActive = teams.filter { it.jsonObject["is_active"]?.jsonPrimitive?.intOrNull == 1 }
-            val teamsBranch = if (isActive.size == 1) {
-                isActive[0].jsonObject["name"]?.jsonPrimitive?.contentOrNull
-            } else if (teams.isNotEmpty() && isActive.isEmpty()) {
-                teams[0].jsonObject["name"]?.jsonPrimitive?.contentOrNull
-            } else {
-                "Неизвестный"
-            }
-            chapters = chaptersList
-                ?.filter { it.jsonObject["branch_id"]?.jsonPrimitive?.intOrNull == teamId && it.jsonObject["status"]?.jsonPrimitive?.intOrNull != 2 }
-                ?.map { chapterFromElement(it, sortingList, slug, userId, teamId, branches) }
+            val teamsBranch =
+                if (isActive.size == 1) {
+                    isActive[0].jsonObject["name"]?.jsonPrimitive?.contentOrNull
+                } else if (teams.isNotEmpty() && isActive.isEmpty()) {
+                    teams[0].jsonObject["name"]?.jsonPrimitive?.contentOrNull
+                } else {
+                    "Неизвестный"
+                }
+            chapters =
+                chaptersList
+                    ?.filter { it.jsonObject["branch_id"]?.jsonPrimitive?.intOrNull == teamId && it.jsonObject["status"]?.jsonPrimitive?.intOrNull != 2 }
+                    ?.map { chapterFromElement(it, sortingList, slug, userId, teamId, branches) }
             when (sortingList) {
                 "ms_mixing" -> {
                     chapters?.let {
@@ -432,9 +456,10 @@ abstract class LibGroup(
                             tempChaptersList.addAll(it)
                         }
                     }
-                    chapters = tempChaptersList.distinctBy {
-                        volume.find(it.url)?.value + "--" + it.chapter_number
-                    }.sortedWith(compareBy({ -it.chapter_number }, { volume.find(it.url)?.value }))
+                    chapters =
+                        tempChaptersList.distinctBy {
+                            volume.find(it.url)?.value + "--" + it.chapter_number
+                        }.sortedWith(compareBy({ -it.chapter_number }, { volume.find(it.url)?.value }))
                 }
                 "ms_combining" -> {
                     if (!groupTranslates.contains(teamsBranch.toString())) {
@@ -472,24 +497,25 @@ abstract class LibGroup(
 
         val nameChapter = chapterItem.jsonObject["chapter_name"]?.jsonPrimitive?.contentOrNull
         val fullNameChapter = "Том $volume. Глава $number"
-        chapter.scanlator = if (teams?.size == 1) {
-            teams[0].jsonObject["name"]?.jsonPrimitive?.content
-        } else if (isScanlatorId.orEmpty().isNotEmpty()) {
-            isScanlatorId!![0].jsonObject["name"]?.jsonPrimitive?.content
-        } else {
-            branches?.let {
-                getScanlatorTeamName(it, chapterItem)
-            } ?: if ((preferences.getBoolean(isScan_USER, false)) || (
-                    chaptersList?.distinctBy {
-                        it.jsonObject["username"]!!.jsonPrimitive.content
-                    }?.size == 1
-                )
-            ) {
-                chapterItem.jsonObject["username"]!!.jsonPrimitive.content
+        chapter.scanlator =
+            if (teams?.size == 1) {
+                teams[0].jsonObject["name"]?.jsonPrimitive?.content
+            } else if (isScanlatorId.orEmpty().isNotEmpty()) {
+                isScanlatorId!![0].jsonObject["name"]?.jsonPrimitive?.content
             } else {
-                null
+                branches?.let {
+                    getScanlatorTeamName(it, chapterItem)
+                } ?: if ((preferences.getBoolean(isScan_USER, false)) || (
+                        chaptersList?.distinctBy {
+                            it.jsonObject["username"]!!.jsonPrimitive.content
+                        }?.size == 1
+                    )
+                ) {
+                    chapterItem.jsonObject["username"]!!.jsonPrimitive.content
+                } else {
+                    null
+                }
             }
-        }
         chapter.name = if (nameChapter.isNullOrBlank()) fullNameChapter else "$fullNameChapter - $nameChapter"
         chapter.date_upload = simpleDateFormat.parse(
             chapterItem.jsonObject["chapter_created_at"]!!.jsonPrimitive.content.substringBefore(" "),
@@ -536,15 +562,16 @@ abstract class LibGroup(
             }
         }
 
-        val chapInfo = document
-            .select("script:containsData(window.__info)")
-            .first()!!
-            .html()
-            .split("window.__info = ")
-            .last()
-            .trim()
-            .split(";")
-            .first()
+        val chapInfo =
+            document
+                .select("script:containsData(window.__info)")
+                .first()!!
+                .html()
+                .split("window.__info = ")
+                .last()
+                .trim()
+                .split(";")
+                .first()
 
         val chapInfoJson = json.decodeFromString<JsonObject>(chapInfo)
         val servers = chapInfoJson["servers"]!!.jsonObject.toMap()
@@ -553,22 +580,24 @@ abstract class LibGroup(
         val serverToUse = listOf(isServer, "secondary", "fourth", "main", "compress").distinct()
 
         // Get pages
-        val pagesArr = document
-            .select("script:containsData(window.__pg)")
-            .first()!!
-            .html()
-            .trim()
-            .removePrefix("window.__pg = ")
-            .removeSuffix(";")
+        val pagesArr =
+            document
+                .select("script:containsData(window.__pg)")
+                .first()!!
+                .html()
+                .trim()
+                .removePrefix("window.__pg = ")
+                .removeSuffix(";")
 
         val pagesJson = json.decodeFromString<JsonArray>(pagesArr)
         val pages = mutableListOf<Page>()
 
         pagesJson.forEach { page ->
             val keys = servers.keys.filter { serverToUse.indexOf(it) >= 0 }.sortedBy { serverToUse.indexOf(it) }
-            val serversUrls = keys.map {
-                servers[it]?.jsonPrimitive?.contentOrNull + imgUrl + page.jsonObject["u"]!!.jsonPrimitive.content
-            }.distinct().joinToString(separator = ",,") { it }
+            val serversUrls =
+                keys.map {
+                    servers[it]?.jsonPrimitive?.contentOrNull + imgUrl + page.jsonObject["u"]!!.jsonPrimitive.content
+                }.distinct().joinToString(separator = ",,") { it }
             pages.add(Page(page.jsonObject["p"]!!.jsonPrimitive.int, serversUrls))
         }
 
@@ -641,31 +670,36 @@ abstract class LibGroup(
         }
         (if (filters.isEmpty()) getFilterList() else filters).forEach { filter ->
             when (filter) {
-                is CategoryList -> filter.state.forEach { category ->
-                    if (category.state) {
-                        url.addQueryParameter("types[]", category.id)
+                is CategoryList ->
+                    filter.state.forEach { category ->
+                        if (category.state) {
+                            url.addQueryParameter("types[]", category.id)
+                        }
                     }
-                }
-                is FormatList -> filter.state.forEach { forma ->
-                    if (forma.state != Filter.TriState.STATE_IGNORE) {
-                        url.addQueryParameter(if (forma.isIncluded()) "format[include][]" else "format[exclude][]", forma.id)
+                is FormatList ->
+                    filter.state.forEach { forma ->
+                        if (forma.state != Filter.TriState.STATE_IGNORE) {
+                            url.addQueryParameter(if (forma.isIncluded()) "format[include][]" else "format[exclude][]", forma.id)
+                        }
                     }
-                }
-                is StatusList -> filter.state.forEach { status ->
-                    if (status.state) {
-                        url.addQueryParameter("status[]", status.id)
+                is StatusList ->
+                    filter.state.forEach { status ->
+                        if (status.state) {
+                            url.addQueryParameter("status[]", status.id)
+                        }
                     }
-                }
-                is StatusTitleList -> filter.state.forEach { title ->
-                    if (title.state) {
-                        url.addQueryParameter("manga_status[]", title.id)
+                is StatusTitleList ->
+                    filter.state.forEach { title ->
+                        if (title.state) {
+                            url.addQueryParameter("manga_status[]", title.id)
+                        }
                     }
-                }
-                is GenreList -> filter.state.forEach { genre ->
-                    if (genre.state != Filter.TriState.STATE_IGNORE) {
-                        url.addQueryParameter(if (genre.isIncluded()) "genres[include][]" else "genres[exclude][]", genre.id)
+                is GenreList ->
+                    filter.state.forEach { genre ->
+                        if (genre.state != Filter.TriState.STATE_IGNORE) {
+                            url.addQueryParameter(if (genre.isIncluded()) "genres[include][]" else "genres[exclude][]", genre.id)
+                        }
                     }
-                }
                 is OrderBy -> {
                     url.addQueryParameter("dir", if (filter.state!!.ascending) "asc" else "desc")
                     url.addQueryParameter(
@@ -673,11 +707,15 @@ abstract class LibGroup(
                         arrayOf("rate", "name", "views", "created_at", "last_chapter_at", "chap_count")[filter.state!!.index],
                     )
                 }
-                is MyList -> filter.state.forEach { favorite ->
-                    if (favorite.state != Filter.TriState.STATE_IGNORE) {
-                        url.addQueryParameter(if (favorite.isIncluded()) "bookmarks[include][]" else "bookmarks[exclude][]", favorite.id)
+                is MyList ->
+                    filter.state.forEach { favorite ->
+                        if (favorite.state != Filter.TriState.STATE_IGNORE) {
+                            url.addQueryParameter(
+                                if (favorite.isIncluded()) "bookmarks[include][]" else "bookmarks[exclude][]",
+                                favorite.id,
+                            )
+                        }
                     }
-                }
                 is RequireChapters -> {
                     if (filter.state == 1) {
                         url.setQueryParameter("chapters[min]", "0")
@@ -708,16 +746,17 @@ abstract class LibGroup(
 
     private class MyList(favorites: List<SearchFilter>) : Filter.Group<SearchFilter>("Мои списки", favorites)
 
-    override fun getFilterList() = FilterList(
-        OrderBy(),
-        CategoryList(getCategoryList()),
-        FormatList(getFormatList()),
-        GenreList(getGenreList()),
-        StatusList(getStatusList()),
-        StatusTitleList(getStatusTitleList()),
-        MyList(getMyList()),
-        RequireChapters(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            OrderBy(),
+            CategoryList(getCategoryList()),
+            FormatList(getFormatList()),
+            GenreList(getGenreList()),
+            StatusList(getStatusList()),
+            StatusTitleList(getStatusTitleList()),
+            MyList(getMyList()),
+            RequireChapters(),
+        )
 
     private class OrderBy : Filter.Sort(
         "Сортировка",
@@ -725,93 +764,99 @@ abstract class LibGroup(
         Selection(2, false),
     )
 
-    private fun getCategoryList() = listOf(
-        CheckFilter("Манга", "1"),
-        CheckFilter("OEL-манга", "4"),
-        CheckFilter("Манхва", "5"),
-        CheckFilter("Маньхуа", "6"),
-        CheckFilter("Руманга", "8"),
-        CheckFilter("Комикс западный", "9"),
-    )
+    private fun getCategoryList() =
+        listOf(
+            CheckFilter("Манга", "1"),
+            CheckFilter("OEL-манга", "4"),
+            CheckFilter("Манхва", "5"),
+            CheckFilter("Маньхуа", "6"),
+            CheckFilter("Руманга", "8"),
+            CheckFilter("Комикс западный", "9"),
+        )
 
-    private fun getFormatList() = listOf(
-        SearchFilter("4-кома (Ёнкома)", "1"),
-        SearchFilter("Сборник", "2"),
-        SearchFilter("Додзинси", "3"),
-        SearchFilter("Сингл", "4"),
-        SearchFilter("В цвете", "5"),
-        SearchFilter("Веб", "6"),
-    )
+    private fun getFormatList() =
+        listOf(
+            SearchFilter("4-кома (Ёнкома)", "1"),
+            SearchFilter("Сборник", "2"),
+            SearchFilter("Додзинси", "3"),
+            SearchFilter("Сингл", "4"),
+            SearchFilter("В цвете", "5"),
+            SearchFilter("Веб", "6"),
+        )
 
-    private fun getStatusList() = listOf(
-        CheckFilter("Продолжается", "1"),
-        CheckFilter("Завершен", "2"),
-        CheckFilter("Заморожен", "3"),
-        CheckFilter("Заброшен", "4"),
-    )
+    private fun getStatusList() =
+        listOf(
+            CheckFilter("Продолжается", "1"),
+            CheckFilter("Завершен", "2"),
+            CheckFilter("Заморожен", "3"),
+            CheckFilter("Заброшен", "4"),
+        )
 
-    private fun getStatusTitleList() = listOf(
-        CheckFilter("Онгоинг", "1"),
-        CheckFilter("Завершён", "2"),
-        CheckFilter("Анонс", "3"),
-        CheckFilter("Приостановлен", "4"),
-        CheckFilter("Выпуск прекращён", "5"),
-    )
+    private fun getStatusTitleList() =
+        listOf(
+            CheckFilter("Онгоинг", "1"),
+            CheckFilter("Завершён", "2"),
+            CheckFilter("Анонс", "3"),
+            CheckFilter("Приостановлен", "4"),
+            CheckFilter("Выпуск прекращён", "5"),
+        )
 
-    private fun getGenreList() = listOf(
-        SearchFilter("арт", "32"),
-        SearchFilter("боевик", "34"),
-        SearchFilter("боевые искусства", "35"),
-        SearchFilter("вампиры", "36"),
-        SearchFilter("гарем", "37"),
-        SearchFilter("гендерная интрига", "38"),
-        SearchFilter("героическое фэнтези", "39"),
-        SearchFilter("детектив", "40"),
-        SearchFilter("дзёсэй", "41"),
-        SearchFilter("драма", "43"),
-        SearchFilter("игра", "44"),
-        SearchFilter("исекай", "79"),
-        SearchFilter("история", "45"),
-        SearchFilter("киберпанк", "46"),
-        SearchFilter("кодомо", "76"),
-        SearchFilter("комедия", "47"),
-        SearchFilter("махо-сёдзё", "48"),
-        SearchFilter("меха", "49"),
-        SearchFilter("мистика", "50"),
-        SearchFilter("научная фантастика", "51"),
-        SearchFilter("омегаверс", "77"),
-        SearchFilter("повседневность", "52"),
-        SearchFilter("постапокалиптика", "53"),
-        SearchFilter("приключения", "54"),
-        SearchFilter("психология", "55"),
-        SearchFilter("романтика", "56"),
-        SearchFilter("самурайский боевик", "57"),
-        SearchFilter("сверхъестественное", "58"),
-        SearchFilter("сёдзё", "59"),
-        SearchFilter("сёдзё-ай", "60"),
-        SearchFilter("сёнэн", "61"),
-        SearchFilter("сёнэн-ай", "62"),
-        SearchFilter("спорт", "63"),
-        SearchFilter("сэйнэн", "64"),
-        SearchFilter("трагедия", "65"),
-        SearchFilter("триллер", "66"),
-        SearchFilter("ужасы", "67"),
-        SearchFilter("фантастика", "68"),
-        SearchFilter("фэнтези", "69"),
-        SearchFilter("школа", "70"),
-        SearchFilter("эротика", "71"),
-        SearchFilter("этти", "72"),
-        SearchFilter("юри", "73"),
-        SearchFilter("яой", "74"),
-    )
+    private fun getGenreList() =
+        listOf(
+            SearchFilter("арт", "32"),
+            SearchFilter("боевик", "34"),
+            SearchFilter("боевые искусства", "35"),
+            SearchFilter("вампиры", "36"),
+            SearchFilter("гарем", "37"),
+            SearchFilter("гендерная интрига", "38"),
+            SearchFilter("героическое фэнтези", "39"),
+            SearchFilter("детектив", "40"),
+            SearchFilter("дзёсэй", "41"),
+            SearchFilter("драма", "43"),
+            SearchFilter("игра", "44"),
+            SearchFilter("исекай", "79"),
+            SearchFilter("история", "45"),
+            SearchFilter("киберпанк", "46"),
+            SearchFilter("кодомо", "76"),
+            SearchFilter("комедия", "47"),
+            SearchFilter("махо-сёдзё", "48"),
+            SearchFilter("меха", "49"),
+            SearchFilter("мистика", "50"),
+            SearchFilter("научная фантастика", "51"),
+            SearchFilter("омегаверс", "77"),
+            SearchFilter("повседневность", "52"),
+            SearchFilter("постапокалиптика", "53"),
+            SearchFilter("приключения", "54"),
+            SearchFilter("психология", "55"),
+            SearchFilter("романтика", "56"),
+            SearchFilter("самурайский боевик", "57"),
+            SearchFilter("сверхъестественное", "58"),
+            SearchFilter("сёдзё", "59"),
+            SearchFilter("сёдзё-ай", "60"),
+            SearchFilter("сёнэн", "61"),
+            SearchFilter("сёнэн-ай", "62"),
+            SearchFilter("спорт", "63"),
+            SearchFilter("сэйнэн", "64"),
+            SearchFilter("трагедия", "65"),
+            SearchFilter("триллер", "66"),
+            SearchFilter("ужасы", "67"),
+            SearchFilter("фантастика", "68"),
+            SearchFilter("фэнтези", "69"),
+            SearchFilter("школа", "70"),
+            SearchFilter("эротика", "71"),
+            SearchFilter("этти", "72"),
+            SearchFilter("юри", "73"),
+            SearchFilter("яой", "74"),
+        )
 
-    private fun getMyList() = listOf(
-        SearchFilter("Читаю", "1"),
-        SearchFilter("В планах", "2"),
-        SearchFilter("Брошено", "3"),
-        SearchFilter("Прочитано", "4"),
-        SearchFilter("Любимые", "5"),
-    )
+    private fun getMyList() =
+        listOf(
+            SearchFilter("Читаю", "1"),
+            SearchFilter("В планах", "2"),
+            SearchFilter("Брошено", "3"),
+            SearchFilter("Прочитано", "4"),
+            SearchFilter("Любимые", "5"),
+        )
 
     private class RequireChapters : Filter.Select<String>(
         "Только проекты с главами",
@@ -842,61 +887,66 @@ abstract class LibGroup(
     private var groupTranslates: String = preferences.getString(TRANSLATORS_TITLE, TRANSLATORS_DEFAULT)!!
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val serverPref = ListPreference(screen.context).apply {
-            key = SERVER_PREF
-            title = "Сервер изображений"
-            entries = arrayOf("Первый", "Второй", "Сжатия")
-            entryValues = arrayOf("secondary", "fourth", "compress")
-            summary = "%s \n\nВыбор приоритетного сервера изображений. \n" +
-                "По умолчанию «Второй». \n\n" +
-                "ⓘВыбор другого помогает при долгой автоматической смене/загрузке изображений текущего."
-            setDefaultValue("fourth")
-            setOnPreferenceChangeListener { _, newValue ->
-                isServer = newValue.toString()
-                true
+        val serverPref =
+            ListPreference(screen.context).apply {
+                key = SERVER_PREF
+                title = "Сервер изображений"
+                entries = arrayOf("Первый", "Второй", "Сжатия")
+                entryValues = arrayOf("secondary", "fourth", "compress")
+                summary = "%s \n\nВыбор приоритетного сервера изображений. \n" +
+                    "По умолчанию «Второй». \n\n" +
+                    "ⓘВыбор другого помогает при долгой автоматической смене/загрузке изображений текущего."
+                setDefaultValue("fourth")
+                setOnPreferenceChangeListener { _, newValue ->
+                    isServer = newValue.toString()
+                    true
+                }
             }
-        }
 
-        val sortingPref = ListPreference(screen.context).apply {
-            key = SORTING_PREF
-            title = SORTING_PREF_Title
-            entries = arrayOf(
-                "Полный список (без повторных переводов)",
-                "Все переводы (друг за другом)",
-            )
-            entryValues = arrayOf("ms_mixing", "ms_combining")
-            summary = "%s"
-            setDefaultValue("ms_mixing")
-            setOnPreferenceChangeListener { _, newValue ->
-                val selected = newValue as String
-                preferences.edit().putString(SORTING_PREF, selected).commit()
+        val sortingPref =
+            ListPreference(screen.context).apply {
+                key = SORTING_PREF
+                title = SORTING_PREF_Title
+                entries =
+                    arrayOf(
+                        "Полный список (без повторных переводов)",
+                        "Все переводы (друг за другом)",
+                    )
+                entryValues = arrayOf("ms_mixing", "ms_combining")
+                summary = "%s"
+                setDefaultValue("ms_mixing")
+                setOnPreferenceChangeListener { _, newValue ->
+                    val selected = newValue as String
+                    preferences.edit().putString(SORTING_PREF, selected).commit()
+                }
             }
-        }
-        val scanlatorUsername = androidx.preference.CheckBoxPreference(screen.context).apply {
-            key = isScan_USER
-            title = isScan_USER_Title
-            summary = "Отображает Ник переводчика если Группа не указана явно."
-            setDefaultValue(false)
+        val scanlatorUsername =
+            androidx.preference.CheckBoxPreference(screen.context).apply {
+                key = isScan_USER
+                title = isScan_USER_Title
+                summary = "Отображает Ник переводчика если Группа не указана явно."
+                setDefaultValue(false)
 
-            setOnPreferenceChangeListener { _, newValue ->
-                val checkValue = newValue as Boolean
-                preferences.edit().putBoolean(key, checkValue).commit()
+                setOnPreferenceChangeListener { _, newValue ->
+                    val checkValue = newValue as Boolean
+                    preferences.edit().putBoolean(key, checkValue).commit()
+                }
             }
-        }
-        val titleLanguagePref = ListPreference(screen.context).apply {
-            key = LANGUAGE_PREF
-            title = LANGUAGE_PREF_Title
-            entries = arrayOf("Английский", "Русский")
-            entryValues = arrayOf("eng", "rus")
-            summary = "%s"
-            setDefaultValue("eng")
-            setOnPreferenceChangeListener { _, newValue ->
-                val titleLanguage = preferences.edit().putString(LANGUAGE_PREF, newValue as String).commit()
-                val warning = "Если язык обложки не изменился очистите базу данных в приложении (Настройки -> Дополнительно -> Очистить базу данных)"
-                Toast.makeText(screen.context, warning, Toast.LENGTH_LONG).show()
-                titleLanguage
+        val titleLanguagePref =
+            ListPreference(screen.context).apply {
+                key = LANGUAGE_PREF
+                title = LANGUAGE_PREF_Title
+                entries = arrayOf("Английский", "Русский")
+                entryValues = arrayOf("eng", "rus")
+                summary = "%s"
+                setDefaultValue("eng")
+                setOnPreferenceChangeListener { _, newValue ->
+                    val titleLanguage = preferences.edit().putString(LANGUAGE_PREF, newValue as String).commit()
+                    val warning = "Если язык обложки не изменился очистите базу данных в приложении (Настройки -> Дополнительно -> Очистить базу данных)"
+                    Toast.makeText(screen.context, warning, Toast.LENGTH_LONG).show()
+                    titleLanguage
+                }
             }
-        }
         screen.addPreference(serverPref)
         screen.addPreference(sortingPref)
         screen.addPreference(screen.editTextPreference(TRANSLATORS_TITLE, TRANSLATORS_DEFAULT, groupTranslates))

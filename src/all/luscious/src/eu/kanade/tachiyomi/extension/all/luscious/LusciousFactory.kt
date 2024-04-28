@@ -4,20 +4,21 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
 
 class LusciousFactory : SourceFactory {
-    override fun createSources(): List<Source> = listOf(
-        LusciousEN(),
-        LusciousJA(),
-        LusciousES(),
-        LusciousIT(),
-        LusciousDE(),
-        LusciousFR(),
-        LusciousZH(),
-        LusciousKO(),
-        LusciousOTHER(),
-        LusciousPT(),
-        LusciousTH(),
-        LusciousALL(),
-    )
+    override fun createSources(): List<Source> =
+        listOf(
+            LusciousEN(),
+            LusciousJA(),
+            LusciousES(),
+            LusciousIT(),
+            LusciousDE(),
+            LusciousFR(),
+            LusciousZH(),
+            LusciousKO(),
+            LusciousOTHER(),
+            LusciousPT(),
+            LusciousTH(),
+            LusciousALL(),
+        )
 }
 
 class LusciousEN : Luscious("en")

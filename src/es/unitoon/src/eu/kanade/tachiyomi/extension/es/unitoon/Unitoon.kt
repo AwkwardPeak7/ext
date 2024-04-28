@@ -11,9 +11,10 @@ class Unitoon : Madara(
     "es",
     SimpleDateFormat("dd/MM/yyyy", Locale("es")),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(2, 1)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2, 1)
+            .build()
 
     override val useNewChapterEndpoint = true
 }

@@ -10,14 +10,15 @@ class ShadowCeviri : ZeistManga("Shadow Çeviri", "https://shadowceviri.blogspot
     // ============================== Popular ===============================
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.use { it.asJsoup() }
-        val mangas = document.select("ul.gallery > li.bg").map { element ->
-            SManga.create().apply {
-                thumbnail_url = element.attr("style").substringAfter('(').substringBefore(')')
-                title = element.selectFirst("h3")?.text() ?: "Manga"
-                // NPE my beloved
-                setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+        val mangas =
+            document.select("ul.gallery > li.bg").map { element ->
+                SManga.create().apply {
+                    thumbnail_url = element.attr("style").substringAfter('(').substringBefore(')')
+                    title = element.selectFirst("h3")?.text() ?: "Manga"
+                    // NPE my beloved
+                    setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+                }
             }
-        }
         return MangasPage(mangas, false)
     }
 

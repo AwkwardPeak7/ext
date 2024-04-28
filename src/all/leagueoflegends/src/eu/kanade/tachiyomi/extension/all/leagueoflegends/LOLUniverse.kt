@@ -30,8 +30,9 @@ class LOLUniverse(
 
     private val pageCache = mutableMapOf<String, List<Page>>()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Origin", UNIVERSE_URL).set("Referer", "$UNIVERSE_URL/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Origin", UNIVERSE_URL).set("Referer", "$UNIVERSE_URL/")
 
     override fun popularMangaRequest(page: Int) = GET("$MEEPS_URL/$siteLang/comics/index.json", headers)
 
@@ -39,24 +40,26 @@ class LOLUniverse(
 
     override fun pageListRequest(chapter: SChapter) = GET("$COMICS_URL/$siteLang/${chapter.url}/index.json", headers)
 
-    override fun popularMangaParse(response: Response) = response.decode<LOLHub>().mapNotNull {
-        SManga.create().apply {
-            title = it.title ?: return@mapNotNull null
-            url = it.toString()
-            description = it.description!!.clean()
-            thumbnail_url = it.background.toString()
-            genre = it.subtitle ?: it.champions?.joinToString()
-        }
-    }.run { MangasPage(this, false) }
+    override fun popularMangaParse(response: Response) =
+        response.decode<LOLHub>().mapNotNull {
+            SManga.create().apply {
+                title = it.title ?: return@mapNotNull null
+                url = it.toString()
+                description = it.description!!.clean()
+                thumbnail_url = it.background.toString()
+                genre = it.subtitle ?: it.champions?.joinToString()
+            }
+        }.run { MangasPage(this, false) }
 
-    override fun chapterListParse(response: Response) = response.decode<LOLIssues>().map {
-        SChapter.create().apply {
-            name = it.title!!
-            url = it.toString()
-            chapter_number = it.index ?: -1f
-            fetchPageList()
+    override fun chapterListParse(response: Response) =
+        response.decode<LOLIssues>().map {
+            SChapter.create().apply {
+                name = it.title!!
+                url = it.toString()
+                chapter_number = it.index ?: -1f
+                fetchPageList()
+            }
         }
-    }
 
     override fun fetchSearchManga(
         page: Int,
@@ -69,12 +72,13 @@ class LOLUniverse(
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         if ('/' !in manga.url) return super.fetchChapterList(manga)
-        val chapter = SChapter.create().apply {
-            url = manga.url
-            name = "One Shot"
-            chapter_number = 0f
-            fetchPageList()
-        }
+        val chapter =
+            SChapter.create().apply {
+                url = manga.url
+                name = "One Shot"
+                chapter_number = 0f
+                fetchPageList()
+            }
         return Observable.just(listOf(chapter))
     }
 
@@ -112,18 +116,20 @@ class LOLUniverse(
         client.newCall(pageListRequest(this)).execute().decode<LOLPages>().let {
             // The chapter date is only available in the page list
             date_upload = isoDate.parse(it.date)?.time ?: 0L
-            pageCache[url] = it.mapIndexed { idx, img ->
-                Page(idx, "", img.toString())
-            }
+            pageCache[url] =
+                it.mapIndexed { idx, img ->
+                    Page(idx, "", img.toString())
+                }
         }
     }
 
-    private fun MangasPage.filter(query: String) = copy(
-        mangas.filter {
-            it.title.contains(query, true) ||
-                it.genre?.contains(query, true) ?: false
-        },
-    )
+    private fun MangasPage.filter(query: String) =
+        copy(
+            mangas.filter {
+                it.title.contains(query, true) ||
+                    it.genre?.contains(query, true) ?: false
+            },
+        )
 
     companion object {
         private const val UNIVERSE_URL = "https://universe.leagueoflegends.com"

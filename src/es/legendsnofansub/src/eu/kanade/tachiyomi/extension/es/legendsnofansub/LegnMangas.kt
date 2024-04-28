@@ -15,9 +15,10 @@ class LegnMangas : Madara(
 ) {
     override val id = 9078720153732517844
 
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2, 1, TimeUnit.SECONDS)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2, 1, TimeUnit.SECONDS)
+            .build()
 
     override val useNewChapterEndpoint = true
     override val useLoadMoreRequest = LoadMoreStrategy.Always

@@ -91,23 +91,25 @@ class HentaiFantasy : ParsedHttpSource() {
             throw Exception("Inserisci almeno tre caratteri")
         }
 
-        val form = FormBody.Builder().apply {
-            if (!searchTags) {
-                add("search", query)
-            } else {
-                tags.forEach {
-                    add("tag[]", it)
+        val form =
+            FormBody.Builder().apply {
+                if (!searchTags) {
+                    add("search", query)
+                } else {
+                    tags.forEach {
+                        add("tag[]", it)
+                    }
                 }
             }
-        }
 
-        val searchPath = if (!searchTags) {
-            "search"
-        } else if (paths.size == 1) {
-            "tag/${paths[0]}/$page"
-        } else {
-            "search_tags"
-        }
+        val searchPath =
+            if (!searchTags) {
+                "search"
+            } else if (paths.size == 1) {
+                "tag/${paths[0]}/$page"
+            } else {
+                "search_tags"
+            }
 
         return POST("$baseUrl/$searchPath", headers, form.build())
     }
@@ -124,9 +126,10 @@ class HentaiFantasy : ParsedHttpSource() {
         document.select("div#tablelist > div.row").forEach { row ->
             when (row.select("div.cell > b").first()!!.text().trim()) {
                 "Autore" -> manga.author = row.select("div.cell > a").text().trim()
-                "Genere", "Tipo" -> row.select("div.cell > a > span.label").forEach {
-                    genres.add(it.text().trim())
-                }
+                "Genere", "Tipo" ->
+                    row.select("div.cell > a > span.label").forEach {
+                        genres.add(it.text().trim())
+                    }
                 "Descrizione" -> manga.description = row.select("div.cell").last()!!.text().trim()
             }
         }
@@ -200,59 +203,61 @@ class HentaiFantasy : ParsedHttpSource() {
 
     private class TagList(title: String, tags: List<Tag>) : Filter.Group<Tag>(title, tags)
 
-    override fun getFilterList() = FilterList(
-        TagList("Generi", getTagList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            TagList("Generi", getTagList()),
+        )
 
     // Tags: 47
     // $("select[name='tag[]']:eq(0) > option").map((i, el) => `Tag("${$(el).text().trim()}", ${$(el).attr("value")})`).get().sort().join(",\n")
     // on https://www.hentaifantasy.it/search/
-    private fun getTagList() = listOf(
-        Tag("Ahegao", 56),
-        Tag("Anal", 28),
-        Tag("Ashikoki", 12),
-        Tag("Bestiality", 24),
-        Tag("Bizzare", 44),
-        Tag("Bondage", 30),
-        Tag("Cheating", 33),
-        Tag("Chubby", 57),
-        Tag("Dark Skin", 39),
-        Tag("Demon Girl", 43),
-        Tag("Femdom", 38),
-        Tag("Forced", 46),
-        Tag("Full color", 52),
-        Tag("Furry", 36),
-        Tag("Futanari", 18),
-        Tag("Group", 34),
-        Tag("Guro", 8),
-        Tag("Harem", 41),
-        Tag("Housewife", 51),
-        Tag("Incest", 11),
-        Tag("Lolicon", 20),
-        Tag("Maid", 55),
-        Tag("Milf", 31),
-        Tag("Monster Girl", 15),
-        Tag("Nurse", 49),
-        Tag("Oppai", 25),
-        Tag("Paizuri", 42),
-        Tag("Pettanko", 35),
-        Tag("Pissing", 32),
-        Tag("Public", 53),
-        Tag("Rape", 21),
-        Tag("Schoolgirl", 27),
-        Tag("Shotacon", 26),
-        Tag("Stockings", 40),
-        Tag("Swimsuit", 47),
-        Tag("Tanlines", 48),
-        Tag("Teacher", 50),
-        Tag("Tentacle", 23),
-        Tag("Toys", 45),
-        Tag("Trap", 29),
-        Tag("Tsundere", 54),
-        Tag("Uncensored", 59),
-        Tag("Vanilla", 19),
-        Tag("Yandere", 58),
-        Tag("Yaoi", 22),
-        Tag("Yuri", 14),
-    )
+    private fun getTagList() =
+        listOf(
+            Tag("Ahegao", 56),
+            Tag("Anal", 28),
+            Tag("Ashikoki", 12),
+            Tag("Bestiality", 24),
+            Tag("Bizzare", 44),
+            Tag("Bondage", 30),
+            Tag("Cheating", 33),
+            Tag("Chubby", 57),
+            Tag("Dark Skin", 39),
+            Tag("Demon Girl", 43),
+            Tag("Femdom", 38),
+            Tag("Forced", 46),
+            Tag("Full color", 52),
+            Tag("Furry", 36),
+            Tag("Futanari", 18),
+            Tag("Group", 34),
+            Tag("Guro", 8),
+            Tag("Harem", 41),
+            Tag("Housewife", 51),
+            Tag("Incest", 11),
+            Tag("Lolicon", 20),
+            Tag("Maid", 55),
+            Tag("Milf", 31),
+            Tag("Monster Girl", 15),
+            Tag("Nurse", 49),
+            Tag("Oppai", 25),
+            Tag("Paizuri", 42),
+            Tag("Pettanko", 35),
+            Tag("Pissing", 32),
+            Tag("Public", 53),
+            Tag("Rape", 21),
+            Tag("Schoolgirl", 27),
+            Tag("Shotacon", 26),
+            Tag("Stockings", 40),
+            Tag("Swimsuit", 47),
+            Tag("Tanlines", 48),
+            Tag("Teacher", 50),
+            Tag("Tentacle", 23),
+            Tag("Toys", 45),
+            Tag("Trap", 29),
+            Tag("Tsundere", 54),
+            Tag("Uncensored", 59),
+            Tag("Vanilla", 19),
+            Tag("Yandere", 58),
+            Tag("Yaoi", 22),
+            Tag("Yuri", 14),
+        )
 }

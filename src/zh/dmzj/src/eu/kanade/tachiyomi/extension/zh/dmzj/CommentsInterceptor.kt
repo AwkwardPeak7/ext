@@ -27,25 +27,27 @@ object CommentsInterceptor : Interceptor {
 
         val comments = ApiV3.parseChapterComments(response, MAX_HEIGHT / (UNIT * 2))
 
-        val paint = TextPaint().apply {
-            color = Color.BLACK
-            textSize = UNIT_F
-            isAntiAlias = true
-        }
+        val paint =
+            TextPaint().apply {
+                color = Color.BLACK
+                textSize = UNIT_F
+                isAntiAlias = true
+            }
 
         var height = UNIT
-        val layouts = comments.map {
-            @Suppress("DEPRECATION")
-            StaticLayout(it, paint, WIDTH - 2 * UNIT, Layout.Alignment.ALIGN_NORMAL, 1f, 0f, false)
-        }.takeWhile {
-            val lineHeight = it.height + UNIT
-            if (height + lineHeight <= MAX_HEIGHT) {
-                height += lineHeight
-                true
-            } else {
-                false
+        val layouts =
+            comments.map {
+                @Suppress("DEPRECATION")
+                StaticLayout(it, paint, WIDTH - 2 * UNIT, Layout.Alignment.ALIGN_NORMAL, 1f, 0f, false)
+            }.takeWhile {
+                val lineHeight = it.height + UNIT
+                if (height + lineHeight <= MAX_HEIGHT) {
+                    height += lineHeight
+                    true
+                } else {
+                    false
+                }
             }
-        }
 
         val bitmap = Bitmap.createBitmap(WIDTH, height, Bitmap.Config.ARGB_8888)
         bitmap.eraseColor(Color.WHITE)

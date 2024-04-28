@@ -25,14 +25,15 @@ class ThePropertyOfHate : HttpSource() {
 
     // the one and only manga entry
     private val manga: SManga
-        get() = SManga.create().apply {
-            title = "The Property of Hate"
-            thumbnail_url = "https://pbs.twimg.com/media/DOBCcMiWkAA8Hvu.jpg"
-            artist = "Sarah Jolley"
-            author = "Sarah Jolley"
-            status = SManga.UNKNOWN
-            url = baseUrl
-        }
+        get() =
+            SManga.create().apply {
+                title = "The Property of Hate"
+                thumbnail_url = "https://pbs.twimg.com/media/DOBCcMiWkAA8Hvu.jpg"
+                artist = "Sarah Jolley"
+                author = "Sarah Jolley"
+                status = SManga.UNKNOWN
+                url = baseUrl
+            }
 
     override fun fetchPopularManga(page: Int) = Observable.just(MangasPage(listOf(manga), false))!!
 
@@ -48,14 +49,15 @@ class ThePropertyOfHate : HttpSource() {
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
 
-        val chapters = mutableListOf(
-            // must hard code the first one
-            SChapter.create().apply {
-                url = firstChapterUrl
-                chapter_number = 1f
-                name = "The Hook"
-            },
-        )
+        val chapters =
+            mutableListOf(
+                // must hard code the first one
+                SChapter.create().apply {
+                    url = firstChapterUrl
+                    chapter_number = 1f
+                    name = "The Hook"
+                },
+            )
 
         document.select("select > option:not(:first-child)")
             .mapIndexed { num, opt ->
@@ -69,8 +71,9 @@ class ThePropertyOfHate : HttpSource() {
         return chapters.reversed()
     }
 
-    override fun pageListParse(response: Response) = response.asJsoup().select("select > optgroup > option")
-        .mapIndexed { num, opt -> Page(num, opt.absUrl("value")) }
+    override fun pageListParse(response: Response) =
+        response.asJsoup().select("select > optgroup > option")
+            .mapIndexed { num, opt -> Page(num, opt.absUrl("value")) }
 
     override fun imageUrlParse(response: Response): String = response.asJsoup().selectFirst(".comic_comic > img")!!.absUrl("src")
 

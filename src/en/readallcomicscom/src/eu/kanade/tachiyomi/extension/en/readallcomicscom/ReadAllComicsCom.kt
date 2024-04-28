@@ -7,12 +7,13 @@ import org.jsoup.nodes.Element
 class ReadAllComicsCom : ReadAllComics("ReadAllComics", "https://readallcomics.com", "en") {
     override fun nullablePopularManga(element: Element): SManga? {
         return super.nullablePopularManga(element)?.apply {
-            title = title.let {
-                titleRegex.find(it)?.value?.trim()
-                    ?.removeSuffix("v")?.trim()
-                    ?.substringBeforeLast("vol")
-                    ?: it
-            }
+            title =
+                title.let {
+                    titleRegex.find(it)?.value?.trim()
+                        ?.removeSuffix("v")?.trim()
+                        ?.substringBeforeLast("vol")
+                        ?: it
+                }
         }
     }
 

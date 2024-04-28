@@ -66,12 +66,13 @@ class SmartBookSearchHandler(val rawQuery: String, val rawBooksData: Map<BookID,
         val charBreak = charBreak
         val wordBreak = wordBreak
 
-        val words: List<CollatedElement<IsWord>> = wordBreak.collate(normQuery) { ruleStatus ->
-            when (ruleStatus) {
-                BreakIterator.WORD_NONE -> false
-                else -> true
+        val words: List<CollatedElement<IsWord>> =
+            wordBreak.collate(normQuery) { ruleStatus ->
+                when (ruleStatus) {
+                    BreakIterator.WORD_NONE -> false
+                    else -> true
+                }
             }
-        }
         val extra: MutableList<String> = ArrayList()
 
         words.forEach { collatedElement ->
@@ -131,9 +132,10 @@ class SmartBookSearchHandler(val rawQuery: String, val rawBooksData: Map<BookID,
             }
         }
 
-        val byScore: TreeMap<UInt, MutableList<Map.Entry<BookID, Counter>>> = scored.entries.groupByTo(TreeMap(reverseOrder<UInt>())) {
-            it.value.value
-        }
+        val byScore: TreeMap<UInt, MutableList<Map.Entry<BookID, Counter>>> =
+            scored.entries.groupByTo(TreeMap(reverseOrder<UInt>())) {
+                it.value.value
+            }
         val highest = byScore.firstKey().toFloat()
 
         val included: MutableSet<BookID> = LinkedHashSet()
@@ -194,40 +196,41 @@ class SmartBookSearchHandler(val rawQuery: String, val rawBooksData: Map<BookID,
         /** first 32 fibonacci numbers */
         @JvmStatic
         @OptIn(ExperimentalUnsignedTypes::class)
-        private val fib32: UIntArray = uintArrayOf(
-            1u,
-            1u,
-            2u,
-            3u,
-            5u,
-            8u,
-            13u,
-            21u,
-            34u,
-            55u,
-            89u,
-            144u,
-            233u,
-            377u,
-            610u,
-            987u,
-            1597u,
-            2584u,
-            4181u,
-            6765u,
-            10946u,
-            17711u,
-            28657u,
-            46368u,
-            75025u,
-            121393u,
-            196418u,
-            317811u,
-            514229u,
-            832040u,
-            1346269u,
-            2178309u,
-        )
+        private val fib32: UIntArray =
+            uintArrayOf(
+                1u,
+                1u,
+                2u,
+                3u,
+                5u,
+                8u,
+                13u,
+                21u,
+                34u,
+                55u,
+                89u,
+                144u,
+                233u,
+                377u,
+                610u,
+                987u,
+                1597u,
+                2584u,
+                4181u,
+                6765u,
+                10946u,
+                17711u,
+                28657u,
+                46368u,
+                75025u,
+                121393u,
+                196418u,
+                317811u,
+                514229u,
+                832040u,
+                1346269u,
+                2178309u,
+            )
 
         private const val SCORE_EXTRA: UInt = 1u
 
@@ -248,13 +251,14 @@ internal fun Map<BookID, BookTitle>.toMangasPage(hasNextPage: Boolean = false): 
 
 internal fun Iterable<Map.Entry<BookID, BookTitle>>.toMangasPage(hasNextPage: Boolean = false): MangasPage {
     return MangasPage(
-        mangas = map { (bookID: BookID, bookTitle: BookTitle) ->
-            SManga.create().apply {
-                title = bookTitle
-                url = bookID.bookIDToURL().rawRelative ?: reportErrorToUser { "Could not create relative url for bookID: $bookID" }
-                thumbnail_url = bookThumbnailUrl(bookID, "").toUri().toASCIIString()
-            }
-        },
+        mangas =
+            map { (bookID: BookID, bookTitle: BookTitle) ->
+                SManga.create().apply {
+                    title = bookTitle
+                    url = bookID.bookIDToURL().rawRelative ?: reportErrorToUser { "Could not create relative url for bookID: $bookID" }
+                    thumbnail_url = bookThumbnailUrl(bookID, "").toUri().toASCIIString()
+                }
+            },
         hasNextPage = hasNextPage,
     )
 }

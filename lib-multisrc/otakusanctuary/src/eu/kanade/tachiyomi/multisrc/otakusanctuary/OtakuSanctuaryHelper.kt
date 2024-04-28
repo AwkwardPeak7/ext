@@ -3,19 +3,21 @@ package eu.kanade.tachiyomi.multisrc.otakusanctuary
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 class OtakuSanctuaryHelper(private val lang: String) {
-    fun otakusanLang() = when (lang) {
-        "vi" -> "vn"
-        "en" -> "us"
-        else -> lang
-    }
+    fun otakusanLang() =
+        when (lang) {
+            "vi" -> "vn"
+            "en" -> "us"
+            else -> lang
+        }
 
     fun processUrl(
         url: String,
         vi: String = "",
     ): String {
-        var url = url.replace("_h_", "http")
-            .replace("_e_", "/extendContent/Manga")
-            .replace("_r_", "/extendContent/MangaRaw")
+        var url =
+            url.replace("_h_", "http")
+                .replace("_e_", "/extendContent/Manga")
+                .replace("_r_", "/extendContent/MangaRaw")
 
         if (url.startsWith("//")) {
             url = "https:$url"
@@ -24,28 +26,30 @@ class OtakuSanctuaryHelper(private val lang: String) {
             return url
         }
 
-        url = when (url.slice(0..4)) {
-            "[GDP]" -> url.replace("[GDP]", "https://drive.google.com/uc?export=view&id=")
-            "[GDT]" -> if (otakusanLang() == "us") {
-                url.replace("image2.otakuscan.net", "image3.shopotaku.net")
-                    .replace("image2.otakusan.net", "image3.shopotaku.net")
-            } else {
-                url
-            }
-            "[IS1]" -> {
-                val url = url.replace("[IS1]", "https://imagepi.otakuscan.net/")
-                if (url.contains("vi") && url.contains("otakusan.net_")) {
-                    url
-                } else {
-                    url.toHttpUrl().newBuilder().apply {
-                        addQueryParameter("vi", vi)
-                    }.build().toString()
+        url =
+            when (url.slice(0..4)) {
+                "[GDP]" -> url.replace("[GDP]", "https://drive.google.com/uc?export=view&id=")
+                "[GDT]" ->
+                    if (otakusanLang() == "us") {
+                        url.replace("image2.otakuscan.net", "image3.shopotaku.net")
+                            .replace("image2.otakusan.net", "image3.shopotaku.net")
+                    } else {
+                        url
+                    }
+                "[IS1]" -> {
+                    val url = url.replace("[IS1]", "https://imagepi.otakuscan.net/")
+                    if (url.contains("vi") && url.contains("otakusan.net_")) {
+                        url
+                    } else {
+                        url.toHttpUrl().newBuilder().apply {
+                            addQueryParameter("vi", vi)
+                        }.build().toString()
+                    }
                 }
+                "[IS3]" -> url.replace("[IS3]", "https://image3.otakusan.net/")
+                "[IO3]" -> url.replace("[IO3]", "http://image3.shopotaku.net/")
+                else -> url
             }
-            "[IS3]" -> url.replace("[IS3]", "https://image3.otakusan.net/")
-            "[IO3]" -> url.replace("[IO3]", "http://image3.shopotaku.net/")
-            else -> url
-        }
 
         if (url.contains("/Content/Workshop") || url.contains("otakusan") || url.contains("myrockmanga")) {
             return url
@@ -86,10 +90,11 @@ class OtakuSanctuaryHelper(private val lang: String) {
         }
 
         if (url.contains("cdn.nettruyen.com")) {
-            url = url.replace(
-                "cdn.nettruyen.com/Data/Images/",
-                "truyen.cloud/data/images/",
-            )
+            url =
+                url.replace(
+                    "cdn.nettruyen.com/Data/Images/",
+                    "truyen.cloud/data/images/",
+                )
         }
         if (url.contains("url=")) {
             url = url.substringAfter("url=")
@@ -106,10 +111,11 @@ class OtakuSanctuaryHelper(private val lang: String) {
         url = url.replace("//cdn.adtrue.com/rtb/async.js", "")
 
         if (url.contains(".webp")) {
-            url = "https://otakusan.net/api/Value/ImageSyncing?ip=34512351".toHttpUrl().newBuilder()
-                .apply {
-                    addQueryParameter("url", url)
-                }.build().toString()
+            url =
+                "https://otakusan.net/api/Value/ImageSyncing?ip=34512351".toHttpUrl().newBuilder()
+                    .apply {
+                        addQueryParameter("url", url)
+                    }.build().toString()
         } else if (
             (
                 url.contains("merakiscans") ||
@@ -139,14 +145,16 @@ class OtakuSanctuaryHelper(private val lang: String) {
                         addQueryParameter("url", url)
                     }.build().toString()
         } else if (url.contains("imageinstant.com")) {
-            url = "https://images.weserv.nl/".toHttpUrl().newBuilder().apply {
-                addQueryParameter("url", url)
-            }.build().toString()
-        } else if (!url.contains("otakusan.net")) {
-            url = "https://otakusan.net/api/Value/ImageSyncing?ip=34512351".toHttpUrl().newBuilder()
-                .apply {
+            url =
+                "https://images.weserv.nl/".toHttpUrl().newBuilder().apply {
                     addQueryParameter("url", url)
                 }.build().toString()
+        } else if (!url.contains("otakusan.net")) {
+            url =
+                "https://otakusan.net/api/Value/ImageSyncing?ip=34512351".toHttpUrl().newBuilder()
+                    .apply {
+                        addQueryParameter("url", url)
+                    }.build().toString()
         }
 
         return if (url.contains("vi=") && !url.contains("otakusan.net_")) {

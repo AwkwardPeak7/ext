@@ -34,8 +34,9 @@ object MDConstants {
 
     val mdAtHomeTokenLifespan = 5.minutes.inWholeMilliseconds
 
-    val dateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+SSS", Locale.US)
-        .apply { timeZone = TimeZone.getTimeZone("UTC") }
+    val dateFormatter =
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+SSS", Locale.US)
+            .apply { timeZone = TimeZone.getTimeZone("UTC") }
 
     const val prefixIdSearch = "id:"
     const val prefixChSearch = "ch:"
@@ -75,12 +76,13 @@ object MDConstants {
     const val contentRatingPrefValErotica = "erotica"
     const val contentRatingPrefValPornographic = "pornographic"
     val contentRatingPrefDefaults = setOf(contentRatingPrefValSafe, contentRatingPrefValSuggestive)
-    val allContentRatings = setOf(
-        contentRatingPrefValSafe,
-        contentRatingPrefValSuggestive,
-        contentRatingPrefValErotica,
-        contentRatingPrefValPornographic,
-    )
+    val allContentRatings =
+        setOf(
+            contentRatingPrefValSafe,
+            contentRatingPrefValSuggestive,
+            contentRatingPrefValErotica,
+            contentRatingPrefValPornographic,
+        )
 
     fun getContentRatingPrefKey(dexLang: String): String {
         return "${contentRatingPref}_$dexLang"
@@ -103,14 +105,15 @@ object MDConstants {
     private const val groupInkr = "caa63201-4a17-4b7f-95ff-ed884a2b7e60"
     private const val groupMangaHot = "319c1b10-cbd0-4f55-a46e-c4ee17e65139"
     private const val groupMangaPlus = "4f1de6a2-f0c5-4ac5-bce5-02c7dbb67deb"
-    val defaultBlockedGroups = setOf(
-        groupAzuki,
-        groupBilibili,
-        groupComikey,
-        groupInkr,
-        groupMangaHot,
-        groupMangaPlus,
-    )
+    val defaultBlockedGroups =
+        setOf(
+            groupAzuki,
+            groupBilibili,
+            groupComikey,
+            groupInkr,
+            groupMangaHot,
+            groupMangaPlus,
+        )
     private const val blockedGroupsPref = "blockedGroups"
 
     fun getBlockedGroupsPrefKey(dexLang: String): String {
@@ -159,10 +162,11 @@ object MDConstants {
     const val tagAnthologyUuid = "51d83883-4103-437c-b4b1-731cb73d786c"
     const val tagOneShotUuid = "0234a31e-a729-4e28-9d6a-3f87c4966b9e"
 
-    val romanizedLangCodes = mapOf(
-        MangaDexIntl.JAPANESE to "ja-ro",
-        MangaDexIntl.KOREAN to "ko-ro",
-        MangaDexIntl.CHINESE to "zh-ro",
-        "zh-hk" to "zh-ro",
-    )
+    val romanizedLangCodes =
+        mapOf(
+            MangaDexIntl.JAPANESE to "ja-ro",
+            MangaDexIntl.KOREAN to "ko-ro",
+            MangaDexIntl.CHINESE to "zh-ro",
+            "zh-hk" to "zh-ro",
+        )
 }

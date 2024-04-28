@@ -27,22 +27,25 @@ class Doujinio : HttpSource() {
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
     // Latest
 
-    override fun latestUpdatesRequest(page: Int) = POST(
-        "$baseUrl/api/mangas/newest",
-        headers,
-        body = json.encodeToString(
-            LatestRequest(
-                limit = LATEST_LIMIT,
-                offset = (page - 1) * LATEST_LIMIT,
-            ),
-        ).toRequestBody("application/json".toMediaType()),
-    )
+    override fun latestUpdatesRequest(page: Int) =
+        POST(
+            "$baseUrl/api/mangas/newest",
+            headers,
+            body =
+                json.encodeToString(
+                    LatestRequest(
+                        limit = LATEST_LIMIT,
+                        offset = (page - 1) * LATEST_LIMIT,
+                    ),
+                ).toRequestBody("application/json".toMediaType()),
+        )
 
     override fun latestUpdatesParse(response: Response): MangasPage {
         val latest = response.parseAs<List<Manga>>().map { it.toSManga() }
@@ -54,10 +57,11 @@ class Doujinio : HttpSource() {
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/api/mangas/popular", headers)
 
-    override fun popularMangaParse(response: Response) = MangasPage(
-        response.parseAs<List<Manga>>().map { it.toSManga() },
-        hasNextPage = false,
-    )
+    override fun popularMangaParse(response: Response) =
+        MangasPage(
+            response.parseAs<List<Manga>>().map { it.toSManga() },
+            hasNextPage = false,
+        )
 
     // Search
 
@@ -68,15 +72,17 @@ class Doujinio : HttpSource() {
     ) = POST(
         "$baseUrl/api/mangas/search",
         headers,
-        body = json.encodeToString(
-            SearchRequest(
-                keyword = query,
-                page = page,
-                tags = filters.findInstance<TagGroup>()?.state?.filter { it.state }?.mapNotNull {
-                    tags.find { tag -> tag.name == it.name }?.id
-                } ?: emptyList(),
-            ),
-        ).toRequestBody("application/json".toMediaType()),
+        body =
+            json.encodeToString(
+                SearchRequest(
+                    keyword = query,
+                    page = page,
+                    tags =
+                        filters.findInstance<TagGroup>()?.state?.filter { it.state }?.mapNotNull {
+                            tags.find { tag -> tag.name == it.name }?.id
+                        } ?: emptyList(),
+                ),
+            ).toRequestBody("application/json".toMediaType()),
     )
 
     override fun searchMangaParse(response: Response): MangasPage {
@@ -104,29 +110,32 @@ class Doujinio : HttpSource() {
 
     // Page List
 
-    override fun pageListRequest(chapter: SChapter) = GET(
-        "$baseUrl/api/mangas/${getIdsFromUrl(chapter.url)}/manifest",
-        headers.newBuilder().apply {
-            add(
-                "referer",
-                "https://doujin.io/manga/${getIdsFromUrl(chapter.url).split("/").joinToString("/chapter/")}",
-            )
-        }.build(),
-    )
+    override fun pageListRequest(chapter: SChapter) =
+        GET(
+            "$baseUrl/api/mangas/${getIdsFromUrl(chapter.url)}/manifest",
+            headers.newBuilder().apply {
+                add(
+                    "referer",
+                    "https://doujin.io/manga/${getIdsFromUrl(chapter.url).split("/").joinToString("/chapter/")}",
+                )
+            }.build(),
+        )
 
-    override fun pageListParse(response: Response) = if (response.headers["content-type"] == "text/html; charset=UTF-8") {
-        throw Exception("You need to login first through the WebView to read the chapter.")
-    } else {
-        json.decodeFromString<ChapterManifest>(
-            response.body.string(),
-        ).toPageList()
-    }
+    override fun pageListParse(response: Response) =
+        if (response.headers["content-type"] == "text/html; charset=UTF-8") {
+            throw Exception("You need to login first through the WebView to read the chapter.")
+        } else {
+            json.decodeFromString<ChapterManifest>(
+                response.body.string(),
+            ).toPageList()
+        }
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        TagGroup(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            TagGroup(),
+        )
 
     private class TagFilter(name: String) : Filter.CheckBox(name, false)
 

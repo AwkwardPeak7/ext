@@ -26,13 +26,14 @@ class MangaCrab :
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
 
-    override val client = super.client.newBuilder()
-        .setRandomUserAgent(
-            preferences.getPrefUAType(),
-            preferences.getPrefCustomUA(),
-        )
-        .rateLimit(1, 2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .setRandomUserAgent(
+                preferences.getPrefUAType(),
+                preferences.getPrefCustomUA(),
+            )
+            .rateLimit(1, 2)
+            .build()
 
     override val mangaSubString = "series"
 

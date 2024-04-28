@@ -36,16 +36,17 @@ object ProjectSukiFilters {
     @Suppress("UNUSED_PARAMETER")
     fun headersSequence(preferences: ProjectSukiPreferences): Sequence<Filter.Header> = sequenceOf()
 
-    fun filtersSequence(preferences: ProjectSukiPreferences): Sequence<Filter<*>> = sequence {
-        addFilter(SearchModeFilter(preferences.defaultSearchMode()))
-        yield(Filter.Separator())
-        yield(Filter.Header("All filters below will only work in Full Site mode."))
-        addFilter(Origin())
-        addFilter(Status())
-        yield(Filter.Separator())
-        addFilter(Author())
-        addFilter(Artist())
-    }
+    fun filtersSequence(preferences: ProjectSukiPreferences): Sequence<Filter<*>> =
+        sequence {
+            addFilter(SearchModeFilter(preferences.defaultSearchMode()))
+            yield(Filter.Separator())
+            yield(Filter.Header("All filters below will only work in Full Site mode."))
+            addFilter(Origin())
+            addFilter(Status())
+            yield(Filter.Separator())
+            addFilter(Author())
+            addFilter(Artist())
+        }
 
     @Suppress("UNUSED_PARAMETER")
     fun footersSequence(preferences: ProjectSukiPreferences): Sequence<Filter.Header> = sequenceOf()
@@ -112,22 +113,24 @@ object ProjectSukiFilters {
             state = default.ordinal,
         ),
         ProjectSukiFilter {
-        override val headers: List<Header> = headers {
-            """
-            See Extensions > Project Suki > Gear icon
-            for differences and for how to set the default.
-            """.trimIndent()
-        }
+        override val headers: List<Header> =
+            headers {
+                """
+                See Extensions > Project Suki > Gear icon
+                for differences and for how to set the default.
+                """.trimIndent()
+            }
 
         override fun HttpUrl.Builder.applyFilter() = Unit
     }
 
     class Author : Filter.Text("Author"), ProjectSukiFilter {
-        override val headers: List<Header> = headers {
-            """
-            Search by a single author:
-            """.trimIndent()
-        }
+        override val headers: List<Header> =
+            headers {
+                """
+                Search by a single author:
+                """.trimIndent()
+            }
 
         override fun HttpUrl.Builder.applyFilter() {
             when {
@@ -137,11 +140,12 @@ object ProjectSukiFilters {
     }
 
     class Artist : Filter.Text("Artist"), ProjectSukiFilter {
-        override val headers: List<Header> = headers {
-            """
-            Search by a single artist:
-            """.trimIndent()
-        }
+        override val headers: List<Header> =
+            headers {
+                """
+                Search by a single artist:
+                """.trimIndent()
+            }
 
         override fun HttpUrl.Builder.applyFilter() {
             when {

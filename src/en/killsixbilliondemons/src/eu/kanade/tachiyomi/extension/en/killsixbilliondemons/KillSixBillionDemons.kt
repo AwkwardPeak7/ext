@@ -147,21 +147,22 @@ class KillSixBillionDemons : HttpSource() {
     ): MutableList<SChapter> {
         val numberOfPreviousChapters = foundChapters.size
         val currentPage = client.newCall(GET(currentUrl, headers)).execute().asJsoup()
-        val chaptersOnCurrentPage = currentPage.select(".post-content")
-            .mapIndexed { index, chapterElement ->
-                val chapterTitle: String = chapterElement.select(".post-title a").text()
-                val chapterUrl: String =
-                    chapterElement.select(".comic-thumbnail-in-archive a").attr("href")
-                val imageUrl =
-                    chapterElement.select(".comic-thumbnail-in-archive a img").attr("src")
+        val chaptersOnCurrentPage =
+            currentPage.select(".post-content")
+                .mapIndexed { index, chapterElement ->
+                    val chapterTitle: String = chapterElement.select(".post-title a").text()
+                    val chapterUrl: String =
+                        chapterElement.select(".comic-thumbnail-in-archive a").attr("href")
+                    val imageUrl =
+                        chapterElement.select(".comic-thumbnail-in-archive a img").attr("src")
 
-                SChapter.create().apply {
-                    setUrlWithoutDomain(chapterUrl)
-                    name = chapterTitle
-                    chapter_number = numberOfPreviousChapters + index + 1f
-                    date_upload = extractDateFromImageUrl(imageUrl)
+                    SChapter.create().apply {
+                        setUrlWithoutDomain(chapterUrl)
+                        name = chapterTitle
+                        chapter_number = numberOfPreviousChapters + index + 1f
+                        date_upload = extractDateFromImageUrl(imageUrl)
+                    }
                 }
-            }
 
         foundChapters.addAll(chaptersOnCurrentPage)
 
@@ -193,11 +194,12 @@ class KillSixBillionDemons : HttpSource() {
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         val chapterDoc = client.newCall(GET(baseUrl + chapter.url, headers)).execute().asJsoup()
-        val pages = chapterDoc.select("#comic img")
-            .mapIndexed { index, imageElement ->
-                val imageUrl = imageElement.attr("src")
-                Page(index + 1, "", imageUrl)
-            }
+        val pages =
+            chapterDoc.select("#comic img")
+                .mapIndexed { index, imageElement ->
+                    val imageUrl = imageElement.attr("src")
+                    Page(index + 1, "", imageUrl)
+                }
 
         return Observable.just(pages)
     }

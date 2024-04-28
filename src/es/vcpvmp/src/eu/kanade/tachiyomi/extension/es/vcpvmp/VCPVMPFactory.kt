@@ -5,10 +5,11 @@ import eu.kanade.tachiyomi.source.SourceFactory
 import eu.kanade.tachiyomi.source.model.Filter
 
 class VCPVMPFactory : SourceFactory {
-    override fun createSources(): List<Source> = listOf(
-        VCP(),
-        VMP(),
-    )
+    override fun createSources(): List<Source> =
+        listOf(
+            VCP(),
+            VMP(),
+        )
 }
 
 class VCP : VCPVMP("VCP", "https://vercomicsporno.com") {

@@ -93,13 +93,15 @@ class TsuminoUtils {
             response: Response,
         ): List<SChapter> {
             val chapterList = mutableListOf<SChapter>()
-            val chapter = SChapter.create().apply {
-                name = "Chapter"
-                scanlator = getGroups(document)
-                chapter_number = 1f
-                url = response.request.url.encodedPath
-                    .replace("entry", "Read/Index")
-            }
+            val chapter =
+                SChapter.create().apply {
+                    name = "Chapter"
+                    scanlator = getGroups(document)
+                    chapter_number = 1f
+                    url =
+                        response.request.url.encodedPath
+                            .replace("entry", "Read/Index")
+                }
             chapterList.add(chapter)
             return chapterList
         }
@@ -111,13 +113,15 @@ class TsuminoUtils {
         }
 
         private fun cfDecodeEmail(encoded: String): String {
-            val encodedList = encoded
-                .chunked(2)
-                .map { it.toIntOrNull(16) }
+            val encodedList =
+                encoded
+                    .chunked(2)
+                    .map { it.toIntOrNull(16) }
 
-            val key = encodedList
-                .firstOrNull()
-                ?: return ""
+            val key =
+                encodedList
+                    .firstOrNull()
+                    ?: return ""
 
             return encodedList
                 .drop(1)

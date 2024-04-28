@@ -32,9 +32,10 @@ abstract class NaverComicBase(protected val mType: String) : ParsedHttpSource() 
     override val client: OkHttpClient = network.client
     internal val json: Json by injectLazy()
 
-    private val mobileHeaders = super.headersBuilder()
-        .add("Referer", mobileUrl)
-        .build()
+    private val mobileHeaders =
+        super.headersBuilder()
+            .add("Referer", mobileUrl)
+            .build()
 
     override fun searchMangaRequest(
         page: Int,
@@ -50,14 +51,15 @@ abstract class NaverComicBase(protected val mType: String) : ParsedHttpSource() 
 
     override fun searchMangaParse(response: Response): MangasPage {
         val result = json.decodeFromString<ApiMangaSearchResponse>(response.body.string())
-        val mangas = result.searchList.map {
-            SManga.create().apply {
-                title = it.titleName
-                description = it.synopsis
-                thumbnail_url = it.thumbnailUrl
-                url = "/$mType/list?titleId=${it.titleId}"
+        val mangas =
+            result.searchList.map {
+                SManga.create().apply {
+                    title = it.titleName
+                    description = it.synopsis
+                    thumbnail_url = it.thumbnailUrl
+                    url = "/$mType/list?titleId=${it.titleId}"
+                }
             }
-        }
 
         return MangasPage(mangas, result.pageInfo.nextPage != 0)
     }
@@ -80,11 +82,12 @@ abstract class NaverComicBase(protected val mType: String) : ParsedHttpSource() 
         chapters.addAll(result.articleList.map { createChapter(it, result.titleId) })
 
         while (result.pageInfo.nextPage != 0) {
-            result = json.decodeFromString(
-                client.newCall(
-                    chapterListRequest("/$mType/list?titleId=${result.titleId}", result.pageInfo.nextPage),
-                ).execute().body.string(),
-            )
+            result =
+                json.decodeFromString(
+                    client.newCall(
+                        chapterListRequest("/$mType/list?titleId=${result.titleId}", result.pageInfo.nextPage),
+                    ).execute().body.string(),
+                )
             chapters.addAll(result.articleList.map { createChapter(it, result.titleId) })
         }
 
@@ -133,11 +136,12 @@ abstract class NaverComicBase(protected val mType: String) : ParsedHttpSource() 
             author = authors
             description = manga.synopsis
             thumbnail_url = manga.thumbnailUrl
-            status = when {
-                manga.rest -> SManga.ON_HIATUS
-                manga.finished -> SManga.COMPLETED
-                else -> SManga.ONGOING
-            }
+            status =
+                when {
+                    manga.rest -> SManga.ON_HIATUS
+                    manga.finished -> SManga.COMPLETED
+                    else -> SManga.ONGOING
+                }
         }
     }
 
@@ -180,13 +184,14 @@ abstract class NaverComicChallengeBase(mType: String) : NaverComicBase(mType) {
 
     override fun popularMangaParse(response: Response): MangasPage {
         val apiMangaResponse = json.decodeFromString<ApiMangaChallengeResponse>(response.body.string())
-        val mangas = apiMangaResponse.list.map {
-            SManga.create().apply {
-                title = it.titleName
-                thumbnail_url = it.thumbnailUrl
-                url = "/$mType/list?titleId=${it.titleId}"
+        val mangas =
+            apiMangaResponse.list.map {
+                SManga.create().apply {
+                    title = it.titleName
+                    thumbnail_url = it.thumbnailUrl
+                    url = "/$mType/list?titleId=${it.titleId}"
+                }
             }
-        }
 
         var pageInfo = apiMangaResponse.pageInfo
 

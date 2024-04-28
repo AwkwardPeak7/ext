@@ -55,14 +55,18 @@ object ImageInterceptor : Interceptor {
                 val w = min(pieceWidth, width - xDst)
                 val h = min(pieceHeight, height - yDst)
 
-                val xSrc = pieceWidth * when (x) {
-                    xMax -> x // margin
-                    else -> (xMax - x + offset) % xMax
-                }
-                val ySrc = pieceHeight * when (y) {
-                    yMax -> y // margin
-                    else -> (yMax - y + offset) % yMax
-                }
+                val xSrc =
+                    pieceWidth *
+                        when (x) {
+                            xMax -> x // margin
+                            else -> (xMax - x + offset) % xMax
+                        }
+                val ySrc =
+                    pieceHeight *
+                        when (y) {
+                            yMax -> y // margin
+                            else -> (yMax - y + offset) % yMax
+                        }
 
                 val srcRect = Rect(xSrc, ySrc, xSrc + w, ySrc + h)
                 val dstRect = Rect(xDst, yDst, xDst + w, yDst + h)

@@ -15,7 +15,8 @@ class LeitorDeManga : Madara(
 ) {
     override val mangaSubString = "ler-manga"
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 }

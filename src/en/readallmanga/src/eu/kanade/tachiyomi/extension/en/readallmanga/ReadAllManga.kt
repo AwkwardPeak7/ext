@@ -11,8 +11,9 @@ class ReadAllManga : ReadAllComics("ReadAllManga", "https://readallmanga.com", "
 
     override fun mangaDetailsParse(document: Document): SManga {
         return super.mangaDetailsParse(document).apply {
-            genre = document.select(mangaDetailsGenreSelector()).text()
-                .split("–").joinToString { it.trim() }
+            genre =
+                document.select(mangaDetailsGenreSelector()).text()
+                    .split("–").joinToString { it.trim() }
         }
     }
 

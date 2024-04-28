@@ -26,12 +26,14 @@ class TMOManga : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/recomendados?page=$page", headers)
 
@@ -39,11 +41,12 @@ class TMOManga : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector() = "nav.navigation ul.pagination a[rel=next]"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        title = element.select(".manga-title-updated").text()
-        thumbnail_url = element.selectFirst("img")?.imgAttr()
-        setUrlWithoutDomain(element.select("div.manga_biblioteca > a").attr("href"))
-    }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            title = element.select(".manga-title-updated").text()
+            thumbnail_url = element.selectFirst("img")?.imgAttr()
+            setUrlWithoutDomain(element.select("div.manga_biblioteca > a").attr("href"))
+        }
 
     override fun latestUpdatesRequest(page: Int) = GET(baseUrl, headers)
 
@@ -53,21 +56,23 @@ class TMOManga : ParsedHttpSource() {
 
     override fun latestUpdatesParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val mangas = document.selectFirst(latestUpdatesWrapperSelector())!!
-            .select(latestUpdatesSelector())
-            .map { latestUpdatesFromElement(it) }
+        val mangas =
+            document.selectFirst(latestUpdatesWrapperSelector())!!
+                .select(latestUpdatesSelector())
+                .map { latestUpdatesFromElement(it) }
 
         return MangasPage(mangas, false)
     }
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        title = element.select(".manga-title-updated").text()
-        thumbnail_url = element.selectFirst("img")?.imgAttr()
-        val chapterUrl = element.selectFirst("a")!!.attr("href")
-        setUrlWithoutDomain(chapterUrl.substringBeforeLast("-").replace("/capitulo/", "/manga/"))
-    }
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            title = element.select(".manga-title-updated").text()
+            thumbnail_url = element.selectFirst("img")?.imgAttr()
+            val chapterUrl = element.selectFirst("a")!!.attr("href")
+            setUrlWithoutDomain(chapterUrl.substringBeforeLast("-").replace("/capitulo/", "/manga/"))
+        }
 
     override fun searchMangaRequest(
         page: Int,
@@ -107,19 +112,21 @@ class TMOManga : ParsedHttpSource() {
 
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.select("post-title > h1").text()
-        genre = document.select("div.summary_content a.tags_manga").joinToString { it.ownText() }
-        description = document.select("div.description-summary p").text()
-        thumbnail_url = document.select("div.summary_image img").imgAttr()
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.select("post-title > h1").text()
+            genre = document.select("div.summary_content a.tags_manga").joinToString { it.ownText() }
+            description = document.select("div.description-summary p").text()
+            thumbnail_url = document.select("div.summary_image img").imgAttr()
+        }
 
     override fun chapterListSelector() = "div.listing-chapters_wrap li.wp-manga-chapter"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        name = element.select("a").text()
-        setUrlWithoutDomain(element.select("a").attr("href"))
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            name = element.select("a").text()
+            setUrlWithoutDomain(element.select("a").attr("href"))
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("div#images_chapter img").mapIndexed { i, img ->

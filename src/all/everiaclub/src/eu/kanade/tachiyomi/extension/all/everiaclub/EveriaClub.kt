@@ -19,13 +19,15 @@ class EveriaClub() : ParsedHttpSource() {
     override val name = "Everia.club"
     override val supportsLatest = true
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val Element.imgSrc: String
-        get() = attr("data-lazy-src")
-            .ifEmpty { attr("data-src") }
-            .ifEmpty { attr("src") }
+        get() =
+            attr("data-lazy-src")
+                .ifEmpty { attr("data-src") }
+                .ifEmpty { attr("src") }
 
     // Latest
     override fun latestUpdatesFromElement(element: Element): SManga {
@@ -123,12 +125,13 @@ class EveriaClub() : ParsedHttpSource() {
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     // Filters
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("NOTE: Only one filter will be applied!"),
-        Filter.Separator(),
-        CategoryFilter(),
-        TagFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("NOTE: Only one filter will be applied!"),
+            Filter.Separator(),
+            CategoryFilter(),
+            TagFilter(),
+        )
 
     open class UriPartFilter(
         displayName: String,

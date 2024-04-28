@@ -40,9 +40,10 @@ class MangaSwat :
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1)
+            .build()
 
     override fun searchMangaRequest(
         page: Int,
@@ -52,11 +53,12 @@ class MangaSwat :
         val request = super.searchMangaRequest(page, query, filters)
         if (query.isBlank()) return request
 
-        val url = request.url.newBuilder()
-            .removePathSegment(0)
-            .removeAllQueryParameters("title")
-            .addQueryParameter("s", query)
-            .build()
+        val url =
+            request.url.newBuilder()
+                .removePathSegment(0)
+                .removeAllQueryParameters("title")
+                .addQueryParameter("s", query)
+                .build()
 
         return request.newBuilder()
             .url(url)
@@ -82,12 +84,13 @@ class MangaSwat :
 
     override fun chapterListSelector() = "div.bxcl li, ul div:has(span.lchx)"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        val urlElements = element.select("a")
-        setUrlWithoutDomain(urlElements.attr("href"))
-        name = element.select(".lch a, .chapternum").text().ifBlank { urlElements.last()!!.text() }
-        date_upload = element.selectFirst(".chapter-date")?.text().parseChapterDate()
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            val urlElements = element.select("a")
+            setUrlWithoutDomain(urlElements.attr("href"))
+            name = element.select(".lch a, .chapternum").text().ifBlank { urlElements.last()!!.text() }
+            date_upload = element.selectFirst(".chapter-date")?.text().parseChapterDate()
+        }
 
     @Serializable
     data class TSReader(
@@ -108,18 +111,19 @@ class MangaSwat :
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val baseUrlPref = androidx.preference.EditTextPreference(screen.context).apply {
-            key = BASE_URL_PREF
-            title = BASE_URL_PREF_TITLE
-            summary = BASE_URL_PREF_SUMMARY
-            this.setDefaultValue(defaultBaseUrl)
-            dialogTitle = BASE_URL_PREF_TITLE
+        val baseUrlPref =
+            androidx.preference.EditTextPreference(screen.context).apply {
+                key = BASE_URL_PREF
+                title = BASE_URL_PREF_TITLE
+                summary = BASE_URL_PREF_SUMMARY
+                this.setDefaultValue(defaultBaseUrl)
+                dialogTitle = BASE_URL_PREF_TITLE
 
-            setOnPreferenceChangeListener { _, _ ->
-                Toast.makeText(screen.context, RESTART_TACHIYOMI, Toast.LENGTH_LONG).show()
-                true
+                setOnPreferenceChangeListener { _, _ ->
+                    Toast.makeText(screen.context, RESTART_TACHIYOMI, Toast.LENGTH_LONG).show()
+                    true
+                }
             }
-        }
         screen.addPreference(baseUrlPref)
     }
 

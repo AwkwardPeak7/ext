@@ -38,9 +38,10 @@ open class MCCMS(
             .build()
     }
 
-    override fun headersBuilder() = Headers.Builder()
-        .add("User-Agent", System.getProperty("http.agent")!!)
-        .add("Referer", baseUrl)
+    override fun headersBuilder() =
+        Headers.Builder()
+            .add("User-Agent", System.getProperty("http.agent")!!)
+            .add("Referer", baseUrl)
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/api/data/comic?page=$page&size=$PAGE_SIZE&order=hits", headers)
 
@@ -58,21 +59,23 @@ open class MCCMS(
         query: String,
         filters: FilterList,
     ): Request {
-        val queries = buildList {
-            add("page=$page")
-            add("size=$PAGE_SIZE")
-            val isTextSearch = query.isNotBlank()
-            if (isTextSearch) add("key=" + URLEncoder.encode(query, "UTF-8"))
-            for (filter in filters) if (filter is MCCMSFilter) {
-                if (isTextSearch && filter.isTypeQuery) continue
-                val part = filter.query
-                if (part.isNotEmpty()) add(part)
+        val queries =
+            buildList {
+                add("page=$page")
+                add("size=$PAGE_SIZE")
+                val isTextSearch = query.isNotBlank()
+                if (isTextSearch) add("key=" + URLEncoder.encode(query, "UTF-8"))
+                for (filter in filters) if (filter is MCCMSFilter) {
+                    if (isTextSearch && filter.isTypeQuery) continue
+                    val part = filter.query
+                    if (part.isNotEmpty()) add(part)
+                }
             }
-        }
-        val url = buildString {
-            append(baseUrl).append("/api/data/comic?")
-            queries.joinTo(this, separator = "&")
-        }
+        val url =
+            buildString {
+                append(baseUrl).append("/api/data/comic?")
+                queries.joinTo(this, separator = "&")
+            }
         return GET(url, headers)
     }
 
@@ -81,9 +84,10 @@ open class MCCMS(
     override fun getMangaUrl(manga: SManga) = baseUrl + manga.url
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        val url = "$baseUrl/api/data/comic".toHttpUrl().newBuilder()
-            .addQueryParameter("key", manga.title)
-            .toString()
+        val url =
+            "$baseUrl/api/data/comic".toHttpUrl().newBuilder()
+                .addQueryParameter("key", manga.title)
+                .toString()
         val mangaUrl = manga.url
         return client.newCall(GET(url, headers))
             .asObservableSuccess().map { response ->
@@ -94,17 +98,18 @@ open class MCCMS(
 
     override fun mangaDetailsParse(response: Response): SManga = throw UnsupportedOperationException()
 
-    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> = Observable.fromCallable {
-        val id = manga.thumbnail_url!!.substringAfterLast('#', missingDelimiterValue = "").ifEmpty { throw Exception("请刷新漫画") }
-        val dataResponse = client.newCall(GET("$baseUrl/api/data/chapter?mid=$id", headers)).execute()
-        val dataList: List<ChapterDataDto> = dataResponse.parseAs() // unordered
-        val dateMap = HashMap<Int, Long>(dataList.size * 2)
-        dataList.forEach { dateMap[it.id.toInt()] = it.date }
-        val response = client.newCall(GET("$baseUrl/api/comic/chapter?mid=$id", headers)).execute()
-        val list: List<ChapterDto> = response.parseAs()
-        val result = list.map { it.toSChapter(date = dateMap[it.id.toInt()] ?: 0) }.asReversed()
-        result
-    }
+    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> =
+        Observable.fromCallable {
+            val id = manga.thumbnail_url!!.substringAfterLast('#', missingDelimiterValue = "").ifEmpty { throw Exception("请刷新漫画") }
+            val dataResponse = client.newCall(GET("$baseUrl/api/data/chapter?mid=$id", headers)).execute()
+            val dataList: List<ChapterDataDto> = dataResponse.parseAs() // unordered
+            val dateMap = HashMap<Int, Long>(dataList.size * 2)
+            dataList.forEach { dateMap[it.id.toInt()] = it.date }
+            val response = client.newCall(GET("$baseUrl/api/comic/chapter?mid=$id", headers)).execute()
+            val list: List<ChapterDto> = response.parseAs()
+            val result = list.map { it.toSChapter(date = dateMap[it.id.toInt()] ?: 0) }.asReversed()
+            result
+        }
 
     override fun chapterListParse(response: Response): List<SChapter> = throw UnsupportedOperationException()
 
@@ -122,9 +127,10 @@ open class MCCMS(
     // Don't send referer
     override fun imageRequest(page: Page) = GET(page.imageUrl!!, pcHeaders)
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream<ResultDto<T>>(it.body.byteStream()).data
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream<ResultDto<T>>(it.body.byteStream()).data
+        }
 
     override fun getFilterList(): FilterList {
         val genreData = config.genreData.also { it.fetchGenres(this) }

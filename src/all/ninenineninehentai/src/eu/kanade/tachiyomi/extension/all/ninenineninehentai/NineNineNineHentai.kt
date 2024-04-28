@@ -49,39 +49,43 @@ open class NineNineNineHentai(
 
     private val json: Json by injectLazy()
 
-    override val client = network.cloudflareClient.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val url = request.url
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val url = request.url
 
-            if (url.host != "127.0.0.1") {
-                return@addInterceptor chain.proceed(request)
+                if (url.host != "127.0.0.1") {
+                    return@addInterceptor chain.proceed(request)
+                }
+
+                val newRequest =
+                    request.newBuilder()
+                        .url(
+                            url.newBuilder()
+                                .host(preference.cdnUrl)
+                                .build(),
+                        ).build()
+
+                return@addInterceptor chain.proceed(newRequest)
             }
-
-            val newRequest = request.newBuilder()
-                .url(
-                    url.newBuilder()
-                        .host(preference.cdnUrl)
-                        .build(),
-                ).build()
-
-            return@addInterceptor chain.proceed(newRequest)
-        }
-        .rateLimit(1)
-        .build()
+            .rateLimit(1)
+            .build()
 
     private val preference by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int): Request {
-        val payload = GraphQL(
-            PopularVariables(size, page, 1, siteLang),
-            POPULAR_QUERY,
-        ).toJsonRequestBody()
+        val payload =
+            GraphQL(
+                PopularVariables(size, page, 1, siteLang),
+                POPULAR_QUERY,
+            ).toJsonRequestBody()
 
         return POST(apiUrl, headers, payload)
     }
@@ -112,23 +116,25 @@ open class NineNineNineHentai(
         query: String,
         filters: FilterList,
     ): Request {
-        val payload = GraphQL(
-            SearchVariables(
-                size = size,
-                page = page,
-                search = SearchPayload(
-                    query = query.trim().takeUnless { it.isEmpty() },
-                    language = siteLang,
-                    sortBy = filters.firstInstanceOrNull<SortFilter>()?.selected,
-                    format = filters.firstInstanceOrNull<FormatFilter>()?.selected,
-                    tags = filters.firstInstanceOrNull<IncludedTagFilter>()?.tags,
-                    excludeTags = filters.firstInstanceOrNull<ExcludedTagFilter>()?.tags,
-                    pagesRangeStart = filters.firstInstanceOrNull<MinPageFilter>()?.value,
-                    pagesRangeEnd = filters.firstInstanceOrNull<MaxPageFilter>()?.value,
+        val payload =
+            GraphQL(
+                SearchVariables(
+                    size = size,
+                    page = page,
+                    search =
+                        SearchPayload(
+                            query = query.trim().takeUnless { it.isEmpty() },
+                            language = siteLang,
+                            sortBy = filters.firstInstanceOrNull<SortFilter>()?.selected,
+                            format = filters.firstInstanceOrNull<FormatFilter>()?.selected,
+                            tags = filters.firstInstanceOrNull<IncludedTagFilter>()?.tags,
+                            excludeTags = filters.firstInstanceOrNull<ExcludedTagFilter>()?.tags,
+                            pagesRangeStart = filters.firstInstanceOrNull<MinPageFilter>()?.value,
+                            pagesRangeEnd = filters.firstInstanceOrNull<MaxPageFilter>()?.value,
+                        ),
                 ),
-            ),
-            SEARCH_QUERY,
-        ).toJsonRequestBody()
+                SEARCH_QUERY,
+            ).toJsonRequestBody()
 
         return POST(apiUrl, headers, payload)
     }
@@ -138,10 +144,11 @@ open class NineNineNineHentai(
     override fun getFilterList() = getFilters()
 
     private fun mangaFromIDRequest(id: String): Request {
-        val payload = GraphQL(
-            IdVariables(id),
-            DETAILS_QUERY,
-        ).toJsonRequestBody()
+        val payload =
+            GraphQL(
+                IdVariables(id),
+                DETAILS_QUERY,
+            ).toJsonRequestBody()
 
         return POST(apiUrl, headers, payload)
     }
@@ -149,14 +156,16 @@ open class NineNineNineHentai(
     private fun searchMangaFromIDParse(response: Response): MangasPage {
         val res = response.parseAs<ApiDetailsResponse>()
 
-        val manga = res.data.details
-            .takeIf { it.language == siteLang || lang == "all" }
-            ?.let { manga ->
-                preference.dateMap = preference.dateMap.also { dateMap ->
-                    manga.uploadDate?.let { dateMap[manga.id] = it }
+        val manga =
+            res.data.details
+                .takeIf { it.language == siteLang || lang == "all" }
+                ?.let { manga ->
+                    preference.dateMap =
+                        preference.dateMap.also { dateMap ->
+                            manga.uploadDate?.let { dateMap[manga.id] = it }
+                        }
+                    manga.toSManga(preference.shortTitle)
                 }
-                manga.toSManga(preference.shortTitle)
-            }
 
         return MangasPage(listOfNotNull(manga), false)
     }
@@ -169,9 +178,10 @@ open class NineNineNineHentai(
         val res = response.parseAs<ApiDetailsResponse>()
         val manga = res.data.details
 
-        preference.dateMap = preference.dateMap.also { dateMap ->
-            manga.uploadDate?.let { dateMap[manga.id] = it }
-        }
+        preference.dateMap =
+            preference.dateMap.also { dateMap ->
+                manga.uploadDate?.let { dateMap[manga.id] = it }
+            }
 
         return manga.toSManga(preference.shortTitle)
     }
@@ -179,11 +189,12 @@ open class NineNineNineHentai(
     override fun getMangaUrl(manga: SManga) = "$baseUrl/hchapter/${manga.url}"
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        val group = manga.description
-            ?.substringAfter("Group:", "")
-            ?.substringBefore("\n")
-            ?.trim()
-            ?.takeUnless { it.isEmpty() }
+        val group =
+            manga.description
+                ?.substringAfter("Group:", "")
+                ?.substringBefore("\n")
+                ?.trim()
+                ?.takeUnless { it.isEmpty() }
 
         return Observable.just(
             listOf(
@@ -200,10 +211,11 @@ open class NineNineNineHentai(
     override fun getChapterUrl(chapter: SChapter) = "$baseUrl/hchapter/${chapter.url}"
 
     override fun pageListRequest(chapter: SChapter): Request {
-        val payload = GraphQL(
-            IdVariables(chapter.url),
-            PAGES_QUERY,
-        ).toJsonRequestBody()
+        val payload =
+            GraphQL(
+                IdVariables(chapter.url),
+                PAGES_QUERY,
+            ).toJsonRequestBody()
 
         return POST(apiUrl, headers, payload)
     }
@@ -211,18 +223,21 @@ open class NineNineNineHentai(
     override fun pageListParse(response: Response): List<Page> {
         val res = response.parseAs<ApiPageListResponse>()
 
-        val pages = res.data.chapter.pages?.firstOrNull()
-            ?: return emptyList()
+        val pages =
+            res.data.chapter.pages?.firstOrNull()
+                ?: return emptyList()
 
         val cdnUrl = "https://${getUpdatedCdn(res.data.chapter.id)}/"
         val cdn = pages.urlPart.toAbsUrl(cdnUrl)
 
-        val selectedImages = when (preference.getString(PREF_IMG_QUALITY_KEY, "original")) {
-            "medium" -> pages.qualityMedium?.mapIndexed { i, it ->
-                it ?: pages.qualityOriginal[i]
-            }
-            else -> pages.qualityOriginal
-        } ?: pages.qualityOriginal
+        val selectedImages =
+            when (preference.getString(PREF_IMG_QUALITY_KEY, "original")) {
+                "medium" ->
+                    pages.qualityMedium?.mapIndexed { i, it ->
+                        it ?: pages.qualityOriginal[i]
+                    }
+                else -> pages.qualityOriginal
+            } ?: pages.qualityOriginal
 
         return selectedImages.mapIndexed { index, image ->
             Page(index, "", "$cdn/${image.url}")
@@ -231,13 +246,15 @@ open class NineNineNineHentai(
 
     private fun getUpdatedCdn(chapterId: String): String {
         val url = "$baseUrl/hchapter/$chapterId"
-        val document = client.newCall(GET(url, headers))
-            .execute().use { it.asJsoup() }
+        val document =
+            client.newCall(GET(url, headers))
+                .execute().use { it.asJsoup() }
 
-        val cdnHost = document.selectFirst("meta[property=og:image]")
-            ?.attr("content")
-            ?.toHttpUrlOrNull()
-            ?.host
+        val cdnHost =
+            document.selectFirst("meta[property=og:image]")
+                ?.attr("content")
+                ?.toHttpUrlOrNull()
+                ?.host
 
         return cdnHost?.also {
             preference.cdnUrl = it
@@ -250,8 +267,9 @@ open class NineNineNineHentai(
 
     private inline fun <reified T> List<*>.firstInstanceOrNull(): T? = filterIsInstance<T>().firstOrNull()
 
-    private inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody = json.encodeToString(this)
-        .toRequestBody(JSON_MEDIA_TYPE)
+    private inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody =
+        json.encodeToString(this)
+            .toRequestBody(JSON_MEDIA_TYPE)
 
     private fun String?.parseDate(): Long {
         return runCatching {
@@ -264,10 +282,11 @@ open class NineNineNineHentai(
         val mangas = res.data.chapters.edges
         val dateMap = preference.dateMap
         val useShortTitle = preference.shortTitle
-        val entries = mangas.map { manga ->
-            manga.uploadDate?.let { dateMap[manga.id] = it }
-            manga.toSManga(useShortTitle)
-        }
+        val entries =
+            mangas.map { manga ->
+                manga.uploadDate?.let { dateMap[manga.id] = it }
+                manga.toSManga(useShortTitle)
+            }
         preference.dateMap = dateMap
         val hasNextPage = mangas.size == size
 

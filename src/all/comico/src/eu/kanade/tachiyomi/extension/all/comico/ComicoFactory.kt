@@ -10,10 +10,11 @@ class ComicoFactory : SourceFactory {
 
     class ComicoKR : Comico("https://www.comico.kr", "코미코", "ko-KR")
 
-    override fun createSources() = listOf(
-        PocketComics("en-US"),
-        PocketComics("zh-TW"),
-        ComicoJP(),
-        ComicoKR(),
-    )
+    override fun createSources() =
+        listOf(
+            PocketComics("en-US"),
+            PocketComics("zh-TW"),
+            ComicoJP(),
+            ComicoKR(),
+        )
 }

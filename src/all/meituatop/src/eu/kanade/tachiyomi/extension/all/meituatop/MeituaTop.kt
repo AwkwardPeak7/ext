@@ -29,19 +29,20 @@ class MeituaTop : HttpSource() {
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val mangas = document.selectFirst(Evaluator.Class("thumbnail-group"))!!.children().map {
-            SManga.create().apply {
-                url = it.selectFirst(Evaluator.Tag("a"))!!.attr("href")
-                val image = it.selectFirst(Evaluator.Tag("img"))!!
-                title = image.attr("alt")
-                thumbnail_url = image.attr("src")
-                val info = it.selectFirst(Evaluator.Tag("p"))!!.ownText().split(" - ")
-                genre = info[0]
-                description = info[1]
-                status = SManga.COMPLETED
-                initialized = true
+        val mangas =
+            document.selectFirst(Evaluator.Class("thumbnail-group"))!!.children().map {
+                SManga.create().apply {
+                    url = it.selectFirst(Evaluator.Tag("a"))!!.attr("href")
+                    val image = it.selectFirst(Evaluator.Tag("img"))!!
+                    title = image.attr("alt")
+                    thumbnail_url = image.attr("src")
+                    val info = it.selectFirst(Evaluator.Tag("p"))!!.ownText().split(" - ")
+                    genre = info[0]
+                    description = info[1]
+                    status = SManga.COMPLETED
+                    initialized = true
+                }
             }
-        }
         val pageLinks = document.select(Evaluator.Class("page_link"))
         if (pageLinks.isEmpty()) return MangasPage(mangas, false)
         val lastPage = pageLinks[3].attr("href")
@@ -59,10 +60,11 @@ class MeituaTop : HttpSource() {
         filters: FilterList,
     ): Request {
         if (query.isNotEmpty()) {
-            val url = "$baseUrl/artsearch/-------.html".toHttpUrl().newBuilder()
-                .addQueryParameter("wd", query)
-                .addQueryParameter("page", page.toString())
-                .toString()
+            val url =
+                "$baseUrl/artsearch/-------.html".toHttpUrl().newBuilder()
+                    .addQueryParameter("wd", query)
+                    .addQueryParameter("page", page.toString())
+                    .toString()
             return GET(url, headers)
         }
 
@@ -77,12 +79,13 @@ class MeituaTop : HttpSource() {
     override fun mangaDetailsParse(response: Response) = throw UnsupportedOperationException()
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        val chapter = SChapter.create().apply {
-            url = manga.url
-            name = "Gallery"
-            date_upload = dateFormat.parse(manga.description!!)!!.time
-            chapter_number = -2f
-        }
+        val chapter =
+            SChapter.create().apply {
+                url = manga.url
+                name = "Gallery"
+                date_upload = dateFormat.parse(manga.description!!)!!.time
+                chapter_number = -2f
+            }
         return Observable.just(listOf(chapter))
     }
 
@@ -90,17 +93,19 @@ class MeituaTop : HttpSource() {
 
     override fun pageListParse(response: Response): List<Page> {
         val document = response.asJsoup()
-        val images = document.selectFirst(Evaluator.Class("ttnr"))!!.select(Evaluator.Tag("img"))
-            .map { it.attr("src") }.distinct()
+        val images =
+            document.selectFirst(Evaluator.Class("ttnr"))!!.select(Evaluator.Tag("img"))
+                .map { it.attr("src") }.distinct()
         return images.mapIndexed { index, imageUrl -> Page(index, imageUrl = imageUrl) }
     }
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Category (ignored for text search)"),
-        RegionFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Category (ignored for text search)"),
+            RegionFilter(),
+        )
 
     private class RegionFilter : Filter.Select<String>(
         "Region",

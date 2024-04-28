@@ -28,23 +28,26 @@ abstract class ReadAllComics(
 
     private lateinit var searchPageElements: Elements
 
-    override val client = network.cloudflareClient.newBuilder()
-        .addInterceptor(::archivedCategoryInterceptor)
-        .rateLimit(2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor(::archivedCategoryInterceptor)
+            .rateLimit(2)
+            .build()
 
     protected open fun archivedCategoryInterceptor(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val response = chain.proceed(request)
 
-        val document = Jsoup.parse(
-            response.peekBody(Long.MAX_VALUE).string(),
-            request.url.toString(),
-        )
+        val document =
+            Jsoup.parse(
+                response.peekBody(Long.MAX_VALUE).string(),
+                request.url.toString(),
+            )
 
-        val newUrl = document.selectFirst(archivedCategorySelector())
-            ?.attr("href")?.toHttpUrlOrNull()
-            ?: return response
+        val newUrl =
+            document.selectFirst(archivedCategorySelector())
+                ?.attr("href")?.toHttpUrlOrNull()
+                ?: return response
 
         if (newUrl.pathSegments.contains("category")) {
             response.close()
@@ -66,9 +69,10 @@ abstract class ReadAllComics(
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select(popularMangaSelector()).mapNotNull {
-            nullablePopularManga(it)
-        }
+        val mangas =
+            document.select(popularMangaSelector()).mapNotNull {
+                nullablePopularManga(it)
+            }
 
         val hasNextPage = document.select(popularMangaNextPageSelector()).first() != null
 
@@ -76,16 +80,18 @@ abstract class ReadAllComics(
     }
 
     protected open fun nullablePopularManga(element: Element): SManga? {
-        val manga = SManga.create().apply {
-            val category = element.classNames()
-                .firstOrNull { it.startsWith("category-") }
-                ?.substringAfter("category-")
-                ?: return null
+        val manga =
+            SManga.create().apply {
+                val category =
+                    element.classNames()
+                        .firstOrNull { it.startsWith("category-") }
+                        ?.substringAfter("category-")
+                        ?: return null
 
-            url = "/category/$category/"
-            title = element.select(popularMangaTitleSelector()).text()
-            thumbnail_url = element.select(popularMangaThumbnailSelector()).attr("abs:src")
-        }
+                url = "/category/$category/"
+                title = element.select(popularMangaTitleSelector()).text()
+                thumbnail_url = element.select(popularMangaThumbnailSelector()).attr("abs:src")
+            }
 
         return manga
     }
@@ -139,23 +145,25 @@ abstract class ReadAllComics(
         return MangasPage(mangas, endRange < searchPageElements.lastIndex)
     }
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        title = element.text().trim()
-        thumbnail_url = searchCover
-    }
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            title = element.text().trim()
+            thumbnail_url = searchCover
+        }
 
     override fun searchMangaSelector() = ".categories a"
 
     override fun searchMangaNextPageSelector() = null
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.select(mangaDetailsTitleSelector()).text().trim()
-        genre = document.select(mangaDetailsGenreSelector()).joinToString { it.text().trim() }
-        author = document.select(mangaDetailsAuthorSelector()).last()?.text()?.trim()
-        description = document.select(mangaDetailsDescriptionSelector()).text().trim()
-        thumbnail_url = document.select(mangaDetailsThumbnailSelector()).attr("abs:src")
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.select(mangaDetailsTitleSelector()).text().trim()
+            genre = document.select(mangaDetailsGenreSelector()).joinToString { it.text().trim() }
+            author = document.select(mangaDetailsAuthorSelector()).last()?.text()?.trim()
+            description = document.select(mangaDetailsDescriptionSelector()).text().trim()
+            thumbnail_url = document.select(mangaDetailsThumbnailSelector()).attr("abs:src")
+        }
 
     protected open fun mangaDetailsTitleSelector() = "h1"
 
@@ -169,10 +177,11 @@ abstract class ReadAllComics(
 
     override fun chapterListSelector() = ".list-story a"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        name = element.attr("title")
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            name = element.attr("title")
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select(pageListSelector()).mapIndexed { idx, element ->

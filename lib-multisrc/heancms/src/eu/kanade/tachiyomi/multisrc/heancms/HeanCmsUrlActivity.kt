@@ -13,11 +13,12 @@ class HeanCmsUrlActivity : Activity() {
         val pathSegments = intent?.data?.pathSegments
 
         if (pathSegments != null && pathSegments.size >= 2) {
-            val mainIntent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", createQuery(pathSegments))
-                putExtra("filter", packageName)
-            }
+            val mainIntent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra("query", createQuery(pathSegments))
+                    putExtra("filter", packageName)
+                }
             try {
                 startActivity(mainIntent)
             } catch (e: ActivityNotFoundException) {

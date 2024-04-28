@@ -23,9 +23,10 @@ class SilentMangaAudition : HttpSource() {
 
     override val supportsLatest = false
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", USER_AGENT)
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("User-Agent", USER_AGENT)
+            .add("Referer", baseUrl)
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         val entries = SMA_ENTRIES.mapIndexed { i, entry -> entry.toSManga(i) }
@@ -37,12 +38,13 @@ class SilentMangaAudition : HttpSource() {
         query: String,
         filters: FilterList,
     ): Observable<MangasPage> {
-        val filteredEntries = SMA_ENTRIES
-            .mapIndexed { i, entry -> entry.toSManga(i) }
-            .filter {
-                it.title.contains(query, true) ||
-                    it.description!!.contains(query, true)
-            }
+        val filteredEntries =
+            SMA_ENTRIES
+                .mapIndexed { i, entry -> entry.toSManga(i) }
+                .filter {
+                    it.title.contains(query, true) ||
+                        it.description!!.contains(query, true)
+                }
 
         return Observable.just(MangasPage(filteredEntries, false))
     }
@@ -60,9 +62,10 @@ class SilentMangaAudition : HttpSource() {
     }
 
     override fun chapterListRequest(manga: SManga): Request {
-        val url = manga.url
-            .substringAfter(",")
-            .substringBefore(",")
+        val url =
+            manga.url
+                .substringAfter(",")
+                .substringBefore(",")
 
         return GET(SMACMAG_URL + url, headers)
     }
@@ -75,11 +78,12 @@ class SilentMangaAudition : HttpSource() {
 
     private fun chapterListSelector(): String = "ol.playlist li a"
 
-    private fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        name = element.select("span.ttl").text()
-        scanlator = element.select("span.name").text()
-        url = element.attr("abs:href")
-    }
+    private fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            name = element.select("span.ttl").text()
+            scanlator = element.select("span.name").text()
+            url = element.attr("abs:href")
+        }
 
     override fun pageListRequest(chapter: SChapter): Request {
         return GET(chapter.url, headers)
@@ -98,9 +102,10 @@ class SilentMangaAudition : HttpSource() {
     override fun imageUrlParse(response: Response): String = ""
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", page.url)
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", page.url)
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
@@ -126,7 +131,8 @@ class SilentMangaAudition : HttpSource() {
     companion object {
         private const val SMACMAG_URL = "https://smacmag.net"
 
-        private const val USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"
+        private const val USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"
     }
 }

@@ -29,8 +29,9 @@ class Mangatown : ParsedHttpSource() {
 
     override val client: OkHttpClient = network.cloudflareClient
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", baseUrl)
 
     override fun popularMangaSelector() = "li:has(a.manga_cover)"
 
@@ -81,23 +82,25 @@ class Mangatown : ParsedHttpSource() {
             title = infoElement.select("h1").text()
             author = infoElement.select("b:containsOwn(author) + a").text()
             artist = infoElement.select("b:containsOwn(artist) + a").text()
-            status = if (infoElement.select("div.chapter_content:contains(has been licensed)").isNotEmpty()) {
-                SManga.LICENSED
-            } else {
-                parseStatus(infoElement.select("li:has(b:containsOwn(status))").text())
-            }
+            status =
+                if (infoElement.select("div.chapter_content:contains(has been licensed)").isNotEmpty()) {
+                    SManga.LICENSED
+                } else {
+                    parseStatus(infoElement.select("li:has(b:containsOwn(status))").text())
+                }
             genre = infoElement.select("li:has(b:containsOwn(genre)) a").joinToString { it.text() }
             description = document.select("span#show").text().removeSuffix("HIDE")
             thumbnail_url = document.select("div.detail_info img").attr("abs:src")
         }
     }
 
-    private fun parseStatus(status: String?) = when {
-        status == null -> SManga.UNKNOWN
-        status.contains("Ongoing", ignoreCase = true) -> SManga.ONGOING
-        status.contains("Completed", ignoreCase = true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String?) =
+        when {
+            status == null -> SManga.UNKNOWN
+            status.contains("Ongoing", ignoreCase = true) -> SManga.ONGOING
+            status.contains("Completed", ignoreCase = true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun chapterListSelector() = "ul.chapter_list li"
 

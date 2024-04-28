@@ -15,7 +15,8 @@ class TerritorioLealtad : Madara(
 ) {
     override val useLoadMoreRequest = LoadMoreStrategy.Always
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 }

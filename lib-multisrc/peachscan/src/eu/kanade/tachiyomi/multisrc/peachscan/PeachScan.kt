@@ -42,16 +42,18 @@ abstract class PeachScan(
     override val name: String,
     override val baseUrl: String,
     override val lang: String,
-    private val dateFormat: SimpleDateFormat = SimpleDateFormat("d 'de' MMMM 'de' yyyy 'às' HH:mm", Locale("pt", "BR")).apply {
-        timeZone = TimeZone.getTimeZone("America/Sao_Paulo")
-    },
+    private val dateFormat: SimpleDateFormat =
+        SimpleDateFormat("d 'de' MMMM 'de' yyyy 'às' HH:mm", Locale("pt", "BR")).apply {
+            timeZone = TimeZone.getTimeZone("America/Sao_Paulo")
+        },
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient
-        .newBuilder()
-        .addInterceptor(::zipImageInterceptor)
-        .build()
+    override val client =
+        network.cloudflareClient
+            .newBuilder()
+            .addInterceptor(::zipImageInterceptor)
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -59,13 +61,14 @@ abstract class PeachScan(
 
     override fun popularMangaSelector() = ".comics__all__box"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        val anchor = element.selectFirst(".titulo__comic__allcomics")!!
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            val anchor = element.selectFirst(".titulo__comic__allcomics")!!
 
-        setUrlWithoutDomain(anchor.attr("href"))
-        title = anchor.text()
-        thumbnail_url = element.selectFirst(".box-image img")?.attr("abs:src")
-    }
+            setUrlWithoutDomain(anchor.attr("href"))
+            title = anchor.text()
+            thumbnail_url = element.selectFirst(".box-image img")?.attr("abs:src")
+        }
 
     override fun popularMangaNextPageSelector() = null
 
@@ -73,11 +76,12 @@ abstract class PeachScan(
 
     override fun latestUpdatesSelector() = "div.comic:not(:has(a.box-image > p:contains(Novel)))"
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
-        title = element.selectFirst(".titulo__comic")!!.text()
-        thumbnail_url = element.selectFirst(".comic__img")?.attr("abs:src")
-    }
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
+            title = element.selectFirst(".titulo__comic")!!.text()
+            thumbnail_url = element.selectFirst(".comic__img")?.attr("abs:src")
+        }
 
     override fun latestUpdatesNextPageSelector() = null
 
@@ -86,50 +90,55 @@ abstract class PeachScan(
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegments("auto-complete/")
-            addQueryParameter("term", query)
-        }.build()
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegments("auto-complete/")
+                addQueryParameter("term", query)
+            }.build()
 
         return GET(url, headers)
     }
 
     override fun searchMangaParse(response: Response): MangasPage {
-        val manga = json.parseToJsonElement(response.body.string()).jsonArray.mapNotNull {
-            val element = Jsoup.parseBodyFragment(it.jsonObject["html"]!!.jsonPrimitive.content)
+        val manga =
+            json.parseToJsonElement(response.body.string()).jsonArray.mapNotNull {
+                val element = Jsoup.parseBodyFragment(it.jsonObject["html"]!!.jsonPrimitive.content)
 
-            runCatching { searchMangaFromElement(element) }.getOrNull()
-        }
+                runCatching { searchMangaFromElement(element) }.getOrNull()
+            }
 
         return MangasPage(manga, false)
     }
 
     override fun searchMangaSelector() = throw UnsupportedOperationException()
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
 
-        title = element.selectFirst("span")!!.text()
-        thumbnail_url = element.selectFirst("img")?.attr("abs:src")
-    }
+            title = element.selectFirst("span")!!.text()
+            thumbnail_url = element.selectFirst("img")?.attr("abs:src")
+        }
 
     override fun searchMangaNextPageSelector(): String? = null
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.selectFirst(".desc__titulo__comic")!!.text()
-        author = document.selectFirst(".sumario__specs__box:contains(Autor) + .sumario__specs__tipo")?.text()
-        genre = document.select("a[href*=pesquisar?category]").joinToString { it.text() }
-        status = when (document.selectFirst(".sumario__specs__box:contains(Status) + .sumario__specs__tipo")?.text()) {
-            "Em Lançamento" -> SManga.ONGOING
-            "Finalizado" -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
-        }
-        thumbnail_url = document.selectFirst(".sumario__img")?.attr("abs:src")
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.selectFirst(".desc__titulo__comic")!!.text()
+            author = document.selectFirst(".sumario__specs__box:contains(Autor) + .sumario__specs__tipo")?.text()
+            genre = document.select("a[href*=pesquisar?category]").joinToString { it.text() }
+            status =
+                when (document.selectFirst(".sumario__specs__box:contains(Status) + .sumario__specs__tipo")?.text()) {
+                    "Em Lançamento" -> SManga.ONGOING
+                    "Finalizado" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
+            thumbnail_url = document.selectFirst(".sumario__img")?.attr("abs:src")
 
-        val category = document.selectFirst(".categoria__comic")?.text()
-        val synopsis = document.selectFirst(".sumario__sinopse__texto")?.text()
-        description = "Tipo: $category\n\n$synopsis"
-    }
+            val category = document.selectFirst(".categoria__comic")?.text()
+            val synopsis = document.selectFirst(".sumario__sinopse__texto")?.text()
+            description = "Tipo: $category\n\n$synopsis"
+        }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
@@ -145,22 +154,25 @@ abstract class PeachScan(
 
     override fun chapterListSelector() = ".link__capitulos"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
 
-        name = element.selectFirst(".numero__capitulo")!!.text()
-        date_upload = runCatching {
-            val date = element.selectFirst(".data__lançamento")!!.text()
+            name = element.selectFirst(".numero__capitulo")!!.text()
+            date_upload =
+                runCatching {
+                    val date = element.selectFirst(".data__lançamento")!!.text()
 
-            dateFormat.parse(date)!!.time
-        }.getOrDefault(0L)
-    }
+                    dateFormat.parse(date)!!.time
+                }.getOrDefault(0L)
+        }
 
     override fun pageListParse(document: Document): List<Page> {
-        val scriptElement = document.selectFirst("script:containsData(const urls =[)")
-            ?: return document.select("#imageContainer img").mapIndexed { i, it ->
-                Page(i, imageUrl = it.attr("abs:src"))
-            }
+        val scriptElement =
+            document.selectFirst("script:containsData(const urls =[)")
+                ?: return document.select("#imageContainer img").mapIndexed { i, it ->
+                    Page(i, imageUrl = it.attr("abs:src"))
+                }
 
         val urls = scriptElement.html().substringAfter("const urls =[").substringBefore("];")
 
@@ -184,28 +196,31 @@ abstract class PeachScan(
 
         val zis = ZipInputStream(response.body.byteStream())
 
-        val images = generateSequence { zis.nextEntry }
-            .mapNotNull {
-                val entryName = it.name
-                val splitEntryName = entryName.split('.')
-                val entryIndex = splitEntryName.first().toInt()
-                val entryType = splitEntryName.last()
+        val images =
+            generateSequence { zis.nextEntry }
+                .mapNotNull {
+                    val entryName = it.name
+                    val splitEntryName = entryName.split('.')
+                    val entryIndex = splitEntryName.first().toInt()
+                    val entryType = splitEntryName.last()
 
-                val imageData = if (entryType == "avif") {
-                    zis.readBytes()
-                } else {
-                    val svgBytes = zis.readBytes()
-                    val svgContent = svgBytes.toString(Charsets.UTF_8)
-                    val b64 = dataUriRegex.find(svgContent)?.groupValues?.get(1)
-                        ?: return@mapNotNull null
+                    val imageData =
+                        if (entryType == "avif") {
+                            zis.readBytes()
+                        } else {
+                            val svgBytes = zis.readBytes()
+                            val svgContent = svgBytes.toString(Charsets.UTF_8)
+                            val b64 =
+                                dataUriRegex.find(svgContent)?.groupValues?.get(1)
+                                    ?: return@mapNotNull null
 
-                    Base64.decode(b64, Base64.DEFAULT)
+                            Base64.decode(b64, Base64.DEFAULT)
+                        }
+
+                    entryIndex to PeachScanUtils.decodeImage(imageData, isLowRamDevice, filename, entryName)
                 }
-
-                entryIndex to PeachScanUtils.decodeImage(imageData, isLowRamDevice, filename, entryName)
-            }
-            .sortedBy { it.first }
-            .toList()
+                .sortedBy { it.first }
+                .toList()
 
         zis.closeEntry()
         zis.close()

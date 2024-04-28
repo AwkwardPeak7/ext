@@ -40,12 +40,13 @@ class Schlockmercenary : ParsedHttpSource() {
 
     override fun popularMangaFromElement(element: Element): SManga {
         val book = element.select("h4 > a").first()!!
-        val thumb = (
-            baseUrl + (
-                element.select("img").first()?.attr("src")
-                    ?: defaultThumbnailUrl
-            )
-        ).substringBefore("?")
+        val thumb =
+            (
+                baseUrl + (
+                    element.select("img").first()?.attr("src")
+                        ?: defaultThumbnailUrl
+                )
+            ).substringBefore("?")
         return SManga.create().apply {
             url = book.attr("href")
             title = book.text()
@@ -89,9 +90,10 @@ class Schlockmercenary : ParsedHttpSource() {
         chapter.url = element.attr("href")
         chapter.name = element.text()
         chapter.chapter_number = chapterCount++.toFloat()
-        chapter.date_upload = chapter.url.takeLast(10).let {
-            SimpleDateFormat(dateFormat, Locale.getDefault()).parse(it)!!.time
-        }
+        chapter.date_upload =
+            chapter.url.takeLast(10).let {
+                SimpleDateFormat(dateFormat, Locale.getDefault()).parse(it)!!.time
+            }
         return chapter
     }
 

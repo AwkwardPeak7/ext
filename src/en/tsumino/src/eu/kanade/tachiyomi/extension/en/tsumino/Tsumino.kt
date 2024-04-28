@@ -43,24 +43,26 @@ class Tsumino : HttpSource() {
     override val supportsLatest = true
 
     // Based on Pufei ext
-    private val rewriteOctetStream: Interceptor = Interceptor { chain ->
-        val originalResponse: Response = chain.proceed(chain.request())
-        if (originalResponse.headers("Content-Type").contains("application/octet-stream") &&
-            originalResponse.request.url.pathSegments.any { it == "parts" }
-        ) {
-            val orgBody = originalResponse.body.bytes()
-            val newBody = orgBody.toResponseBody("image/jpeg".toMediaTypeOrNull())
-            originalResponse.newBuilder()
-                .body(newBody)
-                .build()
-        } else {
-            originalResponse
+    private val rewriteOctetStream: Interceptor =
+        Interceptor { chain ->
+            val originalResponse: Response = chain.proceed(chain.request())
+            if (originalResponse.headers("Content-Type").contains("application/octet-stream") &&
+                originalResponse.request.url.pathSegments.any { it == "parts" }
+            ) {
+                val orgBody = originalResponse.body.bytes()
+                val newBody = orgBody.toResponseBody("image/jpeg".toMediaTypeOrNull())
+                originalResponse.newBuilder()
+                    .body(newBody)
+                    .build()
+            } else {
+                originalResponse
+            }
         }
-    }
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .addNetworkInterceptor(rewriteOctetStream)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .addNetworkInterceptor(rewriteOctetStream)
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -111,31 +113,33 @@ class Tsumino : HttpSource() {
     ): Request {
         // Taken from github.com/NerdNumber9/TachiyomiEH
         val f = filters + getFilterList()
-        val advSearch = f.filterIsInstance<AdvSearchEntryFilter>().flatMap { filter ->
-            val splitState = filter.state.split(",").map(String::trim).filterNot(String::isBlank)
-            splitState.map {
-                AdvSearchEntry(filter.type, it.removePrefix("-"), it.startsWith("-"))
-            }
-        }
-        val body = FormBody.Builder()
-            .add("PageNumber", page.toString())
-            .add("Text", query)
-            .add("Sort", SortType.values()[f.filterIsInstance<SortFilter>().first().state].name)
-            .add("List", "0")
-            .add("Length", LengthType.values()[f.filterIsInstance<LengthFilter>().first().state].id.toString())
-            .add("MinimumRating", f.filterIsInstance<MinimumRatingFilter>().first().state.toString())
-            .apply {
-                advSearch.forEachIndexed { index, entry ->
-                    add("Tags[$index][Type]", entry.type.toString())
-                    add("Tags[$index][Text]", entry.text)
-                    add("Tags[$index][Exclude]", entry.exclude.toString())
+        val advSearch =
+            f.filterIsInstance<AdvSearchEntryFilter>().flatMap { filter ->
+                val splitState = filter.state.split(",").map(String::trim).filterNot(String::isBlank)
+                splitState.map {
+                    AdvSearchEntry(filter.type, it.removePrefix("-"), it.startsWith("-"))
                 }
+            }
+        val body =
+            FormBody.Builder()
+                .add("PageNumber", page.toString())
+                .add("Text", query)
+                .add("Sort", SortType.values()[f.filterIsInstance<SortFilter>().first().state].name)
+                .add("List", "0")
+                .add("Length", LengthType.values()[f.filterIsInstance<LengthFilter>().first().state].id.toString())
+                .add("MinimumRating", f.filterIsInstance<MinimumRatingFilter>().first().state.toString())
+                .apply {
+                    advSearch.forEachIndexed { index, entry ->
+                        add("Tags[$index][Type]", entry.type.toString())
+                        add("Tags[$index][Text]", entry.text)
+                        add("Tags[$index][Exclude]", entry.exclude.toString())
+                    }
 
-                if (f.filterIsInstance<ExcludeParodiesFilter>().first().state) {
-                    add("Exclude[]", "6")
+                    if (f.filterIsInstance<ExcludeParodiesFilter>().first().state) {
+                        add("Exclude[]", "6")
+                    }
                 }
-            }
-            .build()
+                .build()
 
         return POST("$baseUrl/Search/Operate/", headers, body)
     }
@@ -207,8 +211,9 @@ class Tsumino : HttpSource() {
 
         if (numPages.isNotEmpty()) {
             for (i in 1 until numPages.toInt() + 1) {
-                val data = document.select("#image-container").attr("data-cdn")
-                    .replace("[PAGE]", i.toString())
+                val data =
+                    document.select("#image-container").attr("data-cdn")
+                        .replace("[PAGE]", i.toString())
                 pages.add(Page(i, "", data))
             }
         } else {
@@ -221,23 +226,24 @@ class Tsumino : HttpSource() {
 
     data class AdvSearchEntry(val type: Int, val text: String, val exclude: Boolean)
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Separate tags with commas (,)"),
-        Filter.Header("Prepend with dash (-) to exclude"),
-        TagFilter(),
-        CategoryFilter(),
-        CollectionFilter(),
-        GroupFilter(),
-        ArtistFilter(),
-        ParodyFilter(),
-        CharactersFilter(),
-        UploaderFilter(),
-        Filter.Separator(),
-        SortFilter(),
-        LengthFilter(),
-        MinimumRatingFilter(),
-        ExcludeParodiesFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Separate tags with commas (,)"),
+            Filter.Header("Prepend with dash (-) to exclude"),
+            TagFilter(),
+            CategoryFilter(),
+            CollectionFilter(),
+            GroupFilter(),
+            ArtistFilter(),
+            ParodyFilter(),
+            CharactersFilter(),
+            UploaderFilter(),
+            Filter.Separator(),
+            SortFilter(),
+            LengthFilter(),
+            MinimumRatingFilter(),
+            ExcludeParodiesFilter(),
+        )
 
     class TagFilter : AdvSearchEntryFilter("Tags", 1)
 

@@ -12,9 +12,10 @@ class DeManhuas : Madara(
     "es",
     SimpleDateFormat("MMMM d, yyyy", Locale("es")),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
     override val mangaSubString = "sm"
     override val useNewChapterEndpoint = true

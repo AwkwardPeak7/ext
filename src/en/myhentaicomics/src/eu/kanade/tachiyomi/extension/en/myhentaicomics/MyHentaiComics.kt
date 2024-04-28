@@ -91,9 +91,10 @@ class MyHentaiComics : ParsedHttpSource() {
     // Details
 
     override fun mangaDetailsParse(document: Document): SManga {
-        val tags = document.select("div.g-description a").partition { tag ->
-            tag.text().startsWith("Artist: ")
-        }
+        val tags =
+            document.select("div.g-description a").partition { tag ->
+                tag.text().startsWith("Artist: ")
+            }
         return SManga.create().apply {
             artist = tags.first.joinToString { it.text().substringAfter(" ") }
             author = artist
@@ -142,11 +143,12 @@ class MyHentaiComics : ParsedHttpSource() {
 
     // Filters
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Cannot combine search types!"),
-        Filter.Separator("-----------------"),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Cannot combine search types!"),
+            Filter.Separator("-----------------"),
+            GenreFilter(),
+        )
 
     private class GenreFilter : UriPartFilter(
         "Genres",

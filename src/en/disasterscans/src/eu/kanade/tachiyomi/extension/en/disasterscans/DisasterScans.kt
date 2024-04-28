@@ -38,26 +38,27 @@ class DisasterScans : HttpSource() {
 
     override val supportsLatest = false
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val url = request.url
-            if (url.fragment == "thumbnail") {
-                val cdnUrl = preferences.getCdnUrl()
-                val requestUrl = url.toString().substringBefore("=") + "="
-                if (cdnUrl != requestUrl) {
-                    val fileId = url.queryParameterValues("fileId").first()
-                    return@addInterceptor chain.proceed(
-                        request.newBuilder()
-                            .url("$cdnUrl$fileId")
-                            .build(),
-                    )
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val url = request.url
+                if (url.fragment == "thumbnail") {
+                    val cdnUrl = preferences.getCdnUrl()
+                    val requestUrl = url.toString().substringBefore("=") + "="
+                    if (cdnUrl != requestUrl) {
+                        val fileId = url.queryParameterValues("fileId").first()
+                        return@addInterceptor chain.proceed(
+                            request.newBuilder()
+                                .url("$cdnUrl$fileId")
+                                .build(),
+                        )
+                    }
                 }
+                return@addInterceptor chain.proceed(request)
             }
-            return@addInterceptor chain.proceed(request)
-        }
-        .rateLimit(1)
-        .build()
+            .rateLimit(1)
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -136,9 +137,10 @@ class DisasterScans : HttpSource() {
     override fun chapterListParse(response: Response): List<SChapter> {
         val chapters = response.parseAs<List<ApiChapter>>()
 
-        val mangaUrl = response.request.url.toString()
-            .substringAfter(apiUrl)
-            .replace("chapters", "comics")
+        val mangaUrl =
+            response.request.url.toString()
+                .substringAfter(apiUrl)
+                .replace("chapters", "comics")
 
         return chapters.map { it.toSChapter(mangaUrl) }
     }
@@ -146,9 +148,10 @@ class DisasterScans : HttpSource() {
     override fun pageListParse(response: Response): List<Page> {
         val document = response.asJsoup()
 
-        val chapterPages = document.select("#__NEXT_DATA__").html()
-            .parseAs<NextData<ApiChapterPages>>()
-            .props.pageProps.chapter.pages
+        val chapterPages =
+            document.select("#__NEXT_DATA__").html()
+                .parseAs<NextData<ApiChapterPages>>()
+                .props.pageProps.chapter.pages
 
         val pages = chapterPages.parseAs<List<String>>()
 
@@ -160,10 +163,11 @@ class DisasterScans : HttpSource() {
     }
 
     private fun updatedCdnUrl(document: Document): String {
-        val cdnUrlFromPage = document.selectFirst("main div.maxWidth img")
-            ?.attr("src")
-            ?.substringBefore("?")
-            ?.let { "$it?fileId=" }
+        val cdnUrlFromPage =
+            document.selectFirst("main div.maxWidth img")
+                ?.attr("src")
+                ?.substringBefore("?")
+                ?.let { "$it?fileId=" }
 
         return preferences.getCdnUrl()
             .let {

@@ -54,9 +54,10 @@ class RemoteStorageUtils {
             var webView: WebView? = null
 
             val origRequestUrl = request.url.toString()
-            val headers = request.headers.toMultimap().mapValues {
-                it.value.getOrNull(0) ?: ""
-            }.toMutableMap()
+            val headers =
+                request.headers.toMultimap().mapValues {
+                    it.value.getOrNull(0) ?: ""
+                }.toMutableMap()
             val jsInterface = JsInterface(latch)
 
             handler.post {
@@ -73,17 +74,18 @@ class RemoteStorageUtils {
 
                 webview.addJavascriptInterface(jsInterface, "android")
 
-                webview.webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(
-                        view: WebView,
-                        url: String,
-                    ) {
-                        view.evaluateJavascript(jsScript) {}
-                        if (transparent) {
-                            latch.countDown()
+                webview.webViewClient =
+                    object : WebViewClient() {
+                        override fun onPageFinished(
+                            view: WebView,
+                            url: String,
+                        ) {
+                            view.evaluateJavascript(jsScript) {}
+                            if (transparent) {
+                                latch.countDown()
+                            }
                         }
                     }
-                }
 
                 webview.loadUrl(urlModifier(origRequestUrl), headers)
             }

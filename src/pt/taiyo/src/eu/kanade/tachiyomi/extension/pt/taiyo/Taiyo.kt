@@ -44,10 +44,11 @@ class Taiyo : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client = network.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .rateLimitHost(IMG_CDN.toHttpUrl(), 2)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .rateLimitHost(IMG_CDN.toHttpUrl(), 2)
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -56,11 +57,12 @@ class Taiyo : ParsedHttpSource() {
 
     override fun popularMangaSelector() = "main > div.flex > div.overflow-hidden div.flex > a"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        thumbnail_url = element.selectFirst("div.overflow-hidden > img")?.getImageUrl()
-        title = element.selectFirst("p")!!.text()
-    }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            thumbnail_url = element.selectFirst("div.overflow-hidden > img")?.getImageUrl()
+            title = element.selectFirst("p")!!.text()
+        }
 
     override fun popularMangaNextPageSelector() = null
 
@@ -69,13 +71,14 @@ class Taiyo : ParsedHttpSource() {
 
     override fun latestUpdatesSelector() = "main div.grow div.flex:has(div.grow)"
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        with(element.selectFirst("a.line-clamp-1")!!) {
-            setUrlWithoutDomain(attr("href"))
-            title = text()
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            with(element.selectFirst("a.line-clamp-1")!!) {
+                setUrlWithoutDomain(attr("href"))
+                title = text()
+            }
+            thumbnail_url = element.selectFirst("img")?.getImageUrl()?.replace("&w=128", "&w=256")
         }
-        thumbnail_url = element.selectFirst("img")?.getImageUrl()?.replace("&w=128", "&w=256")
-    }
 
     override fun latestUpdatesNextPageSelector() = null
 
@@ -105,13 +108,14 @@ class Taiyo : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val jsonObj = buildJsonObject {
-            putJsonObject("0") {
-                putJsonObject("json") {
-                    put("title", query)
+        val jsonObj =
+            buildJsonObject {
+                putJsonObject("0") {
+                    putJsonObject("json") {
+                        put("title", query)
+                    }
                 }
             }
-        }
 
         val requestBody = json.encodeToString(jsonObj).toRequestBody(MEDIA_TYPE)
 
@@ -120,15 +124,17 @@ class Taiyo : ParsedHttpSource() {
 
     override fun searchMangaParse(response: Response): MangasPage {
         val obj = response.parseAs<List<ResponseDto<List<SearchResultDto>>>>().first()
-        val mangas = obj.data.map { item ->
-            SManga.create().apply {
-                url = "/media/${item.id}"
-                title = item.title
-                thumbnail_url = item.coverId?.let {
-                    "$baseUrl/_next/image?url=$IMG_CDN/${item.id}/covers/$it.jpg&w=256&q=75"
+        val mangas =
+            obj.data.map { item ->
+                SManga.create().apply {
+                    url = "/media/${item.id}"
+                    title = item.title
+                    thumbnail_url =
+                        item.coverId?.let {
+                            "$baseUrl/_next/image?url=$IMG_CDN/${item.id}/covers/$it.jpg&w=256&q=75"
+                        }
                 }
             }
-        }
         return MangasPage(mangas, false)
     }
 
@@ -145,74 +151,82 @@ class Taiyo : ParsedHttpSource() {
     }
 
     // =========================== Manga Details ============================
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        setUrlWithoutDomain(document.location())
-        thumbnail_url = document.selectFirst("section:has(h2) img")?.getImageUrl()
-        title = document.selectFirst("p.media-title")!!.text()
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            setUrlWithoutDomain(document.location())
+            thumbnail_url = document.selectFirst("section:has(h2) img")?.getImageUrl()
+            title = document.selectFirst("p.media-title")!!.text()
 
-        val additionalDataObj = document.parseJsonFromDocument<AdditionalInfoDto> {
-            substringBefore(",\\\"trackers\\\"") + "}"
-        }
-
-        genre = additionalDataObj?.genres?.joinToString { it.portugueseName }
-        status = when (additionalDataObj?.status.orEmpty()) {
-            "FINISHED" -> SManga.COMPLETED
-            "RELEASING" -> SManga.ONGOING
-            else -> SManga.UNKNOWN
-        }
-
-        description = buildString {
-            val synopsis = document.selectFirst("section > div.flex + div p")?.text()
-                ?: additionalDataObj?.synopsis
-            synopsis?.also { append("$it\n\n") }
-
-            additionalDataObj?.titles?.takeIf { it.isNotEmpty() }?.run {
-                append("Títulos alternativos:")
-                forEach {
-                    val languageName = Locale(it.language.substringBefore("_")).displayLanguage
-                    append("\n\t$languageName: ${it.title}")
+            val additionalDataObj =
+                document.parseJsonFromDocument<AdditionalInfoDto> {
+                    substringBefore(",\\\"trackers\\\"") + "}"
                 }
-            }
+
+            genre = additionalDataObj?.genres?.joinToString { it.portugueseName }
+            status =
+                when (additionalDataObj?.status.orEmpty()) {
+                    "FINISHED" -> SManga.COMPLETED
+                    "RELEASING" -> SManga.ONGOING
+                    else -> SManga.UNKNOWN
+                }
+
+            description =
+                buildString {
+                    val synopsis =
+                        document.selectFirst("section > div.flex + div p")?.text()
+                            ?: additionalDataObj?.synopsis
+                    synopsis?.also { append("$it\n\n") }
+
+                    additionalDataObj?.titles?.takeIf { it.isNotEmpty() }?.run {
+                        append("Títulos alternativos:")
+                        forEach {
+                            val languageName = Locale(it.language.substringBefore("_")).displayLanguage
+                            append("\n\t$languageName: ${it.title}")
+                        }
+                    }
+                }
         }
-    }
 
     // ============================== Chapters ==============================
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         val id = manga.url.substringAfter("/media/").trimEnd('/')
         var page = 1
         val apiUrl = "$baseUrl/api/trpc/mediaChapters.getByMediaId?batch=1".toHttpUrl()
-        val chapters = buildList {
-            do {
-                val input = buildJsonObject {
-                    putJsonObject("0") {
-                        putJsonObject("json") {
-                            put("mediaId", id)
-                            put("page", page)
-                            put("perPage", 50)
+        val chapters =
+            buildList {
+                do {
+                    val input =
+                        buildJsonObject {
+                            putJsonObject("0") {
+                                putJsonObject("json") {
+                                    put("mediaId", id)
+                                    put("page", page)
+                                    put("perPage", 50)
+                                }
+                            }
                         }
-                    }
-                }
 
-                page++
+                    page++
 
-                val pageUrl = apiUrl.newBuilder()
-                    .addQueryParameter("input", json.encodeToString(input))
-                    .build()
+                    val pageUrl =
+                        apiUrl.newBuilder()
+                            .addQueryParameter("input", json.encodeToString(input))
+                            .build()
 
-                val res = client.newCall(GET(pageUrl, headers)).execute()
-                val parsed = res.parseAs<List<ResponseDto<ChapterListDto>>>().first().data
-                addAll(
-                    parsed.chapters.map {
-                        SChapter.create().apply {
-                            chapter_number = it.number
-                            name = it.title ?: "Capítulo ${it.number}".replace(".0", "")
-                            url = "/chapter/${it.id}/1"
-                            date_upload = it.createdAt.orEmpty().toDate()
-                        }
-                    },
-                )
-            } while (page <= parsed.totalPages)
-        }
+                    val res = client.newCall(GET(pageUrl, headers)).execute()
+                    val parsed = res.parseAs<List<ResponseDto<ChapterListDto>>>().first().data
+                    addAll(
+                        parsed.chapters.map {
+                            SChapter.create().apply {
+                                chapter_number = it.number
+                                name = it.title ?: "Capítulo ${it.number}".replace(".0", "")
+                                url = "/chapter/${it.id}/1"
+                                date_upload = it.createdAt.orEmpty().toDate()
+                            }
+                        },
+                    )
+                } while (page <= parsed.totalPages)
+            }
 
         return Observable.just(chapters.sortedByDescending { it.chapter_number })
     }
@@ -227,9 +241,10 @@ class Taiyo : ParsedHttpSource() {
 
     // =============================== Pages ================================
     override fun pageListParse(document: Document): List<Page> {
-        val chapterObj = document.parseJsonFromDocument<MediaChapterDto>("mediaChapter") {
-            substringBefore(",\\\"chapters\\\"") + "}}"
-        }!!
+        val chapterObj =
+            document.parseJsonFromDocument<MediaChapterDto>("mediaChapter") {
+                substringBefore(",\\\"chapters\\\"") + "}}"
+            }!!
 
         val base = "$IMG_CDN/${chapterObj.media.id}/chapters/${chapterObj.id}"
 
@@ -245,9 +260,10 @@ class Taiyo : ParsedHttpSource() {
     // ============================= Utilities ==============================
     private fun Element.getImageUrl() = absUrl("srcset").substringBefore(" ")
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream(it.body.byteStream())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream(it.body.byteStream())
+        }
 
     private fun String.toDate(): Long {
         return runCatching { DATE_FORMATTER.parse(this)?.time }
@@ -260,9 +276,10 @@ class Taiyo : ParsedHttpSource() {
     ): T? {
         return runCatching {
             val script = selectFirst("script:containsData($itemName\\\\\":):containsData(\\\"6:\\[)")!!.data()
-            val obj = script.substringAfter(",{\\\"$itemName\\\":")
-                .run(transformer)
-                .replace("\\", "")
+            val obj =
+                script.substringAfter(",{\\\"$itemName\\\":")
+                    .run(transformer)
+                    .replace("\\", "")
             json.decodeFromString<T>(obj)
         }.onFailure { it.printStackTrace() }.getOrNull()
     }

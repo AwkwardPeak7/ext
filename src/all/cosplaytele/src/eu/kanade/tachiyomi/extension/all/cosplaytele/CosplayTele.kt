@@ -38,8 +38,9 @@ class CosplayTele : ParsedHttpSource() {
 
     private val json: Json by injectLazy()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     // Latest
     override fun latestUpdatesFromElement(element: Element): SManga {
@@ -68,22 +69,24 @@ class CosplayTele : ParsedHttpSource() {
 
     private val popularPageLimit = 20
 
-    override fun popularMangaRequest(page: Int) = GET(
-        "$baseUrl/wp-json/wordpress-popular-posts/v1/popular-posts?offset=${page * popularPageLimit}&limit=$popularPageLimit&range=last7days",
-    )
+    override fun popularMangaRequest(page: Int) =
+        GET(
+            "$baseUrl/wp-json/wordpress-popular-posts/v1/popular-posts?offset=${page * popularPageLimit}&limit=$popularPageLimit&range=last7days",
+        )
 
     override fun popularMangaSelector(): String = ""
 
     override fun popularMangaParse(response: Response): MangasPage {
         val jsonObject = json.decodeFromString<JsonArray>(response.body.string())
-        val mangas = jsonObject.map { item ->
-            val head = item.jsonObject["yoast_head_json"]!!.jsonObject
-            SManga.create().apply {
-                title = head["og_title"]!!.jsonPrimitive.content
-                thumbnail_url = head["og_image"]!!.jsonArray[0].jsonObject["url"]!!.jsonPrimitive.content
-                setUrlWithoutDomain(head["og_url"]!!.jsonPrimitive.content)
+        val mangas =
+            jsonObject.map { item ->
+                val head = item.jsonObject["yoast_head_json"]!!.jsonObject
+                SManga.create().apply {
+                    title = head["og_title"]!!.jsonPrimitive.content
+                    thumbnail_url = head["og_image"]!!.jsonArray[0].jsonObject["url"]!!.jsonPrimitive.content
+                    setUrlWithoutDomain(head["og_url"]!!.jsonPrimitive.content)
+                }
             }
-        }
         return MangasPage(mangas, mangas.size >= popularPageLimit)
     }
 
@@ -101,21 +104,23 @@ class CosplayTele : ParsedHttpSource() {
 
         val categoryFilter = filterList.findInstance<UriPartFilter>()
         return when {
-            categoryFilter?.state != 0 -> GET(
-                baseUrl.toHttpUrl().newBuilder().apply {
-                    addPathSegments(categoryFilter!!.toUriPart())
-                    addPathSegment("page")
-                    addPathSegment(page.toString())
-                    if (query.isNotEmpty()) {
+            categoryFilter?.state != 0 ->
+                GET(
+                    baseUrl.toHttpUrl().newBuilder().apply {
+                        addPathSegments(categoryFilter!!.toUriPart())
+                        addPathSegment("page")
+                        addPathSegment(page.toString())
+                        if (query.isNotEmpty()) {
+                            addQueryParameter("s", query)
+                        }
+                    }.build(),
+                )
+            query.isNotEmpty() ->
+                GET(
+                    "$baseUrl/page/$page/".toHttpUrl().newBuilder().apply {
                         addQueryParameter("s", query)
-                    }
-                }.build(),
-            )
-            query.isNotEmpty() -> GET(
-                "$baseUrl/page/$page/".toHttpUrl().newBuilder().apply {
-                    addQueryParameter("s", query)
-                }.build(),
-            )
+                    }.build(),
+                )
             else -> latestUpdatesRequest(page)
         }
     }
@@ -169,11 +174,12 @@ class CosplayTele : ParsedHttpSource() {
     // Filters
     override fun getFilterList(): FilterList {
         CoroutineScope(Dispatchers.IO).launch { fetchFilters() }
-        val filters = mutableListOf<Filter<*>>(
-            Filter.Header("NOTE: Only one filter will be applied!"),
-            Filter.Separator(),
-            UriPartFilter("Category", categories.entries.toTypedArray()),
-        )
+        val filters =
+            mutableListOf<Filter<*>>(
+                Filter.Header("NOTE: Only one filter will be applied!"),
+                Filter.Separator(),
+                UriPartFilter("Category", categories.entries.toTypedArray()),
+            )
 
         if (filtersState == FilterState.Unfetched) {
             filters.add(1, Filter.Header("Use 'reset' to load all filters"))
@@ -188,12 +194,13 @@ class CosplayTele : ParsedHttpSource() {
         fun toUriPart() = valuePair[state].value
     }
 
-    private var categories = mutableMapOf(
-        Pair("All", ""),
-        Pair("Cosplay Nude", "category/nude"),
-        Pair("Cosplay Ero", "category/no-nude"),
-        Pair("Cosplay", "category/cosplay"),
-    )
+    private var categories =
+        mutableMapOf(
+            Pair("All", ""),
+            Pair("Cosplay Nude", "category/nude"),
+            Pair("Cosplay Ero", "category/no-nude"),
+            Pair("Cosplay", "category/cosplay"),
+        )
 
     private var filtersState = FilterState.Unfetched
     private var filterAttempts = 0

@@ -18,9 +18,10 @@ class Toonily : Madara(
     "en",
     SimpleDateFormat("MMM d, yy", Locale.US),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .addNetworkInterceptor(CookieInterceptor(domain, "toonily-mature" to "1"))
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .addNetworkInterceptor(CookieInterceptor(domain, "toonily-mature" to "1"))
+            .build()
 
     override val mangaSubString = "webtoon"
 
@@ -28,11 +29,12 @@ class Toonily : Madara(
         page: Int,
         query: String,
     ): String {
-        val urlQuery = query.trim()
-            .lowercase(Locale.US)
-            .replace(titleSpecialCharactersRegex, "-")
-            .replace(trailingHyphenRegex, "")
-            .let { if (it.isNotEmpty()) "$it/" else it }
+        val urlQuery =
+            query.trim()
+                .lowercase(Locale.US)
+                .replace(titleSpecialCharactersRegex, "-")
+                .replace(trailingHyphenRegex, "")
+                .let { if (it.isNotEmpty()) "$it/" else it }
         return if (page > 1) {
             "search/${urlQuery}page/$page/"
         } else {
@@ -47,16 +49,18 @@ class Toonily : Madara(
     ): Request {
         val request = super.searchMangaRequest(page, query, filters)
 
-        val queries = request.url.queryParameterNames
-            .filterNot { it == "s" }
+        val queries =
+            request.url.queryParameterNames
+                .filterNot { it == "s" }
 
-        val newUrl = "$baseUrl/${searchPage(page, query)}".toHttpUrl().newBuilder().apply {
-            queries.map { q ->
-                request.url.queryParameterValues(q).map {
-                    this.addQueryParameter(q, it)
+        val newUrl =
+            "$baseUrl/${searchPage(page, query)}".toHttpUrl().newBuilder().apply {
+                queries.map { q ->
+                    request.url.queryParameterValues(q).map {
+                        this.addQueryParameter(q, it)
+                    }
                 }
-            }
-        }.build()
+            }.build()
 
         return request.newBuilder()
             .url(newUrl)

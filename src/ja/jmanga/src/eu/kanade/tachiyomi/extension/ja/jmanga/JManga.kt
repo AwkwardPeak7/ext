@@ -126,11 +126,12 @@ class JManga : WPComics(
         }
     }
 
-    override fun getStatusList(): List<Pair<String?, String>> = listOf(
-        Pair("-1", "全て"),
-        Pair("0", "完結済み"),
-        Pair("1", "連載中"),
-    )
+    override fun getStatusList(): List<Pair<String?, String>> =
+        listOf(
+            Pair("-1", "全て"),
+            Pair("0", "完結済み"),
+            Pair("1", "連載中"),
+        )
 
     override val genresSelector = ".genres ul.nav li:not(.active) a"
 

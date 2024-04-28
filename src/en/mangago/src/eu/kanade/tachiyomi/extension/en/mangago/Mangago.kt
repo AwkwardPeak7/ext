@@ -40,27 +40,29 @@ class Mangago : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(1, 2)
-        .addInterceptor { chain ->
-            val response = chain.proceed(chain.request())
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1, 2)
+            .addInterceptor { chain ->
+                val response = chain.proceed(chain.request())
 
-            val fragment = response.request.url.fragment ?: return@addInterceptor response
+                val fragment = response.request.url.fragment ?: return@addInterceptor response
 
-            // desckey=...&cols=...
-            val key = fragment.substringAfter("desckey=").substringBefore("&")
-            val cols = fragment.substringAfter("&cols=").toIntOrNull() ?: return@addInterceptor response
+                // desckey=...&cols=...
+                val key = fragment.substringAfter("desckey=").substringBefore("&")
+                val cols = fragment.substringAfter("&cols=").toIntOrNull() ?: return@addInterceptor response
 
-            val image = unscrambleImage(response.body.byteStream(), key, cols)
-            val body = image.toResponseBody("image/jpeg".toMediaTypeOrNull())
-            return@addInterceptor response.newBuilder()
-                .body(body)
-                .build()
-        }.build()
+                val image = unscrambleImage(response.body.byteStream(), key, cols)
+                val body = image.toResponseBody("image/jpeg".toMediaTypeOrNull())
+                return@addInterceptor response.newBuilder()
+                    .body(body)
+                    .build()
+            }.build()
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
-        .add("Cookie", cookiesHeader)
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
+            .add("Cookie", cookiesHeader)
 
     private val cookiesHeader by lazy {
         val cookies = mutableMapOf<String, String>()
@@ -77,15 +79,16 @@ class Mangago : ParsedHttpSource() {
 
     private val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH)
 
-    private fun mangaFromElement(element: Element) = SManga.create().apply {
-        val linkElement = element.selectFirst(".thm-effect")!!
+    private fun mangaFromElement(element: Element) =
+        SManga.create().apply {
+            val linkElement = element.selectFirst(".thm-effect")!!
 
-        setUrlWithoutDomain(linkElement.attr("href"))
-        title = linkElement.attr("title")
+            setUrlWithoutDomain(linkElement.attr("href"))
+            title = linkElement.attr("title")
 
-        val thumbnailElem = linkElement.selectFirst("img")!!
-        thumbnail_url = thumbnailElem.attr("abs:data-src").ifBlank { thumbnailElem.attr("abs:src") }
-    }
+            val thumbnailElem = linkElement.selectFirst("img")!!
+            thumbnail_url = thumbnailElem.attr("abs:data-src").ifBlank { thumbnailElem.attr("abs:src") }
+        }
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/genre/all/$page/?f=1&o=1&sortby=view&e=", headers)
 
@@ -108,40 +111,42 @@ class Mangago : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = if (query.isNotBlank()) {
-            "$baseUrl/r/l_search".toHttpUrl().newBuilder()
-                .addQueryParameter("name", query)
-                .addQueryParameter("page", page.toString())
-                .build().toString()
-        } else {
-            "$baseUrl/genre/".toHttpUrl().newBuilder().apply {
-                val genres = mutableListOf<String>()
-                val genresEx = mutableListOf<String>()
+        val url =
+            if (query.isNotBlank()) {
+                "$baseUrl/r/l_search".toHttpUrl().newBuilder()
+                    .addQueryParameter("name", query)
+                    .addQueryParameter("page", page.toString())
+                    .build().toString()
+            } else {
+                "$baseUrl/genre/".toHttpUrl().newBuilder().apply {
+                    val genres = mutableListOf<String>()
+                    val genresEx = mutableListOf<String>()
 
-                filters.ifEmpty { getFilterList() }.forEach {
-                    when (it) {
-                        is UriFilter -> it.addToUrl(this)
-                        is GenreFilterGroup -> it.state.forEach { genre ->
-                            when (genre.state) {
-                                Filter.TriState.STATE_EXCLUDE -> genresEx.add(genre.name)
-                                Filter.TriState.STATE_INCLUDE -> genres.add(genre.name)
-                                else -> {}
-                            }
+                    filters.ifEmpty { getFilterList() }.forEach {
+                        when (it) {
+                            is UriFilter -> it.addToUrl(this)
+                            is GenreFilterGroup ->
+                                it.state.forEach { genre ->
+                                    when (genre.state) {
+                                        Filter.TriState.STATE_EXCLUDE -> genresEx.add(genre.name)
+                                        Filter.TriState.STATE_INCLUDE -> genres.add(genre.name)
+                                        else -> {}
+                                    }
+                                }
+                            else -> {}
                         }
-                        else -> {}
                     }
-                }
 
-                if (genres.isEmpty()) {
-                    addPathSegment("all")
-                } else {
-                    addPathSegment(genres.joinToString(","))
-                }
-                addPathSegment(page.toString())
+                    if (genres.isEmpty()) {
+                        addPathSegment("all")
+                    } else {
+                        addPathSegment(genres.joinToString(","))
+                    }
+                    addPathSegment(page.toString())
 
-                addQueryParameter("e", genresEx.joinToString(","))
-            }.build().toString()
-        }
+                    addQueryParameter("e", genresEx.joinToString(","))
+                }.build().toString()
+            }
         return GET(url, headers)
     }
 
@@ -151,50 +156,57 @@ class Mangago : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector() = genreListingNextPageSelector
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.selectFirst(".w-title h1")!!.text()
-        document.getElementById("information")!!.let {
-            thumbnail_url = it.selectFirst("img")!!.attr("abs:src")
-            description = it.selectFirst(".manga_summary")!!.text()
-            it.select(".manga_info li, .manga_right tr").forEach { el ->
-                when (el.selectFirst("b, label")!!.text().lowercase()) {
-                    "alternative:" -> description += "\n\n${el.text()}"
-                    "status:" -> status = when (el.selectFirst("span")!!.text().lowercase()) {
-                        "ongoing" -> SManga.ONGOING
-                        "completed" -> SManga.COMPLETED
-                        else -> SManga.UNKNOWN
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.selectFirst(".w-title h1")!!.text()
+            document.getElementById("information")!!.let {
+                thumbnail_url = it.selectFirst("img")!!.attr("abs:src")
+                description = it.selectFirst(".manga_summary")!!.text()
+                it.select(".manga_info li, .manga_right tr").forEach { el ->
+                    when (el.selectFirst("b, label")!!.text().lowercase()) {
+                        "alternative:" -> description += "\n\n${el.text()}"
+                        "status:" ->
+                            status =
+                                when (el.selectFirst("span")!!.text().lowercase()) {
+                                    "ongoing" -> SManga.ONGOING
+                                    "completed" -> SManga.COMPLETED
+                                    else -> SManga.UNKNOWN
+                                }
+                        "author(s):", "author:" -> author = el.select("a").joinToString { it.text() }
+                        "genre(s):" -> genre = el.select("a").joinToString { it.text() }
                     }
-                    "author(s):", "author:" -> author = el.select("a").joinToString { it.text() }
-                    "genre(s):" -> genre = el.select("a").joinToString { it.text() }
                 }
             }
         }
-    }
 
     override fun chapterListSelector() = "table#chapter_table > tbody > tr, table.uk-table > tbody > tr"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        val link = element.select("a.chico")
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            val link = element.select("a.chico")
 
-        val urlOriginal = link.attr("href")
-        if (urlOriginal.startsWith("http")) url = urlOriginal else setUrlWithoutDomain(urlOriginal)
-        name = link.text().trim()
-        date_upload = runCatching {
-            dateFormat.parse(element.select("td:last-child").text().trim())?.time
-        }.getOrNull() ?: 0L
-        scanlator = element.selectFirst("td.no a, td.uk-table-shrink a")?.text()?.trim()
-    }
+            val urlOriginal = link.attr("href")
+            if (urlOriginal.startsWith("http")) url = urlOriginal else setUrlWithoutDomain(urlOriginal)
+            name = link.text().trim()
+            date_upload = runCatching {
+                dateFormat.parse(element.select("td:last-child").text().trim())?.time
+            }.getOrNull() ?: 0L
+            scanlator = element.selectFirst("td.no a, td.uk-table-shrink a")?.text()?.trim()
+        }
 
     override fun pageListParse(document: Document): List<Page> {
-        val imgsrcsScript = document.selectFirst("script:containsData(imgsrcs)")?.html()
-            ?: throw Exception("Could not find imgsrcs")
-        val imgsrcRaw = imgSrcsRegex.find(imgsrcsScript)?.groupValues?.get(1)
-            ?: throw Exception("Could not extract imgsrcs")
+        val imgsrcsScript =
+            document.selectFirst("script:containsData(imgsrcs)")?.html()
+                ?: throw Exception("Could not find imgsrcs")
+        val imgsrcRaw =
+            imgSrcsRegex.find(imgsrcsScript)?.groupValues?.get(1)
+                ?: throw Exception("Could not extract imgsrcs")
         val imgsrcs = Base64.decode(imgsrcRaw, Base64.DEFAULT)
 
-        val chapterJsUrl = document.getElementsByTag("script").first {
-            it.attr("src").contains("chapter.js", ignoreCase = true)
-        }.attr("abs:src")
+        val chapterJsUrl =
+            document.getElementsByTag("script").first {
+                it.attr("src").contains("chapter.js", ignoreCase = true)
+            }.attr("abs:src")
 
         val obfuscatedChapterJs =
             client.newCall(GET(chapterJsUrl, headers)).execute().body.string()
@@ -209,13 +221,15 @@ class Mangago : ParsedHttpSource() {
         var imageList = cipher.doFinal(imgsrcs).toString(Charsets.UTF_8)
 
         try {
-            val keyLocations = keyLocationRegex.findAll(deobfChapterJs).map {
-                it.groupValues[1].toInt()
-            }.distinct()
+            val keyLocations =
+                keyLocationRegex.findAll(deobfChapterJs).map {
+                    it.groupValues[1].toInt()
+                }.distinct()
 
-            val unscrambleKey = keyLocations.map {
-                imageList[it].toString().toInt()
-            }.toList()
+            val unscrambleKey =
+                keyLocations.map {
+                    imageList[it].toString().toInt()
+                }.toList()
 
             keyLocations.forEachIndexed { idx, it ->
                 imageList = imageList.removeRange(it - idx..it - idx)
@@ -227,18 +241,20 @@ class Mangago : ParsedHttpSource() {
             // This usually means that the list is already unscrambled.
         }
 
-        val cols = deobfChapterJs
-            .substringAfter("var widthnum=heightnum=")
-            .substringBefore(";")
+        val cols =
+            deobfChapterJs
+                .substringAfter("var widthnum=heightnum=")
+                .substringBefore(";")
 
         return imageList
             .split(",")
             .mapIndexed { idx, it ->
-                val url = if (it.contains("cspiclink")) {
-                    "$it#desckey=${getDescramblingKey(deobfChapterJs, it)}&cols=$cols"
-                } else {
-                    it
-                }
+                val url =
+                    if (it.contains("cspiclink")) {
+                        "$it#desckey=${getDescramblingKey(deobfChapterJs, it)}&cols=$cols"
+                    } else {
+                        it
+                    }
 
                 Page(idx, imageUrl = url)
             }
@@ -253,12 +269,13 @@ class Mangago : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("Ignored if using text search"),
-        SortFilter(),
-        StatusFilterGroup(),
-        GenreFilterGroup(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("Ignored if using text search"),
+            SortFilter(),
+            StatusFilterGroup(),
+            GenreFilterGroup(),
+        )
 
     private interface UriFilter {
         fun addToUrl(builder: HttpUrl.Builder)
@@ -416,9 +433,10 @@ class Mangago : ParsedHttpSource() {
         return output.toByteArray()
     }
 
-    private fun buildCookies(cookies: Map<String, String>) = cookies.entries.joinToString(separator = "; ", postfix = ";") {
-        "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
-    }
+    private fun buildCookies(cookies: Map<String, String>) =
+        cookies.entries.joinToString(separator = "; ", postfix = ";") {
+            "${URLEncoder.encode(it.key, "UTF-8")}=${URLEncoder.encode(it.value, "UTF-8")}"
+        }
 
     private fun String.decodeHex(): ByteArray {
         check(length % 2 == 0) { "Must have an even length" }
@@ -432,13 +450,14 @@ class Mangago : ParsedHttpSource() {
         deobfChapterJs: String,
         imageUrl: String,
     ): String {
-        val imgkeys = deobfChapterJs
-            .substringAfter("var renImg = function(img,width,height,id){")
-            .substringBefore("key = key.split(")
-            .split("\n")
-            .filter { jsFilters.all { filter -> !it.contains(filter) } }
-            .joinToString("\n")
-            .replace("img.src", "url")
+        val imgkeys =
+            deobfChapterJs
+                .substringAfter("var renImg = function(img,width,height,id){")
+                .substringBefore("key = key.split(")
+                .split("\n")
+                .filter { jsFilters.all { filter -> !it.contains(filter) } }
+                .joinToString("\n")
+                .replace("img.src", "url")
 
         val js =
             """

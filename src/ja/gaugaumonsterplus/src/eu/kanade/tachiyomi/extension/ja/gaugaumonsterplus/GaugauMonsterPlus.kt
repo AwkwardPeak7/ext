@@ -27,26 +27,29 @@ class GaugauMonsterPlus : ParsedHttpSource() {
 
     private val json = Injekt.get<Json>()
 
-    override val client = network.client.newBuilder()
-        .addInterceptor(SpeedBinbInterceptor(json))
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .addInterceptor(SpeedBinbInterceptor(json))
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/list/works?page=$page", headers)
 
     override fun popularMangaSelector() = ".works__grid .list__box"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        element.selectFirst("h4 a")!!.let {
-            setUrlWithoutDomain(it.attr("href"))
-            title = it.text()
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            element.selectFirst("h4 a")!!.let {
+                setUrlWithoutDomain(it.attr("href"))
+                title = it.text()
+            }
+            author = element.select(".list__text span a").joinToString { it.text() }
+            genre = element.select(".tag__item").joinToString { it.text() }
+            thumbnail_url = element.selectFirst(".thumbnail .img-books")?.absUrl("src")
         }
-        author = element.select(".list__text span a").joinToString { it.text() }
-        genre = element.select(".tag__item").joinToString { it.text() }
-        thumbnail_url = element.selectFirst(".thumbnail .img-books")?.absUrl("src")
-    }
 
     override fun popularMangaNextPageSelector() = "ol.pagination li.next a:not([href='#'])"
 
@@ -64,21 +67,22 @@ class GaugauMonsterPlus : ParsedHttpSource() {
         filters: FilterList,
     ): Request {
         val tagFilter = filters.ifEmpty { getFilterList() }.filterIsInstance<TagFilter>().first()
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            if (query.isNotEmpty()) {
-                addPathSegments("list/search-result")
-                addQueryParameter("word", query)
-            } else if (tagFilter.state != 0) {
-                addPathSegments("list/tag")
-                addPathSegment(tagFilter.values[tagFilter.state])
-            } else {
-                addPathSegment("list/works")
-            }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                if (query.isNotEmpty()) {
+                    addPathSegments("list/search-result")
+                    addQueryParameter("word", query)
+                } else if (tagFilter.state != 0) {
+                    addPathSegments("list/tag")
+                    addPathSegment(tagFilter.values[tagFilter.state])
+                } else {
+                    addPathSegment("list/works")
+                }
 
-            if (page > 1) {
-                addQueryParameter("page", page.toString())
-            }
-        }.build()
+                if (page > 1) {
+                    addQueryParameter("page", page.toString())
+                }
+            }.build()
 
         return GET(url, headers)
     }
@@ -89,43 +93,47 @@ class GaugauMonsterPlus : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.selectFirst(".mbOff h1")!!.text()
-        author = document.select(".list__text span a").joinToString { it.text() }
-        description = document.selectFirst("p.mbOff")?.text()
-        genre = document.select(".tag__item").joinToString { it.text() }
-        thumbnail_url = document.selectFirst(".list__box .thumbnail .img-books")?.absUrl("src")
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.selectFirst(".mbOff h1")!!.text()
+            author = document.select(".list__text span a").joinToString { it.text() }
+            description = document.selectFirst("p.mbOff")?.text()
+            genre = document.select(".tag__item").joinToString { it.text() }
+            thumbnail_url = document.selectFirst(".list__box .thumbnail .img-books")?.absUrl("src")
+        }
 
     override fun chapterListRequest(manga: SManga) = GET("$baseUrl${manga.url}/episodes", headers)
 
     override fun chapterListSelector() = "#episodes .episode__grid:not(:has(.episode__button-app, .episode__button-complete)) a"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        val episodeNum = element.selectFirst(".episode__num")!!.text()
-        val episodeTitle = element.selectFirst(".episode__title")?.text()
-            ?.takeIf { t -> t.isNotBlank() }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            val episodeNum = element.selectFirst(".episode__num")!!.text()
+            val episodeTitle =
+                element.selectFirst(".episode__title")?.text()
+                    ?.takeIf { t -> t.isNotBlank() }
 
-        setUrlWithoutDomain(element.attr("href"))
-        name = buildString(episodeNum.length + 2 + (episodeTitle?.length ?: 0)) {
-            append(episodeNum)
+            setUrlWithoutDomain(element.attr("href"))
+            name =
+                buildString(episodeNum.length + 2 + (episodeTitle?.length ?: 0)) {
+                    append(episodeNum)
 
-            if (episodeTitle != null) {
-                append("「")
-                append(episodeTitle)
-                append("」")
-            }
+                    if (episodeTitle != null) {
+                        append("「")
+                        append(episodeTitle)
+                        append("」")
+                    }
+                }
+            // There is actually a consistent chapter number format on this site, which we
+            // take advantage of because the built-in chapter number parser doesn't properly
+            // parse the fractions.
+            chapter_number = CHAPTER_NUMBER_REGEX.matchEntire(episodeNum)?.let { m ->
+                val major = m.groupValues[1].toFloat()
+                val minor = m.groupValues[2].toFloat()
+
+                major + minor / 10
+            } ?: -1F
         }
-        // There is actually a consistent chapter number format on this site, which we
-        // take advantage of because the built-in chapter number parser doesn't properly
-        // parse the fractions.
-        chapter_number = CHAPTER_NUMBER_REGEX.matchEntire(episodeNum)?.let { m ->
-            val major = m.groupValues[1].toFloat()
-            val minor = m.groupValues[2].toFloat()
-
-            major + minor / 10
-        } ?: -1F
-    }
 
     private val reader by lazy { SpeedBinbReader(client, headers, json) }
 
@@ -133,10 +141,11 @@ class GaugauMonsterPlus : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("フリーワード検索はジャンル検索では機能しません"),
-        TagFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("フリーワード検索はジャンル検索では機能しません"),
+            TagFilter(),
+        )
 }
 
 private val CHAPTER_NUMBER_REGEX = Regex("""^第(\d+)話\((\d+)\)$""")

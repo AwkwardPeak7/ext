@@ -11,9 +11,10 @@ class TheBlank : Madara(
     "en",
     dateFormat = SimpleDateFormat("dd/MM/yy", Locale.US),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1)
+            .build()
 
     override val useNewChapterEndpoint = true
     override val useLoadMoreRequest = LoadMoreStrategy.Always

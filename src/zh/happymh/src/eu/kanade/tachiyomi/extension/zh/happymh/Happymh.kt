@@ -71,13 +71,14 @@ class Happymh : HttpSource(), ConfigurableSource {
     override fun popularMangaParse(response: Response): MangasPage {
         val data = response.parseAs<PopularResponseDto>().data
 
-        val items = data.items.map {
-            SManga.create().apply {
-                title = it.name
-                url = it.url
-                thumbnail_url = it.cover
+        val items =
+            data.items.map {
+                SManga.create().apply {
+                    title = it.name
+                    url = it.url
+                    thumbnail_url = it.cover
+                }
             }
-        }
         val hasNextPage = data.isEnd.not()
 
         return MangasPage(items, hasNextPage)
@@ -99,14 +100,16 @@ class Happymh : HttpSource(), ConfigurableSource {
         query: String,
         filters: FilterList,
     ): Request {
-        val body = FormBody.Builder()
-            .addEncoded("searchkey", query)
-            .add("v", "v2.13")
-            .build()
+        val body =
+            FormBody.Builder()
+                .addEncoded("searchkey", query)
+                .add("v", "v2.13")
+                .build()
 
-        val header = headersBuilder()
-            .add("referer", "$baseUrl/sssearch")
-            .build()
+        val header =
+            headersBuilder()
+                .add("referer", "$baseUrl/sssearch")
+                .build()
 
         return POST("$baseUrl/v2.0/apis/manga/ssearch", header, body)
     }
@@ -117,15 +120,16 @@ class Happymh : HttpSource(), ConfigurableSource {
 
     // Details
 
-    override fun mangaDetailsParse(response: Response): SManga = SManga.create().apply {
-        val document = response.asJsoup()
-        title = document.selectFirst("div.mg-property > h2.mg-title")!!.text()
-        thumbnail_url = document.selectFirst("div.mg-cover > mip-img")!!.attr("abs:src")
-        author = document.selectFirst("div.mg-property > p.mg-sub-title:nth-of-type(2)")!!.text()
-        artist = author
-        genre = document.select("div.mg-property > p.mg-cate > a").eachText().joinToString(", ")
-        description = document.selectFirst("div.manga-introduction > mip-showmore#showmore")!!.text()
-    }
+    override fun mangaDetailsParse(response: Response): SManga =
+        SManga.create().apply {
+            val document = response.asJsoup()
+            title = document.selectFirst("div.mg-property > h2.mg-title")!!.text()
+            thumbnail_url = document.selectFirst("div.mg-cover > mip-img")!!.attr("abs:src")
+            author = document.selectFirst("div.mg-property > p.mg-sub-title:nth-of-type(2)")!!.text()
+            artist = author
+            genre = document.select("div.mg-property > p.mg-cate > a").eachText().joinToString(", ")
+            description = document.selectFirst("div.manga-introduction > mip-showmore#showmore")!!.text()
+        }
 
     // Chapters
 
@@ -147,10 +151,11 @@ class Happymh : HttpSource(), ConfigurableSource {
     override fun pageListRequest(chapter: SChapter): Request {
         val url = baseUrl + chapter.url
         // Some chapters return 403 without this header
-        val header = headersBuilder()
-            .add("X-Requested-With", "XMLHttpRequest")
-            .set("Referer", url)
-            .build()
+        val header =
+            headersBuilder()
+                .add("X-Requested-With", "XMLHttpRequest")
+                .set("Referer", url)
+                .build()
         return GET(url, header)
     }
 
@@ -166,9 +171,10 @@ class Happymh : HttpSource(), ConfigurableSource {
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
-        val header = headersBuilder()
-            .set("Referer", "$baseUrl/")
-            .build()
+        val header =
+            headersBuilder()
+                .set("Referer", "$baseUrl/")
+                .build()
         return GET(page.imageUrl!!, header)
     }
 
@@ -192,7 +198,8 @@ class Happymh : HttpSource(), ConfigurableSource {
         }.let(screen::addPreference)
     }
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream(it.body.byteStream())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream(it.body.byteStream())
+        }
 }

@@ -18,25 +18,28 @@ class Shinigami : Madara("Shinigami", "https://shinigami.cx", "id") {
 
     override val useNewChapterEndpoint = false
 
-    override fun headersBuilder() = super.headersBuilder().apply {
-        add("Sec-Fetch-Dest", "document")
-        add("Sec-Fetch-Mode", "navigate")
-        add("Sec-Fetch-Site", "same-origin")
-        add("Upgrade-Insecure-Requests", "1")
-        add("X-Requested-With", randomString((1..20).random())) // added for webview, and removed in interceptor for normal use
-    }
-
-    override val client = network.cloudflareClient.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val headers = request.headers.newBuilder().apply {
-                removeAll("X-Requested-With")
-            }.build()
-
-            chain.proceed(request.newBuilder().headers(headers).build())
+    override fun headersBuilder() =
+        super.headersBuilder().apply {
+            add("Sec-Fetch-Dest", "document")
+            add("Sec-Fetch-Mode", "navigate")
+            add("Sec-Fetch-Site", "same-origin")
+            add("Upgrade-Insecure-Requests", "1")
+            add("X-Requested-With", randomString((1..20).random())) // added for webview, and removed in interceptor for normal use
         }
-        .rateLimit(3)
-        .build()
+
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val headers =
+                    request.headers.newBuilder().apply {
+                        removeAll("X-Requested-With")
+                    }.build()
+
+                chain.proceed(request.newBuilder().headers(headers).build())
+            }
+            .rateLimit(3)
+            .build()
 
     override val mangaSubString = "semua-series"
 
@@ -45,40 +48,47 @@ class Shinigami : Madara("Shinigami", "https://shinigami.cx", "id") {
 
     override val chapterUrlSelector = "div.chapter-link:not([style~=display:\\snone]) a"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        val urlElement = element.selectFirst(chapterUrlSelector)!!
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            val urlElement = element.selectFirst(chapterUrlSelector)!!
 
-        name = urlElement.selectFirst("p.chapter-manhwa-title")?.text()
-            ?: urlElement.ownText()
-        date_upload = urlElement.selectFirst("span.chapter-release-date > i")?.text()
-            .let { parseChapterDate(it) }
+            name = urlElement.selectFirst("p.chapter-manhwa-title")?.text()
+                ?: urlElement.ownText()
+            date_upload =
+                urlElement.selectFirst("span.chapter-release-date > i")?.text()
+                    .let { parseChapterDate(it) }
 
-        val fixedUrl = urlElement.attr("abs:href")
+            val fixedUrl = urlElement.attr("abs:href")
 
-        setUrlWithoutDomain(fixedUrl)
-    }
+            setUrlWithoutDomain(fixedUrl)
+        }
 
     // Page list
     @Serializable
     data class CDT(val ct: String, val s: String)
 
     override fun pageListParse(document: Document): List<Page> {
-        val script = document.selectFirst("script:containsData(chapter_data)")?.data()
-            ?: throw Exception("chapter_data script not found")
+        val script =
+            document.selectFirst("script:containsData(chapter_data)")?.data()
+                ?: throw Exception("chapter_data script not found")
 
-        val deobfuscated = Deobfuscator.deobfuscateScript(script)
-            ?: throw Exception("Unable to deobfuscate chapter_data script")
+        val deobfuscated =
+            Deobfuscator.deobfuscateScript(script)
+                ?: throw Exception("Unable to deobfuscate chapter_data script")
 
-        val keyMatch = KEY_REGEX.find(deobfuscated)?.groupValues
-            ?: throw Exception("Unable to find key")
+        val keyMatch =
+            KEY_REGEX.find(deobfuscated)?.groupValues
+                ?: throw Exception("Unable to find key")
 
-        val chapterData = json.decodeFromString<CDT>(
-            CHAPTER_DATA_REGEX.find(script)?.groupValues?.get(1) ?: throw Exception("Unable to get chapter data"),
-        )
+        val chapterData =
+            json.decodeFromString<CDT>(
+                CHAPTER_DATA_REGEX.find(script)?.groupValues?.get(1) ?: throw Exception("Unable to get chapter data"),
+            )
         val postId = POST_ID_REGEX.find(script)?.groupValues?.get(1) ?: throw Exception("Unable to get post_id")
-        val otherId = OTHER_ID_REGEX.findAll(script).firstOrNull {
-            it.groupValues[1] != "post"
-        }?.groupValues?.get(2) ?: throw Exception("Unable to get other id")
+        val otherId =
+            OTHER_ID_REGEX.findAll(script).firstOrNull {
+                it.groupValues[1] != "post"
+            }?.groupValues?.get(2) ?: throw Exception("Unable to get other id")
         val key = otherId + keyMatch[1] + postId + keyMatch[2] + postId
         val salt = chapterData.s.decodeHex()
 

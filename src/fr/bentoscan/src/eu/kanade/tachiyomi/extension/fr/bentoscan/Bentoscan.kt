@@ -13,10 +13,11 @@ class Bentoscan : MMRCMS(
     chapterNamePrefix = "Scan ",
 ) {
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", "https://scansmangas.me/")
-            .set("Accept", "image/avif,image/webp,*/*")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", "https://scansmangas.me/")
+                .set("Accept", "image/avif,image/webp,*/*")
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }

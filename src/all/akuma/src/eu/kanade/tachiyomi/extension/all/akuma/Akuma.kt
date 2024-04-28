@@ -37,28 +37,32 @@ class Akuma : ParsedHttpSource() {
 
     private val ddosGuardIntercept = DDosGuardInterceptor(network.client)
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .addInterceptor(ddosGuardIntercept)
-        .addInterceptor(::tokenInterceptor)
-        .rateLimit(2)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .addInterceptor(ddosGuardIntercept)
+            .addInterceptor(::tokenInterceptor)
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private fun tokenInterceptor(chain: Interceptor.Chain): Response {
         val request = chain.request()
 
         if (request.method == "POST" && request.header("X-CSRF-TOKEN") == null) {
-            val modifiedRequest = request.newBuilder()
-                .addHeader("X-Requested-With", "XMLHttpRequest")
+            val modifiedRequest =
+                request.newBuilder()
+                    .addHeader("X-Requested-With", "XMLHttpRequest")
 
             val token = getToken()
-            val response = chain.proceed(
-                modifiedRequest
-                    .addHeader("X-CSRF-TOKEN", token)
-                    .build(),
-            )
+            val response =
+                chain.proceed(
+                    modifiedRequest
+                        .addHeader("X-CSRF-TOKEN", token)
+                        .build(),
+                )
 
             if (!response.isSuccessful && response.code == 419) {
                 response.close()
@@ -83,8 +87,9 @@ class Akuma : ParsedHttpSource() {
             val response = client.newCall(request).execute()
 
             val document = response.asJsoup()
-            val token = document.select("head meta[name*=csrf-token]")
-                .attr("content")
+            val token =
+                document.select("head meta[name*=csrf-token]")
+                    .attr("content")
 
             if (token.isEmpty()) {
                 throw IOException("Unable to find CSRF token")
@@ -97,9 +102,10 @@ class Akuma : ParsedHttpSource() {
     }
 
     override fun popularMangaRequest(page: Int): Request {
-        val payload = FormBody.Builder()
-            .add("view", "3")
-            .build()
+        val payload =
+            FormBody.Builder()
+                .add("view", "3")
+                .build()
 
         return if (page == 1) {
             nextHash = null
@@ -116,9 +122,10 @@ class Akuma : ParsedHttpSource() {
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select(popularMangaSelector()).map { element ->
-            popularMangaFromElement(element)
-        }
+        val mangas =
+            document.select(popularMangaSelector()).map { element ->
+                popularMangaFromElement(element)
+            }
 
         val nextUrl = document.select(popularMangaNextPageSelector()).first()?.attr("href")
 
@@ -158,9 +165,10 @@ class Akuma : ParsedHttpSource() {
     ): Request {
         val request = popularMangaRequest(page)
 
-        val url = request.url.newBuilder()
-            .addQueryParameter("q", query.trim())
-            .build()
+        val url =
+            request.url.newBuilder()
+                .addQueryParameter("q", query.trim())
+                .build()
 
         return request.newBuilder()
             .url(url)
@@ -175,15 +183,16 @@ class Akuma : ParsedHttpSource() {
 
     override fun searchMangaFromElement(element: Element) = popularMangaFromElement(element)
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.select(".entry-title").text()
-        thumbnail_url = document.select(".img-thumbnail").attr("abs:src")
-        author = document.select("li.meta-data  > span.artist + span.value").text()
-        genre = document.select(".info-list a").joinToString { it.text() }
-        description = document.select(".pages span.value").text() + " Pages"
-        update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
-        status = SManga.COMPLETED
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.select(".entry-title").text()
+            thumbnail_url = document.select(".img-thumbnail").attr("abs:src")
+            author = document.select("li.meta-data  > span.artist + span.value").text()
+            genre = document.select(".info-list a").joinToString { it.text() }
+            description = document.select(".pages span.value").text() + " Pages"
+            update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
+            status = SManga.COMPLETED
+        }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return Observable.just(
@@ -197,8 +206,9 @@ class Akuma : ParsedHttpSource() {
     }
 
     override fun pageListParse(document: Document): List<Page> {
-        val totalPages = document.select(".nav-select option").last()
-            ?.attr("value")?.toIntOrNull() ?: return emptyList()
+        val totalPages =
+            document.select(".nav-select option").last()
+                ?.attr("value")?.toIntOrNull() ?: return emptyList()
 
         val url = document.location().substringBeforeLast("/")
 

@@ -3,16 +3,17 @@ package eu.kanade.tachiyomi.extension.zh.dmzj
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 
-fun getFilterListInternal(isMultiGenre: Boolean) = FilterList(
-    RankingGroup(),
-    Filter.Separator(),
-    Filter.Header("分类筛选（查看排行榜、搜索文本时无效）"),
-    if (isMultiGenre) GenreGroup() else GenreSelectFilter(),
-    StatusFilter(),
-    ReaderFilter(),
-    RegionFilter(),
-    SortFilter(),
-)
+fun getFilterListInternal(isMultiGenre: Boolean) =
+    FilterList(
+        RankingGroup(),
+        Filter.Separator(),
+        Filter.Header("分类筛选（查看排行榜、搜索文本时无效）"),
+        if (isMultiGenre) GenreGroup() else GenreSelectFilter(),
+        StatusFilter(),
+        ReaderFilter(),
+        RegionFilter(),
+        SortFilter(),
+    )
 
 // region Ranking filters
 
@@ -68,9 +69,10 @@ class RankingGroup : Filter.Group<Filter<*>>(
 // region Normal filters
 
 fun parseFilters(filters: FilterList): String {
-    val tags = filters.filterIsInstance<TagFilter>().mapNotNull {
-        it.uriPart.takeUnless(String::isEmpty)
-    }.joinToString("-").ifEmpty { "0" }
+    val tags =
+        filters.filterIsInstance<TagFilter>().mapNotNull {
+            it.uriPart.takeUnless(String::isEmpty)
+        }.joinToString("-").ifEmpty { "0" }
     val sort = filters.filterIsInstance<SortFilter>().firstOrNull()?.uriPart ?: "0"
     return "$tags/$sort"
 }
@@ -132,58 +134,59 @@ private class SortFilter : SelectFilter(
 // endregion
 
 private val genres
-    get() = arrayOf(
-        Pair("全部", ""),
-        Pair("冒险", "4"),
-        Pair("欢乐向", "5"),
-        Pair("格斗", "6"),
-        Pair("科幻", "7"),
-        Pair("爱情", "8"),
-        Pair("侦探", "9"),
-        Pair("竞技", "10"),
-        Pair("魔法", "11"),
-        Pair("神鬼", "12"),
-        Pair("校园", "13"),
-        Pair("惊悚", "14"),
-        Pair("其他", "16"),
-        Pair("四格", "17"),
-        Pair("生活", "3242"),
-        Pair("ゆり", "3243"),
-        Pair("秀吉", "3244"),
-        Pair("悬疑", "3245"),
-        Pair("纯爱", "3246"),
-        Pair("热血", "3248"),
-        Pair("泛爱", "3249"),
-        Pair("历史", "3250"),
-        Pair("战争", "3251"),
-        Pair("萌系", "3252"),
-        Pair("宅系", "3253"),
-        Pair("治愈", "3254"),
-        Pair("励志", "3255"),
-        Pair("武侠", "3324"),
-        Pair("机战", "3325"),
-        Pair("音乐舞蹈", "3326"),
-        Pair("美食", "3327"),
-        Pair("职场", "3328"),
-        Pair("西方魔幻", "3365"),
-        Pair("高清单行", "4459"),
-        Pair("TS", "4518"),
-        Pair("东方", "5077"),
-        Pair("魔幻", "5806"),
-        Pair("奇幻", "5848"),
-        Pair("节操", "6219"),
-        Pair("轻小说", "6316"),
-        Pair("颜艺", "6437"),
-        Pair("搞笑", "7568"),
-        Pair("仙侠", "7900"),
-        Pair("舰娘", "13627"),
-        Pair("动画", "17192"),
-        Pair("AA", "18522"),
-        Pair("福瑞", "23323"),
-        Pair("生存", "23388"),
-        Pair("2021大赛", "23399"),
-        Pair("未来漫画家", "25011"),
-    )
+    get() =
+        arrayOf(
+            Pair("全部", ""),
+            Pair("冒险", "4"),
+            Pair("欢乐向", "5"),
+            Pair("格斗", "6"),
+            Pair("科幻", "7"),
+            Pair("爱情", "8"),
+            Pair("侦探", "9"),
+            Pair("竞技", "10"),
+            Pair("魔法", "11"),
+            Pair("神鬼", "12"),
+            Pair("校园", "13"),
+            Pair("惊悚", "14"),
+            Pair("其他", "16"),
+            Pair("四格", "17"),
+            Pair("生活", "3242"),
+            Pair("ゆり", "3243"),
+            Pair("秀吉", "3244"),
+            Pair("悬疑", "3245"),
+            Pair("纯爱", "3246"),
+            Pair("热血", "3248"),
+            Pair("泛爱", "3249"),
+            Pair("历史", "3250"),
+            Pair("战争", "3251"),
+            Pair("萌系", "3252"),
+            Pair("宅系", "3253"),
+            Pair("治愈", "3254"),
+            Pair("励志", "3255"),
+            Pair("武侠", "3324"),
+            Pair("机战", "3325"),
+            Pair("音乐舞蹈", "3326"),
+            Pair("美食", "3327"),
+            Pair("职场", "3328"),
+            Pair("西方魔幻", "3365"),
+            Pair("高清单行", "4459"),
+            Pair("TS", "4518"),
+            Pair("东方", "5077"),
+            Pair("魔幻", "5806"),
+            Pair("奇幻", "5848"),
+            Pair("节操", "6219"),
+            Pair("轻小说", "6316"),
+            Pair("颜艺", "6437"),
+            Pair("搞笑", "7568"),
+            Pair("仙侠", "7900"),
+            Pair("舰娘", "13627"),
+            Pair("动画", "17192"),
+            Pair("AA", "18522"),
+            Pair("福瑞", "23323"),
+            Pair("生存", "23388"),
+            Pair("2021大赛", "23399"),
+            Pair("未来漫画家", "25011"),
+        )
 
 interface UriPartFilter {
     val uriPart: String

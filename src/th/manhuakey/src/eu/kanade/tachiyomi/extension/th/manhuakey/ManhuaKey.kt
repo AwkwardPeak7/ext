@@ -22,9 +22,10 @@ class ManhuaKey : Madara("ManhuaKey", "https://www.manhuakey.com", "th") {
 
     override fun searchMangaSelector() = "div.page-item-detail"
 
-    override val client = super.client.newBuilder()
-        .addNetworkInterceptor(::imageDescrambler)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .addNetworkInterceptor(::imageDescrambler)
+            .build()
 
     override val pageListParseSelector = ".reading-content img, .reading-content div.displayImage + script:containsData(p,a,c,k,e,d)"
 
@@ -39,17 +40,20 @@ class ManhuaKey : Madara("ManhuaKey", "https://www.manhuakey.com", "th") {
                 val unpackedScript = Unpacker.unpack(element.data())
                 val blockWidth = blockWidthRegex.find(unpackedScript)!!.groupValues[1].toInt()
                 val blockHeight = blockHeightRegex.find(unpackedScript)!!.groupValues[1].toInt()
-                val matrix = unpackedScript.substringAfter("[")
-                    .substringBefore("];")
-                    .let { "[$it]" }
-                val scrambledImageUrl = unpackedScript.substringAfter("url(")
-                    .substringBefore(");")
+                val matrix =
+                    unpackedScript.substringAfter("[")
+                        .substringBefore("];")
+                        .let { "[$it]" }
+                val scrambledImageUrl =
+                    unpackedScript.substringAfter("url(")
+                        .substringBefore(");")
 
-                val data = ScramblingData(
-                    blockWidth = blockWidth,
-                    blockHeight = blockHeight,
-                    matrix = json.decodeFromString(matrix),
-                )
+                val data =
+                    ScramblingData(
+                        blockWidth = blockWidth,
+                        blockHeight = blockHeight,
+                        matrix = json.decodeFromString(matrix),
+                    )
 
                 Page(idx, location, "$scrambledImageUrl#${json.encodeToString(data)}")
             }
@@ -81,18 +85,20 @@ class ManhuaKey : Madara("ManhuaKey", "https://www.manhuakey.com", "th") {
         val canvas = Canvas(descrambledImg)
 
         for (pos in scramblingData.matrix) {
-            val srcRect = Rect(
-                pos[2].toInt(),
-                pos[3].toInt(),
-                pos[2].toInt() + scramblingData.blockWidth,
-                pos[3].toInt() + scramblingData.blockHeight,
-            )
-            val destRect = Rect(
-                pos[0].toInt(),
-                pos[1].toInt(),
-                pos[0].toInt() + scramblingData.blockWidth,
-                pos[1].toInt() + scramblingData.blockHeight,
-            )
+            val srcRect =
+                Rect(
+                    pos[2].toInt(),
+                    pos[3].toInt(),
+                    pos[2].toInt() + scramblingData.blockWidth,
+                    pos[3].toInt() + scramblingData.blockHeight,
+                )
+            val destRect =
+                Rect(
+                    pos[0].toInt(),
+                    pos[1].toInt(),
+                    pos[0].toInt() + scramblingData.blockWidth,
+                    pos[1].toInt() + scramblingData.blockHeight,
+                )
             canvas.drawBitmap(scrambledImg, srcRect, destRect, null)
         }
 

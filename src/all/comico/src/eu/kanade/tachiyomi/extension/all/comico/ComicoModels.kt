@@ -27,15 +27,17 @@ data class Thumbnail(private val url: String) {
 @Serializable
 data class Author(private val name: String, private val role: String) {
     val isAuthor: Boolean
-        get() = role == "creator" ||
-            role == "writer" ||
-            role == "original_creator"
+        get() =
+            role == "creator" ||
+                role == "writer" ||
+                role == "original_creator"
 
     val isArtist: Boolean
-        get() = role == "creator" ||
-            role == "artist" ||
-            role == "studio" ||
-            role == "assistant"
+        get() =
+            role == "creator" ||
+                role == "artist" ||
+                role == "studio" ||
+                role == "assistant"
 
     override fun toString() = name
 }

@@ -27,9 +27,10 @@ class CloneManga : ParsedHttpSource() {
     override fun popularMangaParse(response: Response): MangasPage {
         // Gets every manga on landing page
         val document = response.asJsoup()
-        val mangas = document.getElementsByClass(popularMangaSelector()).map { element ->
-            popularMangaFromElement(element)
-        }
+        val mangas =
+            document.getElementsByClass(popularMangaSelector()).map { element ->
+                popularMangaFromElement(element)
+            }
         return MangasPage(mangas, false)
     }
 
@@ -46,10 +47,11 @@ class CloneManga : ParsedHttpSource() {
             status = SManga.UNKNOWN
             url = element.select("a").first()!!.attr("href")
             description = element.select("h4").first()?.text() ?: ""
-            thumbnail_url = baseUrl + attr.substring(
-                attr.indexOf("site/themes"),
-                attr.indexOf(")"),
-            )
+            thumbnail_url = baseUrl +
+                attr.substring(
+                    attr.indexOf("site/themes"),
+                    attr.indexOf(")"),
+                )
         }
     }
 
@@ -57,8 +59,9 @@ class CloneManga : ParsedHttpSource() {
         page: Int,
         query: String,
         filters: FilterList,
-    ): Observable<MangasPage> = fetchPopularManga(1)
-        .map { mp -> MangasPage(mp.mangas.filter { it.title.contains(query, ignoreCase = true) }, false) }
+    ): Observable<MangasPage> =
+        fetchPopularManga(1)
+            .map { mp -> MangasPage(mp.mangas.filter { it.title.contains(query, ignoreCase = true) }, false) }
 
     override fun mangaDetailsParse(document: Document): SManga {
         // Populate with already fetched details
@@ -69,22 +72,24 @@ class CloneManga : ParsedHttpSource() {
         // Treat each page as an individual chapter
         val document = response.asJsoup()
         val series = document.location()
-        val numChapters = Regex(
-            pattern = "&page=(.*)&lang=",
-        ).findAll(
-            input = document.getElementsByTag("script")[3].toString(),
-        )
-            .elementAt(3).destructured.component1()
-            .toInt()
+        val numChapters =
+            Regex(
+                pattern = "&page=(.*)&lang=",
+            ).findAll(
+                input = document.getElementsByTag("script")[3].toString(),
+            )
+                .elementAt(3).destructured.component1()
+                .toInt()
         val chapters = ArrayList<SChapter>()
 
         for (i in 1..numChapters) {
-            val chapter = SChapter.create().apply {
-                url = "$series&page=$i"
-                name = "Chapter $i"
-                date_upload = 0
-                chapter_number = i.toFloat()
-            }
+            val chapter =
+                SChapter.create().apply {
+                    url = "$series&page=$i"
+                    name = "Chapter $i"
+                    date_upload = 0
+                    chapter_number = i.toFloat()
+                }
             chapters.add(chapter)
         }
         return chapters.reversed() // Reverse to correct ordering
@@ -96,8 +101,9 @@ class CloneManga : ParsedHttpSource() {
 
     override fun pageListParse(response: Response): List<Page> {
         val document = response.asJsoup()
-        val imgAbsoluteUrl = document.getElementsByClass("subsectionContainer")[0]
-            .select("img").first()!!.absUrl("src")
+        val imgAbsoluteUrl =
+            document.getElementsByClass("subsectionContainer")[0]
+                .select("img").first()!!.absUrl("src")
         // List of pages will always contain only one page
         return listOf(Page(1, "", imgAbsoluteUrl))
     }

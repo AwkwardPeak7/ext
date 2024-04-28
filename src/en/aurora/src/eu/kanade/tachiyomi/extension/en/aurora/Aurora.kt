@@ -37,21 +37,22 @@ class Aurora : HttpSource() {
     ): MutableList<SChapter> {
         val currentPage = client.newCall(GET(currentUrl, headers)).execute().asJsoup()
 
-        val pagesAsChapters = currentPage.select(".post-content")
-            .map { postContent ->
-                val chapterUrl = postContent.select("a.webcomic-link").attr("href")
-                val title = postContent.select(".post-title a").text()
-                val chapterNr = title.substringAfter('.').toFloat()
-                val dateString = postContent.select(".post-date").text()
-                val date = dateFormat.parse(dateString)?.time ?: 0L
+        val pagesAsChapters =
+            currentPage.select(".post-content")
+                .map { postContent ->
+                    val chapterUrl = postContent.select("a.webcomic-link").attr("href")
+                    val title = postContent.select(".post-title a").text()
+                    val chapterNr = title.substringAfter('.').toFloat()
+                    val dateString = postContent.select(".post-date").text()
+                    val date = dateFormat.parse(dateString)?.time ?: 0L
 
-                SChapter.create().apply {
-                    setUrlWithoutDomain(chapterUrl)
-                    name = title
-                    chapter_number = chapterNr
-                    date_upload = date
+                    SChapter.create().apply {
+                        setUrlWithoutDomain(chapterUrl)
+                        name = title
+                        chapter_number = chapterNr
+                        date_upload = date
+                    }
                 }
-            }
 
         foundChapters.addAll(pagesAsChapters)
 
@@ -78,16 +79,17 @@ class Aurora : HttpSource() {
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         val chapterNr = manga.title.substringAfter(' ').toFloatOrNull() ?: 0f
 
-        val updatedManga = SManga.create().apply {
-            setUrlWithoutDomain(manga.url)
-            title = manga.title
-            artist = authorName
-            author = authorName
-            description = auroraDescription
-            genre = auroraGenre
-            status = getChapterStatusForChapter(chapterNr)
-            thumbnail_url = manga.thumbnail_url
-        }
+        val updatedManga =
+            SManga.create().apply {
+                setUrlWithoutDomain(manga.url)
+                title = manga.title
+                artist = authorName
+                author = authorName
+                description = auroraDescription
+                genre = auroraGenre
+                status = getChapterStatusForChapter(chapterNr)
+                thumbnail_url = manga.thumbnail_url
+            }
         return Observable.just(updatedManga)
     }
 
@@ -115,12 +117,14 @@ class Aurora : HttpSource() {
     override fun mangaDetailsParse(response: Response): SManga = throw UnsupportedOperationException()
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        val singlePageChapterDoc = client.newCall(
-            GET(baseUrl + chapter.url, headers),
-        ).execute().asJsoup()
-        val imageUrl = singlePageChapterDoc.selectFirst(
-            ".webcomic-media .webcomic-link .attachment-full",
-        )!!.attr("src")
+        val singlePageChapterDoc =
+            client.newCall(
+                GET(baseUrl + chapter.url, headers),
+            ).execute().asJsoup()
+        val imageUrl =
+            singlePageChapterDoc.selectFirst(
+                ".webcomic-media .webcomic-link .attachment-full",
+            )!!.attr("src")
         val singlePageChapter = Page(0, "", imageUrl)
 
         return Observable.just(listOf(singlePageChapter))
@@ -144,30 +148,31 @@ class Aurora : HttpSource() {
 
         val chapterOverviewDoc = client.newCall(GET(chapterArchiveUrl, headers)).execute().asJsoup()
         val chapterBlockElements = chapterOverviewDoc.select(".wp-block-image:has(a)")
-        val mangasFromChapters: List<SManga> = chapterBlockElements
-            .mapIndexed { chapterIndex, chapter ->
-                val chapterOverviewLink = chapter.selectFirst("a")!!
-                val chapterOverviewUrl = chapterOverviewLink.attr("href")
-                val chapterTitle = "$name - ${chapterOverviewLink.text()}"
-                val chapterThumbnail = chapter.selectFirst("img")!!.attr("src")
+        val mangasFromChapters: List<SManga> =
+            chapterBlockElements
+                .mapIndexed { chapterIndex, chapter ->
+                    val chapterOverviewLink = chapter.selectFirst("a")!!
+                    val chapterOverviewUrl = chapterOverviewLink.attr("href")
+                    val chapterTitle = "$name - ${chapterOverviewLink.text()}"
+                    val chapterThumbnail = chapter.selectFirst("img")!!.attr("src")
 
-                SManga.create().apply {
-                    setUrlWithoutDomain(chapterOverviewUrl)
-                    title = chapterTitle
-                    author = authorName
-                    artist = authorName
-                    description = descriptionText
-                    genre = auroraGenre
-                    // this will mark every chapter except the last one as completed
-                    status =
-                        if (chapterIndex >= chapterBlockElements.size - 1) {
-                            SManga.UNKNOWN
-                        } else {
-                            SManga.COMPLETED
-                        }
-                    thumbnail_url = chapterThumbnail
+                    SManga.create().apply {
+                        setUrlWithoutDomain(chapterOverviewUrl)
+                        title = chapterTitle
+                        author = authorName
+                        artist = authorName
+                        description = descriptionText
+                        genre = auroraGenre
+                        // this will mark every chapter except the last one as completed
+                        status =
+                            if (chapterIndex >= chapterBlockElements.size - 1) {
+                                SManga.UNKNOWN
+                            } else {
+                                SManga.COMPLETED
+                            }
+                        thumbnail_url = chapterThumbnail
+                    }
                 }
-            }
 
         return mangasFromChapters
     }

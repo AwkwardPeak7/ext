@@ -24,12 +24,14 @@ class MangaLatino : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", baseUrl)
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/mangas?page=$page", headers)
 
@@ -37,11 +39,12 @@ class MangaLatino : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector(): String = "nav > ul.pagination > li > a[rel=next]"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.select("div.blog-info a").attr("href"))
-        title = element.select("div.blog-info a").text()
-        thumbnail_url = element.selectFirst("div.blog-img img")?.attr("abs:src")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select("div.blog-info a").attr("href"))
+            title = element.select("div.blog-info a").text()
+            thumbnail_url = element.selectFirst("div.blog-img img")?.attr("abs:src")
+        }
 
     override fun latestUpdatesRequest(page: Int): Request = GET(baseUrl, headers)
 
@@ -49,13 +52,14 @@ class MangaLatino : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        val href = element.selectFirst("div.blog-info a")!!.attr("href")
-        val slug = href.substringAfterLast("/").substringBeforeLast("-")
-        url = "/serie/$slug"
-        title = element.select("div.blog-info a").text().substringBeforeLast("Capítulo").trim()
-        thumbnail_url = element.selectFirst("div.blog-img img")?.attr("abs:src")
-    }
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            val href = element.selectFirst("div.blog-info a")!!.attr("href")
+            val slug = href.substringAfterLast("/").substringBeforeLast("-")
+            url = "/serie/$slug"
+            title = element.select("div.blog-info a").text().substringBeforeLast("Capítulo").trim()
+            thumbnail_url = element.selectFirst("div.blog-img img")?.attr("abs:src")
+        }
 
     override fun searchMangaRequest(
         page: Int,
@@ -85,21 +89,23 @@ class MangaLatino : ParsedHttpSource() {
 
     override fun searchMangaFromElement(element: Element): SManga = popularMangaFromElement(element)
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        with(document.selectFirst("div.starter-template")!!) {
-            selectFirst("img[src]")?.let { thumbnail_url = it.attr("abs:src") }
-            selectFirst("h1")?.let { title = it.text() }
-            description = selectFirst("p")?.text()
-            genre = select("> a.btn").joinToString { it.text() }
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            with(document.selectFirst("div.starter-template")!!) {
+                selectFirst("img[src]")?.let { thumbnail_url = it.attr("abs:src") }
+                selectFirst("h1")?.let { title = it.text() }
+                description = selectFirst("p")?.text()
+                genre = select("> a.btn").joinToString { it.text() }
+            }
         }
-    }
 
     override fun chapterListSelector(): String = "div.panel ul.list-group > li > a"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        name = element.selectFirst("span")!!.text()
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            name = element.selectFirst("span")!!.text()
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("section.blog-listing div.panel-body > img[src]").mapIndexed { i, element ->
@@ -114,9 +120,10 @@ class MangaLatino : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("NOTA: La búsqueda por texto ignorará los demás filtros."),
-        Filter.Separator(),
-        GenreFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("NOTA: La búsqueda por texto ignorará los demás filtros."),
+            Filter.Separator(),
+            GenreFilter(),
+        )
 }

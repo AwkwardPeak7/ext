@@ -10,9 +10,10 @@ class SobatManKu : ZeistManga("SobatManKu", "https://www.sobatmanku19.cab", "id"
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).onEach {
             // fix some chapter name
-            it.name = it.name.run {
-                substring(indexOf("Chapter"))
-            }
+            it.name =
+                it.name.run {
+                    substring(indexOf("Chapter"))
+                }
         }
     }
 }

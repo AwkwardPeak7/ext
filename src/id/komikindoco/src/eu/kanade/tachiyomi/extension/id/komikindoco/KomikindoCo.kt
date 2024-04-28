@@ -15,9 +15,10 @@ class KomikindoCo : MangaThemesia(
     // Formerly "Komikindo.co"
     override val id = 734619124437406170
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 
     override val hasProjectPage = true
 

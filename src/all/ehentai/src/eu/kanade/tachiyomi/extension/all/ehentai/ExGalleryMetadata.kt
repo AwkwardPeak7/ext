@@ -32,15 +32,17 @@ class ExGalleryMetadata {
     val tags: MutableMap<String, List<Tag>> = mutableMapOf()
 
     companion object {
-        private fun splitGalleryUrl(url: String) = url.let {
-            // Only parse URL if is full URL
-            val pathSegments = if (it.startsWith("http")) {
-                Uri.parse(it).pathSegments
-            } else {
-                it.split('/')
+        private fun splitGalleryUrl(url: String) =
+            url.let {
+                // Only parse URL if is full URL
+                val pathSegments =
+                    if (it.startsWith("http")) {
+                        Uri.parse(it).pathSegments
+                    } else {
+                        it.split('/')
+                    }
+                pathSegments.filterNot(String::isNullOrBlank)
             }
-            pathSegments.filterNot(String::isNullOrBlank)
-        }
 
         fun galleryId(url: String) = splitGalleryUrl(url)[1]
 

@@ -41,21 +41,22 @@ class IRovedOut : HttpSource() {
         val books = mainPage.select("#menu-menu > li > a[href^=$archiveUrl]")
 
         var chapterCounter = 1F
-        val chaptersByBook = books.mapIndexed { bookIndex, book ->
-            val bookNumber = bookIndex + 1
-            val bookUrl = book.attr("href")
-            val bookPage = client.newCall(GET(bookUrl, headers)).execute().asJsoup()
-            val chapters = bookPage.select(".comic-archive-chapter-wrap")
-            chapters.map {
-                val chapterWrap = it.selectFirst(".comic-archive-chapter-wrap")!!
-                SChapter.create().apply {
-                    name = "Book $bookNumber: ${chapterWrap.selectFirst(".comic-archive-chapter")!!.text()}"
-                    url = chapterWrap.selectFirst(".comic-archive-title > a")!!.attr("href")
-                    date_upload = dateFormat.parse(chapterWrap.select(".comic-archive-date").last()!!.text())?.time ?: 0L
-                    chapter_number = chapterCounter++
+        val chaptersByBook =
+            books.mapIndexed { bookIndex, book ->
+                val bookNumber = bookIndex + 1
+                val bookUrl = book.attr("href")
+                val bookPage = client.newCall(GET(bookUrl, headers)).execute().asJsoup()
+                val chapters = bookPage.select(".comic-archive-chapter-wrap")
+                chapters.map {
+                    val chapterWrap = it.selectFirst(".comic-archive-chapter-wrap")!!
+                    SChapter.create().apply {
+                        name = "Book $bookNumber: ${chapterWrap.selectFirst(".comic-archive-chapter")!!.text()}"
+                        url = chapterWrap.selectFirst(".comic-archive-title > a")!!.attr("href")
+                        date_upload = dateFormat.parse(chapterWrap.select(".comic-archive-date").last()!!.text())?.time ?: 0L
+                        chapter_number = chapterCounter++
+                    }
                 }
             }
-        }
         return Observable.just(chaptersByBook.flatten().reversed())
     }
 
@@ -83,29 +84,32 @@ class IRovedOut : HttpSource() {
         val title = match.groups["chapterTitle"]!!.value
         val bookPage = client.newCall(GET(archiveUrl + if (bookNumber != 1) "-book-$bookNumber" else "", headers)).execute().asJsoup()
         val chapterWrap = bookPage.select(".comic-archive-chapter-wrap").find { it.selectFirst(".comic-archive-chapter")!!.text() == title }
-        val pageUrls = chapterWrap?.select(".comic-archive-list-wrap .comic-archive-title > a")?.map {
-            it.attr("href")
-        } ?: return Observable.just(listOf())
-        val pages = pageUrls.mapIndexed { pageIndex, pageUrl ->
-            Page(pageIndex, pageUrl)
-        }
+        val pageUrls =
+            chapterWrap?.select(".comic-archive-list-wrap .comic-archive-title > a")?.map {
+                it.attr("href")
+            } ?: return Observable.just(listOf())
+        val pages =
+            pageUrls.mapIndexed { pageIndex, pageUrl ->
+                Page(pageIndex, pageUrl)
+            }
         return Observable.just(pages)
     }
 
     override fun pageListParse(response: Response): List<Page> = throw UnsupportedOperationException()
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        val manga = SManga.create().apply {
-            url = ""
-            thumbnail_url = thumbnailUrl
-            title = seriesTitle
-            author = authorName
-            artist = authorName
-            description = seriesDescription
-            genre = seriesGenre
-            status = SManga.ONGOING
-            initialized = true
-        }
+        val manga =
+            SManga.create().apply {
+                url = ""
+                thumbnail_url = thumbnailUrl
+                title = seriesTitle
+                author = authorName
+                artist = authorName
+                description = seriesDescription
+                genre = seriesGenre
+                status = SManga.ONGOING
+                initialized = true
+            }
         return Observable.just(MangasPage(listOf(manga), false))
     }
 

@@ -42,17 +42,18 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     private val updateUrlInterceptor = UpdateUrlInterceptor(preferences)
 
     // 处理URL请求
-    override val client: OkHttpClient = network.cloudflareClient
-        .newBuilder()
-        // Add rate limit to fix manga thumbnail load failure
-        .rateLimitHost(
-            baseUrl.toHttpUrl(),
-            preferences.getString(MAINSITE_RATELIMIT_PREF, MAINSITE_RATELIMIT_PREF_DEFAULT)!!.toInt(),
-            preferences.getString(MAINSITE_RATELIMIT_PERIOD, MAINSITE_RATELIMIT_PERIOD_DEFAULT)!!.toLong(),
-        )
-        .setRandomUserAgent(preferences.getPrefUAType(), preferences.getPrefCustomUA())
-        .apply { interceptors().add(0, updateUrlInterceptor) }
-        .addInterceptor(ScrambledImageInterceptor).build()
+    override val client: OkHttpClient =
+        network.cloudflareClient
+            .newBuilder()
+            // Add rate limit to fix manga thumbnail load failure
+            .rateLimitHost(
+                baseUrl.toHttpUrl(),
+                preferences.getString(MAINSITE_RATELIMIT_PREF, MAINSITE_RATELIMIT_PREF_DEFAULT)!!.toInt(),
+                preferences.getString(MAINSITE_RATELIMIT_PERIOD, MAINSITE_RATELIMIT_PERIOD_DEFAULT)!!.toLong(),
+            )
+            .setRandomUserAgent(preferences.getPrefUAType(), preferences.getPrefCustomUA())
+            .apply { interceptors().add(0, updateUrlInterceptor) }
+            .addInterceptor(ScrambledImageInterceptor).build()
 
     // 点击量排序(人气)
     override fun popularMangaRequest(page: Int): Request {
@@ -74,16 +75,17 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
         }
     }
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        val children = element.children()
-        if (children[0].tagName() == "a") children.removeFirst()
-        title = children[1].text()
-        setUrlWithoutDomain(children[0].selectFirst("a")!!.attr("href"))
-        val img = children[0].selectFirst("img")!!
-        thumbnail_url = img.extractThumbnailUrl().substringBeforeLast('?')
-        author = children[2].select("a").joinToString(", ") { it.text() }
-        genre = children[3].select("a").joinToString(", ") { it.text() }
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            val children = element.children()
+            if (children[0].tagName() == "a") children.removeFirst()
+            title = children[1].text()
+            setUrlWithoutDomain(children[0].selectFirst("a")!!.attr("href"))
+            val img = children[0].selectFirst("img")!!
+            thumbnail_url = img.extractThumbnailUrl().substringBeforeLast('?')
+            author = children[2].select("a").joinToString(", ") { it.text() }
+            genre = children[3].select("a").joinToString(", ") { it.text() }
+        }
 
     override fun popularMangaParse(response: Response): MangasPage {
         val page = super.popularMangaParse(response)
@@ -141,27 +143,28 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     ): Request {
         var params = filters.filterIsInstance<UriPartFilter>().joinToString("") { it.toUriPart() }
 
-        val url = if (query != "" && !query.contains("-")) {
-            // 禁漫天堂特有搜索方式: A +B --> A and B, A B --> A or B
-            var newQuery = query.replace("+", "%2B").replace(" ", "+")
-            // remove illegal param
-            params = params.substringAfter("?")
-            if (params.contains("search_query")) {
-                val keyword = params.substringBefore("&").substringAfter("=")
-                newQuery = "$newQuery+%2B$keyword"
-                params = params.substringAfter("&")
-            }
-            "$baseUrl/search/photos?search_query=$newQuery&page=$page&$params"
-        } else {
-            params = if (params == "") "/albums?" else params
-            if (query == "") {
-                "$baseUrl$params&page=$page"
+        val url =
+            if (query != "" && !query.contains("-")) {
+                // 禁漫天堂特有搜索方式: A +B --> A and B, A B --> A or B
+                var newQuery = query.replace("+", "%2B").replace(" ", "+")
+                // remove illegal param
+                params = params.substringAfter("?")
+                if (params.contains("search_query")) {
+                    val keyword = params.substringBefore("&").substringAfter("=")
+                    newQuery = "$newQuery+%2B$keyword"
+                    params = params.substringAfter("&")
+                }
+                "$baseUrl/search/photos?search_query=$newQuery&page=$page&$params"
             } else {
-                // 在搜索栏的关键词前添加-号来实现对筛选结果的过滤, 像 "-YAOI -扶他 -毛絨絨 -獵奇", 注意此时搜索功能不可用.
-                val removedGenres = query.split(" ").filter { it.startsWith("-") }.joinToString("+") { it.removePrefix("-") }
-                "$baseUrl$params&page=$page&screen=$removedGenres"
+                params = if (params == "") "/albums?" else params
+                if (query == "") {
+                    "$baseUrl$params&page=$page"
+                } else {
+                    // 在搜索栏的关键词前添加-号来实现对筛选结果的过滤, 像 "-YAOI -扶他 -毛絨絨 -獵奇", 注意此时搜索功能不可用.
+                    val removedGenres = query.split(" ").filter { it.startsWith("-") }.joinToString("+") { it.removePrefix("-") }
+                    "$baseUrl$params&page=$page&screen=$removedGenres"
+                }
             }
-        }
         return GET(url, headers)
     }
 
@@ -178,18 +181,19 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
 
     // 漫画详情
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.selectFirst("h1")!!.text()
-        // keep thumbnail_url same as the one in popularMangaFromElement()
-        thumbnail_url = document.selectFirst(".thumb-overlay > img")!!.extractThumbnailUrl().substringBeforeLast('.') + "_3x4.jpg"
-        author = selectAuthor(document)
-        genre = selectDetailsStatusAndGenre(document, 0).trim().split(" ").joinToString(", ")
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.selectFirst("h1")!!.text()
+            // keep thumbnail_url same as the one in popularMangaFromElement()
+            thumbnail_url = document.selectFirst(".thumb-overlay > img")!!.extractThumbnailUrl().substringBeforeLast('.') + "_3x4.jpg"
+            author = selectAuthor(document)
+            genre = selectDetailsStatusAndGenre(document, 0).trim().split(" ").joinToString(", ")
 
-        // When the index passed by the "selectDetailsStatusAndGenre(document: Document, index: Int)" index is 1,
-        // it will definitely return a String type of 0, 1 or 2. This warning can be ignored
-        status = selectDetailsStatusAndGenre(document, 1).trim().toInt()
-        description = document.selectFirst("#intro-block .p-t-5.p-b-5")!!.text().substringAfter("敘述：").trim()
-    }
+            // When the index passed by the "selectDetailsStatusAndGenre(document: Document, index: Int)" index is 1,
+            // it will definitely return a String type of 0, 1 or 2. This warning can be ignored
+            status = selectDetailsStatusAndGenre(document, 1).trim().toInt()
+            description = document.selectFirst("#intro-block .p-t-5.p-b-5")!!.text().substringAfter("敘述：").trim()
+        }
 
     private fun Element.extractThumbnailUrl(): String {
         return when {
@@ -246,21 +250,23 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
 
     private val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        url = element.select("a").attr("href")
-        name = element.select("a li").first()!!.ownText()
-        date_upload = sdf.parse(element.select("a li span.hidden-xs").text().trim())?.time ?: 0
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            url = element.select("a").attr("href")
+            name = element.select("a li").first()!!.ownText()
+            date_upload = sdf.parse(element.select("a li span.hidden-xs").text().trim())?.time ?: 0
+        }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
         if (document.select("div[id=episode-block] a li").size == 0) {
-            val singleChapter = SChapter.create().apply {
-                name = "单章节"
-                url = document.select("a[class=col btn btn-primary dropdown-toggle reading]").attr("href")
-                date_upload = sdf.parse(document.select("[itemprop=datePublished]").last()!!.attr("content"))?.time
-                    ?: 0
-            }
+            val singleChapter =
+                SChapter.create().apply {
+                    name = "单章节"
+                    url = document.select("a[class=col btn btn-primary dropdown-toggle reading]").attr("href")
+                    date_upload = sdf.parse(document.select("[itemprop=datePublished]").last()!!.attr("content"))?.time
+                        ?: 0
+                }
             return listOf(singleChapter)
         }
         return document.select(chapterListSelector()).map { chapterFromElement(it) }.reversed()
@@ -302,11 +308,12 @@ class Jinmantiantang : ParsedHttpSource(), ConfigurableSource {
     // Filters
     // 按照类别信息进行检索
 
-    override fun getFilterList() = FilterList(
-        CategoryGroup(),
-        SortFilter(),
-        TimeFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            CategoryGroup(),
+            SortFilter(),
+            TimeFilter(),
+        )
 
     private class CategoryGroup : UriPartFilter(
         "按类型",

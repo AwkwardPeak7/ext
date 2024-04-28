@@ -33,12 +33,13 @@ class Honkaiimpact : ParsedHttpSource() {
 
     override val supportsLatest = false
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .retryOnConnectionFailure(true)
-        .followRedirects(true)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .retryOnConnectionFailure(true)
+            .followRedirects(true)
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -103,12 +104,13 @@ class Honkaiimpact : ParsedHttpSource() {
         return jsonResult.map { jsonEl -> createChapter(jsonEl.jsonObject) }
     }
 
-    private fun createChapter(jsonObj: JsonObject) = SChapter.create().apply {
-        name = jsonObj["title"]!!.jsonPrimitive.content
-        url = "/book/${jsonObj["bookid"]!!.jsonPrimitive.int}/${jsonObj["chapterid"]!!.jsonPrimitive.int}"
-        date_upload = parseDate(jsonObj["timestamp"]!!.jsonPrimitive.content)
-        chapter_number = jsonObj["chapterid"]!!.jsonPrimitive.float
-    }
+    private fun createChapter(jsonObj: JsonObject) =
+        SChapter.create().apply {
+            name = jsonObj["title"]!!.jsonPrimitive.content
+            url = "/book/${jsonObj["bookid"]!!.jsonPrimitive.int}/${jsonObj["chapterid"]!!.jsonPrimitive.int}"
+            date_upload = parseDate(jsonObj["timestamp"]!!.jsonPrimitive.content)
+            chapter_number = jsonObj["chapterid"]!!.jsonPrimitive.float
+        }
 
     private fun parseDate(date: String): Long {
         return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).parse(date)?.time ?: 0

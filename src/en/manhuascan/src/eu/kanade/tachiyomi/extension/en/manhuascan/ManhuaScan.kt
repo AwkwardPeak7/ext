@@ -40,8 +40,9 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
             .build()
     }
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     // ============================== Popular ===============================
 
@@ -49,13 +50,14 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
 
     override fun popularMangaSelector(): String = ".manga-list > .book-item"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        thumbnail_url = element.selectFirst(".thumb img")?.imgAttr()
-        element.selectFirst(".title a")!!.run {
-            title = text()
-            setUrlWithoutDomain(attr("abs:href"))
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            thumbnail_url = element.selectFirst(".thumb img")?.imgAttr()
+            element.selectFirst(".title a")!!.run {
+                title = text()
+                setUrlWithoutDomain(attr("abs:href"))
+            }
         }
-    }
 
     override fun popularMangaNextPageSelector(): String = ".paginator > .active + a"
 
@@ -82,24 +84,25 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
         val orderBy = filters.firstInstanceOrNull<OrderByFilter>()
         val author = filters.firstInstanceOrNull<AuthorFilter>()
 
-        val url = "$baseUrl/search${page.getPage()}".toHttpUrl().newBuilder().apply {
-            genre?.included?.forEach {
-                addEncodedQueryParameter("include[]", it)
+        val url =
+            "$baseUrl/search${page.getPage()}".toHttpUrl().newBuilder().apply {
+                genre?.included?.forEach {
+                    addEncodedQueryParameter("include[]", it)
+                }
+                genre?.excluded?.forEach {
+                    addEncodedQueryParameter("exclude[]", it)
+                }
+                addQueryParameter("include_mode", genreInclusion?.toUriPart())
+                addQueryParameter("bookmark", "off")
+                addQueryParameter("status", status?.toUriPart())
+                addQueryParameter("sort", orderBy?.toUriPart())
+                if (query.isNotEmpty()) {
+                    addQueryParameter("q", query)
+                }
+                if (author?.state?.isNotEmpty() == true) {
+                    addQueryParameter("author", author.state)
+                }
             }
-            genre?.excluded?.forEach {
-                addEncodedQueryParameter("exclude[]", it)
-            }
-            addQueryParameter("include_mode", genreInclusion?.toUriPart())
-            addQueryParameter("bookmark", "off")
-            addQueryParameter("status", status?.toUriPart())
-            addQueryParameter("sort", orderBy?.toUriPart())
-            if (query.isNotEmpty()) {
-                addQueryParameter("q", query)
-            }
-            if (author?.state?.isNotEmpty() == true) {
-                addQueryParameter("author", author.state)
-            }
-        }
 
         return GET(url.build(), headers)
     }
@@ -112,64 +115,69 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
 
     // =============================== Filters ==============================
 
-    override fun getFilterList(): FilterList = FilterList(
-        GenreFilter(),
-        GenreInclusionFilter(),
-        Filter.Separator(),
-        StatusFilter(),
-        OrderByFilter(),
-        AuthorFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            GenreFilter(),
+            GenreInclusionFilter(),
+            Filter.Separator(),
+            StatusFilter(),
+            OrderByFilter(),
+            AuthorFilter(),
+        )
 
     // =========================== Manga Details ============================
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        var alternativeName = ""
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            var alternativeName = ""
 
-        document.selectFirst(".book-info")?.run {
-            genre = select(".meta p:has(strong:contains(Genres)) a").joinToString(", ") { it.text().removeSuffix(" ,") }
-            author = select(".meta p:has(strong:contains(Authors)) a").joinToString(", ") { it.text() }
-            thumbnail_url = selectFirst("#cover img")?.imgAttr()
-            status = selectFirst(".meta p:has(strong:contains(Status)) a").parseStatus()
-            title = selectFirst("h1")!!.text()
-            selectFirst("h2")?.also {
-                alternativeName = it.text()
-            }
-        }
-
-        description = buildString {
-            document.selectFirst(".summary > p:not([style]):not(:empty)")?.let {
-                append(it.text())
-                if (alternativeName.isNotEmpty()) {
-                    append("\n\n")
+            document.selectFirst(".book-info")?.run {
+                genre = select(".meta p:has(strong:contains(Genres)) a").joinToString(", ") { it.text().removeSuffix(" ,") }
+                author = select(".meta p:has(strong:contains(Authors)) a").joinToString(", ") { it.text() }
+                thumbnail_url = selectFirst("#cover img")?.imgAttr()
+                status = selectFirst(".meta p:has(strong:contains(Status)) a").parseStatus()
+                title = selectFirst("h1")!!.text()
+                selectFirst("h2")?.also {
+                    alternativeName = it.text()
                 }
             }
-            if (alternativeName.isNotEmpty()) {
-                append("Alternative name(s): $alternativeName")
+
+            description =
+                buildString {
+                    document.selectFirst(".summary > p:not([style]):not(:empty)")?.let {
+                        append(it.text())
+                        if (alternativeName.isNotEmpty()) {
+                            append("\n\n")
+                        }
+                    }
+                    if (alternativeName.isNotEmpty()) {
+                        append("Alternative name(s): $alternativeName")
+                    }
+                }
+        }
+
+    private fun Element?.parseStatus(): Int =
+        with(this?.text()) {
+            return when {
+                equals("ongoing", true) -> SManga.ONGOING
+                equals("completed", true) -> SManga.COMPLETED
+                equals("on-hold", true) -> SManga.ON_HIATUS
+                equals("canceled", true) -> SManga.CANCELLED
+                else -> SManga.UNKNOWN
             }
         }
-    }
-
-    private fun Element?.parseStatus(): Int = with(this?.text()) {
-        return when {
-            equals("ongoing", true) -> SManga.ONGOING
-            equals("completed", true) -> SManga.COMPLETED
-            equals("on-hold", true) -> SManga.ON_HIATUS
-            equals("canceled", true) -> SManga.CANCELLED
-            else -> SManga.UNKNOWN
-        }
-    }
 
     // ============================== Chapters ==============================
 
     override fun chapterListRequest(manga: SManga): Request {
         val id = manga.url.substringAfter("manga/").substringBefore("-")
 
-        val chapterHeaders = headersBuilder().apply {
-            add("Accept", "*/*")
-            add("Host", baseUrl.toHttpUrl().host)
-            set("Referer", baseUrl + manga.url)
-        }.build()
+        val chapterHeaders =
+            headersBuilder().apply {
+                add("Accept", "*/*")
+                add("Host", baseUrl.toHttpUrl().host)
+                set("Referer", baseUrl + manga.url)
+            }.build()
 
         val url = "$baseUrl/service/backend/chaplist/?manga_id=$id&manga_name=${manga.title}"
 
@@ -178,29 +186,32 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
 
     override fun chapterListSelector() = "ul > li"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        element.selectFirst("time")?.also {
-            date_upload = it.text().parseRelativeDate()
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            element.selectFirst("time")?.also {
+                date_upload = it.text().parseRelativeDate()
+            }
+            name = element.selectFirst("strong")!!.text()
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
         }
-        name = element.selectFirst("strong")!!.text()
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
-    }
 
     // From OppaiStream
     private fun String.parseRelativeDate(): Long {
-        val now = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
+        val now =
+            Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
 
         var parsedDate = 0L
-        val relativeDate = this.split(" ").firstOrNull()
-            ?.replace("one", "1")
-            ?.replace("a", "1")
-            ?.toIntOrNull()
-            ?: return 0L
+        val relativeDate =
+            this.split(" ").firstOrNull()
+                ?.replace("one", "1")
+                ?.replace("a", "1")
+                ?.toIntOrNull()
+                ?: return 0L
 
         when {
             // parse: 30 seconds ago
@@ -238,21 +249,25 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
     // =============================== Pages ================================
 
     override fun pageListParse(document: Document): List<Page> {
-        val scriptData = document.selectFirst("script:containsData(chapterId)")?.data()
-            ?: throw Exception("Unable to find script data")
-        val chapterId = CHAPTER_ID_REGEX.find(scriptData)?.groupValues?.get(1)
-            ?: throw Exception("Unable to retrieve chapterId")
+        val scriptData =
+            document.selectFirst("script:containsData(chapterId)")?.data()
+                ?: throw Exception("Unable to find script data")
+        val chapterId =
+            CHAPTER_ID_REGEX.find(scriptData)?.groupValues?.get(1)
+                ?: throw Exception("Unable to retrieve chapterId")
 
-        val pagesHeaders = headersBuilder().apply {
-            add("Accept", "*/*")
-            add("Host", baseUrl.toHttpUrl().host)
-            set("Referer", document.location())
-        }.build()
+        val pagesHeaders =
+            headersBuilder().apply {
+                add("Accept", "*/*")
+                add("Host", baseUrl.toHttpUrl().host)
+                set("Referer", document.location())
+            }.build()
         val pagesUrl = "$baseUrl/service/backend/chapterServer/?server_id=$server&chapter_id=$chapterId"
 
-        val pagesDocument = client.newCall(
-            GET(pagesUrl, pagesHeaders),
-        ).execute().asJsoup()
+        val pagesDocument =
+            client.newCall(
+                GET(pagesUrl, pagesHeaders),
+            ).execute().asJsoup()
 
         return pagesDocument.select("div").map { page ->
             val url = page.imgAttr()
@@ -264,11 +279,12 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = ""
 
     override fun imageRequest(page: Page): Request {
-        val imgHeaders = headersBuilder().apply {
-            add("Accept", "*/*")
-            add("Host", page.imageUrl!!.toHttpUrl().host)
-            set("Referer", page.url)
-        }.build()
+        val imgHeaders =
+            headersBuilder().apply {
+                add("Accept", "*/*")
+                add("Host", page.imageUrl!!.toHttpUrl().host)
+                set("Referer", page.url)
+            }.build()
 
         return GET(page.imageUrl!!, imgHeaders)
     }
@@ -277,11 +293,12 @@ class ManhuaScan : ConfigurableSource, ParsedHttpSource() {
 
     private fun Int.getPage(): String = if (this == 1) "" else "?page=$this"
 
-    private fun Element.imgAttr(): String = when {
-        hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
-        hasAttr("data-src") -> attr("abs:data-src")
-        else -> attr("abs:src")
-    }
+    private fun Element.imgAttr(): String =
+        when {
+            hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
+            hasAttr("data-src") -> attr("abs:data-src")
+            else -> attr("abs:src")
+        }
 
     companion object {
         private val CHAPTER_ID_REGEX = Regex("""chapterId\s*=\s*(\d+)""")

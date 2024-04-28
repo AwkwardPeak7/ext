@@ -28,27 +28,29 @@ data class Book(
     val updatedAt: String? = null,
     val activeResource: Resource? = null,
 ) {
-    fun toSManga() = SManga.create().apply {
-        url = "/books/$id"
-        title = name
-        author = this@Book.author
-        description = this@Book.description
-        genre = tags.joinToString(", ")
-        status = if (continued) SManga.ONGOING else SManga.COMPLETED
-        thumbnail_url = coverUrl
-    }
+    fun toSManga() =
+        SManga.create().apply {
+            url = "/books/$id"
+            title = name
+            author = this@Book.author
+            description = this@Book.description
+            genre = tags.joinToString(", ")
+            status = if (continued) SManga.ONGOING else SManga.COMPLETED
+            thumbnail_url = coverUrl
+        }
 
     /** 正序 */
-    fun getChapterList() = activeResource!!.chapters.mapIndexed { i, it ->
-        SChapter.create().apply {
-            url = "/books/$id/$i"
-            name = it
+    fun getChapterList() =
+        activeResource!!.chapters.mapIndexed { i, it ->
+            SChapter.create().apply {
+                url = "/books/$id/$i"
+                name = it
+            }
+        }.apply {
+            if (!updatedAt.isNullOrBlank()) {
+                this[lastIndex].date_upload = DATE_FORMAT.parse(updatedAt)?.time ?: 0L
+            }
         }
-    }.apply {
-        if (!updatedAt.isNullOrBlank()) {
-            this[lastIndex].date_upload = DATE_FORMAT.parse(updatedAt)?.time ?: 0L
-        }
-    }
 
     private val uuid by lazy { UUID.fromString(id) }
 
@@ -92,9 +94,10 @@ data class Chapter(
     val images: List<Image>? = null,
     val chapterAPIPath: String? = null,
 ) {
-    fun getPageList() = images!!.mapIndexed { i, it ->
-        Page(i, imageUrl = it.src + if (it.scramble) ScrambledImageInterceptor.SCRAMBLED_SUFFIX else "")
-    }
+    fun getPageList() =
+        images!!.mapIndexed { i, it ->
+            Page(i, imageUrl = it.src + if (it.scramble) ScrambledImageInterceptor.SCRAMBLED_SUFFIX else "")
+        }
 }
 
 @Serializable

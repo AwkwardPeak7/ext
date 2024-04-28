@@ -43,23 +43,25 @@ class ManhwaFreak : MangaThemesia("Manhwa Freak", "https://freakcomic.com", "en"
     override val seriesAltNameSelector = "#info div:contains(Alternative) > p:last-child"
     override val seriesTypeSelector = "#info div:contains(Type) > p:last-child"
 
-    override fun String?.parseStatus(): Int = when {
-        this == null -> SManga.UNKNOWN
-        listOf("ongoing", "publishing", "release").any { this.contains(it, ignoreCase = true) } -> SManga.ONGOING
-        this.contains("completed", ignoreCase = true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    override fun String?.parseStatus(): Int =
+        when {
+            this == null -> SManga.UNKNOWN
+            listOf("ongoing", "publishing", "release").any { this.contains(it, ignoreCase = true) } -> SManga.ONGOING
+            this.contains("completed", ignoreCase = true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // chapter list
     override fun chapterListSelector() = ".chapter-li a:not(:has(svg))"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        val urlElements = element.select("a")
-        setUrlWithoutDomain(urlElements.attr("href"))
-        val chapterElements = element.select(".chapter-info")
-        name = chapterElements.select("p:nth-child(1)").text().ifBlank { urlElements.first()!!.text() }
-        date_upload = getChapterDate(chapterElements.first())
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            val urlElements = element.select("a")
+            setUrlWithoutDomain(urlElements.attr("href"))
+            val chapterElements = element.select(".chapter-info")
+            name = chapterElements.select("p:nth-child(1)").text().ifBlank { urlElements.first()!!.text() }
+            date_upload = getChapterDate(chapterElements.first())
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         // Example: /wp-content/plugins/page-views-count/ajax-loader-2x.gif

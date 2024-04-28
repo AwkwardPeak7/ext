@@ -39,12 +39,14 @@ class TruyenGiHot : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
@@ -52,17 +54,18 @@ class TruyenGiHot : ParsedHttpSource() {
         const val PREFIX_ID_SEARCH = "id:"
     }
 
-    override fun popularMangaRequest(page: Int): Request = searchMangaRequest(
-        page,
-        "",
-        FilterList(
-            SortFilter(
-                getSortItems(),
-                Filter.Sort.Selection(2, false),
+    override fun popularMangaRequest(page: Int): Request =
+        searchMangaRequest(
+            page,
+            "",
+            FilterList(
+                SortFilter(
+                    getSortItems(),
+                    Filter.Sort.Selection(2, false),
+                ),
+                CategoryFilter(0),
             ),
-            CategoryFilter(0),
-        ),
-    )
+        )
 
     override fun popularMangaSelector(): String = searchMangaSelector()
 
@@ -70,17 +73,18 @@ class TruyenGiHot : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector(): String = searchMangaNextPageSelector()
 
-    override fun latestUpdatesRequest(page: Int): Request = searchMangaRequest(
-        page,
-        "",
-        FilterList(
-            SortFilter(
-                getSortItems(),
-                Filter.Sort.Selection(0, false),
+    override fun latestUpdatesRequest(page: Int): Request =
+        searchMangaRequest(
+            page,
+            "",
+            FilterList(
+                SortFilter(
+                    getSortItems(),
+                    Filter.Sort.Selection(0, false),
+                ),
+                CategoryFilter(0),
             ),
-            CategoryFilter(0),
-        ),
-    )
+        )
 
     override fun latestUpdatesSelector(): String = searchMangaSelector()
 
@@ -135,36 +139,41 @@ class TruyenGiHot : ParsedHttpSource() {
 
     override fun searchMangaSelector(): String = "ul.contentList li"
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        val anchor = element.select("span.title a")
-        setUrlWithoutDomain(anchor.attr("href"))
-        title = anchor.text()
-        thumbnail_url = element.selectFirst("span.thumb img")?.imgAttr()
-    }
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            val anchor = element.select("span.title a")
+            setUrlWithoutDomain(anchor.attr("href"))
+            title = anchor.text()
+            thumbnail_url = element.selectFirst("span.thumb img")?.imgAttr()
+        }
 
     override fun searchMangaNextPageSelector(): String = "li.page-next"
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.select(".cover-title").text()
-        author = document.select("p.cover-artist:contains(Tác giả) a").joinToString { it.text() }
-        genre = document.select("a.manga-tags").joinToString { it.text().removePrefix("#") }
-        thumbnail_url = document.selectFirst("div.cover-image img")?.imgAttr()
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.select(".cover-title").text()
+            author = document.select("p.cover-artist:contains(Tác giả) a").joinToString { it.text() }
+            genre = document.select("a.manga-tags").joinToString { it.text().removePrefix("#") }
+            thumbnail_url = document.selectFirst("div.cover-image img")?.imgAttr()
 
-        val tags = document.select("img.top-tags.top-tags-full").map {
-            it.attr("src").substringAfterLast("/").substringBefore(".png")
-        }
-        status = when {
-            tags.contains("ongoing") -> SManga.ONGOING
-            tags.contains("drop") -> SManga.CANCELLED
-            tags.contains("full") -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
-        }
+            val tags =
+                document.select("img.top-tags.top-tags-full").map {
+                    it.attr("src").substringAfterLast("/").substringBefore(".png")
+                }
+            status =
+                when {
+                    tags.contains("ongoing") -> SManga.ONGOING
+                    tags.contains("drop") -> SManga.CANCELLED
+                    tags.contains("full") -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
 
-        description = document.select("div.content div.textArea").run {
-            select("p").first()?.prepend("|truyengihay-split|")
-            textWithNewlines().substringAfter("|truyengihay-split|").substringBefore(" Xem thêm")
+            description =
+                document.select("div.content div.textArea").run {
+                    select("p").first()?.prepend("|truyengihay-split|")
+                    textWithNewlines().substringAfter("|truyengihay-split|").substringBefore(" Xem thêm")
+                }
         }
-    }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
@@ -182,45 +191,52 @@ class TruyenGiHot : ParsedHttpSource() {
 
     override fun chapterListSelector(): String = "ul#episode_list li a"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
 
-        val infoBlock = element.selectFirst("span.info")!!
-        name = infoBlock.select("span.no").text()
-        date_upload = TruyenGiHotUtils.parseChapterDate(infoBlock.select("span.date").text())
-    }
+            val infoBlock = element.selectFirst("span.info")!!
+            name = infoBlock.select("span.no").text()
+            date_upload = TruyenGiHotUtils.parseChapterDate(infoBlock.select("span.date").text())
+        }
 
     override fun pageListParse(document: Document): List<Page> {
-        val tokenScript = document.selectFirst("script:containsData(_token)")?.data()
-            ?: throw Exception("Không tìm được token lấy ảnh của chapter")
-        val token = tokenScript
-            .substringAfter("_token = \"")
-            .substringBefore("\";")
+        val tokenScript =
+            document.selectFirst("script:containsData(_token)")?.data()
+                ?: throw Exception("Không tìm được token lấy ảnh của chapter")
+        val token =
+            tokenScript
+                .substringAfter("_token = \"")
+                .substringBefore("\";")
 
-        val chapterInfoScript = document.selectFirst("script:containsData(mangaSLUG)")?.data()
-            ?: throw Exception("Không tìm thấy thông tin của chapter")
-        val chapterInfo = chapterInfoScript.split(";", "\n").associate {
-            if (!it.contains("=")) {
-                return@associate Pair("", "")
+        val chapterInfoScript =
+            document.selectFirst("script:containsData(mangaSLUG)")?.data()
+                ?: throw Exception("Không tìm thấy thông tin của chapter")
+        val chapterInfo =
+            chapterInfoScript.split(";", "\n").associate {
+                if (!it.contains("=")) {
+                    return@associate Pair("", "")
+                }
+                val kv = it.trim().split("=")
+                val key = kv[0].removePrefix("var ").trim()
+                val value = kv[1].trim().removeSurrounding("\"")
+                Pair(key, value)
             }
-            val kv = it.trim().split("=")
-            val key = kv[0].removePrefix("var ").trim()
-            val value = kv[1].trim().removeSurrounding("\"")
-            Pair(key, value)
-        }
 
-        val formBody = FormBody.Builder()
-            .add("token", token)
-            .add("chapter_id", chapterInfo["c_id"]!!)
-            .add("m_slug", chapterInfo["mangaSLUG"]!!)
-            .add("m_id", chapterInfo["mangaID"]!!)
-            .add("chapter", chapterInfo["chapter"]!!)
-            .add("g_id", chapterInfo["g_id"]!!)
-            .build()
+        val formBody =
+            FormBody.Builder()
+                .add("token", token)
+                .add("chapter_id", chapterInfo["c_id"]!!)
+                .add("m_slug", chapterInfo["mangaSLUG"]!!)
+                .add("m_id", chapterInfo["mangaID"]!!)
+                .add("chapter", chapterInfo["chapter"]!!)
+                .add("g_id", chapterInfo["g_id"]!!)
+                .build()
         val request = POST("$baseUrl/frontend_controllers/chapter/content.php", headers, formBody)
-        val response = client.newCall(request).execute().body.use {
-            it.string()
-        }
+        val response =
+            client.newCall(request).execute().body.use {
+                it.string()
+            }
 
         val pageHtml = json.parseToJsonElement(response).jsonObject["content"]!!.jsonPrimitive.content
         val pages = Jsoup.parseBodyFragment(pageHtml, baseUrl)
@@ -237,33 +253,34 @@ class TruyenGiHot : ParsedHttpSource() {
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun getFilterList(): FilterList {
-        val filters = mutableListOf<Filter<*>>(
-            CategoryFilter(),
-            PublicationTypeFilter(),
-            FormatTypeFilter(),
-            MagazineFilter(),
-            ExplicitFilter(),
-            StatusFilter(),
-        ).also {
-            if ((tags.isEmpty() && themes.isEmpty() && scanlators.isEmpty()) || fetchFiltersFailed) {
-                it.add(0, Filter.Header("Nhấn 'Đặt lại' để hiện các bộ lọc"))
-                it.add(1, Filter.Separator())
-            }
+        val filters =
+            mutableListOf<Filter<*>>(
+                CategoryFilter(),
+                PublicationTypeFilter(),
+                FormatTypeFilter(),
+                MagazineFilter(),
+                ExplicitFilter(),
+                StatusFilter(),
+            ).also {
+                if ((tags.isEmpty() && themes.isEmpty() && scanlators.isEmpty()) || fetchFiltersFailed) {
+                    it.add(0, Filter.Header("Nhấn 'Đặt lại' để hiện các bộ lọc"))
+                    it.add(1, Filter.Separator())
+                }
 
-            if (scanlators.isNotEmpty()) {
-                it.add(ScanlatorFilter(scanlators.toTypedArray()))
-            }
+                if (scanlators.isNotEmpty()) {
+                    it.add(ScanlatorFilter(scanlators.toTypedArray()))
+                }
 
-            if (tags.isNotEmpty()) {
-                it.add(TagFilter(tags))
-            }
+                if (tags.isNotEmpty()) {
+                    it.add(TagFilter(tags))
+                }
 
-            if (themes.isNotEmpty()) {
-                it.add(ThemesFilter(themes))
-            }
+                if (themes.isNotEmpty()) {
+                    it.add(ThemesFilter(themes))
+                }
 
-            it.add(SortFilter(getSortItems()))
-        }
+                it.add(SortFilter(getSortItems()))
+            }
 
         return FilterList(filters)
     }
@@ -287,14 +304,15 @@ class TruyenGiHot : ParsedHttpSource() {
             runCatching {
                 val document = client.newCall(GET("$baseUrl/danh-sach-truyen.html", headers)).execute().asJsoup()
 
-                val result = runCatching {
-                    tags = TruyenGiHotUtils.parseThemes(document.selectFirst("#contentTag")!!)
-                    themes = TruyenGiHotUtils.parseThemes(document.selectFirst("#contentTheme")!!)
-                    scanlators = TruyenGiHotUtils.parseOptions(document.selectFirst("#contentGroup")!!)
-                }
-                    .onFailure {
-                        Log.e("TruyenGiHot", "Could not fetch filtering options", it)
+                val result =
+                    runCatching {
+                        tags = TruyenGiHotUtils.parseThemes(document.selectFirst("#contentTag")!!)
+                        themes = TruyenGiHotUtils.parseThemes(document.selectFirst("#contentTheme")!!)
+                        scanlators = TruyenGiHotUtils.parseOptions(document.selectFirst("#contentGroup")!!)
                     }
+                        .onFailure {
+                            Log.e("TruyenGiHot", "Could not fetch filtering options", it)
+                        }
 
                 fetchFiltersFailed = result.isFailure
                 fetchFiltersAttempts++

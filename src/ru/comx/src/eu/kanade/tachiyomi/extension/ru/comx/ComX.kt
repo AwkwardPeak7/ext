@@ -50,67 +50,69 @@ class ComX : ParsedHttpSource() {
 
     override val supportsLatest = true
     private val cookieManager by lazy { CookieManager.getInstance() }
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .rateLimit(3)
-        .cookieJar(
-            object : CookieJar {
-                // Syncs okhttp with WebView cookies, allowing logged-in users do logged-in stuff
-                override fun saveFromResponse(
-                    url: HttpUrl,
-                    cookies: List<Cookie>,
-                ) {
-                    for (cookie in cookies) {
-                        cookieManager.setCookie(url.toString(), cookie.toString())
-                    }
-                }
-
-                override fun loadForRequest(url: HttpUrl): MutableList<Cookie> {
-                    val cookiesString = cookieManager.getCookie(url.toString())
-
-                    if (cookiesString != null && cookiesString.isNotEmpty()) {
-                        val cookieHeaders = cookiesString.split("; ").toList()
-                        val cookies = mutableListOf<Cookie>()
-                        for (header in cookieHeaders) {
-                            cookies.add(Cookie.parse(url, header)!!)
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .rateLimit(3)
+            .cookieJar(
+                object : CookieJar {
+                    // Syncs okhttp with WebView cookies, allowing logged-in users do logged-in stuff
+                    override fun saveFromResponse(
+                        url: HttpUrl,
+                        cookies: List<Cookie>,
+                    ) {
+                        for (cookie in cookies) {
+                            cookieManager.setCookie(url.toString(), cookie.toString())
                         }
-                        // Adds age verification cookies to access mature comics
-                        return if (url.toString().contains("/reader/")) {
-                            cookies.apply {
-                                add(
-                                    Cookie.Builder()
-                                        .domain(baseUrl.substringAfter("//"))
-                                        .path("/")
-                                        .name("adult")
-                                        .value(
-                                            url.toString().substringAfter("/reader/")
-                                                .substringBefore("/"),
-                                        )
-                                        .build(),
-                                )
+                    }
+
+                    override fun loadForRequest(url: HttpUrl): MutableList<Cookie> {
+                        val cookiesString = cookieManager.getCookie(url.toString())
+
+                        if (cookiesString != null && cookiesString.isNotEmpty()) {
+                            val cookieHeaders = cookiesString.split("; ").toList()
+                            val cookies = mutableListOf<Cookie>()
+                            for (header in cookieHeaders) {
+                                cookies.add(Cookie.parse(url, header)!!)
+                            }
+                            // Adds age verification cookies to access mature comics
+                            return if (url.toString().contains("/reader/")) {
+                                cookies.apply {
+                                    add(
+                                        Cookie.Builder()
+                                            .domain(baseUrl.substringAfter("//"))
+                                            .path("/")
+                                            .name("adult")
+                                            .value(
+                                                url.toString().substringAfter("/reader/")
+                                                    .substringBefore("/"),
+                                            )
+                                            .build(),
+                                    )
+                                }
+                            } else {
+                                cookies
                             }
                         } else {
-                            cookies
+                            return mutableListOf()
                         }
-                    } else {
-                        return mutableListOf()
                     }
+                },
+            )
+            .addInterceptor { chain ->
+                val originalRequest = chain.request()
+                val response = chain.proceed(originalRequest)
+                if (response.code == 404 && response.asJsoup().toString().contains("Protected by Batman")) {
+                    throw IOException("Antibot, попробуйте пройти капчу в WebView")
                 }
-            },
-        )
-        .addInterceptor { chain ->
-            val originalRequest = chain.request()
-            val response = chain.proceed(originalRequest)
-            if (response.code == 404 && response.asJsoup().toString().contains("Protected by Batman")) {
-                throw IOException("Antibot, попробуйте пройти капчу в WebView")
+                response
             }
-            response
-        }
-        .build()
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .add("Referer", baseUrl)
 
     // Popular
     override fun popularMangaRequest(page: Int): Request = searchMangaRequest(page, "", getFilterList())
@@ -118,9 +120,10 @@ class ComX : ParsedHttpSource() {
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select(popularMangaSelector()).map { element ->
-            popularMangaFromElement(element)
-        }
+        val mangas =
+            document.select(popularMangaSelector()).map { element ->
+                popularMangaFromElement(element)
+            }
 
         return MangasPage(mangas, mangas.isNotEmpty())
     }
@@ -146,9 +149,10 @@ class ComX : ParsedHttpSource() {
     override fun latestUpdatesParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select(latestUpdatesSelector()).map { element ->
-            latestUpdatesFromElement(element)
-        }
+        val mangas =
+            document.select(latestUpdatesSelector()).map { element ->
+                latestUpdatesFromElement(element)
+            }
         return MangasPage(mangas, mangas.isNotEmpty())
     }
 
@@ -176,12 +180,13 @@ class ComX : ParsedHttpSource() {
         if (query.isNotEmpty()) {
             return POST(
                 "$baseUrl/index.php?do=search",
-                body = FormBody.Builder()
-                    .add("do", "search")
-                    .add("subaction", "search")
-                    .add("story", query)
-                    .add("search_start", page.toString())
-                    .build(),
+                body =
+                    FormBody.Builder()
+                        .add("do", "search")
+                        .add("subaction", "search")
+                        .add("story", query)
+                        .add("search_start", page.toString())
+                        .build(),
                 headers = headers,
             )
         }
@@ -197,26 +202,30 @@ class ComX : ParsedHttpSource() {
                     orderBy = arrayOf("date", "rating", "news_read", "comm_num", "title")[filter.state!!.index]
                     ascEnd = if (filter.state!!.ascending) "asc" else "desc"
                 }
-                is AgeList -> filter.state.forEach { age ->
-                    if (age.state) {
-                        mutableAge += age.id
+                is AgeList ->
+                    filter.state.forEach { age ->
+                        if (age.state) {
+                            mutableAge += age.id
+                        }
                     }
-                }
-                is GenreList -> filter.state.forEach { genre ->
-                    if (genre.state) {
-                        mutableGenre += genre.id
+                is GenreList ->
+                    filter.state.forEach { genre ->
+                        if (genre.state) {
+                            mutableGenre += genre.id
+                        }
                     }
-                }
-                is TypeList -> filter.state.forEach { type ->
-                    if (type.state) {
-                        mutableType += type.id
+                is TypeList ->
+                    filter.state.forEach { type ->
+                        if (type.state) {
+                            mutableType += type.id
+                        }
                     }
-                }
-                is PubList -> filter.state.forEach { publisher ->
-                    if (publisher.state) {
-                        sectionPub += publisher.id
+                is PubList ->
+                    filter.state.forEach { publisher ->
+                        if (publisher.state) {
+                            sectionPub += publisher.id
+                        }
                     }
-                }
                 else -> {}
             }
         }
@@ -225,12 +234,13 @@ class ComX : ParsedHttpSource() {
             "$baseUrl/ComicList/p.cat=${sectionPub.joinToString(
                 ",",
             )}/g=${mutableGenre.joinToString(",")}/t=${mutableType.joinToString(",")}/adult=${mutableAge.joinToString(",")}/$pageParameter",
-            body = FormBody.Builder()
-                .add("dlenewssortby", orderBy)
-                .add("dledirection", ascEnd)
-                .add("set_new_sort", "dle_sort_xfilter")
-                .add("set_direction_sort", "dle_direction_xfilter")
-                .build(),
+            body =
+                FormBody.Builder()
+                    .add("dlenewssortby", orderBy)
+                    .add("dledirection", ascEnd)
+                    .add("set_new_sort", "dle_sort_xfilter")
+                    .add("set_direction_sort", "dle_direction_xfilter")
+                    .build(),
             headers = headers,
         )
     }
@@ -249,26 +259,28 @@ class ComX : ParsedHttpSource() {
 
         val ratingValue = infoElement.select(".page__activity-votes").textNodes().first().text().trim().toFloat() * 2
         val ratingVotes = infoElement.select(".page__activity-votes span > span").first()!!.text().trim()
-        val ratingStar = when {
-            ratingValue > 9.5 -> "★★★★★"
-            ratingValue > 8.5 -> "★★★★✬"
-            ratingValue > 7.5 -> "★★★★☆"
-            ratingValue > 6.5 -> "★★★✬☆"
-            ratingValue > 5.5 -> "★★★☆☆"
-            ratingValue > 4.5 -> "★★✬☆☆"
-            ratingValue > 3.5 -> "★★☆☆☆"
-            ratingValue > 2.5 -> "★✬☆☆☆"
-            ratingValue > 1.5 -> "★☆☆☆☆"
-            ratingValue > 0.5 -> "✬☆☆☆☆"
-            else -> "☆☆☆☆☆"
-        }
+        val ratingStar =
+            when {
+                ratingValue > 9.5 -> "★★★★★"
+                ratingValue > 8.5 -> "★★★★✬"
+                ratingValue > 7.5 -> "★★★★☆"
+                ratingValue > 6.5 -> "★★★✬☆"
+                ratingValue > 5.5 -> "★★★☆☆"
+                ratingValue > 4.5 -> "★★✬☆☆"
+                ratingValue > 3.5 -> "★★☆☆☆"
+                ratingValue > 2.5 -> "★✬☆☆☆"
+                ratingValue > 1.5 -> "★☆☆☆☆"
+                ratingValue > 0.5 -> "✬☆☆☆☆"
+                else -> "☆☆☆☆☆"
+            }
         val rawCategory = document.select(".speedbar a").last()!!.text().trim()
-        val category = when (rawCategory.lowercase()) {
-            "manga" -> "Манга"
-            "manhwa" -> "Манхва"
-            "manhua" -> "Маньхуа"
-            else -> "Комикс"
-        }
+        val category =
+            when (rawCategory.lowercase()) {
+                "manga" -> "Манга"
+                "manhwa" -> "Манхва"
+                "manhua" -> "Маньхуа"
+                else -> "Комикс"
+            }
         val rawAgeStop = if (document.toString().contains("ВНИМАНИЕ! 18+")) "18+" else ""
         val manga = SManga.create()
         manga.title = infoElement.select(".page__header h1").text().trim()
@@ -288,9 +300,10 @@ class ComX : ParsedHttpSource() {
                 ?.prepend("\\n")?.text()?.replace("\\n", "\n")?.replace("\n ", "\n")
                 .orEmpty()
 
-        val src = infoElement.select(".img-wide img").let {
-            it.attr("data-src").ifEmpty { it.attr("src") }
-        }
+        val src =
+            infoElement.select(".img-wide img").let {
+                it.attr("data-src").ifEmpty { it.attr("src") }
+            }
 
         if (src.contains("://")) {
             manga.thumbnail_url = src
@@ -300,17 +313,18 @@ class ComX : ParsedHttpSource() {
         return manga
     }
 
-    private fun parseStatus(element: String): Int = when {
-        element.contains("Продолжается") ||
-            element.contains(" из ") ||
-            element.contains("Онгоинг") -> SManga.ONGOING
-        element.contains("Заверш") ||
-            element.contains("Лимитка") ||
-            element.contains("Ван шот") ||
-            element.contains("Графический роман") -> SManga.COMPLETED
+    private fun parseStatus(element: String): Int =
+        when {
+            element.contains("Продолжается") ||
+                element.contains(" из ") ||
+                element.contains("Онгоинг") -> SManga.ONGOING
+            element.contains("Заверш") ||
+                element.contains("Лимитка") ||
+                element.contains("Ван шот") ||
+                element.contains("Графический роман") -> SManga.COMPLETED
 
-        else -> SManga.UNKNOWN
-    }
+            else -> SManga.UNKNOWN
+        }
 
     // Chapters
     override fun chapterListSelector() = throw NotImplementedError("Unused")
@@ -318,29 +332,32 @@ class ComX : ParsedHttpSource() {
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
 
-        val dataStr = document
-            .toString()
-            .substringAfter("window.__DATA__ = ")
-            .substringBefore("</script>")
-            .substringBeforeLast(";")
+        val dataStr =
+            document
+                .toString()
+                .substringAfter("window.__DATA__ = ")
+                .substringBefore("</script>")
+                .substringBeforeLast(";")
 
         val data = json.decodeFromString<JsonObject>(dataStr)
         val chaptersList = data["chapters"]?.jsonArray
-        val isEvent = document.select(".page__list li:contains(Тип выпуска)").text()
-            .contains("!!! События в комиксах - ХРОНОЛОГИЯ !!!")
+        val isEvent =
+            document.select(".page__list li:contains(Тип выпуска)").text()
+                .contains("!!! События в комиксах - ХРОНОЛОГИЯ !!!")
 
-        val chapters: List<SChapter>? = chaptersList?.map {
-            val chapter = SChapter.create()
-            chapter.name = it.jsonObject["title"]!!.jsonPrimitive.contentOrNull.toString()
-            chapter.date_upload = simpleDateFormat.parse(it.jsonObject["date"]!!.jsonPrimitive.content)?.time ?: 0L
-            chapter.chapter_number = it.jsonObject["posi"]!!.jsonPrimitive.float
-            // when it is Event add reading order numbers as prefix
-            if (isEvent) {
-                chapter.name = chapter.chapter_number.toInt().toString() + " " + chapter.name
+        val chapters: List<SChapter>? =
+            chaptersList?.map {
+                val chapter = SChapter.create()
+                chapter.name = it.jsonObject["title"]!!.jsonPrimitive.contentOrNull.toString()
+                chapter.date_upload = simpleDateFormat.parse(it.jsonObject["date"]!!.jsonPrimitive.content)?.time ?: 0L
+                chapter.chapter_number = it.jsonObject["posi"]!!.jsonPrimitive.float
+                // when it is Event add reading order numbers as prefix
+                if (isEvent) {
+                    chapter.name = chapter.chapter_number.toInt().toString() + " " + chapter.name
+                }
+                chapter.setUrlWithoutDomain("/readcomix/" + data["news_id"] + "/" + it.jsonObject["id"]!!.jsonPrimitive.content + ".html")
+                chapter
             }
-            chapter.setUrlWithoutDomain("/readcomix/" + data["news_id"] + "/" + it.jsonObject["id"]!!.jsonPrimitive.content + ".html")
-            chapter
-        }
         return chapters ?: emptyList()
     }
 
@@ -361,11 +378,12 @@ class ComX : ParsedHttpSource() {
         val beginIndex = html.indexOf(beginTag)
         val endIndex = html.indexOf("]", beginIndex)
 
-        val urls: List<String> = html.substring(beginIndex + beginTag.length, endIndex)
-            .split(',').map {
-                val img = it.replace("\\", "").replace("\"", "")
-                baseImgUrl + img
-            }
+        val urls: List<String> =
+            html.substring(beginIndex + beginTag.length, endIndex)
+                .split(',').map {
+                    val img = it.replace("\\", "").replace("\"", "")
+                    baseImgUrl + img
+                }
 
         val pages = mutableListOf<Page>()
         for (i in urls.indices) {
@@ -418,165 +436,170 @@ class ComX : ParsedHttpSource() {
 
     private class AgeList(ages: List<CheckFilter>) : Filter.Group<CheckFilter>("Возрастное ограничение", ages)
 
-    override fun getFilterList() = FilterList(
-        OrderBy(),
-        PubList(getPubList()),
-        GenreList(getGenreList()),
-        TypeList(getTypeList()),
-        AgeList(getAgeList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            OrderBy(),
+            PubList(getPubList()),
+            GenreList(getGenreList()),
+            TypeList(getTypeList()),
+            AgeList(getAgeList()),
+        )
 
-    private fun getAgeList() = listOf(
-        CheckFilter("Для всех", "1"),
-        CheckFilter("18+", "2"),
-    )
+    private fun getAgeList() =
+        listOf(
+            CheckFilter("Для всех", "1"),
+            CheckFilter("18+", "2"),
+        )
 
-    private fun getTypeList() = listOf(
-        CheckFilter("События в комиксах", "1"),
-        CheckFilter("Аннуалы", "3"),
-        CheckFilter("Артбук", "4"),
-        CheckFilter("Ван-шот", "7"),
-        CheckFilter("Гайд", "15"),
-        CheckFilter("Графический Роман", "17"),
-        CheckFilter("Комикс Стрип", "19"),
-        CheckFilter("Лимитка", "21"),
-        CheckFilter("Макси-серия", "25"),
-        CheckFilter("Мини-серия", "27"),
-        CheckFilter("Онгоинг", "28"),
-        CheckFilter("Рассказ", "29"),
-        CheckFilter("Роман", "30"),
-        CheckFilter("Сборник", "31"),
-        CheckFilter("Серия", "32"),
-        CheckFilter("Спешл", "35"),
-        CheckFilter("Энциклопедия", "36"),
-    )
+    private fun getTypeList() =
+        listOf(
+            CheckFilter("События в комиксах", "1"),
+            CheckFilter("Аннуалы", "3"),
+            CheckFilter("Артбук", "4"),
+            CheckFilter("Ван-шот", "7"),
+            CheckFilter("Гайд", "15"),
+            CheckFilter("Графический Роман", "17"),
+            CheckFilter("Комикс Стрип", "19"),
+            CheckFilter("Лимитка", "21"),
+            CheckFilter("Макси-серия", "25"),
+            CheckFilter("Мини-серия", "27"),
+            CheckFilter("Онгоинг", "28"),
+            CheckFilter("Рассказ", "29"),
+            CheckFilter("Роман", "30"),
+            CheckFilter("Сборник", "31"),
+            CheckFilter("Серия", "32"),
+            CheckFilter("Спешл", "35"),
+            CheckFilter("Энциклопедия", "36"),
+        )
 
-    private fun getPubList() = listOf(
-        CheckFilter("Манга", "3"),
-        CheckFilter("Маньхуа", "45"),
-        CheckFilter("Манхва", "44"),
-        CheckFilter("Разные комиксы", "18"),
-        CheckFilter("Aftershock", "50"),
-        CheckFilter("Avatar Press", "11"),
-        CheckFilter("Boom! Studios", "12"),
-        CheckFilter("Dark Horse", "7"),
-        CheckFilter("DC Comics", "14"),
-        CheckFilter("Dynamite Entertainment", "10"),
-        CheckFilter("Icon Comics", "16"),
-        CheckFilter("IDW Publishing", "6"),
-        CheckFilter("Image", "4"),
-        CheckFilter("Marvel", "2"),
-        CheckFilter("Oni Press", "13"),
-        CheckFilter("Top Cow", "9"),
-        CheckFilter("Valiant", "15"),
-        CheckFilter("Vertigo", "8"),
-        CheckFilter("Wildstorm", "5"),
-        CheckFilter("Zenescope", "51"),
-    )
+    private fun getPubList() =
+        listOf(
+            CheckFilter("Манга", "3"),
+            CheckFilter("Маньхуа", "45"),
+            CheckFilter("Манхва", "44"),
+            CheckFilter("Разные комиксы", "18"),
+            CheckFilter("Aftershock", "50"),
+            CheckFilter("Avatar Press", "11"),
+            CheckFilter("Boom! Studios", "12"),
+            CheckFilter("Dark Horse", "7"),
+            CheckFilter("DC Comics", "14"),
+            CheckFilter("Dynamite Entertainment", "10"),
+            CheckFilter("Icon Comics", "16"),
+            CheckFilter("IDW Publishing", "6"),
+            CheckFilter("Image", "4"),
+            CheckFilter("Marvel", "2"),
+            CheckFilter("Oni Press", "13"),
+            CheckFilter("Top Cow", "9"),
+            CheckFilter("Valiant", "15"),
+            CheckFilter("Vertigo", "8"),
+            CheckFilter("Wildstorm", "5"),
+            CheckFilter("Zenescope", "51"),
+        )
 
-    private fun getGenreList() = listOf(
-        CheckFilter("Автобиографическая новелла", "9"),
-        CheckFilter("Альтернативная история", "10"),
-        CheckFilter("Антиутопия", "11"),
-        CheckFilter("Апокалипсис", "12"),
-        CheckFilter("Артбук", "14"),
-        CheckFilter("Афрофутуризм", "15"),
-        CheckFilter("Биография", "16"),
-        CheckFilter("Боевик", "17"),
-        CheckFilter("Боевые искусства", "18"),
-        CheckFilter("Вампиры", "19"),
-        CheckFilter("Вестерн", "20"),
-        CheckFilter("Военный", "21"),
-        CheckFilter("Гарем", "22"),
-        CheckFilter("Гендерная интрига", "23"),
-        CheckFilter("Героическое фэнтези", "24"),
-        CheckFilter("Детектив", "25"),
-        CheckFilter("Детский", "26"),
-        CheckFilter("Дзёсэй", "27"),
-        CheckFilter("Документальный", "28"),
-        CheckFilter("Драма", "29"),
-        CheckFilter("Единоборства", "30"),
-        CheckFilter("Жизнь", "31"),
-        CheckFilter("Зомби", "32"),
-        CheckFilter("Игра", "33"),
-        CheckFilter("Игры", "124"),
-        CheckFilter("Исекай", "35"),
-        CheckFilter("Исэкай", "38"),
-        CheckFilter("Исторический", "36"),
-        CheckFilter("История", "37"),
-        CheckFilter("Квест", "39"),
-        CheckFilter("Киберпанк", "40"),
-        CheckFilter("Кодомо", "41"),
-        CheckFilter("Комедия", "42"),
-        CheckFilter("Комелия", "43"),
-        CheckFilter("Космоопера", "44"),
-        CheckFilter("Космос", "45"),
-        CheckFilter("Криминал", "46"),
-        CheckFilter("Криптоистория", "47"),
-        CheckFilter("ЛГБТ", "48"),
-        CheckFilter("Магия", "49"),
-        CheckFilter("Мелодрама", "50"),
-        CheckFilter("Меха", "51"),
-        CheckFilter("Мистика", "52"),
-        CheckFilter("Музыка", "54"),
-        CheckFilter("Научная фантастика", "55"),
-        CheckFilter("Неотвратимость", "56"),
-        CheckFilter("Нуар", "57"),
-        CheckFilter("Омегаверс", "58"),
-        CheckFilter("Паника", "59"),
-        CheckFilter("Пародия", "60"),
-        CheckFilter("Пираты", "61"),
-        CheckFilter("Повседневность", "62"),
-        CheckFilter("Политика", "63"),
-        CheckFilter("Постапокалиптика", "64"),
-        CheckFilter("Предатель среди нас", "65"),
-        CheckFilter("Приключения", "67"),
-        CheckFilter("Приступления", "69"),
-        CheckFilter("Психические отклонения", "70"),
-        CheckFilter("Психоделика", "71"),
-        CheckFilter("Психология", "73"),
-        CheckFilter("Путешествия во времени", "74"),
-        CheckFilter("Религия", "75"),
-        CheckFilter("Романтика", "76"),
-        CheckFilter("Самурайский боевик", "77"),
-        CheckFilter("Сверхъестественное", "78"),
-        CheckFilter("Сейнен", "79"),
-        CheckFilter("Симбиоты", "80"),
-        CheckFilter("Сказка", "81"),
-        CheckFilter("Слэшер", "82"),
-        CheckFilter("Смерть", "83"),
-        CheckFilter("Спорт", "84"),
-        CheckFilter("Стимпанк", "85"),
-        CheckFilter("Супергероика", "87"),
-        CheckFilter("Сэйнэн", "90"),
-        CheckFilter("Сянься", "91"),
-        CheckFilter("Сёдзё", "93"),
-        CheckFilter("Сёдзё-ай", "94"),
-        CheckFilter("Сёнэн", "96"),
-        CheckFilter("Сёнэн-ай", "97"),
-        CheckFilter("Трагедия", "98"),
-        CheckFilter("Тревога", "99"),
-        CheckFilter("Триллер", "100"),
-        CheckFilter("Тюремная драма", "101"),
-        CheckFilter("Ужасы", "102"),
-        CheckFilter("Фантасмагория", "103"),
-        CheckFilter("Фантасмогория", "104"),
-        CheckFilter("Фантастика", "105"),
-        CheckFilter("Фэнтези", "106"),
-        CheckFilter("Хоррор", "109"),
-        CheckFilter("Черный юмор", "110"),
-        CheckFilter("Школа", "111"),
-        CheckFilter("Школьная жизнь", "123"),
-        CheckFilter("Шпионский", "113"),
-        CheckFilter("Экшен", "122"),
-        CheckFilter("Экшн", "115"),
-        CheckFilter("Эротика", "116"),
-        CheckFilter("Этти", "117"),
-        CheckFilter("Юмор", "118"),
-        CheckFilter("Юри", "119"),
-        CheckFilter("Яой", "120"),
-        CheckFilter("Ёнкома", "121"),
-    )
+    private fun getGenreList() =
+        listOf(
+            CheckFilter("Автобиографическая новелла", "9"),
+            CheckFilter("Альтернативная история", "10"),
+            CheckFilter("Антиутопия", "11"),
+            CheckFilter("Апокалипсис", "12"),
+            CheckFilter("Артбук", "14"),
+            CheckFilter("Афрофутуризм", "15"),
+            CheckFilter("Биография", "16"),
+            CheckFilter("Боевик", "17"),
+            CheckFilter("Боевые искусства", "18"),
+            CheckFilter("Вампиры", "19"),
+            CheckFilter("Вестерн", "20"),
+            CheckFilter("Военный", "21"),
+            CheckFilter("Гарем", "22"),
+            CheckFilter("Гендерная интрига", "23"),
+            CheckFilter("Героическое фэнтези", "24"),
+            CheckFilter("Детектив", "25"),
+            CheckFilter("Детский", "26"),
+            CheckFilter("Дзёсэй", "27"),
+            CheckFilter("Документальный", "28"),
+            CheckFilter("Драма", "29"),
+            CheckFilter("Единоборства", "30"),
+            CheckFilter("Жизнь", "31"),
+            CheckFilter("Зомби", "32"),
+            CheckFilter("Игра", "33"),
+            CheckFilter("Игры", "124"),
+            CheckFilter("Исекай", "35"),
+            CheckFilter("Исэкай", "38"),
+            CheckFilter("Исторический", "36"),
+            CheckFilter("История", "37"),
+            CheckFilter("Квест", "39"),
+            CheckFilter("Киберпанк", "40"),
+            CheckFilter("Кодомо", "41"),
+            CheckFilter("Комедия", "42"),
+            CheckFilter("Комелия", "43"),
+            CheckFilter("Космоопера", "44"),
+            CheckFilter("Космос", "45"),
+            CheckFilter("Криминал", "46"),
+            CheckFilter("Криптоистория", "47"),
+            CheckFilter("ЛГБТ", "48"),
+            CheckFilter("Магия", "49"),
+            CheckFilter("Мелодрама", "50"),
+            CheckFilter("Меха", "51"),
+            CheckFilter("Мистика", "52"),
+            CheckFilter("Музыка", "54"),
+            CheckFilter("Научная фантастика", "55"),
+            CheckFilter("Неотвратимость", "56"),
+            CheckFilter("Нуар", "57"),
+            CheckFilter("Омегаверс", "58"),
+            CheckFilter("Паника", "59"),
+            CheckFilter("Пародия", "60"),
+            CheckFilter("Пираты", "61"),
+            CheckFilter("Повседневность", "62"),
+            CheckFilter("Политика", "63"),
+            CheckFilter("Постапокалиптика", "64"),
+            CheckFilter("Предатель среди нас", "65"),
+            CheckFilter("Приключения", "67"),
+            CheckFilter("Приступления", "69"),
+            CheckFilter("Психические отклонения", "70"),
+            CheckFilter("Психоделика", "71"),
+            CheckFilter("Психология", "73"),
+            CheckFilter("Путешествия во времени", "74"),
+            CheckFilter("Религия", "75"),
+            CheckFilter("Романтика", "76"),
+            CheckFilter("Самурайский боевик", "77"),
+            CheckFilter("Сверхъестественное", "78"),
+            CheckFilter("Сейнен", "79"),
+            CheckFilter("Симбиоты", "80"),
+            CheckFilter("Сказка", "81"),
+            CheckFilter("Слэшер", "82"),
+            CheckFilter("Смерть", "83"),
+            CheckFilter("Спорт", "84"),
+            CheckFilter("Стимпанк", "85"),
+            CheckFilter("Супергероика", "87"),
+            CheckFilter("Сэйнэн", "90"),
+            CheckFilter("Сянься", "91"),
+            CheckFilter("Сёдзё", "93"),
+            CheckFilter("Сёдзё-ай", "94"),
+            CheckFilter("Сёнэн", "96"),
+            CheckFilter("Сёнэн-ай", "97"),
+            CheckFilter("Трагедия", "98"),
+            CheckFilter("Тревога", "99"),
+            CheckFilter("Триллер", "100"),
+            CheckFilter("Тюремная драма", "101"),
+            CheckFilter("Ужасы", "102"),
+            CheckFilter("Фантасмагория", "103"),
+            CheckFilter("Фантасмогория", "104"),
+            CheckFilter("Фантастика", "105"),
+            CheckFilter("Фэнтези", "106"),
+            CheckFilter("Хоррор", "109"),
+            CheckFilter("Черный юмор", "110"),
+            CheckFilter("Школа", "111"),
+            CheckFilter("Школьная жизнь", "123"),
+            CheckFilter("Шпионский", "113"),
+            CheckFilter("Экшен", "122"),
+            CheckFilter("Экшн", "115"),
+            CheckFilter("Эротика", "116"),
+            CheckFilter("Этти", "117"),
+            CheckFilter("Юмор", "118"),
+            CheckFilter("Юри", "119"),
+            CheckFilter("Яой", "120"),
+            CheckFilter("Ёнкома", "121"),
+        )
 
     companion object {
         private val simpleDateFormat by lazy { SimpleDateFormat("dd.MM.yyyy", Locale.US) }

@@ -14,7 +14,8 @@ class CarteldeManhwas : MangaThemesia(
     override val hasProjectPage = true
     override val projectPageString = "/proyectos"
 
-    override fun searchMangaSelector() = ".utao .uta .imgu:not(:has(span.novelabel)), " +
-        ".listupd .bs .bsx:not(:has(span.novelabel)), " +
-        ".listo .bs .bsx:not(:has(span.novelabel))"
+    override fun searchMangaSelector() =
+        ".utao .uta .imgu:not(:has(span.novelabel)), " +
+            ".listupd .bs .bsx:not(:has(span.novelabel)), " +
+            ".listo .bs .bsx:not(:has(span.novelabel))"
 }

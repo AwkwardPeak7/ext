@@ -22,9 +22,10 @@ class MangaShip : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .addInterceptor(DataImageInterceptor())
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor(DataImageInterceptor())
+            .build()
 
     // Popular
 

@@ -10,10 +10,11 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class xCaliBRScans : MangaThemesia("xCaliBR Scans", "https://xcalibrscans.com", "en") {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .addInterceptor(AntiScrapInterceptor())
-        .rateLimit(2)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .addInterceptor(AntiScrapInterceptor())
+            .rateLimit(2)
+            .build()
 
     override val hasProjectPage = true
 
@@ -50,12 +51,13 @@ class xCaliBRScans : MangaThemesia("xCaliBR Scans", "https://xcalibrscans.com", 
             .forEach { swordDiv ->
                 val imgUrls = swordDiv.select("img").map { it.imgAttr() }
                 val urls = imgUrls.joinToString(AntiScrapInterceptor.IMAGE_URLS_SEPARATOR)
-                val url = baseUrl.toHttpUrl()
-                    .newBuilder()
-                    .addQueryParameter("urls", urls)
-                    .fragment(AntiScrapInterceptor.ANTI_SCRAP_FRAGMENT)
-                    .build()
-                    .toString()
+                val url =
+                    baseUrl.toHttpUrl()
+                        .newBuilder()
+                        .addQueryParameter("urls", urls)
+                        .fragment(AntiScrapInterceptor.ANTI_SCRAP_FRAGMENT)
+                        .build()
+                        .toString()
 
                 destination.add(url)
             }

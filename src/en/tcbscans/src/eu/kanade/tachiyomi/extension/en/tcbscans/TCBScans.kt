@@ -76,11 +76,12 @@ class TCBScans : ParsedHttpSource() {
 
         var mangas = document.select(popularMangaSelector()).map { popularMangaFromElement(it) }
         val query = response.request.headers["query"]
-        mangas = if (query != null) {
-            mangas.filter { it.title.contains(query, true) }
-        } else {
-            emptyList()
-        }
+        mangas =
+            if (query != null) {
+                mangas.filter { it.title.contains(query, true) }
+            } else {
+                emptyList()
+            }
 
         return MangasPage(mangas, false)
     }
@@ -96,20 +97,22 @@ class TCBScans : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val headers = headersBuilder()
-            .add("query", query)
-            .build()
+        val headers =
+            headersBuilder()
+                .add("query", query)
+                .build()
         return GET("$baseUrl/projects", headers)
     }
 
     // manga details
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        val descElement = document.select(".order-1.bg-card.border.border-border.rounded.py-3")
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            val descElement = document.select(".order-1.bg-card.border.border-border.rounded.py-3")
 
-        thumbnail_url = descElement.select(".flex.items-center.justify-center img").attr("src")
-        title = descElement.select(".my-3.font-bold.text-3xl").text()
-        description = descElement.select(".leading-6.my-3").text()
-    }
+            thumbnail_url = descElement.select(".flex.items-center.justify-center img").attr("src")
+            title = descElement.select(".my-3.font-bold.text-3xl").text()
+            description = descElement.select(".leading-6.my-3").text()
+        }
 
     // chapters
     override fun chapterListSelector() = ".block.border.border-border.bg-card.mb-3.p-3.rounded"

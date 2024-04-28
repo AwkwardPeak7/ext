@@ -36,12 +36,14 @@ class EarlyManga : HttpSource() {
 
     private val json: Json by injectLazy()
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", baseUrl)
 
     private val apiHeaders by lazy {
         headersBuilder()
@@ -69,17 +71,18 @@ class EarlyManga : HttpSource() {
     ): Request {
         val triFilters = filters.filterIsInstance<TriStateFilterGroup>()
 
-        val payload = SearchPayload(
-            excludedGenres_all = triFilters.flatMap { it.excluded },
-            includedGenres_all = triFilters.flatMap { it.included },
-            includedLanguages = filters.filterIsInstance<TypeFilter>().flatMap { it.checked },
-            includedPubstatus = filters.filterIsInstance<StatusFilter>().flatMap { it.checked },
-            list_order = filters.filterIsInstance<SortFilter>().firstOrNull()?.selected ?: "desc",
-            list_type = filters.filterIsInstance<OrderByFilter>().firstOrNull()?.selected ?: "Views",
-            term = query.trim(),
-        )
-            .let(json::encodeToString)
-            .toRequestBody(JSON_MEDIA_TYPE)
+        val payload =
+            SearchPayload(
+                excludedGenres_all = triFilters.flatMap { it.excluded },
+                includedGenres_all = triFilters.flatMap { it.included },
+                includedLanguages = filters.filterIsInstance<TypeFilter>().flatMap { it.checked },
+                includedPubstatus = filters.filterIsInstance<StatusFilter>().flatMap { it.checked },
+                list_order = filters.filterIsInstance<SortFilter>().firstOrNull()?.selected ?: "desc",
+                list_type = filters.filterIsInstance<OrderByFilter>().firstOrNull()?.selected ?: "Views",
+                term = query.trim(),
+            )
+                .let(json::encodeToString)
+                .toRequestBody(JSON_MEDIA_TYPE)
 
         return POST("$apiUrl/search/advanced/post?page=$page", apiHeaders, payload)
     }
@@ -94,9 +97,10 @@ class EarlyManga : HttpSource() {
                 SManga.create().apply {
                     url = "/manga/${it.id}/${it.slug}"
                     title = it.title
-                    thumbnail_url = it.cover?.let { cover ->
-                        "$baseUrl/storage/uploads/covers_optimized_mangalist/manga_${it.id}/$cover"
-                    }
+                    thumbnail_url =
+                        it.cover?.let { cover ->
+                            "$baseUrl/storage/uploads/covers_optimized_mangalist/manga_${it.id}/$cover"
+                        }
                 }
             },
             hasNextPage = result.meta.last_page > result.meta.current_page,
@@ -110,11 +114,12 @@ class EarlyManga : HttpSource() {
 
     private fun fetchGenres() {
         if (fetchGenresAttempts < 3 && (genresMap.isEmpty() || fetchGenresFailed)) {
-            val genres = runCatching {
-                client.newCall(GET("$apiUrl/search/filter", headers))
-                    .execute()
-                    .use { parseGenres(it) }
-            }
+            val genres =
+                runCatching {
+                    client.newCall(GET("$apiUrl/search/filter", headers))
+                        .execute()
+                        .use { parseGenres(it) }
+                }
 
             fetchGenresFailed = genres.isFailure
             genresMap = genres.getOrNull().orEmpty()
@@ -138,22 +143,24 @@ class EarlyManga : HttpSource() {
     }
 
     override fun getFilterList(): FilterList {
-        val filters = mutableListOf(
-            OrderByFilter(),
-            SortFilter(),
-            Filter.Separator(),
-            TypeFilter(),
-            StatusFilter(),
-            Filter.Separator(),
-        )
+        val filters =
+            mutableListOf(
+                OrderByFilter(),
+                SortFilter(),
+                Filter.Separator(),
+                TypeFilter(),
+                StatusFilter(),
+                Filter.Separator(),
+            )
 
-        filters += if (genresMap.isNotEmpty()) {
-            genresMap.map { it ->
-                TriStateFilterGroup(it.key, it.value.map { Pair(it, it) })
+        filters +=
+            if (genresMap.isNotEmpty()) {
+                genresMap.map { it ->
+                    TriStateFilterGroup(it.key, it.value.map { Pair(it, it) })
+                }
+            } else {
+                listOf(Filter.Header("Press 'Reset' to attempt to show genres"))
             }
-        } else {
-            listOf(Filter.Header("Press 'Reset' to attempt to show genres"))
-        }
 
         return FilterList(filters)
     }
@@ -169,17 +176,19 @@ class EarlyManga : HttpSource() {
             title = result.title
             author = result.authors?.joinToString { it.trim() }
             artist = result.artists?.joinToString { it.trim() }
-            description = buildString {
-                result.desc?.trim()?.also { append(it, "\n\n") }
-                result.alt_titles?.joinToString("\n") { "• ${it.name.trim()}" }
-                    ?.takeUnless { it.isEmpty() }
-                    ?.also { append("Alternative Names:\n", it) }
-            }
+            description =
+                buildString {
+                    result.desc?.trim()?.also { append(it, "\n\n") }
+                    result.alt_titles?.joinToString("\n") { "• ${it.name.trim()}" }
+                        ?.takeUnless { it.isEmpty() }
+                        ?.also { append("Alternative Names:\n", it) }
+                }
             genre = result.all_genres?.joinToString { it.name.trim() }
             status = result.pubstatus[0].name.parseStatus()
-            thumbnail_url = result.cover?.let { cover ->
-                "$baseUrl/storage/uploads/covers/manga_${result.id}/$cover"
-            }
+            thumbnail_url =
+                result.cover?.let { cover ->
+                    "$baseUrl/storage/uploads/covers/manga_${result.id}/$cover"
+                }
         }
     }
 
@@ -194,17 +203,19 @@ class EarlyManga : HttpSource() {
     override fun chapterListParse(response: Response): List<SChapter> {
         val result = response.parseAs<List<ChapterList>>()
 
-        val mangaUrl = response.request.url.toString()
-            .substringBefore("/chapterlist")
-            .substringAfter(apiUrl)
+        val mangaUrl =
+            response.request.url.toString()
+                .substringBefore("/chapterlist")
+                .substringAfter(apiUrl)
 
         return result.map { chapter ->
             SChapter.create().apply {
                 url = "$mangaUrl/${chapter.id}/chapter-${chapter.slug}"
                 name = "Chapter ${chapter.chapter_number}" + if (chapter.title.isNullOrEmpty()) "" else ": ${chapter.title}"
-                date_upload = runCatching {
-                    dateFormat.parse(chapter.created_at!!)!!.time
-                }.getOrDefault(0L)
+                date_upload =
+                    runCatching {
+                        dateFormat.parse(chapter.created_at!!)!!.time
+                    }.getOrDefault(0L)
             }
         }
     }
@@ -219,13 +230,15 @@ class EarlyManga : HttpSource() {
 
     override fun pageListParse(response: Response): List<Page> {
         val result = response.parseAs<PageListResponse>().chapter
-        val chapterUrl = response.request.url.toString()
-            .replace("/api", "")
-        val preSlug = if (result.on_disk != 0 && result.on_disk != null) {
-            "$baseUrl/storage/uploads/manga"
-        } else {
-            "https://images.${baseUrl.removePrefix("https://")}/manga"
-        }
+        val chapterUrl =
+            response.request.url.toString()
+                .replace("/api", "")
+        val preSlug =
+            if (result.on_disk != 0 && result.on_disk != null) {
+                "$baseUrl/storage/uploads/manga"
+            } else {
+                "https://images.${baseUrl.removePrefix("https://")}/manga"
+            }
         return result.images
             .filterNot { it.endsWith(".ico") }
             .mapIndexed { index, img ->
@@ -234,10 +247,11 @@ class EarlyManga : HttpSource() {
     }
 
     override fun imageRequest(page: Page): Request {
-        val imageHeaders = headersBuilder()
-            .set("Referer", page.url)
-            .set("Accept", ACCEPT_IMAGE)
-            .build()
+        val imageHeaders =
+            headersBuilder()
+                .set("Referer", page.url)
+                .set("Accept", ACCEPT_IMAGE)
+                .build()
 
         return GET(page.imageUrl!!, imageHeaders)
     }
@@ -256,9 +270,10 @@ class EarlyManga : HttpSource() {
         }
     }
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromString(it.body.string())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromString(it.body.string())
+        }
 
     companion object {
         private const val ACCEPT_JSON = "application/json, text/plain, */*"

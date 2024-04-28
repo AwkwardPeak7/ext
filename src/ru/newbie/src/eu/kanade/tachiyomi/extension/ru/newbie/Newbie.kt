@@ -72,12 +72,13 @@ class Newbie : ConfigurableSource, HttpSource() {
 
     private val userAgentRandomizer = "${Random.nextInt().absoluteValue}"
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add(
-            "User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer",
-        )
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add(
+                "User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.$userAgentRandomizer",
+            )
+            .add("Referer", baseUrl)
 
     private fun imageContentTypeIntercept(chain: Interceptor.Chain): Response {
         if (chain.request().url.queryParameter("slice").isNullOrEmpty()) {
@@ -101,9 +102,10 @@ class Newbie : ConfigurableSource, HttpSource() {
 
     override fun popularMangaParse(response: Response): MangasPage {
         val page = json.decodeFromString<PageWrapperDto<LibraryDto>>(response.body.string())
-        val mangas = page.items.map {
-            it.toSManga()
-        }
+        val mangas =
+            page.items.map {
+                it.toSManga()
+            }
         return MangasPage(mangas, mangas.isNotEmpty())
     }
 
@@ -124,9 +126,10 @@ class Newbie : ConfigurableSource, HttpSource() {
 
     override fun searchMangaParse(response: Response): MangasPage {
         val page = json.decodeFromString<SearchWrapperDto<SubSearchDto<SearchLibraryDto>>>(response.body.string())
-        val mangas = page.result.hits.map {
-            it.toSearchManga()
-        }
+        val mangas =
+            page.result.hits.map {
+                it.toSearchManga()
+            }
         return MangasPage(mangas, mangas.isNotEmpty())
     }
 
@@ -135,11 +138,12 @@ class Newbie : ConfigurableSource, HttpSource() {
             // Do not change the title name to ensure work with a multilingual catalog!
             title = if (isEng.equals("rus")) document.title_ru else document.title_en
             url = document.id
-            thumbnail_url = if (document.image_large.isNotEmpty()) {
-                "$IMAGE_URL/${document.image_large}"
-            } else {
-                "$IMAGE_URL/${document.image_small}"
-            }
+            thumbnail_url =
+                if (document.image_large.isNotEmpty()) {
+                    "$IMAGE_URL/${document.image_large}"
+                } else {
+                    "$IMAGE_URL/${document.image_small}"
+                }
         }
     }
 
@@ -178,36 +182,42 @@ class Newbie : ConfigurableSource, HttpSource() {
                         ascEnd = if (filter.state!!.ascending) "ASC" else "DESC"
                     }
                 }
-                is GenreList -> filter.state.forEach { genre ->
-                    if (genre.state != Filter.TriState.STATE_IGNORE) {
-                        if (genre.isIncluded()) mutableGenre += '"' + genre.name + '"' else mutableExGenre += '"' + genre.name + '"'
+                is GenreList ->
+                    filter.state.forEach { genre ->
+                        if (genre.state != Filter.TriState.STATE_IGNORE) {
+                            if (genre.isIncluded()) mutableGenre += '"' + genre.name + '"' else mutableExGenre += '"' + genre.name + '"'
+                        }
                     }
-                }
-                is TagsList -> filter.state.forEach { tag ->
-                    if (tag.state != Filter.TriState.STATE_IGNORE) {
-                        if (tag.isIncluded()) mutableTag += '"' + tag.name + '"' else mutableExTag += '"' + tag.name + '"'
+                is TagsList ->
+                    filter.state.forEach { tag ->
+                        if (tag.state != Filter.TriState.STATE_IGNORE) {
+                            if (tag.isIncluded()) mutableTag += '"' + tag.name + '"' else mutableExTag += '"' + tag.name + '"'
+                        }
                     }
-                }
-                is TypeList -> filter.state.forEach { type ->
-                    if (type.state) {
-                        mutableType += '"' + type.id + '"'
+                is TypeList ->
+                    filter.state.forEach { type ->
+                        if (type.state) {
+                            mutableType += '"' + type.id + '"'
+                        }
                     }
-                }
-                is StatusList -> filter.state.forEach { status ->
-                    if (status.state) {
-                        mutableStatus += '"' + status.id + '"'
+                is StatusList ->
+                    filter.state.forEach { status ->
+                        if (status.state) {
+                            mutableStatus += '"' + status.id + '"'
+                        }
                     }
-                }
-                is StatusTitleList -> filter.state.forEach { status ->
-                    if (status.state) {
-                        mutableTitleStatus += '"' + status.id + '"'
+                is StatusTitleList ->
+                    filter.state.forEach { status ->
+                        if (status.state) {
+                            mutableTitleStatus += '"' + status.id + '"'
+                        }
                     }
-                }
-                is AgeList -> filter.state.forEach { age ->
-                    if (age.state) {
-                        mutableAge += '"' + age.id + '"'
+                is AgeList ->
+                    filter.state.forEach { age ->
+                        if (age.state) {
+                            mutableAge += '"' + age.id + '"'
+                        }
                     }
-                }
                 is RequireChapters -> {
                     if (filter.state == 1) {
                         requireChapters = false
@@ -219,9 +229,10 @@ class Newbie : ConfigurableSource, HttpSource() {
 
         return POST(
             "https://neo.newmanga.org/catalogue",
-            body = """{"query":"$query","sort":{"kind":"$orderBy","dir":"$ascEnd"},"filter":{"hidden_projects":[],"genres":{"excluded":$mutableExGenre,"included":$mutableGenre},"tags":{"excluded":$mutableExTag,"included":$mutableTag},"type":{"allowed":$mutableType},"translation_status":{"allowed":$mutableStatus},"released_year":{"min":null,"max":null},"require_chapters":$requireChapters,"original_status":{"allowed":$mutableTitleStatus},"adult":{"allowed":$mutableAge}},"pagination":{"page":$page,"size":$count}}""".toRequestBody(
-                "application/json; charset=utf-8".toMediaTypeOrNull(),
-            ),
+            body =
+                """{"query":"$query","sort":{"kind":"$orderBy","dir":"$ascEnd"},"filter":{"hidden_projects":[],"genres":{"excluded":$mutableExGenre,"included":$mutableGenre},"tags":{"excluded":$mutableExTag,"included":$mutableTag},"type":{"allowed":$mutableType},"translation_status":{"allowed":$mutableStatus},"released_year":{"min":null,"max":null},"require_chapters":$requireChapters,"original_status":{"allowed":$mutableTitleStatus},"adult":{"allowed":$mutableAge}},"pagination":{"page":$page,"size":$count}}""".toRequestBody(
+                    "application/json; charset=utf-8".toMediaTypeOrNull(),
+                ),
             headers = headers,
         )
     }
@@ -255,19 +266,20 @@ class Newbie : ConfigurableSource, HttpSource() {
 
     private fun MangaDetDto.toSManga(): SManga {
         val ratingValue = DecimalFormat("#,###.##").format(rating * 2).replace(",", ".").toFloat()
-        val ratingStar = when {
-            ratingValue > 9.5 -> "★★★★★"
-            ratingValue > 8.5 -> "★★★★✬"
-            ratingValue > 7.5 -> "★★★★☆"
-            ratingValue > 6.5 -> "★★★✬☆"
-            ratingValue > 5.5 -> "★★★☆☆"
-            ratingValue > 4.5 -> "★★✬☆☆"
-            ratingValue > 3.5 -> "★★☆☆☆"
-            ratingValue > 2.5 -> "★✬☆☆☆"
-            ratingValue > 1.5 -> "★☆☆☆☆"
-            ratingValue > 0.5 -> "✬☆☆☆☆"
-            else -> "☆☆☆☆☆"
-        }
+        val ratingStar =
+            when {
+                ratingValue > 9.5 -> "★★★★★"
+                ratingValue > 8.5 -> "★★★★✬"
+                ratingValue > 7.5 -> "★★★★☆"
+                ratingValue > 6.5 -> "★★★✬☆"
+                ratingValue > 5.5 -> "★★★☆☆"
+                ratingValue > 4.5 -> "★★✬☆☆"
+                ratingValue > 3.5 -> "★★☆☆☆"
+                ratingValue > 2.5 -> "★✬☆☆☆"
+                ratingValue > 1.5 -> "★☆☆☆☆"
+                ratingValue > 0.5 -> "✬☆☆☆☆"
+                else -> "☆☆☆☆☆"
+            }
         val o = this
         return SManga.create().apply {
             // Do not change the title name to ensure work with a multilingual catalog!
@@ -277,9 +289,10 @@ class Newbie : ConfigurableSource, HttpSource() {
             author = o.author?.name
             artist = o.artist?.name
             val mediaNameLanguage = if (isEng.equals("rus")) o.title.en else o.title.ru
-            description = mediaNameLanguage + "\n" + ratingStar + " " + ratingValue + " [♡" + hearts + "]\n" + Jsoup.parse(
-                o.description,
-            ).text()
+            description = mediaNameLanguage + "\n" + ratingStar + " " + ratingValue + " [♡" + hearts + "]\n" +
+                Jsoup.parse(
+                    o.description,
+                ).text()
             genre = parseType(type) + ", " + adult?.let { parseAge(it) } + ", " + genres.joinToString { it.title.ru.capitalize() }
             status = parseStatus(o.status)
         }
@@ -442,16 +455,17 @@ class Newbie : ConfigurableSource, HttpSource() {
 
     private class AgeList(ages: List<CheckFilter>) : Filter.Group<CheckFilter>("Возрастное ограничение", ages)
 
-    override fun getFilterList() = FilterList(
-        OrderBy(),
-        GenreList(getGenreList()),
-        TagsList(getTagsList()),
-        TypeList(getTypeList()),
-        StatusList(getStatusList()),
-        StatusTitleList(getStatusTitleList()),
-        AgeList(getAgeList()),
-        RequireChapters(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            OrderBy(),
+            GenreList(getGenreList()),
+            TagsList(getTagsList()),
+            TypeList(getTypeList()),
+            StatusList(getStatusList()),
+            StatusTitleList(getStatusTitleList()),
+            AgeList(getAgeList()),
+            RequireChapters(),
+        )
 
     private class OrderBy : Filter.Sort(
         "Сортировка",
@@ -464,232 +478,240 @@ class Newbie : ConfigurableSource, HttpSource() {
         arrayOf("Да", "Все"),
     )
 
-    private fun getTypeList() = listOf(
-        CheckFilter("Манга", "MANGA"),
-        CheckFilter("Манхва", "MANHWA"),
-        CheckFilter("Маньхуа", "MANHYA"),
-        CheckFilter("Сингл", "SINGLE"),
-        CheckFilter("OEL-манга", "OEL"),
-        CheckFilter("Комикс", "COMICS"),
-        CheckFilter("Руманга", "RUSSIAN"),
-    )
+    private fun getTypeList() =
+        listOf(
+            CheckFilter("Манга", "MANGA"),
+            CheckFilter("Манхва", "MANHWA"),
+            CheckFilter("Маньхуа", "MANHYA"),
+            CheckFilter("Сингл", "SINGLE"),
+            CheckFilter("OEL-манга", "OEL"),
+            CheckFilter("Комикс", "COMICS"),
+            CheckFilter("Руманга", "RUSSIAN"),
+        )
 
-    private fun getStatusList() = listOf(
-        CheckFilter("Выпускается", "ON_GOING"),
-        CheckFilter("Заброшен", "ABANDONED"),
-        CheckFilter("Завершён", "COMPLETED"),
-    )
+    private fun getStatusList() =
+        listOf(
+            CheckFilter("Выпускается", "ON_GOING"),
+            CheckFilter("Заброшен", "ABANDONED"),
+            CheckFilter("Завершён", "COMPLETED"),
+        )
 
-    private fun getStatusTitleList() = listOf(
-        CheckFilter("Выпускается", "ON_GOING"),
-        CheckFilter("Приостановлен", "SUSPENDED"),
-        CheckFilter("Завершён", "COMPLETED"),
-        CheckFilter("Анонс", "ANNOUNCEMENT"),
-    )
+    private fun getStatusTitleList() =
+        listOf(
+            CheckFilter("Выпускается", "ON_GOING"),
+            CheckFilter("Приостановлен", "SUSPENDED"),
+            CheckFilter("Завершён", "COMPLETED"),
+            CheckFilter("Анонс", "ANNOUNCEMENT"),
+        )
 
-    private fun getGenreList() = listOf(
-        SearchFilter("cёнэн-ай"),
-        SearchFilter("боевик"),
-        SearchFilter("боевые искусства"),
-        SearchFilter("гарем"),
-        SearchFilter("гендерная интрига"),
-        SearchFilter("героическое фэнтези"),
-        SearchFilter("детектив"),
-        SearchFilter("дзёсэй"),
-        SearchFilter("додзинси"),
-        SearchFilter("драма"),
-        SearchFilter("ёнкома"),
-        SearchFilter("игра"),
-        SearchFilter("драма"),
-        SearchFilter("ёнкома"),
-        SearchFilter("игра"),
-        SearchFilter("исекай"),
-        SearchFilter("история"),
-        SearchFilter("киберпанк"),
-        SearchFilter("кодомо"),
-        SearchFilter("комедия"),
-        SearchFilter("махо-сёдзё"),
-        SearchFilter("меха"),
-        SearchFilter("мистика"),
-        SearchFilter("научная фантастика"),
-        SearchFilter("омегаверс"),
-        SearchFilter("повседневность"),
-        SearchFilter("постапокалиптика"),
-        SearchFilter("приключения"),
-        SearchFilter("психология"),
-        SearchFilter("романтика"),
-        SearchFilter("самурайский боевик"),
-        SearchFilter("сверхъестественное"),
-        SearchFilter("сёдзё"),
-        SearchFilter("сёдзё-ай"),
-        SearchFilter("сёнэн"),
-        SearchFilter("спорт"),
-        SearchFilter("сэйнэн"),
-        SearchFilter("трагедия"),
-        SearchFilter("триллер"),
-        SearchFilter("ужасы"),
-        SearchFilter("фантастика"),
-        SearchFilter("фэнтези"),
-        SearchFilter("школа"),
-        SearchFilter("элементы юмора"),
-        SearchFilter("эротика"),
-        SearchFilter("этти"),
-        SearchFilter("юри"),
-        SearchFilter("яой"),
-    )
+    private fun getGenreList() =
+        listOf(
+            SearchFilter("cёнэн-ай"),
+            SearchFilter("боевик"),
+            SearchFilter("боевые искусства"),
+            SearchFilter("гарем"),
+            SearchFilter("гендерная интрига"),
+            SearchFilter("героическое фэнтези"),
+            SearchFilter("детектив"),
+            SearchFilter("дзёсэй"),
+            SearchFilter("додзинси"),
+            SearchFilter("драма"),
+            SearchFilter("ёнкома"),
+            SearchFilter("игра"),
+            SearchFilter("драма"),
+            SearchFilter("ёнкома"),
+            SearchFilter("игра"),
+            SearchFilter("исекай"),
+            SearchFilter("история"),
+            SearchFilter("киберпанк"),
+            SearchFilter("кодомо"),
+            SearchFilter("комедия"),
+            SearchFilter("махо-сёдзё"),
+            SearchFilter("меха"),
+            SearchFilter("мистика"),
+            SearchFilter("научная фантастика"),
+            SearchFilter("омегаверс"),
+            SearchFilter("повседневность"),
+            SearchFilter("постапокалиптика"),
+            SearchFilter("приключения"),
+            SearchFilter("психология"),
+            SearchFilter("романтика"),
+            SearchFilter("самурайский боевик"),
+            SearchFilter("сверхъестественное"),
+            SearchFilter("сёдзё"),
+            SearchFilter("сёдзё-ай"),
+            SearchFilter("сёнэн"),
+            SearchFilter("спорт"),
+            SearchFilter("сэйнэн"),
+            SearchFilter("трагедия"),
+            SearchFilter("триллер"),
+            SearchFilter("ужасы"),
+            SearchFilter("фантастика"),
+            SearchFilter("фэнтези"),
+            SearchFilter("школа"),
+            SearchFilter("элементы юмора"),
+            SearchFilter("эротика"),
+            SearchFilter("этти"),
+            SearchFilter("юри"),
+            SearchFilter("яой"),
+        )
 
-    private fun getTagsList() = listOf(
-        SearchFilter("веб"),
-        SearchFilter("в цвете"),
-        SearchFilter("сборник"),
-        SearchFilter("хентай"),
-        SearchFilter("азартные игры"),
-        SearchFilter("алхимия"),
-        SearchFilter("амнезия"),
-        SearchFilter("ангелы"),
-        SearchFilter("антигерой"),
-        SearchFilter("антиутопия"),
-        SearchFilter("апокалипсис"),
-        SearchFilter("аристократия"),
-        SearchFilter("армия"),
-        SearchFilter("артефакты"),
-        SearchFilter("боги"),
-        SearchFilter("бои на мечах"),
-        SearchFilter("борьба за власть"),
-        SearchFilter("брат и сестра"),
-        SearchFilter("будущее"),
-        SearchFilter("вампиры"),
-        SearchFilter("ведьма"),
-        SearchFilter("вестерн"),
-        SearchFilter("видеоигры"),
-        SearchFilter("виртуальная реальность"),
-        SearchFilter("военные"),
-        SearchFilter("война"),
-        SearchFilter("волшебники"),
-        SearchFilter("волшебные существа"),
-        SearchFilter("воспоминания из другого мира"),
-        SearchFilter("врачи / доктора"),
-        SearchFilter("выживание"),
-        SearchFilter("гг женщина"),
-        SearchFilter("гг имба"),
-        SearchFilter("гг мужчина"),
-        SearchFilter("гг не человек"),
-        SearchFilter("геймеры"),
-        SearchFilter("гильдии"),
-        SearchFilter("глупый гг"),
-        SearchFilter("гоблины"),
-        SearchFilter("горничные"),
-        SearchFilter("грузовик-сан"),
-        SearchFilter("гяру"),
-        SearchFilter("демоны"),
-        SearchFilter("драконы"),
-        SearchFilter("дружба"),
-        SearchFilter("ёнкома"),
-        SearchFilter("жестокий мир"),
-        SearchFilter("животные компаньоны"),
-        SearchFilter("завоевание мира"),
-        SearchFilter("зверолюди"),
-        SearchFilter("злые духи"),
-        SearchFilter("зомби"),
-        SearchFilter("игровые элементы"),
-        SearchFilter("империи"),
-        SearchFilter("исекай"),
-        SearchFilter("квесты"),
-        SearchFilter("космос"),
-        SearchFilter("кулинария"),
-        SearchFilter("культивация"),
-        SearchFilter("лгбт"),
-        SearchFilter("легендарное оружие"),
-        SearchFilter("лоли"),
-        SearchFilter("магическая академия"),
-        SearchFilter("магия"),
-        SearchFilter("мафия"),
-        SearchFilter("медицина"),
-        SearchFilter("месть"),
-        SearchFilter("монстродевушки"),
-        SearchFilter("монстры"),
-        SearchFilter("музыка"),
-        SearchFilter("навыки / способности"),
-        SearchFilter("наёмники"),
-        SearchFilter("насилие / жестокость"),
-        SearchFilter("нежить"),
-        SearchFilter("ниндзя"),
-        SearchFilter("обмен телами"),
-        SearchFilter("оборотни"),
-        SearchFilter("обратный гарем"),
-        SearchFilter("огнестрельное оружие"),
-        SearchFilter("офисные работники"),
-        SearchFilter("пародия"),
-        SearchFilter("пираты"),
-        SearchFilter("подземелье"),
-        SearchFilter("политика"),
-        SearchFilter("полиция"),
-        SearchFilter("преступники / криминал"),
-        SearchFilter("призраки / духи"),
-        SearchFilter("прокачка"),
-        SearchFilter("психодел"),
-        SearchFilter("путешествия во времени"),
-        SearchFilter("рабы"),
-        SearchFilter("разумные расы"),
-        SearchFilter("ранги силы"),
-        SearchFilter("реинкарнация"),
-        SearchFilter("роботы"),
-        SearchFilter("рыцари"),
-        SearchFilter("самураи"),
-        SearchFilter("система"),
-        SearchFilter("скрытие личности"),
-        SearchFilter("спасение мира"),
-        SearchFilter("спортивное тело"),
-        SearchFilter("средневековье"),
-        SearchFilter("стимпанк"),
-        SearchFilter("супергерои"),
-        SearchFilter("традиционные игры"),
-        SearchFilter("умный гг"),
-        SearchFilter("управление территорией"),
-        SearchFilter("учитель / ученик"),
-        SearchFilter("философия"),
-        SearchFilter("хикикомори"),
-        SearchFilter("холодное оружие"),
-        SearchFilter("шантаж"),
-        SearchFilter("эльфы"),
-        SearchFilter("якудза"),
-        SearchFilter("япония"),
-    )
+    private fun getTagsList() =
+        listOf(
+            SearchFilter("веб"),
+            SearchFilter("в цвете"),
+            SearchFilter("сборник"),
+            SearchFilter("хентай"),
+            SearchFilter("азартные игры"),
+            SearchFilter("алхимия"),
+            SearchFilter("амнезия"),
+            SearchFilter("ангелы"),
+            SearchFilter("антигерой"),
+            SearchFilter("антиутопия"),
+            SearchFilter("апокалипсис"),
+            SearchFilter("аристократия"),
+            SearchFilter("армия"),
+            SearchFilter("артефакты"),
+            SearchFilter("боги"),
+            SearchFilter("бои на мечах"),
+            SearchFilter("борьба за власть"),
+            SearchFilter("брат и сестра"),
+            SearchFilter("будущее"),
+            SearchFilter("вампиры"),
+            SearchFilter("ведьма"),
+            SearchFilter("вестерн"),
+            SearchFilter("видеоигры"),
+            SearchFilter("виртуальная реальность"),
+            SearchFilter("военные"),
+            SearchFilter("война"),
+            SearchFilter("волшебники"),
+            SearchFilter("волшебные существа"),
+            SearchFilter("воспоминания из другого мира"),
+            SearchFilter("врачи / доктора"),
+            SearchFilter("выживание"),
+            SearchFilter("гг женщина"),
+            SearchFilter("гг имба"),
+            SearchFilter("гг мужчина"),
+            SearchFilter("гг не человек"),
+            SearchFilter("геймеры"),
+            SearchFilter("гильдии"),
+            SearchFilter("глупый гг"),
+            SearchFilter("гоблины"),
+            SearchFilter("горничные"),
+            SearchFilter("грузовик-сан"),
+            SearchFilter("гяру"),
+            SearchFilter("демоны"),
+            SearchFilter("драконы"),
+            SearchFilter("дружба"),
+            SearchFilter("ёнкома"),
+            SearchFilter("жестокий мир"),
+            SearchFilter("животные компаньоны"),
+            SearchFilter("завоевание мира"),
+            SearchFilter("зверолюди"),
+            SearchFilter("злые духи"),
+            SearchFilter("зомби"),
+            SearchFilter("игровые элементы"),
+            SearchFilter("империи"),
+            SearchFilter("исекай"),
+            SearchFilter("квесты"),
+            SearchFilter("космос"),
+            SearchFilter("кулинария"),
+            SearchFilter("культивация"),
+            SearchFilter("лгбт"),
+            SearchFilter("легендарное оружие"),
+            SearchFilter("лоли"),
+            SearchFilter("магическая академия"),
+            SearchFilter("магия"),
+            SearchFilter("мафия"),
+            SearchFilter("медицина"),
+            SearchFilter("месть"),
+            SearchFilter("монстродевушки"),
+            SearchFilter("монстры"),
+            SearchFilter("музыка"),
+            SearchFilter("навыки / способности"),
+            SearchFilter("наёмники"),
+            SearchFilter("насилие / жестокость"),
+            SearchFilter("нежить"),
+            SearchFilter("ниндзя"),
+            SearchFilter("обмен телами"),
+            SearchFilter("оборотни"),
+            SearchFilter("обратный гарем"),
+            SearchFilter("огнестрельное оружие"),
+            SearchFilter("офисные работники"),
+            SearchFilter("пародия"),
+            SearchFilter("пираты"),
+            SearchFilter("подземелье"),
+            SearchFilter("политика"),
+            SearchFilter("полиция"),
+            SearchFilter("преступники / криминал"),
+            SearchFilter("призраки / духи"),
+            SearchFilter("прокачка"),
+            SearchFilter("психодел"),
+            SearchFilter("путешествия во времени"),
+            SearchFilter("рабы"),
+            SearchFilter("разумные расы"),
+            SearchFilter("ранги силы"),
+            SearchFilter("реинкарнация"),
+            SearchFilter("роботы"),
+            SearchFilter("рыцари"),
+            SearchFilter("самураи"),
+            SearchFilter("система"),
+            SearchFilter("скрытие личности"),
+            SearchFilter("спасение мира"),
+            SearchFilter("спортивное тело"),
+            SearchFilter("средневековье"),
+            SearchFilter("стимпанк"),
+            SearchFilter("супергерои"),
+            SearchFilter("традиционные игры"),
+            SearchFilter("умный гг"),
+            SearchFilter("управление территорией"),
+            SearchFilter("учитель / ученик"),
+            SearchFilter("философия"),
+            SearchFilter("хикикомори"),
+            SearchFilter("холодное оружие"),
+            SearchFilter("шантаж"),
+            SearchFilter("эльфы"),
+            SearchFilter("якудза"),
+            SearchFilter("япония"),
+        )
 
-    private fun getAgeList() = listOf(
-        CheckFilter("13+", "ADULT_13"),
-        CheckFilter("16+", "ADULT_16"),
-        CheckFilter("18+", "ADULT_18"),
-    )
+    private fun getAgeList() =
+        listOf(
+            CheckFilter("13+", "ADULT_13"),
+            CheckFilter("16+", "ADULT_16"),
+            CheckFilter("18+", "ADULT_18"),
+        )
 
     private var isEng: String? = preferences.getString(LANGUAGE_PREF, "eng")
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        val titleLanguagePref = ListPreference(screen.context).apply {
-            key = LANGUAGE_PREF
-            title = LANGUAGE_PREF_Title
-            entries = arrayOf("Английский", "Русский")
-            entryValues = arrayOf("eng", "rus")
-            summary = "%s"
-            setDefaultValue("eng")
-            setOnPreferenceChangeListener { _, newValue ->
-                val titleLanguage = preferences.edit().putString(LANGUAGE_PREF, newValue as String).commit()
-                val warning = "Если язык обложки не изменился очистите базу данных в приложении (Настройки -> Дополнительно -> Очистить базу данных)"
-                Toast.makeText(screen.context, warning, Toast.LENGTH_LONG).show()
-                titleLanguage
+        val titleLanguagePref =
+            ListPreference(screen.context).apply {
+                key = LANGUAGE_PREF
+                title = LANGUAGE_PREF_Title
+                entries = arrayOf("Английский", "Русский")
+                entryValues = arrayOf("eng", "rus")
+                summary = "%s"
+                setDefaultValue("eng")
+                setOnPreferenceChangeListener { _, newValue ->
+                    val titleLanguage = preferences.edit().putString(LANGUAGE_PREF, newValue as String).commit()
+                    val warning = "Если язык обложки не изменился очистите базу данных в приложении (Настройки -> Дополнительно -> Очистить базу данных)"
+                    Toast.makeText(screen.context, warning, Toast.LENGTH_LONG).show()
+                    titleLanguage
+                }
             }
-        }
-        val paidChapterShow = androidx.preference.CheckBoxPreference(screen.context).apply {
-            key = PAID_PREF
-            title = PAID_PREF_Title
-            summary = "Показывает не купленные\uD83D\uDCB2 главы(может вызвать ошибки при обновлении/автозагрузке)"
-            setDefaultValue(false)
+        val paidChapterShow =
+            androidx.preference.CheckBoxPreference(screen.context).apply {
+                key = PAID_PREF
+                title = PAID_PREF_Title
+                summary = "Показывает не купленные\uD83D\uDCB2 главы(может вызвать ошибки при обновлении/автозагрузке)"
+                setDefaultValue(false)
 
-            setOnPreferenceChangeListener { _, newValue ->
-                val checkValue = newValue as Boolean
-                preferences.edit().putBoolean(key, checkValue).commit()
+                setOnPreferenceChangeListener { _, newValue ->
+                    val checkValue = newValue as Boolean
+                    preferences.edit().putBoolean(key, checkValue).commit()
+                }
             }
-        }
         screen.addPreference(titleLanguagePref)
         screen.addPreference(paidChapterShow)
     }

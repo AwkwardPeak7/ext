@@ -14,7 +14,8 @@ class UmiManga : MangaThemesia(
     // Beast Scans -> Umi Manga
     override val id = 6404296554681042513
 
-    override val client = network.cloudflareClient.newBuilder()
-        .readTimeout(3, TimeUnit.MINUTES)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .readTimeout(3, TimeUnit.MINUTES)
+            .build()
 }

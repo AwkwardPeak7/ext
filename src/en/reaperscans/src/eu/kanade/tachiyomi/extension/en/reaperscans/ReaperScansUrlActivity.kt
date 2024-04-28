@@ -13,11 +13,12 @@ class ReaperScansUrlActivity : Activity() {
         val pathSegments = intent?.data?.pathSegments
         if (pathSegments != null && pathSegments.size >= 2) {
             val id = pathSegments[1]
-            val mainIntent = Intent().apply {
-                action = "eu.kanade.tachiyomi.SEARCH"
-                putExtra("query", ReaperScans.PREFIX_ID_SEARCH + id)
-                putExtra("filter", packageName)
-            }
+            val mainIntent =
+                Intent().apply {
+                    action = "eu.kanade.tachiyomi.SEARCH"
+                    putExtra("query", ReaperScans.PREFIX_ID_SEARCH + id)
+                    putExtra("filter", packageName)
+                }
 
             try {
                 startActivity(mainIntent)

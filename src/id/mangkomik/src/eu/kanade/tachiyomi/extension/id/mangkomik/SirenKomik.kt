@@ -25,12 +25,13 @@ class SirenKomik : MangaThemesia(
     override val seriesAuthorSelector = ".keterangan-komik:contains(author) span"
     override val seriesArtistSelector = ".keterangan-komik:contains(artist) span"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        val urlElements = element.select("a")
-        setUrlWithoutDomain(urlElements.attr("href"))
-        name = element.select(".nomer-chapter").text().ifBlank { urlElements.first()!!.text() }
-        date_upload = element.selectFirst(".tgl-chapter")?.text().parseChapterDate()
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            val urlElements = element.select("a")
+            setUrlWithoutDomain(urlElements.attr("href"))
+            name = element.select(".nomer-chapter").text().ifBlank { urlElements.first()!!.text() }
+            date_upload = element.selectFirst(".tgl-chapter")?.text().parseChapterDate()
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         // Get external JS for image urls
@@ -40,9 +41,10 @@ class SirenKomik : MangaThemesia(
             return super.pageListParse(document)
         }
 
-        val scriptResponse = client.newCall(
-            GET(scriptUrl, headers),
-        ).execute()
+        val scriptResponse =
+            client.newCall(
+                GET(scriptUrl, headers),
+            ).execute()
 
         // Inject external JS
         scriptEl.text(scriptResponse.body.string())

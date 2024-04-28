@@ -31,17 +31,19 @@ class Rmanga : ConfigurableSource, ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(4)
+            .build()
 
     private val preferences: SharedPreferences =
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
 
     override val baseUrl = preferences.getString(DOMAIN_PREF, "https://rmanga.app")!!
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", baseUrl)
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", baseUrl)
 
     override fun popularMangaRequest(page: Int): Request {
         return GET("$baseUrl/ranking/most-viewed/$page", headers)
@@ -90,34 +92,35 @@ class Rmanga : ConfigurableSource, ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val payload = FormBody.Builder().apply {
-            add("manga-name", query.trim())
-            filters.forEach { filter ->
-                when (filter) {
-                    is TypeFilter -> {
-                        add("type", filter.getValue())
-                    }
-                    is AuthorFilter -> {
-                        add("author-name", filter.state.trim())
-                    }
-                    is ArtistFilter -> {
-                        add("artist-name", filter.state.trim())
-                    }
-                    is StatusFilter -> {
-                        add("status", filter.getValue())
-                    }
-                    is GenreFilter -> {
-                        filter.state.forEach { genreState ->
-                            when (genreState.state) {
-                                Filter.TriState.STATE_INCLUDE -> add("include[]", genreState.id)
-                                Filter.TriState.STATE_EXCLUDE -> add("exclude[]", genreState.id)
+        val payload =
+            FormBody.Builder().apply {
+                add("manga-name", query.trim())
+                filters.forEach { filter ->
+                    when (filter) {
+                        is TypeFilter -> {
+                            add("type", filter.getValue())
+                        }
+                        is AuthorFilter -> {
+                            add("author-name", filter.state.trim())
+                        }
+                        is ArtistFilter -> {
+                            add("artist-name", filter.state.trim())
+                        }
+                        is StatusFilter -> {
+                            add("status", filter.getValue())
+                        }
+                        is GenreFilter -> {
+                            filter.state.forEach { genreState ->
+                                when (genreState.state) {
+                                    Filter.TriState.STATE_INCLUDE -> add("include[]", genreState.id)
+                                    Filter.TriState.STATE_EXCLUDE -> add("exclude[]", genreState.id)
+                                }
                             }
                         }
+                        else -> {}
                     }
-                    else -> {}
                 }
-            }
-        }.build()
+            }.build()
 
         return POST("$baseUrl/detailed-search", headers, payload)
     }

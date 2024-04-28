@@ -30,12 +30,14 @@ class OhtaWebComic : ParsedHttpSource() {
 
     private val json = Injekt.get<Json>()
 
-    override val client = network.client.newBuilder()
-        .addInterceptor(SpeedBinbInterceptor(json))
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .addInterceptor(SpeedBinbInterceptor(json))
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private lateinit var directory: List<Element>
 
@@ -71,11 +73,12 @@ class OhtaWebComic : ParsedHttpSource() {
 
     override fun popularMangaSelector() = ".bnrList ul li a"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        title = element.selectFirst(".title")!!.text()
-        thumbnail_url = element.selectFirst(".pic img")?.absUrl("src")
-    }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            title = element.selectFirst(".title")!!.text()
+            thumbnail_url = element.selectFirst(".pic img")?.absUrl("src")
+        }
 
     override fun popularMangaNextPageSelector() = throw UnsupportedOperationException()
 
@@ -115,10 +118,11 @@ class OhtaWebComic : ParsedHttpSource() {
     ): MangasPage {
         val document = response.asJsoup()
 
-        directory = document.select(searchMangaSelector())
-            .filter { it ->
-                it.selectFirst(".title")?.text()?.contains(query, true) == true
-            }
+        directory =
+            document.select(searchMangaSelector())
+                .filter { it ->
+                    it.selectFirst(".title")?.text()?.contains(query, true) == true
+                }
         return parseDirectory(1, ::searchMangaFromElement)
     }
 
@@ -128,38 +132,44 @@ class OhtaWebComic : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector() = throw UnsupportedOperationException()
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.selectFirst("[itemprop=name]")!!.text()
-        author = document.selectFirst("[itemprop=author]")?.text()
-        thumbnail_url = document.selectFirst(".contentHeader")
-            ?.attr("style")
-            ?.substringAfter("background-image:url(")
-            ?.substringBefore(");")
-        description = buildString {
-            var currentNode = document.selectFirst("h3.titleBoader:contains(作品について) + dl")
-                ?: return@buildString
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.selectFirst("[itemprop=name]")!!.text()
+            author = document.selectFirst("[itemprop=author]")?.text()
+            thumbnail_url =
+                document.selectFirst(".contentHeader")
+                    ?.attr("style")
+                    ?.substringAfter("background-image:url(")
+                    ?.substringBefore(");")
+            description =
+                buildString {
+                    var currentNode =
+                        document.selectFirst("h3.titleBoader:contains(作品について) + dl")
+                            ?: return@buildString
 
-            while (true) {
-                val nextSibling = currentNode.nextElementSibling()
-                    ?: break
+                    while (true) {
+                        val nextSibling =
+                            currentNode.nextElementSibling()
+                                ?: break
 
-                if (nextSibling.nodeName() != "p") {
-                    break
+                        if (nextSibling.nodeName() != "p") {
+                            break
+                        }
+
+                        appendLine(nextSibling.text())
+                        currentNode = nextSibling
+                    }
                 }
-
-                appendLine(nextSibling.text())
-                currentNode = nextSibling
-            }
         }
-    }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val document = response.asJsoup()
-        val chapters = document.select(chapterListSelector())
-            .sortedByDescending {
-                it.selectFirst("dt.number")!!.ownText().toInt()
-            }
-            .map { chapterFromElement(it) }
+        val chapters =
+            document.select(chapterListSelector())
+                .sortedByDescending {
+                    it.selectFirst("dt.number")!!.ownText().toInt()
+                }
+                .map { chapterFromElement(it) }
 
         if (chapters.isNotEmpty()) {
             return chapters
@@ -176,23 +186,26 @@ class OhtaWebComic : ParsedHttpSource() {
 
     override fun chapterListSelector() = ".backnumberList a[onclick*=openBook]"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        url = "/contents/${element.getChapterId()}"
-        name = element.selectFirst("div.title")!!.text()
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            url = "/contents/${element.getChapterId()}"
+            name = element.selectFirst("div.title")!!.text()
+        }
 
     private val reader by lazy { SpeedBinbReader(client, headers, json, true) }
 
     override fun pageListRequest(chapter: SChapter) = GET("https://www.yondemill.jp${chapter.url}?view=1&u0=1", headers)
 
     override fun pageListParse(document: Document): List<Page> {
-        val readerUrl = document.selectFirst("script:containsData(location.href)")!!
-            .data()
-            .substringAfter("location.href='")
-            .substringBefore("';")
-        val headers = headers.newBuilder()
-            .set("Referer", document.location())
-            .build()
+        val readerUrl =
+            document.selectFirst("script:containsData(location.href)")!!
+                .data()
+                .substringAfter("location.href='")
+                .substringBefore("';")
+        val headers =
+            headers.newBuilder()
+                .set("Referer", document.location())
+                .build()
         val readerResponse = client.newCall(GET(readerUrl, headers)).execute()
 
         return reader.pageListParse(readerResponse)
@@ -201,6 +214,7 @@ class OhtaWebComic : ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 }
 
-private fun Element.getChapterId(): String = attr("onclick")
-    .substringAfter("openBook('")
-    .substringBefore("')")
+private fun Element.getChapterId(): String =
+    attr("onclick")
+        .substringAfter("openBook('")
+        .substringBefore("')")

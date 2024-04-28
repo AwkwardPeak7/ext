@@ -97,15 +97,16 @@ class TwoKinds : HttpSource() {
     ): List<SChapter> {
         val document = response.asJsoup()
 
-        val pages = document.select(".chapter-links")
-            .flatMap { season -> season.select("> a") }
-            .map { a ->
-                // /comic/1185halloween/ -> 1185halloween
-                val urlPart = a.attr("href").split("/")[2]
-                val name = a.selectFirst("span")!!.text()
+        val pages =
+            document.select(".chapter-links")
+                .flatMap { season -> season.select("> a") }
+                .map { a ->
+                    // /comic/1185halloween/ -> 1185halloween
+                    val urlPart = a.attr("href").split("/")[2]
+                    val name = a.selectFirst("span")!!.text()
 
-                TwoKindsPage(urlPart, name)
-            }
+                    TwoKindsPage(urlPart, name)
+                }
 
         // 1 page per chapter
         if (manga.url == "1") {
@@ -141,15 +142,16 @@ class TwoKinds : HttpSource() {
             val firstPage = chapter.url.substringAfter("-")
             val document = client.newCall(chapterListRequest(SManga.create())).execute().asJsoup()
 
-            val pages = document.select(".chapter-links")
-                .flatMap { season -> season.select("> a") }
-                .map { a ->
-                    // /comic/1185halloween/ -> 1185halloween
-                    val urlPart = a.attr("href").split("/")[2]
-                    val name = a.selectFirst("span")!!.text()
+            val pages =
+                document.select(".chapter-links")
+                    .flatMap { season -> season.select("> a") }
+                    .map { a ->
+                        // /comic/1185halloween/ -> 1185halloween
+                        val urlPart = a.attr("href").split("/")[2]
+                        val name = a.selectFirst("span")!!.text()
 
-                    TwoKindsPage(urlPart, name)
-                }
+                        TwoKindsPage(urlPart, name)
+                    }
 
             val firstPageIdx = pages.indexOfFirst { it.url == firstPage }
             val lastPageIdx = min(pages.size, firstPageIdx + 20)

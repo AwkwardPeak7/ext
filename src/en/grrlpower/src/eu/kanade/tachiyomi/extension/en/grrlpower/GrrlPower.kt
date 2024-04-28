@@ -40,27 +40,28 @@ class GrrlPower(
 
     override val client = super.client.newBuilder().addInterceptor(TextInterceptor()).build()
 
-    override fun fetchPopularManga(page: Int): Observable<MangasPage> = Observable.just(
-        MangasPage(
-            listOf(
-                SManga.create().apply {
-                    artist = comicAuthor
-                    author = comicAuthor
-                    description = "Grrl Power is a comic about a crazy nerdette that becomes a" +
-                        " superheroine. Humor, action, cheesecake, beefcake, 'splosions," +
-                        " and maybe some drama. Possibly ninjas. "
-                    genre = "superhero, humor, action"
-                    initialized = true
-                    status = SManga.ONGOING
-                    // Thumbnail Found On The TvTropes Page for the comic
-                    thumbnail_url = "https://static.tvtropes.org/pmwiki/pub/images/rsz_grrl_power.png"
-                    title = "Grrl Power"
-                    url = "/archive"
-                },
+    override fun fetchPopularManga(page: Int): Observable<MangasPage> =
+        Observable.just(
+            MangasPage(
+                listOf(
+                    SManga.create().apply {
+                        artist = comicAuthor
+                        author = comicAuthor
+                        description = "Grrl Power is a comic about a crazy nerdette that becomes a" +
+                            " superheroine. Humor, action, cheesecake, beefcake, 'splosions," +
+                            " and maybe some drama. Possibly ninjas. "
+                        genre = "superhero, humor, action"
+                        initialized = true
+                        status = SManga.ONGOING
+                        // Thumbnail Found On The TvTropes Page for the comic
+                        thumbnail_url = "https://static.tvtropes.org/pmwiki/pub/images/rsz_grrl_power.png"
+                        title = "Grrl Power"
+                        url = "/archive"
+                    },
+                ),
+                false,
             ),
-            false,
-        ),
-    )!!
+        )!!
 
     /**
      There are separate pages for each year.
@@ -132,17 +133,18 @@ class GrrlPower(
     private fun showAuthorsNotesPref() = preferences.getBoolean(SHOW_AUTHORS_NOTES_KEY, false)
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val authorsNotesPref = SwitchPreferenceCompat(screen.context).apply {
-            key = SHOW_AUTHORS_NOTES_KEY
-            title = "Show author's notes"
-            summary = "Enable to see the author's notes at the end of chapters (if they're there)."
-            setDefaultValue(false)
+        val authorsNotesPref =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = SHOW_AUTHORS_NOTES_KEY
+                title = "Show author's notes"
+                summary = "Enable to see the author's notes at the end of chapters (if they're there)."
+                setDefaultValue(false)
 
-            setOnPreferenceChangeListener { _, newValue ->
-                val checkValue = newValue as Boolean
-                preferences.edit().putBoolean(SHOW_AUTHORS_NOTES_KEY, checkValue).commit()
+                setOnPreferenceChangeListener { _, newValue ->
+                    val checkValue = newValue as Boolean
+                    preferences.edit().putBoolean(SHOW_AUTHORS_NOTES_KEY, checkValue).commit()
+                }
             }
-        }
         screen.addPreference(authorsNotesPref)
     } // End of Preferences
 

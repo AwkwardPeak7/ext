@@ -14,12 +14,13 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 object AllAnimeHelper {
-    val json: Json = Json {
-        ignoreUnknownKeys = true
-        explicitNulls = false
-        encodeDefaults = true
-        coerceInputValues = true
-    }
+    val json: Json =
+        Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+            encodeDefaults = true
+            coerceInputValues = true
+        }
 
     fun String.parseThumbnailUrl(): String {
         return if (this.matches(AllAnime.urlRegex)) {
@@ -41,9 +42,10 @@ object AllAnimeHelper {
         }
     }
 
-    fun String.titleToSlug() = this.trim()
-        .lowercase(Locale.US)
-        .replace(titleSpecialCharactersRegex, "-")
+    fun String.titleToSlug() =
+        this.trim()
+            .lowercase(Locale.US)
+            .replace(titleSpecialCharactersRegex, "-")
 
     fun String.parseDescription(): String {
         return Jsoup.parse(
@@ -61,13 +63,15 @@ object AllAnimeHelper {
 
     inline fun <reified T> List<*>.firstInstanceOrNull(): T? = filterIsInstance<T>().firstOrNull()
 
-    inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody = json.encodeToString(this)
-        .toRequestBody(JSON_MEDIA_TYPE)
+    inline fun <reified T : Any> T.toJsonRequestBody(): RequestBody =
+        json.encodeToString(this)
+            .toRequestBody(JSON_MEDIA_TYPE)
 
-    fun Headers.Builder.buildApiHeaders(requestBody: RequestBody) = this
-        .add("Content-Length", requestBody.contentLength().toString())
-        .add("Content-Type", requestBody.contentType().toString())
-        .build()
+    fun Headers.Builder.buildApiHeaders(requestBody: RequestBody) =
+        this
+            .add("Content-Length", requestBody.contentLength().toString())
+            .add("Content-Type", requestBody.contentType().toString())
+            .build()
 
     private const val thumbnail_cdn = "https://wp.youtube-anime.com/aln.youtube-anime.com/"
     private val titleSpecialCharactersRegex by lazy { Regex("[^a-z\\d]+") }

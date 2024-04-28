@@ -9,7 +9,8 @@ class UnionMangasFactory : SourceFactory {
 
 class LanguageOption(val lang: String, val infix: String = lang, val chpPrefix: String, val pageDelimiter: String)
 
-val languages = listOf(
-    LanguageOption("it", "italy", "leer", ","),
-    LanguageOption("pt-BR", "manga-br", "cap", "#"),
-)
+val languages =
+    listOf(
+        LanguageOption("it", "italy", "leer", ","),
+        LanguageOption("pt-BR", "manga-br", "cap", "#"),
+    )

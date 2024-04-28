@@ -40,14 +40,16 @@ abstract class NewToki(
     override val client by lazy { buildClient(withRateLimit = false) }
     private val rateLimitedClient by lazy { buildClient(withRateLimit = true) }
 
-    private fun buildClient(withRateLimit: Boolean) = network.cloudflareClient.newBuilder()
-        .apply { if (withRateLimit) rateLimit(1, preferences.rateLimitPeriod.toLong()) }
-        .addInterceptor(DomainInterceptor) // not rate-limited
-        .connectTimeout(10, TimeUnit.SECONDS) // fail fast
-        .build()
+    private fun buildClient(withRateLimit: Boolean) =
+        network.cloudflareClient.newBuilder()
+            .apply { if (withRateLimit) rateLimit(1, preferences.rateLimitPeriod.toLong()) }
+            .addInterceptor(DomainInterceptor) // not rate-limited
+            .connectTimeout(10, TimeUnit.SECONDS) // fail fast
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaSelector() = "div#webtoon-list > ul > li"
 
@@ -103,20 +105,21 @@ abstract class NewToki(
         // only exists on chapter with proper manga detail page.
         val fullListButton = document.select(".comic-navbar .toon-nav a").last()
 
-        val list: List<SManga> = when {
-            firstChapterButton?.text()?.contains("첫회보기") == true -> { // Check this page is detail page
-                val details = mangaDetailsParse(document)
-                details.url = urlPath
-                listOf(details)
+        val list: List<SManga> =
+            when {
+                firstChapterButton?.text()?.contains("첫회보기") == true -> { // Check this page is detail page
+                    val details = mangaDetailsParse(document)
+                    details.url = urlPath
+                    listOf(details)
+                }
+                fullListButton?.text()?.contains("전체목록") == true -> { // Check this page is chapter page
+                    val url = fullListButton.attr("abs:href")
+                    val details = mangaDetailsParse(rateLimitedClient.newCall(GET(url, headers)).execute())
+                    details.url = getUrlPath(url)
+                    listOf(details)
+                }
+                else -> emptyList()
             }
-            fullListButton?.text()?.contains("전체목록") == true -> { // Check this page is chapter page
-                val url = fullListButton.attr("abs:href")
-                val details = mangaDetailsParse(rateLimitedClient.newCall(GET(url, headers)).execute())
-                details.url = getUrlPath(url)
-                listOf(details)
-            }
-            else -> emptyList()
-        }
 
         return MangasPage(list, false)
     }
@@ -126,9 +129,10 @@ abstract class NewToki(
         val title = document.select("div.view-content > span > b").text()
         val thumbnail = document.select("div.row div.view-img > img").attr("src")
         val descriptionElement = info.select("div.row div.view-content:not([style])")
-        val description = descriptionElement.map {
-            it.text().trim()
-        }
+        val description =
+            descriptionElement.map {
+                it.text().trim()
+            }
         val prefix = if (isCleanPath(document.location())) "" else needMigration()
 
         val manga = SManga.create()
@@ -152,11 +156,12 @@ abstract class NewToki(
         return manga
     }
 
-    private fun parseStatus(status: String) = when (status.trim()) {
-        "주간", "격주", "월간", "격월/비정기", "단행본" -> SManga.ONGOING
-        "단편", "완결" -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String) =
+        when (status.trim()) {
+            "주간", "격주", "월간", "격월/비정기", "단행본" -> SManga.ONGOING
+            "단편", "완결" -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     override fun chapterListSelector() = "div.serial-list > ul.list-body > li.list-item"
 
@@ -250,10 +255,12 @@ abstract class NewToki(
     }
 
     override fun pageListParse(document: Document): List<Page> {
-        val script = document.select("script:containsData(html_data)").firstOrNull()?.data()
-            ?: throw Exception("data script not found")
-        val loadScript = document.select("script:containsData(data_attribute)").firstOrNull()?.data()
-            ?: throw Exception("load script not found")
+        val script =
+            document.select("script:containsData(html_data)").firstOrNull()?.data()
+                ?: throw Exception("data script not found")
+        val loadScript =
+            document.select("script:containsData(data_attribute)").firstOrNull()?.data()
+                ?: throw Exception("load script not found")
         val dataAttr = "abs:data-" + loadScript.substringAfter("data_attribute: '").substringBefore("',")
 
         return htmlDataRegex.findAll(script).map { it.groupValues[1] }

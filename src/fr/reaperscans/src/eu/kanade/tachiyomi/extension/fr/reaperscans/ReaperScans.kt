@@ -16,19 +16,22 @@ class ReaperScans : Madara(
     // Migrated from WpMangaReader to Madara.
     override val versionId = 2
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        val urlElement = element.selectFirst(chapterUrlSelector)!!
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            val urlElement = element.selectFirst(chapterUrlSelector)!!
 
-        name = urlElement.selectFirst("p.chapter-manhwa-title")?.text()
-            ?: urlElement.ownText()
-        date_upload = urlElement.selectFirst("span.chapter-release-date > i")?.text()
-            .let { parseChapterDate(it) }
+            name = urlElement.selectFirst("p.chapter-manhwa-title")?.text()
+                ?: urlElement.ownText()
+            date_upload =
+                urlElement.selectFirst("span.chapter-release-date > i")?.text()
+                    .let { parseChapterDate(it) }
 
-        val fixedUrl = urlElement.attr("abs:href").toHttpUrl().newBuilder()
-            .removeAllQueryParameters("style")
-            .addQueryParameter("style", "list")
-            .toString()
+            val fixedUrl =
+                urlElement.attr("abs:href").toHttpUrl().newBuilder()
+                    .removeAllQueryParameters("style")
+                    .addQueryParameter("style", "list")
+                    .toString()
 
-        setUrlWithoutDomain(fixedUrl)
-    }
+            setUrlWithoutDomain(fixedUrl)
+        }
 }

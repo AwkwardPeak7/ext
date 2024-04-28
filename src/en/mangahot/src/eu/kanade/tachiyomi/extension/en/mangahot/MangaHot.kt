@@ -39,23 +39,26 @@ class MangaHot : HttpSource() {
 
     override val supportsLatest = false
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder().apply {
-        add("Referer", "$baseUrl/")
-    }
+    override fun headersBuilder() =
+        super.headersBuilder().apply {
+            add("Referer", "$baseUrl/")
+        }
 
     private val apiHeaders by lazy { apiHeadersBuilder().build() }
 
-    private fun apiHeadersBuilder() = headersBuilder().apply {
-        add("Accept", "*/*")
-        set("Referer", "$baseUrl/list")
-        add("Sec-Fetch-Dest", "empty")
-        add("Sec-Fetch-Mode", "cors")
-        add("Sec-Fetch-Site", "same-origin")
-    }
+    private fun apiHeadersBuilder() =
+        headersBuilder().apply {
+            add("Accept", "*/*")
+            set("Referer", "$baseUrl/list")
+            add("Sec-Fetch-Dest", "empty")
+            add("Sec-Fetch-Mode", "cors")
+            add("Sec-Fetch-Site", "same-origin")
+        }
 
     private val json: Json by injectLazy()
 
@@ -92,28 +95,32 @@ class MangaHot : HttpSource() {
             query.isNotBlank() -> {
                 url.addPathSegments("search")
                 url.fragment(page.toString())
-                val body = buildJsonObject {
-                    put("keyword", query)
-                    put("page", page)
-                    put("size", PAGE_LIMIT)
-                }.toRequestBody()
-                val headers = apiHeadersBuilder().apply {
-                    set("Referer", "$baseUrl/search?q=${URLEncoder.encode(query, "UTF-8")}")
-                }.build()
+                val body =
+                    buildJsonObject {
+                        put("keyword", query)
+                        put("page", page)
+                        put("size", PAGE_LIMIT)
+                    }.toRequestBody()
+                val headers =
+                    apiHeadersBuilder().apply {
+                        set("Referer", "$baseUrl/search?q=${URLEncoder.encode(query, "UTF-8")}")
+                    }.build()
                 POST(url.build().toString(), headers, body)
             }
             tag?.isNotBlank() == true -> {
                 url.addPathSegments("tags")
                 url.fragment(page.toString())
-                val body = buildJsonObject {
-                    put("keyword", tag)
-                    put("page", page)
-                    put("size", PAGE_LIMIT)
-                }.toRequestBody()
-                val headers = apiHeadersBuilder().apply {
-                    add("Origin", baseUrl)
-                    set("Referer", "$baseUrl/tags/${tag.replace(" ", "-")}")
-                }.build()
+                val body =
+                    buildJsonObject {
+                        put("keyword", tag)
+                        put("page", page)
+                        put("size", PAGE_LIMIT)
+                    }.toRequestBody()
+                val headers =
+                    apiHeadersBuilder().apply {
+                        add("Origin", baseUrl)
+                        set("Referer", "$baseUrl/tags/${tag.replace(" ", "-")}")
+                    }.build()
                 POST(url.build().toString(), headers, body)
             }
             else -> popularMangaRequest(page)
@@ -136,14 +143,15 @@ class MangaHot : HttpSource() {
         query: String,
         tag: String?,
     ) {
-        val request = if (query.isNotBlank()) {
-            GET("$baseUrl/search?q=${URLEncoder.encode(query, "UTF-8")}", headers)
-        } else if (tag?.isNotBlank() == true) {
-            GET("$baseUrl/tags/${tag.replace(" ", "-")}", headers)
-        } else {
-            currentTotalNumberOfPages = 1
-            return
-        }
+        val request =
+            if (query.isNotBlank()) {
+                GET("$baseUrl/search?q=${URLEncoder.encode(query, "UTF-8")}", headers)
+            } else if (tag?.isNotBlank() == true) {
+                GET("$baseUrl/tags/${tag.replace(" ", "-")}", headers)
+            } else {
+                currentTotalNumberOfPages = 1
+                return
+            }
 
         val document = client.newCall(request).execute().asJsoup()
         document.selectFirst("ul.ant-pagination > li:nth-last-child(2)")?.run {
@@ -155,11 +163,12 @@ class MangaHot : HttpSource() {
 
     // =============================== Filters ==============================
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("Note: Ignored if using text search!"),
-        Filter.Separator(),
-        TagFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("Note: Ignored if using text search!"),
+            Filter.Separator(),
+            TagFilter(),
+        )
 
     private class TagFilter : UriPartFilter(
         "Tag",
@@ -202,38 +211,42 @@ class MangaHot : HttpSource() {
             author = document.getInfo("Author")
             genre = document.getInfo("Genre")
             status = document.getInfo("Status").parseStatus()
-            description = buildString {
-                document.selectFirst("div.pt-6:has(> div:contains(Description)) > div:nth-child(2)")?.let {
-                    append(it.text())
-                }
-                append("\n\n")
-                document.getInfo("Alt name")?.let {
-                    append("Alt name: ")
-                    append(it)
-                }
-            }.trim()
+            description =
+                buildString {
+                    document.selectFirst("div.pt-6:has(> div:contains(Description)) > div:nth-child(2)")?.let {
+                        append(it.text())
+                    }
+                    append("\n\n")
+                    document.getInfo("Alt name")?.let {
+                        append("Alt name: ")
+                        append(it)
+                    }
+                }.trim()
         }
     }
 
-    private fun String?.parseStatus(): Int = when (this?.lowercase()) {
-        "ongoing" -> SManga.ONGOING
-        "completed" -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun String?.parseStatus(): Int =
+        when (this?.lowercase()) {
+            "ongoing" -> SManga.ONGOING
+            "completed" -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
-    private fun Element.getInfo(name: String): String? = selectFirst("li:has(span:contains($name))")
-        ?.ownText()
-        ?.substringAfter(":")
-        ?.trim()
+    private fun Element.getInfo(name: String): String? =
+        selectFirst("li:has(span:contains($name))")
+            ?.ownText()
+            ?.substringAfter(":")
+            ?.trim()
 
     // ============================== Chapters ==============================
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val html = response.body.string()
 
-        val dataStr = CHAPTER_REGEX.find(html)?.groupValues?.get(1)
-            ?.replace("\\\"", "\"")
-            ?: throw Exception("Unable to find chapter data")
+        val dataStr =
+            CHAPTER_REGEX.find(html)?.groupValues?.get(1)
+                ?.replace("\\\"", "\"")
+                ?: throw Exception("Unable to find chapter data")
         val chapterList = json.decodeFromString<List<ChapterDto>>(dataStr)
 
         return chapterList.map {
@@ -245,9 +258,10 @@ class MangaHot : HttpSource() {
 
     override fun pageListRequest(chapter: SChapter): Request {
         val id = chapter.url.substringAfterLast("#")
-        val headers = apiHeaders.newBuilder()
-            .set("Referer", chapter.url.substringBeforeLast("#"))
-            .build()
+        val headers =
+            apiHeaders.newBuilder()
+                .set("Referer", chapter.url.substringBeforeLast("#"))
+                .build()
         return GET("$baseUrl/api/chapter/$id", headers)
     }
 
@@ -262,10 +276,11 @@ class MangaHot : HttpSource() {
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
-        val pageHeaders = headersBuilder().apply {
-            add("Accept", "*/*")
-            add("Host", page.imageUrl!!.toHttpUrl().host)
-        }.build()
+        val pageHeaders =
+            headersBuilder().apply {
+                add("Accept", "*/*")
+                add("Host", page.imageUrl!!.toHttpUrl().host)
+            }.build()
 
         return GET(page.imageUrl!!, pageHeaders)
     }
@@ -278,20 +293,23 @@ class MangaHot : HttpSource() {
         return json.encodeToString(this).toRequestBody(JSON_MEDIA_TYPE)
     }
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream(it.body.byteStream())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream(it.body.byteStream())
+        }
 
-    private fun EntryDto.toSManga(baseUrl: String): SManga = SManga.create().apply {
-        title = name
-        setUrlWithoutDomain(webUrl)
-        thumbnail_url = "$baseUrl/_next/image?url=$thumbUrl&w=256&q=75"
-    }
+    private fun EntryDto.toSManga(baseUrl: String): SManga =
+        SManga.create().apply {
+            title = name
+            setUrlWithoutDomain(webUrl)
+            thumbnail_url = "$baseUrl/_next/image?url=$thumbUrl&w=256&q=75"
+        }
 
-    private fun ChapterDto.toSChapter(url: String): SChapter = SChapter.create().apply {
-        name = chapterName
-        setUrlWithoutDomain("$url#$idx")
-    }
+    private fun ChapterDto.toSChapter(url: String): SChapter =
+        SChapter.create().apply {
+            name = chapterName
+            setUrlWithoutDomain("$url#$idx")
+        }
 
     companion object {
         private const val PAGE_LIMIT = 24

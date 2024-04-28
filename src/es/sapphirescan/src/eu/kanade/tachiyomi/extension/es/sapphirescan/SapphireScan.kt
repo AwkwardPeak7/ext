@@ -16,9 +16,10 @@ class SapphireScan : Madara(
     "es",
     SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 3)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 3)
+            .build()
 
     override val useNewChapterEndpoint = true
     override val useLoadMoreRequest = LoadMoreStrategy.Always

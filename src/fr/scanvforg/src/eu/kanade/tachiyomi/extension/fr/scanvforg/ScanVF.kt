@@ -38,20 +38,22 @@ class ScanVF : ParsedHttpSource() {
         SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     }
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/manga?q=p&page=$page", headers)
 
     override fun popularMangaSelector() = "div.series"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        val anchor = element.selectFirst("a.link-series")!!
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            val anchor = element.selectFirst("a.link-series")!!
 
-        setUrlWithoutDomain(anchor.attr("href"))
-        title = anchor.text()
-        thumbnail_url = element.selectFirst("div.series-img-wrapper img")?.absUrl("data-src")
-    }
+            setUrlWithoutDomain(anchor.attr("href"))
+            title = anchor.text()
+            thumbnail_url = element.selectFirst("div.series-img-wrapper img")?.absUrl("data-src")
+        }
 
     override fun popularMangaNextPageSelector() = "ul.pagination a.page-link[rel=next]"
 
@@ -71,9 +73,10 @@ class ScanVF : ParsedHttpSource() {
         return if (query.startsWith(PREFIX_SLUG_SEARCH)) {
             val slug = query.removePrefix(PREFIX_SLUG_SEARCH)
             val url = "/manga/$slug"
-            val manga = SManga.create().apply {
-                this.url = url
-            }
+            val manga =
+                SManga.create().apply {
+                    this.url = url
+                }
 
             client.newCall(mangaDetailsRequest(manga))
                 .asObservableSuccess()
@@ -97,23 +100,26 @@ class ScanVF : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegment("search")
-            addQueryParameter("q", query)
-        }.build()
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegment("search")
+                addQueryParameter("q", query)
+            }.build()
 
         return GET(url, headers)
     }
 
     override fun searchMangaParse(response: Response): MangasPage {
-        val document = Jsoup.parseBodyFragment(
-            json.parseToJsonElement(response.body.string()).jsonPrimitive.content,
-            baseUrl,
-        )
+        val document =
+            Jsoup.parseBodyFragment(
+                json.parseToJsonElement(response.body.string()).jsonPrimitive.content,
+                baseUrl,
+            )
 
-        val manga = document.select(searchMangaSelector()).map {
-            searchMangaFromElement(it)
-        }
+        val manga =
+            document.select(searchMangaSelector()).map {
+                searchMangaFromElement(it)
+            }
 
         return MangasPage(manga, false)
     }
@@ -124,27 +130,30 @@ class ScanVF : ParsedHttpSource() {
 
     override fun searchMangaNextPageSelector() = null
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        title = document.selectFirst("div.card h1")!!.text().removeSuffix(" Scan")
-        author = document.select("div.card-series-detail div:contains(Auteur) div.badge").joinToString { it.text() }
-        genre = document.select("div.card-series-detail div:contains(Categories) div.badge").joinToString { it.text() }
-        description = document.select("main div.card div:has(h5:contains(Résumé)) p").text()
-        thumbnail_url = document.selectFirst("div.series-picture-lg img")?.absUrl("src")
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            title = document.selectFirst("div.card h1")!!.text().removeSuffix(" Scan")
+            author = document.select("div.card-series-detail div:contains(Auteur) div.badge").joinToString { it.text() }
+            genre = document.select("div.card-series-detail div:contains(Categories) div.badge").joinToString { it.text() }
+            description = document.select("main div.card div:has(h5:contains(Résumé)) p").text()
+            thumbnail_url = document.selectFirst("div.series-picture-lg img")?.absUrl("src")
+        }
 
     override fun chapterListSelector() = "div.chapters-list div.col-chapter"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        val h5 = element.selectFirst("h5")!!
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            val h5 = element.selectFirst("h5")!!
 
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
-        name = h5.ownText()
-        date_upload = try {
-            dateFormat.parse(h5.selectFirst("div")!!.text())!!.time
-        } catch (e: Exception) {
-            0L
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("href"))
+            name = h5.ownText()
+            date_upload =
+                try {
+                    dateFormat.parse(h5.selectFirst("div")!!.text())!!.time
+                } catch (e: Exception) {
+                    0L
+                }
         }
-    }
 
     override fun pageListParse(document: Document): List<Page> {
         // This should be the URL we got from chapterListParse, i.e. /scan/:id
@@ -162,10 +171,11 @@ class ScanVF : ParsedHttpSource() {
 
     // Disable redirects, since an out of range page request redirects us back
     // to the manga details page.
-    private val pageListClient = client.newBuilder()
-        .followRedirects(false)
-        .followSslRedirects(false)
-        .build()
+    private val pageListClient =
+        client.newBuilder()
+            .followRedirects(false)
+            .followSslRedirects(false)
+            .build()
 
     private fun findPageCount(url: String): Int {
         val path = url.toHttpUrl().encodedPath
@@ -182,10 +192,11 @@ class ScanVF : ParsedHttpSource() {
         var high = 24
 
         while (true) {
-            val (code, location) = pageListClient.newCall(GET("$url/$high", headers)).execute()
-                .use {
-                    it.code to it.headers["location"]
-                }
+            val (code, location) =
+                pageListClient.newCall(GET("$url/$high", headers)).execute()
+                    .use {
+                        it.code to it.headers["location"]
+                    }
 
             if (code == 301 || code == 302) {
                 // For some reason, on the last page, the website redirects to the same URL
@@ -207,10 +218,11 @@ class ScanVF : ParsedHttpSource() {
         while (true) {
             pageCount = low + (high - low) / 2
 
-            val (code, location) = pageListClient.newCall(GET("$url/$pageCount", headers)).execute()
-                .use {
-                    it.code to it.headers["location"]
-                }
+            val (code, location) =
+                pageListClient.newCall(GET("$url/$pageCount", headers)).execute()
+                    .use {
+                        it.code to it.headers["location"]
+                    }
 
             if (code == 301 || code == 302) {
                 // For some reason, on the last page, the website redirects to the same URL

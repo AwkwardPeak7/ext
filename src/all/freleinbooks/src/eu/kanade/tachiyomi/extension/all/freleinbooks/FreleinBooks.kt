@@ -20,13 +20,15 @@ class FreleinBooks() : ParsedHttpSource() {
     override val name = "Frelein Books"
     override val supportsLatest = true
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val Element.imgSrc: String
-        get() = attr("data-lazy-src")
-            .ifEmpty { attr("data-src") }
-            .ifEmpty { attr("src") }
+        get() =
+            attr("data-lazy-src")
+                .ifEmpty { attr("data-src") }
+                .ifEmpty { attr("src") }
 
     // Latest
     override fun latestUpdatesFromElement(element: Element): SManga {
@@ -105,8 +107,9 @@ class FreleinBooks() : ParsedHttpSource() {
         manga.description = "Read ${document.select(
             ".postTitle",
         ).text()} \n \nNote: If you encounters error when opening the magazine, please press the WebView button then leave a comment on our web so we can update it soon."
-        manga.genre = document.select(".labelLink > a")
-            .joinToString(", ") { it.text() }
+        manga.genre =
+            document.select(".labelLink > a")
+                .joinToString(", ") { it.text() }
         manga.status = SManga.COMPLETED
         return manga
     }
@@ -158,14 +161,15 @@ class FreleinBooks() : ParsedHttpSource() {
 
     // Filters
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("NOTE: Only one filter will be applied!"),
-        Filter.Separator(),
-        GroupFilter(),
-        MagazineFilter(),
-        FashionMagazineFilter(),
-        TagFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("NOTE: Only one filter will be applied!"),
+            Filter.Separator(),
+            GroupFilter(),
+            MagazineFilter(),
+            FashionMagazineFilter(),
+            TagFilter(),
+        )
 
     open class UriPartFilter(
         displayName: String,

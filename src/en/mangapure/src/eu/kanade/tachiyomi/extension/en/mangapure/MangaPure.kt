@@ -38,10 +38,11 @@ class MangaPure : Madara(
 
         if (chapterElements.isEmpty() && !chaptersWrapper.isNullOrEmpty()) {
             val mangaId = chaptersWrapper.attr("data-id")
-            val xhrHeaders = headersBuilder()
-                .add("Referer", "$baseUrl/")
-                .add("X-Requested-With", "XMLHttpRequest")
-                .build()
+            val xhrHeaders =
+                headersBuilder()
+                    .add("Referer", "$baseUrl/")
+                    .add("X-Requested-With", "XMLHttpRequest")
+                    .build()
             val xhrRequest = GET("$baseUrl/ajax-list-chapter?mangaID=$mangaId", xhrHeaders)
             val xhrResponse = client.newCall(xhrRequest).execute()
 
@@ -66,8 +67,9 @@ class MangaPure : Madara(
     }
 
     // Some thumbnails expect harimanga.com, which has hotlink protection
-    override fun headersBuilder() = super.headersBuilder()
-        .removeAll("Referer")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .removeAll("Referer")
 
     // OnGoing => Ongoing
     override fun mangaDetailsParse(document: Document): SManga {

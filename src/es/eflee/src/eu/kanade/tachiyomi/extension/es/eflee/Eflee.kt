@@ -37,32 +37,36 @@ class Eflee : ZeistManga(
         CoroutineScope(Dispatchers.IO).launch { fetchGenres() }
         val filters = super.getFilterList().list.toMutableList()
         if (genresList.isNotEmpty()) {
-            filters += GenreList(
-                title = "Generos",
-                genres = genresList,
-            )
+            filters +=
+                GenreList(
+                    title = "Generos",
+                    genres = genresList,
+                )
         } else {
-            filters += listOf(
-                Filter.Separator(),
-                Filter.Header("Presione 'Restablecer' para intentar mostrar los géneros"),
-            )
+            filters +=
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("Presione 'Restablecer' para intentar mostrar los géneros"),
+                )
         }
         return FilterList(filters)
     }
 
-    override fun getTypeList(): List<Type> = listOf(
-        Type("Todos", ""),
-        Type("Manga", "Manga"),
-        Type("Manhua", "Manhua"),
-        Type("Manhwa", "Manhwa"),
-    )
+    override fun getTypeList(): List<Type> =
+        listOf(
+            Type("Todos", ""),
+            Type("Manga", "Manga"),
+            Type("Manhua", "Manhua"),
+            Type("Manhwa", "Manhwa"),
+        )
 
     private fun fetchGenres() {
         if (fetchGenresAttempts < 3 && genresList.isEmpty()) {
             try {
-                genresList = client.newCall(GET(baseUrl, headers)).execute()
-                    .use { parseGenres(it.asJsoup()) }
-                    .sortedBy { it.value }
+                genresList =
+                    client.newCall(GET(baseUrl, headers)).execute()
+                        .use { parseGenres(it.asJsoup()) }
+                        .sortedBy { it.value }
             } catch (_: Exception) {
             } finally {
                 fetchGenresAttempts++

@@ -21,14 +21,15 @@ class RaindropFansub : MangaThemesia(
         val document = Jsoup.parse(response.peekBody(Long.MAX_VALUE).string())
         val chapters = super.chapterListParse(response)
 
-        val lastChapterUrl = document
-            .selectFirst("a:has(.epcurlast)")
-            ?.attr("href")
-            ?.let {
-                val dummyChapter = SChapter.create()
-                dummyChapter.setUrlWithoutDomain(it)
-                dummyChapter.url
-            }
+        val lastChapterUrl =
+            document
+                .selectFirst("a:has(.epcurlast)")
+                ?.attr("href")
+                ?.let {
+                    val dummyChapter = SChapter.create()
+                    dummyChapter.setUrlWithoutDomain(it)
+                    dummyChapter.url
+                }
 
         return when (lastChapterUrl) {
             chapters.first().url -> chapters

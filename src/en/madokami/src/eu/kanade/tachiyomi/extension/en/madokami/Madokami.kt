@@ -51,11 +51,16 @@ class Madokami : ConfigurableSource, ParsedHttpSource() {
         return request.newBuilder().header("Authorization", credential).build()
     }
 
-    override val client: OkHttpClient = super.client.newBuilder().addInterceptor { chain ->
-        val response = chain.proceed(chain.request())
-        if (response.code == 401) throw IOException("You are currently logged out.\nGo to Extensions > Details to input your credentials.")
-        response
-    }.build()
+    override val client: OkHttpClient =
+        super.client.newBuilder().addInterceptor { chain ->
+            val response = chain.proceed(chain.request())
+            if (response.code == 401) {
+                throw IOException(
+                    "You are currently logged out.\nGo to Extensions > Details to input your credentials.",
+                )
+            }
+            response
+        }.build()
 
     override fun latestUpdatesSelector() = ""
 
@@ -185,14 +190,15 @@ class Madokami : ConfigurableSource, ParsedHttpSource() {
         val files = json.decodeFromString<JsonArray>(element.attr("data-files"))
         val pages = mutableListOf<Page>()
         for ((index, file) in files.withIndex()) {
-            val url = HttpUrl.Builder()
-                .scheme("https")
-                .host("manga.madokami.al")
-                .addPathSegments("reader/image")
-                .addEncodedQueryParameter("path", URLEncoder.encode(path, "UTF-8"))
-                .addEncodedQueryParameter("file", URLEncoder.encode(file.jsonPrimitive.content, "UTF-8"))
-                .build()
-                .toUrl()
+            val url =
+                HttpUrl.Builder()
+                    .scheme("https")
+                    .host("manga.madokami.al")
+                    .addPathSegments("reader/image")
+                    .addEncodedQueryParameter("path", URLEncoder.encode(path, "UTF-8"))
+                    .addEncodedQueryParameter("file", URLEncoder.encode(file.jsonPrimitive.content, "UTF-8"))
+                    .build()
+                    .toUrl()
             pages.add(Page(index, url.toExternalForm(), url.toExternalForm()))
         }
         return pages
@@ -208,26 +214,28 @@ class Madokami : ConfigurableSource, ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = ""
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        val username = androidx.preference.EditTextPreference(screen.context).apply {
-            key = "username"
-            title = "Username"
+        val username =
+            androidx.preference.EditTextPreference(screen.context).apply {
+                key = "username"
+                title = "Username"
 
-            setOnPreferenceChangeListener { _, newValue ->
-                preferences.edit().putString(key, newValue as String).commit()
+                setOnPreferenceChangeListener { _, newValue ->
+                    preferences.edit().putString(key, newValue as String).commit()
+                }
             }
-        }
-        val password = androidx.preference.EditTextPreference(screen.context).apply {
-            key = "password"
-            title = "Password"
+        val password =
+            androidx.preference.EditTextPreference(screen.context).apply {
+                key = "password"
+                title = "Password"
 
-            setOnBindEditTextListener {
-                it.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            }
+                setOnBindEditTextListener {
+                    it.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                }
 
-            setOnPreferenceChangeListener { _, newValue ->
-                preferences.edit().putString(key, newValue as String).commit()
+                setOnPreferenceChangeListener { _, newValue ->
+                    preferences.edit().putString(key, newValue as String).commit()
+                }
             }
-        }
 
         screen.addPreference(username)
         screen.addPreference(password)

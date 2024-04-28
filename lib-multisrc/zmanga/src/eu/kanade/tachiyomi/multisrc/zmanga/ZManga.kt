@@ -72,11 +72,12 @@ abstract class ZManga(
                     url.addQueryParameter("yearx", filter.state)
                 }
                 is StatusFilter -> {
-                    val status = when (filter.state) {
-                        Filter.TriState.STATE_INCLUDE -> "completed"
-                        Filter.TriState.STATE_EXCLUDE -> "ongoing"
-                        else -> ""
-                    }
+                    val status =
+                        when (filter.state) {
+                            Filter.TriState.STATE_INCLUDE -> "completed"
+                            Filter.TriState.STATE_EXCLUDE -> "ongoing"
+                            else -> ""
+                        }
                     url.addQueryParameter("status", status)
                 }
                 is TypeFilter -> {
@@ -130,10 +131,11 @@ abstract class ZManga(
             // add alternative name to manga description
             document.select(altNameSelector).firstOrNull()?.ownText()?.let {
                 if (it.isBlank().not()) {
-                    description = when {
-                        description.isNullOrBlank() -> altName + it
-                        else -> description + "\n\n$altName" + it
-                    }
+                    description =
+                        when {
+                            description.isNullOrBlank() -> altName + it
+                            else -> description + "\n\n$altName" + it
+                        }
                 }
             }
         }
@@ -143,12 +145,13 @@ abstract class ZManga(
     open val altNameSelector = ".series-title span"
     open val altName = "Alternative Name" + ": "
 
-    private fun parseStatus(status: String?) = when {
-        status == null -> SManga.UNKNOWN
-        status.contains("Ongoing", true) -> SManga.ONGOING
-        status.contains("Completed", true) -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String?) =
+        when {
+            status == null -> SManga.UNKNOWN
+            status.contains("Ongoing", true) -> SManga.ONGOING
+            status.contains("Completed", true) -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     private fun parseDate(date: String): Long {
         return try {
@@ -184,16 +187,17 @@ abstract class ZManga(
     // filters
 
     override fun getFilterList(): FilterList {
-        val filters = mutableListOf<Filter<*>>(
-            Filter.Header("You can combine filter."),
-            Filter.Separator(),
-            AuthorFilter(),
-            YearFilter(),
-            StatusFilter(),
-            TypeFilter(),
-            OrderByFilter(),
-            GenreList(getGenreList()),
-        )
+        val filters =
+            mutableListOf<Filter<*>>(
+                Filter.Header("You can combine filter."),
+                Filter.Separator(),
+                AuthorFilter(),
+                YearFilter(),
+                StatusFilter(),
+                TypeFilter(),
+                OrderByFilter(),
+                GenreList(getGenreList()),
+            )
         if (hasProjectPage) {
             filters.addAll(
                 mutableListOf<Filter<*>>(
@@ -246,63 +250,64 @@ abstract class ZManga(
         ),
     )
 
-    private fun getGenreList() = listOf(
-        Tag("4-koma", "4-Koma"),
-        Tag("4-koma-comedy", "4-Koma Comedy"),
-        Tag("action", "Action"),
-        Tag("adult", "Adult"),
-        Tag("adventure", "Adventure"),
-        Tag("comedy", "Comedy"),
-        Tag("demons", "Demons"),
-        Tag("drama", "Drama"),
-        Tag("ecchi", "Ecchi"),
-        Tag("fantasy", "Fantasy"),
-        Tag("game", "Game"),
-        Tag("gender-bender", "Gender bender"),
-        Tag("gore", "Gore"),
-        Tag("harem", "Harem"),
-        Tag("historical", "Historical"),
-        Tag("horror", "Horror"),
-        Tag("isekai", "Isekai"),
-        Tag("josei", "Josei"),
-        Tag("loli", "Loli"),
-        Tag("magic", "Magic"),
-        Tag("manga", "Manga"),
-        Tag("manhua", "Manhua"),
-        Tag("manhwa", "Manhwa"),
-        Tag("martial-arts", "Martial Arts"),
-        Tag("mature", "Mature"),
-        Tag("mecha", "Mecha"),
-        Tag("military", "Military"),
-        Tag("monster-girls", "Monster Girls"),
-        Tag("music", "Music"),
-        Tag("mystery", "Mystery"),
-        Tag("one-shot", "One Shot"),
-        Tag("parody", "Parody"),
-        Tag("police", "Police"),
-        Tag("psychological", "Psychological"),
-        Tag("romance", "Romance"),
-        Tag("school", "School"),
-        Tag("school-life", "School Life"),
-        Tag("sci-fi", "Sci-Fi"),
-        Tag("socks", "Socks"),
-        Tag("seinen", "Seinen"),
-        Tag("shoujo", "Shoujo"),
-        Tag("shoujo-ai", "Shoujo Ai"),
-        Tag("shounen", "Shounen"),
-        Tag("shounen-ai", "Shounen Ai"),
-        Tag("slice-of-life", "Slice of Life"),
-        Tag("smut", "Smut"),
-        Tag("sports", "Sports"),
-        Tag("super-power", "Super Power"),
-        Tag("supernatural", "Supernatural"),
-        Tag("survival", "Survival"),
-        Tag("thriller", "Thriller"),
-        Tag("tragedy", "Tragedy"),
-        Tag("vampire", "Vampire"),
-        Tag("webtoons", "Webtoons"),
-        Tag("yuri", "Yuri"),
-    )
+    private fun getGenreList() =
+        listOf(
+            Tag("4-koma", "4-Koma"),
+            Tag("4-koma-comedy", "4-Koma Comedy"),
+            Tag("action", "Action"),
+            Tag("adult", "Adult"),
+            Tag("adventure", "Adventure"),
+            Tag("comedy", "Comedy"),
+            Tag("demons", "Demons"),
+            Tag("drama", "Drama"),
+            Tag("ecchi", "Ecchi"),
+            Tag("fantasy", "Fantasy"),
+            Tag("game", "Game"),
+            Tag("gender-bender", "Gender bender"),
+            Tag("gore", "Gore"),
+            Tag("harem", "Harem"),
+            Tag("historical", "Historical"),
+            Tag("horror", "Horror"),
+            Tag("isekai", "Isekai"),
+            Tag("josei", "Josei"),
+            Tag("loli", "Loli"),
+            Tag("magic", "Magic"),
+            Tag("manga", "Manga"),
+            Tag("manhua", "Manhua"),
+            Tag("manhwa", "Manhwa"),
+            Tag("martial-arts", "Martial Arts"),
+            Tag("mature", "Mature"),
+            Tag("mecha", "Mecha"),
+            Tag("military", "Military"),
+            Tag("monster-girls", "Monster Girls"),
+            Tag("music", "Music"),
+            Tag("mystery", "Mystery"),
+            Tag("one-shot", "One Shot"),
+            Tag("parody", "Parody"),
+            Tag("police", "Police"),
+            Tag("psychological", "Psychological"),
+            Tag("romance", "Romance"),
+            Tag("school", "School"),
+            Tag("school-life", "School Life"),
+            Tag("sci-fi", "Sci-Fi"),
+            Tag("socks", "Socks"),
+            Tag("seinen", "Seinen"),
+            Tag("shoujo", "Shoujo"),
+            Tag("shoujo-ai", "Shoujo Ai"),
+            Tag("shounen", "Shounen"),
+            Tag("shounen-ai", "Shounen Ai"),
+            Tag("slice-of-life", "Slice of Life"),
+            Tag("smut", "Smut"),
+            Tag("sports", "Sports"),
+            Tag("super-power", "Super Power"),
+            Tag("supernatural", "Supernatural"),
+            Tag("survival", "Survival"),
+            Tag("thriller", "Thriller"),
+            Tag("tragedy", "Tragedy"),
+            Tag("vampire", "Vampire"),
+            Tag("webtoons", "Webtoons"),
+            Tag("yuri", "Yuri"),
+        )
 
     open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {

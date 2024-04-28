@@ -13,9 +13,10 @@ class Mangakyo : MangaThemesia(
     "/komik",
     SimpleDateFormat("MMM d, yyyy", Locale("id")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 
     override val seriesTitleSelector = ".ts-breadcrumb li:last-child span"
     override val seriesAuthorSelector = ".infotable tr:contains(Pengarang) td:last-child"

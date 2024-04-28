@@ -15,43 +15,47 @@ class LectorManga : LectorTmo("LectorManga", "https://lectormanga.com", "es") {
 
     override fun popularMangaSelector() = ".col-6 .card"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.select("a").attr("href"))
-        title = element.select("a").text()
-        thumbnail_url = element.select("img").attr("src")
-    }
-
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        document.selectFirst("h1:has(small)")?.let { title = it.ownText() }
-        genre = document.select("a.py-2").joinToString(", ") {
-            it.text()
-        }
-        description = document.select(".col-12.mt-2").text()
-        status = parseStatus(document.select(".status-publishing").text())
-        thumbnail_url = document.select(".text-center img.img-fluid").attr("src")
-    }
-
-    override fun chapterListParse(response: Response): List<SChapter> = mutableListOf<SChapter>().apply {
-        val document = response.asJsoup()
-
-        // One-shot
-        if (document.select("#chapters").isEmpty()) {
-            return document.select(oneShotChapterListSelector).map { chapterFromElement(it, oneShotChapterName) }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select("a").attr("href"))
+            title = element.select("a").text()
+            thumbnail_url = element.select("img").attr("src")
         }
 
-        // Regular list of chapters
-        val chapterNames = document.select("#chapters h4.text-truncate")
-        val chapterInfos = document.select("#chapters .chapter-list")
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            document.selectFirst("h1:has(small)")?.let { title = it.ownText() }
+            genre =
+                document.select("a.py-2").joinToString(", ") {
+                    it.text()
+                }
+            description = document.select(".col-12.mt-2").text()
+            status = parseStatus(document.select(".status-publishing").text())
+            thumbnail_url = document.select(".text-center img.img-fluid").attr("src")
+        }
 
-        chapterNames.forEachIndexed { index, _ ->
-            val scanlator = chapterInfos[index].select("li")
-            if (getScanlatorPref()) {
-                scanlator.forEach { add(chapterFromElement(it, chapterNames[index].text())) }
-            } else {
-                scanlator.last { add(chapterFromElement(it, chapterNames[index].text())) }
+    override fun chapterListParse(response: Response): List<SChapter> =
+        mutableListOf<SChapter>().apply {
+            val document = response.asJsoup()
+
+            // One-shot
+            if (document.select("#chapters").isEmpty()) {
+                return document.select(oneShotChapterListSelector).map { chapterFromElement(it, oneShotChapterName) }
+            }
+
+            // Regular list of chapters
+            val chapterNames = document.select("#chapters h4.text-truncate")
+            val chapterInfos = document.select("#chapters .chapter-list")
+
+            chapterNames.forEachIndexed { index, _ ->
+                val scanlator = chapterInfos[index].select("li")
+                if (getScanlatorPref()) {
+                    scanlator.forEach { add(chapterFromElement(it, chapterNames[index].text())) }
+                } else {
+                    scanlator.last { add(chapterFromElement(it, chapterNames[index].text())) }
+                }
             }
         }
-    }
 
     override fun chapterFromElement(
         element: Element,
@@ -65,10 +69,12 @@ class LectorManga : LectorTmo("LectorManga", "https://lectormanga.com", "es") {
         } ?: 0
     }
 
-    override fun imageRequest(page: Page) = GET(
-        url = page.imageUrl!!,
-        headers = headers.newBuilder()
-            .set("Referer", page.url.substringBefore("news/"))
-            .build(),
-    )
+    override fun imageRequest(page: Page) =
+        GET(
+            url = page.imageUrl!!,
+            headers =
+                headers.newBuilder()
+                    .set("Referer", page.url.substringBefore("news/"))
+                    .build(),
+        )
 }

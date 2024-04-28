@@ -31,12 +31,13 @@ class BH3 : ParsedHttpSource() {
 
     override val supportsLatest = false
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .retryOnConnectionFailure(true)
-        .followRedirects(true)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .retryOnConnectionFailure(true)
+            .followRedirects(true)
+            .build()
 
     private val json: Json by injectLazy()
 
@@ -88,22 +89,24 @@ class BH3 : ParsedHttpSource() {
         return jsonResult.map { jsonEl -> createChapter(jsonEl.jsonObject) }
     }
 
-    private fun createChapter(jsonObj: JsonObject) = SChapter.create().apply {
-        name = jsonObj["title"]!!.jsonPrimitive.content
-        url = "/book/${jsonObj["bookid"]!!.jsonPrimitive.int}/${jsonObj["chapterid"]!!.jsonPrimitive.int}"
-        date_upload = parseDate(jsonObj["timestamp"]!!.jsonPrimitive.content)
-        chapter_number = jsonObj["chapterid"]!!.jsonPrimitive.float
-    }
+    private fun createChapter(jsonObj: JsonObject) =
+        SChapter.create().apply {
+            name = jsonObj["title"]!!.jsonPrimitive.content
+            url = "/book/${jsonObj["bookid"]!!.jsonPrimitive.int}/${jsonObj["chapterid"]!!.jsonPrimitive.int}"
+            date_upload = parseDate(jsonObj["timestamp"]!!.jsonPrimitive.content)
+            chapter_number = jsonObj["chapterid"]!!.jsonPrimitive.float
+        }
 
     private fun parseDate(date: String): Long {
         return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).parse(date)?.time ?: 0L
     }
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        thumbnail_url = document.select("img.cover").attr("abs:src")
-        description = document.select("div.detail_info1").text().trim()
-        title = document.select("div.title").text().trim()
-    }
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            thumbnail_url = document.select("img.cover").attr("abs:src")
+            description = document.select("div.detail_info1").text().trim()
+            title = document.select("div.title").text().trim()
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("img.lazy.comic_img").mapIndexed { i, el ->

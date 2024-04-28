@@ -33,18 +33,20 @@ class HentaiZM : Madara(
         }
 
         // A login is required in order to load thumbnails and pages.
-        val body = FormBody.Builder()
-            .add("log", "demo") // Default user/password, provided in
-            .add("pwd", "demo") // the source itself.
-            .add("redirect_to", "$baseUrl/wp-admin/")
-            .add("rememberme", "forever")
-            .build()
+        val body =
+            FormBody.Builder()
+                .add("log", "demo") // Default user/password, provided in
+                .add("pwd", "demo") // the source itself.
+                .add("redirect_to", "$baseUrl/wp-admin/")
+                .add("rememberme", "forever")
+                .build()
 
         val postUrl = "$baseUrl/wp-login.php"
-        val headers = headersBuilder()
-            .set("Origin", baseUrl)
-            .set("Referer", postUrl)
-            .build()
+        val headers =
+            headersBuilder()
+                .set("Origin", baseUrl)
+                .set("Referer", postUrl)
+                .build()
 
         super.client.newCall(POST(postUrl, headers, body)).execute().close()
 

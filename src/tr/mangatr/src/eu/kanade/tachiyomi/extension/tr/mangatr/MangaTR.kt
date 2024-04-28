@@ -16,8 +16,9 @@ import org.jsoup.nodes.Element
 import rx.Observable
 
 class MangaTR : FMReader("Manga-TR", "https://manga-tr.com", "tr") {
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Accept-Language", "en-US,en;q=0.5")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Accept-Language", "en-US,en;q=0.5")
 
     override val client by lazy {
         super.client.newBuilder()
@@ -41,33 +42,37 @@ class MangaTR : FMReader("Manga-TR", "https://manga-tr.com", "tr") {
     ) = GET("$baseUrl/arama.html?icerik=$query", headers)
 
     override fun searchMangaParse(response: Response): MangasPage {
-        val mangas = response.use { it.asJsoup() }
-            .select("div.row a[data-toggle]")
-            .filterNot { it.siblingElements().text().contains("Novel") }
-            .map(::searchMangaFromElement)
+        val mangas =
+            response.use { it.asJsoup() }
+                .select("div.row a[data-toggle]")
+                .filterNot { it.siblingElements().text().contains("Novel") }
+                .map(::searchMangaFromElement)
 
         return MangasPage(mangas, false)
     }
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.absUrl("href"))
-        title = element.text()
-    }
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.absUrl("href"))
+            title = element.text()
+        }
 
     // =========================== Manga Details ============================
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        val infoElement = document.selectFirst("div#tab1")!!
-        infoElement.selectFirst("table + table tr + tr")?.run {
-            author = selectFirst("td:nth-child(1) a")?.text()
-            artist = selectFirst("td:nth-child(2) a")?.text()
-            genre = selectFirst("td:nth-child(3)")?.text()
-        }
-        description = infoElement.selectFirst("div.well")?.ownText()?.trim()
-        thumbnail_url = document.selectFirst("img.thumbnail")?.absUrl("src")
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            val infoElement = document.selectFirst("div#tab1")!!
+            infoElement.selectFirst("table + table tr + tr")?.run {
+                author = selectFirst("td:nth-child(1) a")?.text()
+                artist = selectFirst("td:nth-child(2) a")?.text()
+                genre = selectFirst("td:nth-child(3)")?.text()
+            }
+            description = infoElement.selectFirst("div.well")?.ownText()?.trim()
+            thumbnail_url = document.selectFirst("img.thumbnail")?.absUrl("src")
 
-        status = infoElement.selectFirst("tr:contains(Çeviri Durumu) + tr > td:nth-child(2)")
-            .let { parseStatus(it?.text()) }
-    }
+            status =
+                infoElement.selectFirst("tr:contains(Çeviri Durumu) + tr > td:nth-child(2)")
+                    .let { parseStatus(it?.text()) }
+        }
 
     // ============================== Chapters ==============================
     override fun chapterListSelector() = "tr.table-bordered"
@@ -90,24 +95,27 @@ class MangaTR : FMReader("Manga-TR", "https://manga-tr.com", "tr") {
 
     override fun chapterListParse(response: Response): List<SChapter> {
         // chapters are paginated
-        val chapters = buildList {
-            val requestUrl = response.request.url.toString()
-            var nextPage = 2
-            do {
-                val doc = when {
-                    isEmpty() -> response
-                    else -> {
-                        val body = FormBody.Builder()
-                            .add("page", nextPage.toString())
-                            .build()
-                        nextPage++
-                        client.newCall(POST(requestUrl, chapterListHeaders, body)).execute()
-                    }
-                }.use { it.asJsoup() }
+        val chapters =
+            buildList {
+                val requestUrl = response.request.url.toString()
+                var nextPage = 2
+                do {
+                    val doc =
+                        when {
+                            isEmpty() -> response
+                            else -> {
+                                val body =
+                                    FormBody.Builder()
+                                        .add("page", nextPage.toString())
+                                        .build()
+                                nextPage++
+                                client.newCall(POST(requestUrl, chapterListHeaders, body)).execute()
+                            }
+                        }.use { it.asJsoup() }
 
-                addAll(doc.select(chapterListSelector()).map(::chapterFromElement))
-            } while (doc.selectFirst("a[data-page=$nextPage]") != null)
-        }
+                    addAll(doc.select(chapterListSelector()).map(::chapterFromElement))
+                } while (doc.selectFirst("a[data-page=$nextPage]") != null)
+            }
         return chapters
     }
 

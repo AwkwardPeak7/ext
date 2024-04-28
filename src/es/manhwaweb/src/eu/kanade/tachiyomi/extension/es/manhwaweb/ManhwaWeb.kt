@@ -42,21 +42,24 @@ class ManhwaWeb : HttpSource(), ConfigurableSource {
 
     private val json: Json by injectLazy()
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int): Request = GET("$apiUrl/manhwa/nuevos", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val result = json.decodeFromString<PayloadPopularDto>(response.body.string())
-        val mangas = (result.data.weekly + result.data.total)
-            .distinctBy { it.slug }
-            .sortedByDescending { it.views }
-            .map { it.toSManga() }
+        val mangas =
+            (result.data.weekly + result.data.total)
+                .distinctBy { it.slug }
+                .sortedByDescending { it.views }
+                .map { it.toSManga() }
 
         return MangasPage(mangas, false)
     }
@@ -65,10 +68,11 @@ class ManhwaWeb : HttpSource(), ConfigurableSource {
 
     override fun latestUpdatesParse(response: Response): MangasPage {
         val result = json.decodeFromString<PayloadLatestDto>(response.body.string())
-        val mangas = (result.data.esp + result.data.raw18 + result.data.esp18)
-            .distinctBy { it.type + it.slug }
-            .sortedByDescending { it.latestChapterDate }
-            .map { it.toSManga() }
+        val mangas =
+            (result.data.esp + result.data.raw18 + result.data.esp18)
+                .distinctBy { it.type + it.slug }
+                .sortedByDescending { it.latestChapterDate }
+                .map { it.toSManga() }
 
         return MangasPage(mangas, false)
     }
@@ -78,8 +82,9 @@ class ManhwaWeb : HttpSource(), ConfigurableSource {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$apiUrl/manhwa/library".toHttpUrl().newBuilder()
-            .addQueryParameter("buscar", query)
+        val url =
+            "$apiUrl/manhwa/library".toHttpUrl().newBuilder()
+                .addQueryParameter("buscar", query)
 
         filters.forEach { filter ->
             when (filter) {
@@ -88,9 +93,10 @@ class ManhwaWeb : HttpSource(), ConfigurableSource {
                 is StatusFilter -> url.addQueryParameter("estado", filter.toUriPart())
                 is EroticFilter -> url.addQueryParameter("erotico", filter.toUriPart())
                 is GenreFilter -> {
-                    val genres = filter.state
-                        .filter { it.state }
-                        .joinToString("a") { it.id.toString() }
+                    val genres =
+                        filter.state
+                            .filter { it.state }
+                            .joinToString("a") { it.id.toString() }
                     url.addQueryParameter("generes", genres)
                 }
 
@@ -148,23 +154,25 @@ class ManhwaWeb : HttpSource(), ConfigurableSource {
         val chaptersEsp = result.esp.map { it.toSChapter("Esp") }
         val chaptersRaw = result.raw.map { it.toSChapter("Raw") }
 
-        val filteredRaws = if (preferences.showAllRawsPref()) {
-            chaptersRaw
-        } else {
-            val chapterNumbers = chaptersEsp.map { it.chapter_number }.toSet()
-            chaptersRaw.filter { it.chapter_number !in chapterNumbers }
-        }
+        val filteredRaws =
+            if (preferences.showAllRawsPref()) {
+                chaptersRaw
+            } else {
+                val chapterNumbers = chaptersEsp.map { it.chapter_number }.toSet()
+                chaptersRaw.filter { it.chapter_number !in chapterNumbers }
+            }
 
         return (chaptersEsp + filteredRaws).sortedByDescending { it.chapter_number }
     }
 
-    private fun ChapterDto.toSChapter(type: String) = SChapter.create().apply {
-        name = "Capítulo ${number.toString().removeSuffix(".0")}"
-        chapter_number = number
-        date_upload = createdAt ?: 0
-        setUrlWithoutDomain(this@toSChapter.url)
-        scanlator = type
-    }
+    private fun ChapterDto.toSChapter(type: String) =
+        SChapter.create().apply {
+            name = "Capítulo ${number.toString().removeSuffix(".0")}"
+            chapter_number = number
+            date_upload = createdAt ?: 0
+            setUrlWithoutDomain(this@toSChapter.url)
+            scanlator = type
+        }
 
     override fun pageListRequest(chapter: SChapter): Request {
         val slug = chapter.url.removeSuffix("/").substringAfterLast("/")
@@ -178,12 +186,13 @@ class ManhwaWeb : HttpSource(), ConfigurableSource {
     }
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val showAllRawsPref = SwitchPreferenceCompat(screen.context).apply {
-            key = SHOW_ALL_RAWS_PREF
-            title = SHOW_ALL_RAWS_TITLE
-            summary = SHOW_ALL_RAWS_SUMMARY
-            setDefaultValue(SHOW_ALL_RAWS_DEFAULT)
-        }
+        val showAllRawsPref =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = SHOW_ALL_RAWS_PREF
+                title = SHOW_ALL_RAWS_TITLE
+                summary = SHOW_ALL_RAWS_SUMMARY
+                setDefaultValue(SHOW_ALL_RAWS_DEFAULT)
+            }
 
         screen.addPreference(showAllRawsPref)
     }

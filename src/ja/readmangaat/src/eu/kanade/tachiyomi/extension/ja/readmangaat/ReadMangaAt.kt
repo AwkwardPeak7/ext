@@ -33,23 +33,26 @@ class ReadMangaAt : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(2)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val ajaxUrl = "$baseUrl/wp-admin/admin-ajax.php"
 
     private val apiHeaders by lazy { apiHeadersBuilder().build() }
 
-    private fun apiHeadersBuilder() = headersBuilder().apply {
-        add("Accept", "application/json, text/javascript, */*; q=0.01")
-        add("Host", baseUrl.toHttpUrl().host)
-        add("Origin", baseUrl)
-        add("X-Requested-With", "XMLHttpRequest")
-    }
+    private fun apiHeadersBuilder() =
+        headersBuilder().apply {
+            add("Accept", "application/json, text/javascript, */*; q=0.01")
+            add("Host", baseUrl.toHttpUrl().host)
+            add("Origin", baseUrl)
+            add("X-Requested-With", "XMLHttpRequest")
+        }
 
     private val json: Json by injectLazy()
 
@@ -63,12 +66,13 @@ class ReadMangaAt : ParsedHttpSource() {
 
     override fun popularMangaSelector(): String = "div:has(>div:contains(Popular)) > div > div[class~=entry]"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        with(element.selectFirst("h4 > a")!!) {
-            setUrlWithoutDomain(attr("abs:href"))
-            title = text()
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            with(element.selectFirst("h4 > a")!!) {
+                setUrlWithoutDomain(attr("abs:href"))
+                title = text()
+            }
         }
-    }
 
     override fun popularMangaNextPageSelector(): String? = null
 
@@ -76,11 +80,12 @@ class ReadMangaAt : ParsedHttpSource() {
 
     override fun latestUpdatesRequest(page: Int): Request {
         return if (page > 1) {
-            val apiBody = FormBody.Builder().apply {
-                add("action", "z_do_ajax")
-                add("_action", "loadmore")
-                add("p", page.toString())
-            }.build()
+            val apiBody =
+                FormBody.Builder().apply {
+                    add("action", "z_do_ajax")
+                    add("_action", "loadmore")
+                    add("p", page.toString())
+                }.build()
 
             POST(ajaxUrl, apiHeaders, apiBody)
         } else {
@@ -90,13 +95,14 @@ class ReadMangaAt : ParsedHttpSource() {
 
     override fun latestUpdatesSelector(): String = "div.row > div.col-sm-6"
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        with(element.selectFirst("a:has(img)")!!) {
-            thumbnail_url = selectFirst("img")!!.attr("abs:src")
-            setUrlWithoutDomain(attr("abs:href"))
-            title = attr("title")
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            with(element.selectFirst("a:has(img)")!!) {
+                thumbnail_url = selectFirst("img")!!.attr("abs:src")
+                setUrlWithoutDomain(attr("abs:href"))
+                title = attr("title")
+            }
         }
-    }
 
     override fun latestUpdatesNextPageSelector(): String = ".text-center > a:contains(Load More)"
 
@@ -106,9 +112,10 @@ class ReadMangaAt : ParsedHttpSource() {
         }
 
         val data = response.parseAs<LatestDto>()
-        val mangaList = Jsoup.parseBodyFragment(data.mes)
-            .select("div.col-sm-6")
-            .map(::latestUpdatesFromElement)
+        val mangaList =
+            Jsoup.parseBodyFragment(data.mes)
+                .select("div.col-sm-6")
+                .map(::latestUpdatesFromElement)
         val hasNextPage = data.going == "yes"
 
         return MangasPage(mangaList, hasNextPage)
@@ -121,23 +128,24 @@ class ReadMangaAt : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            val genreFilter = filters.filterIsInstance<GenreFilter>().first()
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                val genreFilter = filters.filterIsInstance<GenreFilter>().first()
 
-            if (query.isNotBlank()) {
-                addQueryParameter("s", query)
-            } else {
-                addPathSegment("genres")
-                addEncodedPathSegment(genreFilter.toUriPart())
-            }
+                if (query.isNotBlank()) {
+                    addQueryParameter("s", query)
+                } else {
+                    addPathSegment("genres")
+                    addEncodedPathSegment(genreFilter.toUriPart())
+                }
 
-            addPathSegment("")
-            if (page > 1) {
-                addPathSegment("page")
-                addPathSegment(page.toString())
                 addPathSegment("")
-            }
-        }.build()
+                if (page > 1) {
+                    addPathSegment("page")
+                    addPathSegment(page.toString())
+                    addPathSegment("")
+                }
+            }.build()
 
         return GET(url, headers)
     }
@@ -150,11 +158,12 @@ class ReadMangaAt : ParsedHttpSource() {
 
     // =============================== Filters ==============================
 
-    override fun getFilterList(): FilterList = FilterList(
-        Filter.Header("Note: ignored when using text search"),
-        Filter.Separator(),
-        GenreFilter(),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            Filter.Header("Note: ignored when using text search"),
+            Filter.Separator(),
+            GenreFilter(),
+        )
 
     open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
@@ -199,96 +208,111 @@ class ReadMangaAt : ParsedHttpSource() {
 
     // =========================== Manga Details ============================
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        thumbnail_url = document.selectFirst(".main-thumb > img[src]")!!.attr("abs:src")
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            thumbnail_url = document.selectFirst(".main-thumb > img[src]")!!.attr("abs:src")
 
-        with(document.selectFirst("div.row[class~=mb] > .col")!!) {
-            title = selectFirst(".name")!!.text()
-            status = selectFirst("span").parseStatus()
+            with(document.selectFirst("div.row[class~=mb] > .col")!!) {
+                title = selectFirst(".name")!!.text()
+                status = selectFirst("span").parseStatus()
+            }
+
+            val id = document.selectFirst("a[data-t]")!!.attr("data-t")
+            val apiHeaders =
+                apiHeadersBuilder().apply {
+                    set("Referer", document.location())
+                }.build()
+
+            // Genres
+            val genresBody =
+                FormBody.Builder().apply {
+                    add("action", "z_do_ajax")
+                    add("_action", "load_all_genres")
+                    add("t", id)
+                }.build()
+
+            val genreDto =
+                client.newCall(
+                    POST(ajaxUrl, apiHeaders, genresBody),
+                ).execute().parseAs<InfoDto>()
+            genre =
+                Jsoup.parseBodyFragment(genreDto.mes)
+                    .select("a")
+                    .joinToString { it.text() }
+
+            // Desc
+            val descBody =
+                FormBody.Builder().apply {
+                    add("action", "z_do_ajax")
+                    add("_action", "load_tag_desc")
+                    add("t", id)
+                }.build()
+            description =
+                client.newCall(
+                    POST(ajaxUrl, apiHeaders, descBody),
+                ).execute().parseAs<InfoDto>().mes
         }
 
-        val id = document.selectFirst("a[data-t]")!!.attr("data-t")
-        val apiHeaders = apiHeadersBuilder().apply {
-            set("Referer", document.location())
-        }.build()
-
-        // Genres
-        val genresBody = FormBody.Builder().apply {
-            add("action", "z_do_ajax")
-            add("_action", "load_all_genres")
-            add("t", id)
-        }.build()
-
-        val genreDto = client.newCall(
-            POST(ajaxUrl, apiHeaders, genresBody),
-        ).execute().parseAs<InfoDto>()
-        genre = Jsoup.parseBodyFragment(genreDto.mes)
-            .select("a")
-            .joinToString { it.text() }
-
-        // Desc
-        val descBody = FormBody.Builder().apply {
-            add("action", "z_do_ajax")
-            add("_action", "load_tag_desc")
-            add("t", id)
-        }.build()
-        description = client.newCall(
-            POST(ajaxUrl, apiHeaders, descBody),
-        ).execute().parseAs<InfoDto>().mes
-    }
-
-    private fun Element?.parseStatus(): Int = when (this?.text()?.lowercase()) {
-        "ongoing" -> SManga.ONGOING
-        "dropped" -> SManga.CANCELLED
-        "paused" -> SManga.ON_HIATUS
-        "completed" -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun Element?.parseStatus(): Int =
+        when (this?.text()?.lowercase()) {
+            "ongoing" -> SManga.ONGOING
+            "dropped" -> SManga.CANCELLED
+            "paused" -> SManga.ON_HIATUS
+            "completed" -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // ============================== Chapters ==============================
 
     override fun chapterListSelector(): String = ".row > .col-sm-6 > .entry-chapter"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        date_upload = try {
-            element.selectFirst(".date")?.text()?.let {
-                dateFormat.parse(it)!!.time
-            } ?: 0L
-        } catch (_: ParseException) {
-            0L
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            date_upload =
+                try {
+                    element.selectFirst(".date")?.text()?.let {
+                        dateFormat.parse(it)!!.time
+                    } ?: 0L
+                } catch (_: ParseException) {
+                    0L
+                }
+            with(element.selectFirst("a")!!) {
+                name = text()
+                setUrlWithoutDomain(attr("abs:href"))
+            }
         }
-        with(element.selectFirst("a")!!) {
-            name = text()
-            setUrlWithoutDomain(attr("abs:href"))
-        }
-    }
 
     // =============================== Pages ================================
 
     override fun pageListParse(document: Document): List<Page> {
-        val script = document.selectFirst("script:containsData(decode_images)")?.data()
-            ?: throw Exception("Unable to find script")
-        val id = chapterRegex.find(script)?.groupValues?.get(1)
-            ?: throw Exception("Unable to get chapter id")
+        val script =
+            document.selectFirst("script:containsData(decode_images)")?.data()
+                ?: throw Exception("Unable to find script")
+        val id =
+            chapterRegex.find(script)?.groupValues?.get(1)
+                ?: throw Exception("Unable to get chapter id")
 
         var going = 1
         var imgIndex = 0
         val pageList = mutableListOf<Page>()
-        val apiHeaders = apiHeadersBuilder().apply {
-            set("Referer", document.location())
-        }.build()
-
-        while (going == 1) {
-            val pagesBody = FormBody.Builder().apply {
-                add("action", "z_do_ajax")
-                add("_action", "decode_images")
-                add("p", id)
-                add("img_index", imgIndex.toString())
+        val apiHeaders =
+            apiHeadersBuilder().apply {
+                set("Referer", document.location())
             }.build()
 
-            val data = client.newCall(
-                POST(ajaxUrl, apiHeaders, pagesBody),
-            ).execute().parseAs<ImageResponseDto>()
+        while (going == 1) {
+            val pagesBody =
+                FormBody.Builder().apply {
+                    add("action", "z_do_ajax")
+                    add("_action", "decode_images")
+                    add("p", id)
+                    add("img_index", imgIndex.toString())
+                }.build()
+
+            val data =
+                client.newCall(
+                    POST(ajaxUrl, apiHeaders, pagesBody),
+                ).execute().parseAs<ImageResponseDto>()
 
             imgIndex = data.imgIndex
             going = if (data.mes.isNotBlank()) data.going else 0
@@ -304,22 +328,24 @@ class ReadMangaAt : ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = ""
 
     override fun imageRequest(page: Page): Request {
-        val imgHeaders = headersBuilder().apply {
-            add("Accept", "image/avif,image/webp,*/*")
-            add("Accept-Language", "en-US,en;q=0.5")
-            add("DNT", "1")
-            add("Host", page.imageUrl!!.substringAfter("://").substringBefore("/"))
-            add("Sec-Fetch-Dest", "image")
-            add("Sec-Fetch-Mode", "no-cors")
-            add("Sec-Fetch-Site", "cross-site")
-        }.build()
+        val imgHeaders =
+            headersBuilder().apply {
+                add("Accept", "image/avif,image/webp,*/*")
+                add("Accept-Language", "en-US,en;q=0.5")
+                add("DNT", "1")
+                add("Host", page.imageUrl!!.substringAfter("://").substringBefore("/"))
+                add("Sec-Fetch-Dest", "image")
+                add("Sec-Fetch-Mode", "no-cors")
+                add("Sec-Fetch-Site", "cross-site")
+            }.build()
 
         return GET(page.imageUrl!!, imgHeaders)
     }
 
     // ============================= Utilities ==============================
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream(it.body.byteStream())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream(it.body.byteStream())
+        }
 }

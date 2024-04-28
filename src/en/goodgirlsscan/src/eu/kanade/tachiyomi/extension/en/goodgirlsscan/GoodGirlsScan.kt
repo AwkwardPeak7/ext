@@ -27,20 +27,22 @@ class GoodGirlsScan : Madara("Good Girls Scan", "https://goodgirls.moe", "en") {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/${searchPage(page)}".toHttpUrl().newBuilder().apply {
-            addQueryParameter("s", query.trim())
-        }.build()
+        val url =
+            "$baseUrl/${searchPage(page)}".toHttpUrl().newBuilder().apply {
+                addQueryParameter("s", query.trim())
+            }.build()
 
         return GET(url, headers)
     }
 
     override fun getFilterList() = FilterList()
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        element.select(".entry-title a").let {
-            setUrlWithoutDomain(it.attr("href"))
-            title = it.text()
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            element.select(".entry-title a").let {
+                setUrlWithoutDomain(it.attr("href"))
+                title = it.text()
+            }
+            thumbnail_url = element.selectFirst(".post-thumbnail img")?.let(::imageFromElement)
         }
-        thumbnail_url = element.selectFirst(".post-thumbnail img")?.let(::imageFromElement)
-    }
 }

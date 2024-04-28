@@ -107,11 +107,12 @@ class ChapterDto(
             if (!this@ChapterDto.name.isNullOrBlank()) {
                 name += " - ${this@ChapterDto.name}"
             }
-            date_upload = try {
-                DATE_FORMATTER.parse(date)?.time ?: 0L
-            } catch (e: Exception) {
-                0L
-            }
+            date_upload =
+                try {
+                    DATE_FORMATTER.parse(date)?.time ?: 0L
+                } catch (e: Exception) {
+                    0L
+                }
             url = "/ver/$seriesSlug/$slug"
         }
     }

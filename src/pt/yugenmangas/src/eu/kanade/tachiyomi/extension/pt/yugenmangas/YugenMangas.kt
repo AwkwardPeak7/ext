@@ -33,23 +33,26 @@ class YugenMangas : HttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
     private val json: Json by injectLazy()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", "$baseUrl/")
 
     val apiHeaders by lazy { apiHeadersBuilder().build() }
 
-    private fun apiHeadersBuilder(): Headers.Builder = headersBuilder()
-        .add("Accept", "application/json, text/plain, */*")
-        .add("Origin", baseUrl)
-        .add("Sec-Fetch-Dest", "empty")
-        .add("Sec-Fetch-Mode", "cors")
-        .add("Sec-Fetch-Site", "same-site")
+    private fun apiHeadersBuilder(): Headers.Builder =
+        headersBuilder()
+            .add("Accept", "application/json, text/plain, */*")
+            .add("Origin", baseUrl)
+            .add("Sec-Fetch-Dest", "empty")
+            .add("Sec-Fetch-Mode", "cors")
+            .add("Sec-Fetch-Site", "same-site")
 
     override fun popularMangaRequest(page: Int): Request {
         return GET("$API_BASE_URL/random_top_series/", apiHeaders)
@@ -73,9 +76,10 @@ class YugenMangas : HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val apiUrl = "$API_BASE_URL/series/list".toHttpUrl().newBuilder()
-            .addQueryParameter("query", query)
-            .build()
+        val apiUrl =
+            "$API_BASE_URL/series/list".toHttpUrl().newBuilder()
+                .addQueryParameter("query", query)
+                .build()
 
         return GET(apiUrl, apiHeaders)
     }
@@ -99,10 +103,11 @@ class YugenMangas : HttpSource() {
         val body = YugenGetChaptersBySeriesDto(slug)
         val payload = json.encodeToString(body).toRequestBody(JSON_MEDIA_TYPE)
 
-        val newHeaders = apiHeadersBuilder()
-            .set("Content-Length", payload.contentLength().toString())
-            .set("Content-Type", payload.contentType().toString())
-            .build()
+        val newHeaders =
+            apiHeadersBuilder()
+                .set("Content-Length", payload.contentLength().toString())
+                .set("Content-Type", payload.contentType().toString())
+                .build()
 
         return POST("$API_BASE_URL/get_chapters_by_serie/", newHeaders, payload)
     }
@@ -120,9 +125,10 @@ class YugenMangas : HttpSource() {
     override fun pageListRequest(chapter: SChapter): Request {
         val paths = chapter.url.removePrefix("/").split("/")
 
-        val newHeaders = apiHeadersBuilder()
-            .set("Referer", getChapterUrl(chapter))
-            .build()
+        val newHeaders =
+            apiHeadersBuilder()
+                .set("Referer", getChapterUrl(chapter))
+                .build()
 
         return POST("$API_BASE_URL/serie/${paths[1]}/chapter/${paths[2]}/images/imgs/", newHeaders)
     }
@@ -139,16 +145,18 @@ class YugenMangas : HttpSource() {
     override fun imageUrlParse(response: Response) = ""
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", page.url)
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", page.url)
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromString(it.body.string())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromString(it.body.string())
+        }
 
     private inline fun <reified T> RequestBody.parseAs(): T {
         val jsonString = Buffer().also { writeTo(it) }.readUtf8()

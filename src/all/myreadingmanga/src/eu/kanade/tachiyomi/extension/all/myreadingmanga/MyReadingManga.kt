@@ -30,8 +30,9 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
     final override val baseUrl = "https://myreadingmanga.info"
     override val client: OkHttpClient = network.cloudflareClient
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .set("User-Agent", USER_AGENT)
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .set("User-Agent", USER_AGENT)
 
     override val supportsLatest = true
 
@@ -79,8 +80,9 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
         // whether enforce language is true will change the index of the loop below
         val indexModifier = filterList.filterIsInstance<EnforceLanguageFilter>().first().indexModifier()
 
-        val uri = Uri.parse("$baseUrl/search/").buildUpon()
-            .appendQueryParameter("wpsolr_q", query)
+        val uri =
+            Uri.parse("$baseUrl/search/").buildUpon()
+                .appendQueryParameter("wpsolr_q", query)
         filterList.forEachIndexed { i, filter ->
             if (filter is UriFilter) {
                 filter.addToUri(uri, "wpsolr_fq[${i - indexModifier}]")
@@ -106,8 +108,9 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
         if (document.location().contains("page=1")) mangaParsedSoFar = 0
-        val mangas = document.select(searchMangaSelector()).map { searchMangaFromElement(it) }
-            .also { mangaParsedSoFar += it.count() }
+        val mangas =
+            document.select(searchMangaSelector()).map { searchMangaFromElement(it) }
+                .also { mangaParsedSoFar += it.count() }
         val totalResults = Regex("""(\d+)""").find(document.select("div.res_info").text())?.groupValues?.get(1)?.toIntOrNull() ?: 0
         return MangasPage(mangas, mangaParsedSoFar < totalResults)
     }
@@ -119,10 +122,11 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
         titleElement: Element,
         thumbnailElement: Element?,
     ): SManga {
-        val manga = SManga.create().apply {
-            setUrlWithoutDomain(titleElement.attr("href"))
-            title = cleanTitle(titleElement.text())
-        }
+        val manga =
+            SManga.create().apply {
+                setUrlWithoutDomain(titleElement.attr("href"))
+                title = cleanTitle(titleElement.text())
+            }
         if (thumbnailElement != null) manga.thumbnail_url = getThumbnail(getImage(thumbnailElement))
         return manga
     }
@@ -130,11 +134,12 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
     private val extensionRegex = Regex("""\.(jpg|png|jpeg|webp)""")
 
     private fun getImage(element: Element): String? {
-        val url = when {
-            element.attr("data-src").contains(extensionRegex) -> element.attr("abs:data-src")
-            element.attr("src").contains(extensionRegex) -> element.attr("abs:src")
-            else -> element.attr("abs:data-lazy-src")
-        }
+        val url =
+            when {
+                element.attr("data-src").contains(extensionRegex) -> element.attr("abs:data-src")
+                element.attr("src").contains(extensionRegex) -> element.attr("abs:src")
+                else -> element.attr("abs:data-lazy-src")
+            }
 
         return if (URLUtil.isValidUrl(url)) url else null
     }
@@ -175,25 +180,29 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
             genre = document.select(".entry-header p a[href*=genre]").joinToString { it.text() }
             val basicDescription = document.select("h1").text()
             // too troublesome to achieve 100% accuracy assigning scanlator group during chapterListParse
-            val scanlatedBy = document.select(".entry-terms:has(a[href*=group])").firstOrNull()
-                ?.select("a[href*=group]")?.joinToString(prefix = "Scanlated by: ") { it.text() }
-            val extendedDescription = document.select(
-                ".entry-content p:not(p:containsOwn(|)):not(.chapter-class + p)",
-            ).joinToString("\n") { it.text() }
+            val scanlatedBy =
+                document.select(".entry-terms:has(a[href*=group])").firstOrNull()
+                    ?.select("a[href*=group]")?.joinToString(prefix = "Scanlated by: ") { it.text() }
+            val extendedDescription =
+                document.select(
+                    ".entry-content p:not(p:containsOwn(|)):not(.chapter-class + p)",
+                ).joinToString("\n") { it.text() }
             description = listOfNotNull(basicDescription, scanlatedBy, extendedDescription).joinToString("\n").trim()
-            status = when (document.select("a[href*=status]").first()?.text()) {
-                "Ongoing" -> SManga.ONGOING
-                "Completed" -> SManga.COMPLETED
-                else -> SManga.UNKNOWN
-            }
+            status =
+                when (document.select("a[href*=status]").first()?.text()) {
+                    "Ongoing" -> SManga.ONGOING
+                    "Completed" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
 
             if (needCover) {
-                thumbnail_url = getThumbnail(
-                    getImage(
-                        client.newCall(GET("$baseUrl/search/?search=${document.location()}", headers))
-                            .execute().asJsoup().select("div.wdm_results div.p_content img").first()!!,
-                    ),
-                )
+                thumbnail_url =
+                    getThumbnail(
+                        getImage(
+                            client.newCall(GET("$baseUrl/search/?search=${document.location()}", headers))
+                                .execute().asJsoup().select("div.wdm_results div.p_content img").first()!!,
+                        ),
+                    )
             }
         }
     }
@@ -210,10 +219,11 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
 
         val date = parseDate(document.select(".entry-time").text())
         val mangaUrl = document.baseUri()
-        val chfirstname = document.select(".chapter-class a[href*=$mangaUrl]").first()?.text()?.ifEmpty {
-            "Ch. 1"
-        }?.replaceFirstChar { it.titlecase() }
-            ?: "Ch. 1"
+        val chfirstname =
+            document.select(".chapter-class a[href*=$mangaUrl]").first()?.text()?.ifEmpty {
+                "Ch. 1"
+            }?.replaceFirstChar { it.titlecase() }
+                ?: "Ch. 1"
         // create first chapter since its on main manga page
         chapters.add(createChapter("1", document.baseUri(), date, chfirstname))
         // see if there are multiple chapters or not
@@ -221,10 +231,11 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
             it.forEach {
                 if (!it.text().contains("Next »", true)) {
                     val pageNumber = it.text()
-                    val chname = document.select(".chapter-class a[href$=/$pageNumber/]").text().ifEmpty {
-                        "Ch. $pageNumber"
-                    }?.replaceFirstChar { it.titlecase() }
-                        ?: "Ch. $pageNumber"
+                    val chname =
+                        document.select(".chapter-class a[href$=/$pageNumber/]").text().ifEmpty {
+                            "Ch. $pageNumber"
+                        }?.replaceFirstChar { it.titlecase() }
+                            ?: "Ch. $pageNumber"
                     chapters.add(createChapter(it.text(), document.baseUri(), date, chname))
                 }
             }
@@ -285,25 +296,27 @@ open class MyReadingManga(override val lang: String, private val siteLang: Strin
         url: String,
         css: String,
     ): Array<String> {
-        val document = if (filterMap.isNullOrEmpty()) {
-            filtersCached = false
-            null
-        } else {
-            filtersCached = true
-            Jsoup.parse(filterMap[url]!!)
-        }
+        val document =
+            if (filterMap.isNullOrEmpty()) {
+                filtersCached = false
+                null
+            } else {
+                filtersCached = true
+                Jsoup.parse(filterMap[url]!!)
+            }
         return document?.select(css)?.map { it.text() }?.toTypedArray()
             ?: arrayOf("Press 'Reset' to load filters")
     }
 
     // URLs for the pages we need to cache
-    private val cachedPagesUrls = hashMapOf(
-        Pair("genres", baseUrl),
-        Pair("tags", baseUrl),
-        Pair("categories", "$baseUrl/cats/"),
-        Pair("pairings", "$baseUrl/pairing/"),
-        Pair("groups", "$baseUrl/group/"),
-    )
+    private val cachedPagesUrls =
+        hashMapOf(
+            Pair("genres", baseUrl),
+            Pair("tags", baseUrl),
+            Pair("categories", "$baseUrl/cats/"),
+            Pair("pairings", "$baseUrl/pairing/"),
+            Pair("groups", "$baseUrl/group/"),
+        )
 
     // Generates the filter lists for app
     override fun getFilterList(): FilterList {

@@ -11,26 +11,28 @@ class PinkTeaComic : Madara(
     "Pink Tea Comic",
     "https://pinkteacomic.com",
     "vi",
-    dateFormat = SimpleDateFormat(
-        "d MMMM, yyyy",
-        DateFormatSymbols(Locale("vi")).apply {
-            // Month One, Month Two, ...
-            months = arrayOf(
-                "Tháng Một",
-                "Tháng Hai",
-                "Tháng Ba",
-                "Tháng Tư",
-                "Tháng Năm",
-                "Tháng Sáu",
-                "Tháng Bảy",
-                "Tháng Tám",
-                "Tháng Chín",
-                "Tháng Mười",
-                "Tháng Mười Một",
-                "Tháng Mười Hai",
-            )
-        },
-    ),
+    dateFormat =
+        SimpleDateFormat(
+            "d MMMM, yyyy",
+            DateFormatSymbols(Locale("vi")).apply {
+                // Month One, Month Two, ...
+                months =
+                    arrayOf(
+                        "Tháng Một",
+                        "Tháng Hai",
+                        "Tháng Ba",
+                        "Tháng Tư",
+                        "Tháng Năm",
+                        "Tháng Sáu",
+                        "Tháng Bảy",
+                        "Tháng Tám",
+                        "Tháng Chín",
+                        "Tháng Mười",
+                        "Tháng Mười Một",
+                        "Tháng Mười Hai",
+                    )
+            },
+        ),
 ) {
     override val useNewChapterEndpoint = true
 

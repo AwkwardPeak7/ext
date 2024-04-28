@@ -37,11 +37,12 @@ class Explosm : HttpSource() {
     private val archivePage = "$baseUrl/comics"
 
     private fun getArchiveAllYears(response: Response): JsonObject {
-        val jsonPath = response.asJsoup()
-            .select("head > script").last()?.attr("src")
-            ?.replace("static", "data")
-            ?.replaceAfterLast("/", "comics.json")
-            ?: throw Exception("Error at last() in getArchiveAllYears")
+        val jsonPath =
+            response.asJsoup()
+                .select("head > script").last()?.attr("src")
+                ?.replace("static", "data")
+                ?.replaceAfterLast("/", "comics.json")
+                ?: throw Exception("Error at last() in getArchiveAllYears")
         val json = client.newCall(GET(baseUrl + jsonPath, headers)).execute().body.string()
         return Json.decodeFromString<JsonObject>(json)["pageProps"]
             ?.jsonObject?.get("comicArchiveData")
@@ -56,17 +57,18 @@ class Explosm : HttpSource() {
     }
 
     override fun popularMangaParse(response: Response): MangasPage {
-        val eachYearAsAManga = getArchiveAllYears(response)
-            .map { year ->
-                SManga.create().apply {
-                    initialized = true
-                    title = "C&H " + year.key // year
-                    url = year.key // need key here
-                    thumbnail_url = "https://vhx.imgix.net/vitalyuncensored/assets/13ea3806-5ebf-4987-bcf1-82af2b689f77/S2E4_Still1.jpg"
-                    author = "Explosm.net"
+        val eachYearAsAManga =
+            getArchiveAllYears(response)
+                .map { year ->
+                    SManga.create().apply {
+                        initialized = true
+                        title = "C&H " + year.key // year
+                        url = year.key // need key here
+                        thumbnail_url = "https://vhx.imgix.net/vitalyuncensored/assets/13ea3806-5ebf-4987-bcf1-82af2b689f77/S2E4_Still1.jpg"
+                        author = "Explosm.net"
+                    }
                 }
-            }
-            .reversed()
+                .reversed()
 
         return MangasPage(eachYearAsAManga, false)
     }
@@ -126,11 +128,12 @@ class Explosm : HttpSource() {
                             SChapter.create().apply {
                                 name = comic.getContent("slug")
                                 // we get the url for page.imageurl here
-                                url = if (comic.getContent("file_static") != "null") {
-                                    comic.getContent("file_static")
-                                } else {
-                                    "https://files.explosm.net/comics/${comic.getContent("file")}"
-                                }
+                                url =
+                                    if (comic.getContent("file_static") != "null") {
+                                        comic.getContent("file_static")
+                                    } else {
+                                        "https://files.explosm.net/comics/${comic.getContent("file")}"
+                                    }
                                 date_upload = date.parse(comic.getContent("publish_at"))?.time ?: 0L
                                 scanlator = comic.getContent("author_name")
                                 chapter_number = chapterCount // so no "missing chapters" warning in app

@@ -32,27 +32,31 @@ class HentaiNexus : ParsedHttpSource() {
     override val supportsLatest = false
 
     // Images on this site goes through the free Jetpack Photon CDN.
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 1)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 1)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
-    override fun popularMangaRequest(page: Int) = GET(
-        baseUrl + (if (page > 1) "/page/$page" else ""),
-        headers,
-    )
+    override fun popularMangaRequest(page: Int) =
+        GET(
+            baseUrl + (if (page > 1) "/page/$page" else ""),
+            headers,
+        )
 
     override fun popularMangaSelector() = ".container .column"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
-        title = element.selectFirst(".card-header-title")!!.text()
-        thumbnail_url = element.selectFirst(".card-image img")?.absUrl("src")
-    }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
+            title = element.selectFirst(".card-header-title")!!.text()
+            thumbnail_url = element.selectFirst(".card-image img")?.absUrl("src")
+        }
 
     override fun popularMangaNextPageSelector() = "a.pagination-next[href]"
 
@@ -83,14 +87,15 @@ class HentaiNexus : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder().apply {
-            val actualPage = page + (filters.filterIsInstance<OffsetPageFilter>().firstOrNull()?.state?.toIntOrNull() ?: 0)
-            if (actualPage > 1) {
-                addPathSegments("page/$actualPage")
-            }
+        val url =
+            baseUrl.toHttpUrl().newBuilder().apply {
+                val actualPage = page + (filters.filterIsInstance<OffsetPageFilter>().firstOrNull()?.state?.toIntOrNull() ?: 0)
+                if (actualPage > 1) {
+                    addPathSegments("page/$actualPage")
+                }
 
-            addQueryParameter("q", (combineQuery(filters) + query).trim())
-        }.build()
+                addQueryParameter("q", (combineQuery(filters) + query).trim())
+            }.build()
 
         return GET(url, headers)
     }
@@ -103,32 +108,35 @@ class HentaiNexus : ParsedHttpSource() {
 
     private val tagCountRegex = Regex("""\s*\([\d,]+\)$""")
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        val table = document.selectFirst(".view-page-details")!!
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            val table = document.selectFirst(".view-page-details")!!
 
-        title = document.selectFirst("h1.title")!!.text()
-        artist = table.select("td.viewcolumn:contains(Artist) + td a").joinToString { it.ownText() }
-        author = table.select("td.viewcolumn:contains(Author) + td a").joinToString { it.ownText() }
-        description = buildString {
-            listOf("Circle", "Event", "Magazine", "Parody", "Publisher", "Pages", "Favorites").forEach { key ->
-                val cell = table.selectFirst("td.viewcolumn:contains($key) + td")
+            title = document.selectFirst("h1.title")!!.text()
+            artist = table.select("td.viewcolumn:contains(Artist) + td a").joinToString { it.ownText() }
+            author = table.select("td.viewcolumn:contains(Author) + td a").joinToString { it.ownText() }
+            description =
+                buildString {
+                    listOf("Circle", "Event", "Magazine", "Parody", "Publisher", "Pages", "Favorites").forEach { key ->
+                        val cell = table.selectFirst("td.viewcolumn:contains($key) + td")
 
-                cell
-                    ?.ownText()
-                    ?.ifEmpty { cell.selectFirst("a")!!.ownText() }
-                    ?.let { appendLine("$key: $it") }
-            }
-            appendLine()
+                        cell
+                            ?.ownText()
+                            ?.ifEmpty { cell.selectFirst("a")!!.ownText() }
+                            ?.let { appendLine("$key: $it") }
+                    }
+                    appendLine()
 
-            table.selectFirst("td.viewcolumn:contains(Description) + td")?.text()?.let {
-                appendLine(it)
-            }
+                    table.selectFirst("td.viewcolumn:contains(Description) + td")?.text()?.let {
+                        appendLine(it)
+                    }
+                }
+            genre =
+                table.select("span.tag a").joinToString {
+                    it.text().replace(tagCountRegex, "")
+                }
+            update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
         }
-        genre = table.select("span.tag a").joinToString {
-            it.text().replace(tagCountRegex, "")
-        }
-        update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
-    }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         val id = manga.url.split("/").last()
@@ -148,8 +156,9 @@ class HentaiNexus : ParsedHttpSource() {
     override fun chapterFromElement(element: Element) = throw UnsupportedOperationException()
 
     override fun pageListParse(document: Document): List<Page> {
-        val script = document.selectFirst("script:containsData(initReader)")?.data()
-            ?: throw Exception("Could not find chapter data")
+        val script =
+            document.selectFirst("script:containsData(initReader)")?.data()
+                ?: throw Exception("Could not find chapter data")
         val encoded = script.substringAfter("initReader(\"").substringBefore("\",")
         val data = HentaiNexusUtils.decryptData(encoded)
 
@@ -160,25 +169,26 @@ class HentaiNexus : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        Filter.Header(
-            """
-            Separate items with commas (,)
-            Prepend with dash (-) to exclude
-            For items with multiple words, surround them with double quotes (")
-            """.trimIndent(),
-        ),
-        TagFilter(),
-        ArtistFilter(),
-        AuthorFilter(),
-        CircleFilter(),
-        EventFilter(),
-        ParodyFilter(),
-        MagazineFilter(),
-        PublisherFilter(),
-        Filter.Separator(),
-        OffsetPageFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header(
+                """
+                Separate items with commas (,)
+                Prepend with dash (-) to exclude
+                For items with multiple words, surround them with double quotes (")
+                """.trimIndent(),
+            ),
+            TagFilter(),
+            ArtistFilter(),
+            AuthorFilter(),
+            CircleFilter(),
+            EventFilter(),
+            ParodyFilter(),
+            MagazineFilter(),
+            PublisherFilter(),
+            Filter.Separator(),
+            OffsetPageFilter(),
+        )
 
     companion object {
         const val PREFIX_ID_SEARCH = "id:"

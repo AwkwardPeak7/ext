@@ -37,34 +37,37 @@ open class VCPVMP(override val name: String, override val baseUrl: String) : Par
 
     override fun popularMangaSelector() = "div.blog-list-items > div.entry"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        element.select("a.popimg").first()!!.let {
-            setUrlWithoutDomain(it.attr("href"))
-            title = it.select("img").attr("alt")
-            thumbnail_url = it.select("img:not(noscript img)").attr("abs:data-src")
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            element.select("a.popimg").first()!!.let {
+                setUrlWithoutDomain(it.attr("href"))
+                title = it.select("img").attr("alt")
+                thumbnail_url = it.select("img:not(noscript img)").attr("abs:data-src")
+            }
         }
-    }
 
     override fun popularMangaNextPageSelector() = "div.wp-pagenavi > span.current + a"
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        document.select("div.tax_post").let {
-            status = SManga.COMPLETED
-            update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
-            val genreList = document.select("div.tax_box:has(div.title:contains(Etiquetas)) a[rel=tag]")
-            genre = genreList.joinToString { genre ->
-                val text = genre.text().replaceFirstChar { it.uppercase() }
-                val slug = genre.attr("href").replace("$baseUrl/$genreSuffix/", "")
-                val newPair = Pair(text, slug)
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            document.select("div.tax_post").let {
+                status = SManga.COMPLETED
+                update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
+                val genreList = document.select("div.tax_box:has(div.title:contains(Etiquetas)) a[rel=tag]")
+                genre =
+                    genreList.joinToString { genre ->
+                        val text = genre.text().replaceFirstChar { it.uppercase() }
+                        val slug = genre.attr("href").replace("$baseUrl/$genreSuffix/", "")
+                        val newPair = Pair(text, slug)
 
-                if (!genres.contains(newPair)) {
-                    genres += newPair
-                }
+                        if (!genres.contains(newPair)) {
+                            genres += newPair
+                        }
 
-                text
+                        text
+                    }
             }
         }
-    }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
         return Observable.just(
@@ -83,8 +86,9 @@ open class VCPVMP(override val name: String, override val baseUrl: String) : Par
 
     protected open val pageListSelector = "div.wp-content p > img:not(noscript img)"
 
-    override fun pageListParse(document: Document): List<Page> = document.select(pageListSelector)
-        .mapIndexed { i, img -> Page(i, "", img.attr("abs:data-src")) }
+    override fun pageListParse(document: Document): List<Page> =
+        document.select(pageListSelector)
+            .mapIndexed { i, img -> Page(i, "", img.attr("abs:data-src")) }
 
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
@@ -134,11 +138,12 @@ open class VCPVMP(override val name: String, override val baseUrl: String) : Par
     protected open var genres = arrayOf(Pair("Ver todos", ""))
 
     override fun getFilterList(): FilterList {
-        val filters = listOf(
-            Filter.Header("Los filtros serán ignorados si la búsqueda no está vacía."),
-            Filter.Separator(),
-            Genre(genres),
-        )
+        val filters =
+            listOf(
+                Filter.Header("Los filtros serán ignorados si la búsqueda no está vacía."),
+                Filter.Separator(),
+                Genre(genres),
+            )
 
         return FilterList(filters)
     }

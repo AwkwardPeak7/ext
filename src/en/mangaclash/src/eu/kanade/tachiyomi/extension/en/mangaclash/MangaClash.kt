@@ -13,7 +13,8 @@ class MangaClash : Madara(
     "en",
     dateFormat = SimpleDateFormat("MM/dd/yy", Locale.US),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 1, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 1, TimeUnit.SECONDS)
+            .build()
 }

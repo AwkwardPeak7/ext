@@ -19,23 +19,24 @@ class GunnerkriggCourt : ParsedHttpSource() {
     override val supportsLatest = false
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        val manga = SManga.create().apply {
-            title = name
-            artist = "Tom Siddell"
-            author = artist
-            status = SManga.ONGOING
-            url = "/archives/"
-            description = "Gunnerkrigg Court is a Science Fantasy webcomic by Tom Siddell about a" +
-                " strange young girl attending an equally strange school. The intricate story is " +
-                "deeply rooted in world mythology, but has a strong focus on science (chemistry " +
-                "and robotics, most prominently) as well.\n\n" +
-                "Antimony Carver begins classes at the eponymous U.K. Boarding School, and soon " +
-                "notices that strange events are happening: a shadow creature follows her around;" +
-                " a robot calls her \"Mummy\"; a Rogat Orjak smashes in the dormitory roof; odd " +
-                "birds, ticking like clockwork, stand guard in out-of-the-way places.\n\n" +
-                "Stranger still, in the middle of all this, Annie remains calm and polite to a fault."
-            thumbnail_url = "https://i.imgur.com/g2ukAIKh.jpgss"
-        }
+        val manga =
+            SManga.create().apply {
+                title = name
+                artist = "Tom Siddell"
+                author = artist
+                status = SManga.ONGOING
+                url = "/archives/"
+                description = "Gunnerkrigg Court is a Science Fantasy webcomic by Tom Siddell about a" +
+                    " strange young girl attending an equally strange school. The intricate story is " +
+                    "deeply rooted in world mythology, but has a strong focus on science (chemistry " +
+                    "and robotics, most prominently) as well.\n\n" +
+                    "Antimony Carver begins classes at the eponymous U.K. Boarding School, and soon " +
+                    "notices that strange events are happening: a shadow creature follows her around;" +
+                    " a robot calls her \"Mummy\"; a Rogat Orjak smashes in the dormitory roof; odd " +
+                    "birds, ticking like clockwork, stand guard in out-of-the-way places.\n\n" +
+                    "Stranger still, in the middle of all this, Annie remains calm and polite to a fault."
+                thumbnail_url = "https://i.imgur.com/g2ukAIKh.jpgss"
+            }
 
         return Observable.just(MangasPage(arrayListOf(manga).reversed(), false))
     }

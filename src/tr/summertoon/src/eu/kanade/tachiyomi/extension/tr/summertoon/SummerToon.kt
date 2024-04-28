@@ -11,9 +11,10 @@ class SummerToon : MangaThemesia(
     "tr",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("tr")),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(1, 1)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1, 1)
+            .build()
 
     override val seriesStatusSelector = ".tsinfo .imptdt:contains(Durum) i"
     override val seriesAuthorSelector = ".fmed b:contains(Yazar)+span"

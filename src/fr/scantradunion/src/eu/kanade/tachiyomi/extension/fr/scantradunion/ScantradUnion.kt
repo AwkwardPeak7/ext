@@ -78,8 +78,9 @@ class ScantradUnion : ParsedHttpSource() {
         manga.title = formatMangaTitle(title)
         manga.thumbnail_url = document.select(".projet-image img").attr("src")
         manga.description = document.select(".sContent").text()
-        manga.author = document.select("div.project-details a[href*=auteur]")
-            .joinToString(", ") { teamElem -> teamElem.text() }
+        manga.author =
+            document.select("div.project-details a[href*=auteur]")
+                .joinToString(", ") { teamElem -> teamElem.text() }
         // Cannot distinguish authors and artists because they are in the same section.
         manga.artist = manga.author
         manga.status = mapMangaStatusStringToConst(statusStr)
@@ -111,8 +112,9 @@ class ScantradUnion : ParsedHttpSource() {
         val manga = SManga.create()
         manga.title = formatMangaTitle(element.select(".index-top3-title").text())
         manga.setUrlWithoutDomain(element.attr("href"))
-        manga.thumbnail_url = element.select(".index-top3-bg").attr("style")
-            .substringAfter("background:url('").substringBefore("')")
+        manga.thumbnail_url =
+            element.select(".index-top3-bg").attr("style")
+                .substringAfter("background:url('").substringBefore("')")
         return manga
     }
 

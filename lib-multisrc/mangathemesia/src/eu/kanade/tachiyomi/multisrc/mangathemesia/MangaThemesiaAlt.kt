@@ -58,8 +58,9 @@ abstract class MangaThemesiaAlt(
     // finally add it, we remove the slug in the interceptor
     private var SharedPreferences.titlesWithoutRandomPart: MutableSet<String>
         get() {
-            val value = getString("titles_without_random_part", null)
-                ?: return mutableSetOf()
+            val value =
+                getString("titles_without_random_part", null)
+                    ?: return mutableSetOf()
 
             return json.decodeFromString(value)
         }
@@ -70,9 +71,10 @@ abstract class MangaThemesiaAlt(
         }
 
     protected open fun getRandomPartFromUrl(url: String): String {
-        val slug = url
-            .removeSuffix("/")
-            .substringAfterLast("/")
+        val slug =
+            url
+                .removeSuffix("/")
+                .substringAfterLast("/")
 
         return slugRegex.find(slug)?.groupValues?.get(1) ?: ""
     }
@@ -84,9 +86,10 @@ abstract class MangaThemesiaAlt(
             .let(::getRandomPartFromUrl)
     }
 
-    protected suspend fun getUpdatedRandomPart(): String = client.newCall(GET("$baseUrl$mangaUrlDirectory/", headers))
-        .await()
-        .use(::getRandomPartFromResponse)
+    protected suspend fun getUpdatedRandomPart(): String =
+        client.newCall(GET("$baseUrl$mangaUrlDirectory/", headers))
+            .await()
+            .use(::getRandomPartFromResponse)
 
     override fun searchMangaParse(response: Response): MangasPage {
         val mp = super.searchMangaParse(response)
@@ -113,16 +116,18 @@ abstract class MangaThemesiaAlt(
         val foundTitlesWithoutRandomPart = mutableSetOf<String>()
 
         for (i in indices) {
-            val slug = this[i].url
-                .removeSuffix("/")
-                .substringAfterLast("/")
+            val slug =
+                this[i].url
+                    .removeSuffix("/")
+                    .substringAfterLast("/")
 
             if (slugRegex.find(slug)?.groupValues?.get(1) == null) {
                 foundTitlesWithoutRandomPart.add(slug)
             }
 
-            val permaSlug = slug
-                .replaceFirst(slugRegex, "")
+            val permaSlug =
+                slug
+                    .replaceFirst(slugRegex, "")
 
             this[i].url = "$mangaUrlDirectory/$permaSlug/"
         }
@@ -138,49 +143,53 @@ abstract class MangaThemesiaAlt(
 
     protected open val slugRegex = Regex("""^(\d+-)""")
 
-    override val client = super.client.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val response = chain.proceed(request)
+    override val client =
+        super.client.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val response = chain.proceed(request)
 
-            if (request.url.fragment != "titlesWithoutRandomPart") {
-                return@addInterceptor response
-            }
-
-            if (!response.isSuccessful && response.code == 404) {
-                response.close()
-
-                val slug = request.url.toString()
-                    .substringBefore("#")
-                    .removeSuffix("/")
-                    .substringAfterLast("/")
-
-                preferences.titlesWithoutRandomPart.run {
-                    remove(slug)
-
-                    preferences.titlesWithoutRandomPart = this
+                if (request.url.fragment != "titlesWithoutRandomPart") {
+                    return@addInterceptor response
                 }
 
-                val randomPart = randomPartCache.blockingGet()
-                val newRequest = request.newBuilder()
-                    .url("$baseUrl$mangaUrlDirectory/$randomPart$slug/")
-                    .build()
+                if (!response.isSuccessful && response.code == 404) {
+                    response.close()
 
-                return@addInterceptor chain.proceed(newRequest)
+                    val slug =
+                        request.url.toString()
+                            .substringBefore("#")
+                            .removeSuffix("/")
+                            .substringAfterLast("/")
+
+                    preferences.titlesWithoutRandomPart.run {
+                        remove(slug)
+
+                        preferences.titlesWithoutRandomPart = this
+                    }
+
+                    val randomPart = randomPartCache.blockingGet()
+                    val newRequest =
+                        request.newBuilder()
+                            .url("$baseUrl$mangaUrlDirectory/$randomPart$slug/")
+                            .build()
+
+                    return@addInterceptor chain.proceed(newRequest)
+                }
+
+                return@addInterceptor response
             }
-
-            return@addInterceptor response
-        }
-        .build()
+            .build()
 
     override fun mangaDetailsRequest(manga: SManga): Request {
         if (!getRandomUrlPref()) return super.mangaDetailsRequest(manga)
 
-        val slug = manga.url
-            .substringBefore("#")
-            .removeSuffix("/")
-            .substringAfterLast("/")
-            .replaceFirst(slugRegex, "")
+        val slug =
+            manga.url
+                .substringBefore("#")
+                .removeSuffix("/")
+                .substringAfterLast("/")
+                .replaceFirst(slugRegex, "")
 
         if (preferences.titlesWithoutRandomPart.contains(slug)) {
             return GET("$baseUrl${manga.url}#titlesWithoutRandomPart")
@@ -194,11 +203,12 @@ abstract class MangaThemesiaAlt(
     override fun getMangaUrl(manga: SManga): String {
         if (!getRandomUrlPref()) return super.getMangaUrl(manga)
 
-        val slug = manga.url
-            .substringBefore("#")
-            .removeSuffix("/")
-            .substringAfterLast("/")
-            .replaceFirst(slugRegex, "")
+        val slug =
+            manga.url
+                .substringBefore("#")
+                .removeSuffix("/")
+                .substringAfterLast("/")
+                .replaceFirst(slugRegex, "")
 
         if (preferences.titlesWithoutRandomPart.contains(slug)) {
             return "$baseUrl${manga.url}"

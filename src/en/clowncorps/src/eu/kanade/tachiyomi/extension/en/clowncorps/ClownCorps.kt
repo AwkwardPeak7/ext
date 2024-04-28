@@ -36,22 +36,24 @@ class ClownCorps : ConfigurableSource, HttpSource() {
     override val name = "Clown Corps"
     override val supportsLatest = false
 
-    override val client = network.client.newBuilder()
-        .addInterceptor(TextInterceptor())
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .addInterceptor(TextInterceptor())
+            .build()
 
-    private fun getManga() = SManga.create().apply {
-        title = name
-        artist = CREATOR
-        author = CREATOR
-        status = SManga.ONGOING
-        initialized = true
-        // Image and description from: https://clowncorps.net/about/
-        thumbnail_url = "$baseUrl/wp-content/uploads/2022/11/clowns41.jpg"
-        description = "Clown Corps is a comic about crime-fighting clowns.\n" +
-            "It's pronounced \"core.\" Like marine corps."
-        url = "/comic"
-    }
+    private fun getManga() =
+        SManga.create().apply {
+            title = name
+            artist = CREATOR
+            author = CREATOR
+            status = SManga.ONGOING
+            initialized = true
+            // Image and description from: https://clowncorps.net/about/
+            thumbnail_url = "$baseUrl/wp-content/uploads/2022/11/clowns41.jpg"
+            description = "Clown Corps is a comic about crime-fighting clowns.\n" +
+                "It's pronounced \"core.\" Like marine corps."
+            url = "/comic"
+        }
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> = Observable.just(MangasPage(listOf(getManga()), hasNextPage = false))
 
@@ -191,37 +193,39 @@ class ClownCorps : ConfigurableSource, HttpSource() {
     private fun clearChapterCache() = preferences.edit().remove(CACHE_KEY_CHAPTERS).apply()
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val authorsNotesPref = SwitchPreferenceCompat(screen.context).apply {
-            key = SETTING_KEY_SHOW_AUTHORS_NOTES
-            title = "Show author's notes"
-            summary =
-                "Enable to see the author's notes at the end of chapters (if they're there)."
-            setDefaultValue(false)
-        }
+        val authorsNotesPref =
+            SwitchPreferenceCompat(screen.context).apply {
+                key = SETTING_KEY_SHOW_AUTHORS_NOTES
+                title = "Show author's notes"
+                summary =
+                    "Enable to see the author's notes at the end of chapters (if they're there)."
+                setDefaultValue(false)
+            }
         screen.addPreference(authorsNotesPref)
 
         // I couldn't find a way to create a simple button, so here's a workaround that uses
         // a MultiSelectListPreference with a single option as a kind of confirmation window.
-        val clearCachePref = MultiSelectListPreference(screen.context).apply {
-            key = SETTING_KEY_CLEAR_CHAPTER_CACHE
-            title = "Clear chapter cache"
-            summary = "Clears the chapter cache, forcing a full re-fetch from the website."
-            dialogTitle = "Are you sure you want to clear the chapter cache?"
-            entries = arrayOf("Yes, I'm sure")
-            entryValues = arrayOf(VALUE_CONFIRM)
-            setDefaultValue(emptySet<String>())
+        val clearCachePref =
+            MultiSelectListPreference(screen.context).apply {
+                key = SETTING_KEY_CLEAR_CHAPTER_CACHE
+                title = "Clear chapter cache"
+                summary = "Clears the chapter cache, forcing a full re-fetch from the website."
+                dialogTitle = "Are you sure you want to clear the chapter cache?"
+                entries = arrayOf("Yes, I'm sure")
+                entryValues = arrayOf(VALUE_CONFIRM)
+                setDefaultValue(emptySet<String>())
 
-            setOnPreferenceChangeListener { _, newValue ->
-                val checkValue = newValue as Set<*>
-                if (checkValue.contains(VALUE_CONFIRM)) {
-                    clearChapterCache()
-                    Toast.makeText(screen.context, "Cleared chapter cache", Toast.LENGTH_SHORT)
-                        .show()
+                setOnPreferenceChangeListener { _, newValue ->
+                    val checkValue = newValue as Set<*>
+                    if (checkValue.contains(VALUE_CONFIRM)) {
+                        clearChapterCache()
+                        Toast.makeText(screen.context, "Cleared chapter cache", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+
+                    false // Don't actually save the "yes"
                 }
-
-                false // Don't actually save the "yes"
             }
-        }
         screen.addPreference(clearCachePref)
     }
 

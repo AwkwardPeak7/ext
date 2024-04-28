@@ -27,18 +27,20 @@ class NineAnime : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .followRedirects(true)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .followRedirects(true)
+            .build()
 
     companion object {
         private const val PAGES_URL = "https://www.glanceoflife.com"
     }
 
     // not necessary for normal usage but added in an attempt to fix usage with VPN (see #3476)
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) Gecko/20100101 Firefox/77")
-        .add("Accept-Language", "en-US,en;q=0.5")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) Gecko/20100101 Firefox/77")
+            .add("Accept-Language", "en-US,en;q=0.5")
 
     // Popular
 
@@ -107,11 +109,12 @@ class NineAnime : ParsedHttpSource() {
                 thumbnail_url = select("img.detail-cover").attr("abs:src")
                 author = select("span:contains(Author) + a").joinToString { it.text() }
                 artist = select("span:contains(Artist) + a").joinToString { it.text() }
-                status = when (select("p:has(span:contains(Status))").firstOrNull()?.ownText()) {
-                    "Ongoing" -> SManga.ONGOING
-                    "Completed" -> SManga.COMPLETED
-                    else -> SManga.UNKNOWN
-                }
+                status =
+                    when (select("p:has(span:contains(Status))").firstOrNull()?.ownText()) {
+                        "Ongoing" -> SManga.ONGOING
+                        "Completed" -> SManga.COMPLETED
+                        else -> SManga.UNKNOWN
+                    }
             }
             with(document.select("div.manga-detailmiddle")) {
                 genre = select("p:has(span:contains(Genre)) a").joinToString { it.text() }
@@ -177,8 +180,9 @@ class NineAnime : ParsedHttpSource() {
         val link = scripturl?.split("\"")?.get(1)
         val pages = client.newCall(GET(PAGES_URL + link, pageListHeaders)).execute().asJsoup()
 
-        val script = pages.select("script:containsData(all_imgs_url)").firstOrNull()?.data()
-            ?: throw Exception("all_imgsurl not found")
+        val script =
+            pages.select("script:containsData(all_imgs_url)").firstOrNull()?.data()
+                ?: throw Exception("all_imgsurl not found")
         return Regex(""""(http.*)",""").findAll(script).mapIndexed { i, mr ->
             Page(i, "", mr.groupValues[1])
         }.toList()
@@ -188,11 +192,12 @@ class NineAnime : ParsedHttpSource() {
 
     // Filters
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Note: ignored if using text search!"),
-        Filter.Separator("-----------------"),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Note: ignored if using text search!"),
+            Filter.Separator("-----------------"),
+            GenreFilter(),
+        )
 
     private class GenreFilter : UriPartFilter(
         "Genres",

@@ -15,9 +15,10 @@ class TraduccionesMoonlight : MangaThemesia(
     // Site moved from Madara to MangaThemesia
     override val versionId = 2
 
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2, 1)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2, 1)
+            .build()
 
     override val seriesAuthorSelector = ".tsinfo .imptdt:contains(autor) i"
     override val seriesStatusSelector = ".tsinfo .imptdt:contains(estado) i"

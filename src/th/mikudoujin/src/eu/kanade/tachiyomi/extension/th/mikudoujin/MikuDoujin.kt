@@ -25,11 +25,12 @@ class MikuDoujin : ParsedHttpSource() {
 
     override val supportsLatest: Boolean = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .writeTimeout(1, TimeUnit.MINUTES)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .writeTimeout(1, TimeUnit.MINUTES)
+            .build()
 
     // Popular
 
@@ -102,21 +103,22 @@ class MikuDoujin : ParsedHttpSource() {
             .asObservableSuccess()
             .map {
                 val document = it.asJsoup()
-                val mangas: List<SManga> = if (searchMethod) {
-                    listOf(
-                        SManga.create().apply {
-                            url = query.substringAfter(baseUrl)
-                            title = document.title()
-                            thumbnail_url =
-                                document.select("div.sr-card-body div.col-md-4 img").attr("abs:src")
-                            initialized = false
-                        },
-                    )
-                } else {
-                    document.select(popularMangaSelector()).map { element ->
-                        popularMangaFromElement(element)
+                val mangas: List<SManga> =
+                    if (searchMethod) {
+                        listOf(
+                            SManga.create().apply {
+                                url = query.substringAfter(baseUrl)
+                                title = document.title()
+                                thumbnail_url =
+                                    document.select("div.sr-card-body div.col-md-4 img").attr("abs:src")
+                                initialized = false
+                            },
+                        )
+                    } else {
+                        document.select(popularMangaSelector()).map { element ->
+                            popularMangaFromElement(element)
+                        }
                     }
-                }
 
                 MangasPage(mangas, !searchMethod)
             }
@@ -132,8 +134,9 @@ class MikuDoujin : ParsedHttpSource() {
             author = infoElement.select("div.col-md-8 p a.badge-secondary")[2].ownText()
             artist = author
             status = SManga.UNKNOWN
-            genre = infoElement.select("div.sr-card-body div.col-md-8 div.tags a")
-                .joinToString { it.text() }
+            genre =
+                infoElement.select("div.sr-card-body div.col-md-8 div.tags a")
+                    .joinToString { it.text() }
             description = infoElement.select("div.col-md-8").first()!!.ownText()
             thumbnail_url = infoElement.select("div.col-md-4 img").first()!!.attr("abs:src")
             initialized = true
@@ -182,11 +185,12 @@ class MikuDoujin : ParsedHttpSource() {
 
                 if (mangaDocument.select(chapterListSelector()).isEmpty()) {
                     manga.status = SManga.COMPLETED
-                    val createdChapter = SChapter.create().apply {
-                        url = manga.url
-                        name = "Chapter 1"
-                        chapter_number = 1.0f
-                    }
+                    val createdChapter =
+                        SChapter.create().apply {
+                            url = manga.url
+                            name = "Chapter 1"
+                            chapter_number = 1.0f
+                        }
                     chList = listOf(createdChapter)
                 } else {
                     chList =

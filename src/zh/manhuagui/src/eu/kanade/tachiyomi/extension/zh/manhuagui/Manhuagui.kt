@@ -52,11 +52,12 @@ class Manhuagui(
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val baseHost = if (preferences.getBoolean(USE_MIRROR_URL_PREF, false)) {
-        "mhgui.com"
-    } else {
-        "manhuagui.com"
-    }
+    private val baseHost =
+        if (preferences.getBoolean(USE_MIRROR_URL_PREF, false)) {
+            "mhgui.com"
+        } else {
+            "manhuagui.com"
+        }
 
     override val baseUrl =
         if (preferences.getBoolean(SHOW_ZH_HANT_WEBSITE_PREF, false)) {
@@ -131,18 +132,20 @@ class Manhuagui(
             return GET("$baseUrl/s/${query}_p$page.html", headers)
         } else {
             // Filters search
-            val params = filters.map {
-                if (it !is SortFilter && it is UriPartFilter) {
-                    it.toUriPart()
-                } else {
-                    ""
-                }
-            }.filter { it != "" }.joinToString("_")
+            val params =
+                filters.map {
+                    if (it !is SortFilter && it is UriPartFilter) {
+                        it.toUriPart()
+                    } else {
+                        ""
+                    }
+                }.filter { it != "" }.joinToString("_")
 
-            val sortOrder = filters.filterIsInstance<SortFilter>()
-                .joinToString("") {
-                    (it as UriPartFilter).toUriPart()
-                }
+            val sortOrder =
+                filters.filterIsInstance<SortFilter>()
+                    .joinToString("") {
+                        (it as UriPartFilter).toUriPart()
+                    }
 
             // Example: https://www.manhuagui.com/list/japan_maoxian_qingnian_2020_b/update_p1.html
             //                                        /$params                      /$sortOrder $page
@@ -150,11 +153,12 @@ class Manhuagui(
             if (params != "") {
                 url += "/$params"
             }
-            url += if (sortOrder == "") {
-                "/index_p$page.html"
-            } else {
-                "/${sortOrder}_p$page.html"
-            }
+            url +=
+                if (sortOrder == "") {
+                    "/index_p$page.html"
+                } else {
+                    "/${sortOrder}_p$page.html"
+                }
             return GET(url, headers)
         }
     }
@@ -260,19 +264,22 @@ class Manhuagui(
         val document = response.asJsoup()
         if (response.request.url.encodedPath.startsWith("/s/")) {
             // Normal search
-            val mangas = document.select(searchMangaSelector()).map { element ->
-                searchMangaFromElement(element)
-            }
-            val hasNextPage = searchMangaNextPageSelector().let { selector ->
-                document.select(selector).first()
-            } != null
+            val mangas =
+                document.select(searchMangaSelector()).map { element ->
+                    searchMangaFromElement(element)
+                }
+            val hasNextPage =
+                searchMangaNextPageSelector().let { selector ->
+                    document.select(selector).first()
+                } != null
 
             return MangasPage(mangas, hasNextPage)
         } else {
             // Filters search
-            val mangas = document.select(popularMangaSelector()).map { element ->
-                popularMangaFromElement(element)
-            }
+            val mangas =
+                document.select(popularMangaSelector()).map { element ->
+                    popularMangaFromElement(element)
+                }
             val hasNextPage = document.select(popularMangaNextPageSelector()).first() != null
             return MangasPage(mangas, hasNextPage)
         }
@@ -293,13 +300,14 @@ class Manhuagui(
 
     override fun latestUpdatesNextPageSelector() = searchMangaNextPageSelector()
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .set("Referer", baseUrl)
-        .set(
-            "User-Agent",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36",
-        )
-        .set("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7")
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .set("Referer", baseUrl)
+            .set(
+                "User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36",
+            )
+            .set("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7")
 
     override fun popularMangaFromElement(element: Element) = mangaFromElement(element)
 
@@ -313,11 +321,12 @@ class Manhuagui(
 
             // Fix thumbnail lazy load
             val thumbnailElement = it.select("img").first()!!
-            manga.thumbnail_url = if (thumbnailElement.hasAttr("src")) {
-                thumbnailElement.attr("abs:src")
-            } else {
-                thumbnailElement.attr("abs:data-src")
-            }
+            manga.thumbnail_url =
+                if (thumbnailElement.hasAttr("src")) {
+                    thumbnailElement.attr("abs:src")
+                } else {
+                    thumbnailElement.attr("abs:data-src")
+                }
         }
         return manga
     }
@@ -375,9 +384,10 @@ class Manhuagui(
 
                     // Manhuagui only provide upload date for latest chapter
                     if (currentChapter.url == latestChapterHref) {
-                        currentChapter.date_upload = parseDate(
-                            document.select("div.book-detail > ul.detail-list > li.status > span > span.red").last()!!,
-                        )
+                        currentChapter.date_upload =
+                            parseDate(
+                                document.select("div.book-detail > ul.detail-list > li.status > span > span.red").last()!!,
+                            )
                     }
                     pageChapters.add(currentChapter)
                 }
@@ -407,13 +417,14 @@ class Manhuagui(
         manga.thumbnail_url = document.select("p.hcover > img").attr("abs:src")
         manga.author = document.select("span:contains(漫画作者) > a , span:contains(漫畫作者) > a").text().trim().replace(" ", ", ")
         manga.genre = document.select("span:contains(漫画剧情) > a , span:contains(漫畫劇情) > a").text().trim().replace(" ", ", ")
-        manga.status = when (document.select("div.book-detail > ul.detail-list > li.status > span > span").first()!!.text()) {
-            "连载中" -> SManga.ONGOING
-            "已完结" -> SManga.COMPLETED
-            "連載中" -> SManga.ONGOING
-            "已完結" -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
-        }
+        manga.status =
+            when (document.select("div.book-detail > ul.detail-list > li.status > span > span").first()!!.text()) {
+                "连载中" -> SManga.ONGOING
+                "已完结" -> SManga.COMPLETED
+                "連載中" -> SManga.ONGOING
+                "已完結" -> SManga.COMPLETED
+                else -> SManga.UNKNOWN
+            }
 
         return manga
     }
@@ -440,15 +451,16 @@ class Manhuagui(
         }
 
         val html = document.html()
-        val imgCode = packedRegex.find(html)!!.groupValues[1].let {
-            // Make the packed content normal again so :lib:unpacker can do its job
-            it.replace(packedContentRegex) { match ->
-                val lzs = match.groupValues[1]
-                val decoded = LZString.decompressFromBase64(lzs).replace("'", "\\'")
+        val imgCode =
+            packedRegex.find(html)!!.groupValues[1].let {
+                // Make the packed content normal again so :lib:unpacker can do its job
+                it.replace(packedContentRegex) { match ->
+                    val lzs = match.groupValues[1]
+                    val decoded = LZString.decompressFromBase64(lzs).replace("'", "\\'")
 
-                "'$decoded'.split('|')"
+                    "'$decoded'.split('|')"
+                }
             }
-        }
         val imgDecode = Unpacker.unpack(imgCode)
 
         val imgJsonStr = blockCcArgRegex.find(imgDecode)!!.groupValues[0]
@@ -463,94 +475,99 @@ class Manhuagui(
     override fun imageUrlParse(document: Document) = throw UnsupportedOperationException()
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        val mainSiteRateLimitPreference = androidx.preference.ListPreference(screen.context).apply {
-            key = MAINSITE_RATELIMIT_PREF
-            title = MAINSITE_RATELIMIT_PREF_TITLE
-            entries = ENTRIES_ARRAY
-            entryValues = ENTRIES_ARRAY
-            summary = MAINSITE_RATELIMIT_PREF_SUMMARY
+        val mainSiteRateLimitPreference =
+            androidx.preference.ListPreference(screen.context).apply {
+                key = MAINSITE_RATELIMIT_PREF
+                title = MAINSITE_RATELIMIT_PREF_TITLE
+                entries = ENTRIES_ARRAY
+                entryValues = ENTRIES_ARRAY
+                summary = MAINSITE_RATELIMIT_PREF_SUMMARY
 
-            setDefaultValue(MAINSITE_RATELIMIT_DEFAULT_VALUE)
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val setting = preferences.edit().putString(MAINSITE_RATELIMIT_PREF, newValue as String).commit()
-                    setting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setDefaultValue(MAINSITE_RATELIMIT_DEFAULT_VALUE)
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val setting = preferences.edit().putString(MAINSITE_RATELIMIT_PREF, newValue as String).commit()
+                        setting
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
-        val imgCDNRateLimitPreference = androidx.preference.ListPreference(screen.context).apply {
-            key = IMAGE_CDN_RATELIMIT_PREF
-            title = IMAGE_CDN_RATELIMIT_PREF_TITLE
-            entries = ENTRIES_ARRAY
-            entryValues = ENTRIES_ARRAY
-            summary = IMAGE_CDN_RATELIMIT_PREF_SUMMARY
+        val imgCDNRateLimitPreference =
+            androidx.preference.ListPreference(screen.context).apply {
+                key = IMAGE_CDN_RATELIMIT_PREF
+                title = IMAGE_CDN_RATELIMIT_PREF_TITLE
+                entries = ENTRIES_ARRAY
+                entryValues = ENTRIES_ARRAY
+                summary = IMAGE_CDN_RATELIMIT_PREF_SUMMARY
 
-            setDefaultValue(IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val setting = preferences.edit().putString(IMAGE_CDN_RATELIMIT_PREF, newValue as String).commit()
-                    setting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setDefaultValue(IMAGE_CDN_RATELIMIT_DEFAULT_VALUE)
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val setting = preferences.edit().putString(IMAGE_CDN_RATELIMIT_PREF, newValue as String).commit()
+                        setting
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
         // Simplified/Traditional Chinese version website switch
-        val zhHantPreference = androidx.preference.CheckBoxPreference(screen.context).apply {
-            key = SHOW_ZH_HANT_WEBSITE_PREF
-            title = SHOW_ZH_HANT_WEBSITE_PREF_TITLE
-            summary = SHOW_ZH_HANT_WEBSITE_PREF_SUMMARY
+        val zhHantPreference =
+            androidx.preference.CheckBoxPreference(screen.context).apply {
+                key = SHOW_ZH_HANT_WEBSITE_PREF
+                title = SHOW_ZH_HANT_WEBSITE_PREF_TITLE
+                summary = SHOW_ZH_HANT_WEBSITE_PREF_SUMMARY
 
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val setting = preferences.edit().putBoolean(SHOW_ZH_HANT_WEBSITE_PREF, newValue as Boolean).commit()
-                    setting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val setting = preferences.edit().putBoolean(SHOW_ZH_HANT_WEBSITE_PREF, newValue as Boolean).commit()
+                        setting
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
         // R18+ switch
-        val r18Preference = androidx.preference.CheckBoxPreference(screen.context).apply {
-            key = SHOW_R18_PREF
-            title = SHOW_R18_PREF_TITLE
-            summary = SHOW_R18_PREF_SUMMARY
+        val r18Preference =
+            androidx.preference.CheckBoxPreference(screen.context).apply {
+                key = SHOW_R18_PREF
+                title = SHOW_R18_PREF_TITLE
+                summary = SHOW_R18_PREF_SUMMARY
 
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val newSetting = preferences.edit().putBoolean(SHOW_R18_PREF, newValue as Boolean).commit()
-                    newSetting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val newSetting = preferences.edit().putBoolean(SHOW_R18_PREF, newValue as Boolean).commit()
+                        newSetting
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
-        val mirrorURLPreference = androidx.preference.CheckBoxPreference(screen.context).apply {
-            key = USE_MIRROR_URL_PREF
-            title = USE_MIRROR_URL_PREF_TITLE
-            summary = USE_MIRROR_URL_PREF_SUMMARY
+        val mirrorURLPreference =
+            androidx.preference.CheckBoxPreference(screen.context).apply {
+                key = USE_MIRROR_URL_PREF
+                title = USE_MIRROR_URL_PREF_TITLE
+                summary = USE_MIRROR_URL_PREF_SUMMARY
 
-            setDefaultValue(false)
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val newSetting = preferences.edit().putBoolean(USE_MIRROR_URL_PREF, newValue as Boolean).commit()
-                    newSetting
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setDefaultValue(false)
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val newSetting = preferences.edit().putBoolean(USE_MIRROR_URL_PREF, newValue as Boolean).commit()
+                        newSetting
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
         screen.addPreference(mainSiteRateLimitPreference)
         screen.addPreference(imgCDNRateLimitPreference)
@@ -569,15 +586,16 @@ class Manhuagui(
         open fun toUriPart() = pair[state].second
     }
 
-    override fun getFilterList() = FilterList(
-        SortFilter(),
-        LocaleFilter(),
-        GenreFilter(),
-        ReaderFilter(),
-        PublishDateFilter(),
-        FirstLetterFilter(),
-        StatusFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            SortFilter(),
+            LocaleFilter(),
+            GenreFilter(),
+            ReaderFilter(),
+            PublishDateFilter(),
+            FirstLetterFilter(),
+            StatusFilter(),
+        )
 
     private class SortFilter : UriPartFilter(
         "排序方式",

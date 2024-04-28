@@ -27,11 +27,12 @@ class Comicabc : ParsedHttpSource() {
 
     override fun popularMangaSelector(): String = "div.default_row_width > div.col-2"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst("li.cat2_list_name")!!.text()
-        setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
-        thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.selectFirst("li.cat2_list_name")!!.text()
+            setUrlWithoutDomain(element.selectFirst("a")!!.attr("abs:href"))
+            thumbnail_url = element.selectFirst("img")!!.attr("abs:src")
+        }
 
     // Latest
 
@@ -61,30 +62,33 @@ class Comicabc : ParsedHttpSource() {
 
     // Details
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.selectFirst("div.item-top-content h3.item_name")!!.text()
-        thumbnail_url = document.selectFirst("div.item-topbar img.item_cover")!!.attr("abs:src")
-        author = document.selectFirst("div.item-top-content > li:nth-of-type(3)")!!.ownText()
-        artist = author
-        description = document.selectFirst("div.item-top-content > li.item_info_detail")!!.text()
-        status = when {
-            document.selectFirst("div.item_comic_eps_div")!!.text().contains("連載中") -> SManga.ONGOING
-            document.selectFirst("div.item_comic_eps_div")!!.text().contains("已完結") -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.selectFirst("div.item-top-content h3.item_name")!!.text()
+            thumbnail_url = document.selectFirst("div.item-topbar img.item_cover")!!.attr("abs:src")
+            author = document.selectFirst("div.item-top-content > li:nth-of-type(3)")!!.ownText()
+            artist = author
+            description = document.selectFirst("div.item-top-content > li.item_info_detail")!!.text()
+            status =
+                when {
+                    document.selectFirst("div.item_comic_eps_div")!!.text().contains("連載中") -> SManga.ONGOING
+                    document.selectFirst("div.item_comic_eps_div")!!.text().contains("已完結") -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
         }
-    }
 
     // Chapters
 
     override fun chapterListSelector(): String = "div#div_li1 td > a"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        val onclick = element.attr("onclick")
-        val comicId = onclick.substringAfter("cview('").substringBefore("-")
-        val chapterId = onclick.substringAfter("-").substringBefore(".html")
-        url = "/online/new-$comicId.html?ch=$chapterId"
-        name = element.text()
-    }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            val onclick = element.attr("onclick")
+            val comicId = onclick.substringAfter("cview('").substringBefore("-")
+            val chapterId = onclick.substringAfter("-").substringBefore(".html")
+            url = "/online/new-$comicId.html?ch=$chapterId"
+            name = element.text()
+        }
 
     override fun chapterListParse(response: Response): List<SChapter> {
         return super.chapterListParse(response).reversed()
@@ -92,21 +96,23 @@ class Comicabc : ParsedHttpSource() {
 
     // Pages
 
-    override fun pageListParse(response: Response): List<Page> = mutableListOf<Page>().apply {
-        val document = response.asJsoup()
-        val url = response.request.url.toString()
-        val script = document.selectFirst("script:containsData(function request)")!!.data()
-            .replace("function ge(e){return document.getElementById(e);}", "")
-            .replace("ge\\(.*\\).src".toRegex(), "imageUrl")
-            .replace("spp()", "")
-        val quickJs = QuickJs.create()
-        val totalPage = quickJs.evaluate(nview + script.replace("document.location", "\"$url\"") + "ps") as Int
-        for (i in 1..totalPage) {
-            val imageUrl = quickJs.evaluate(nview + script.replace("document.location", "\"$url-$i\"") + "imageUrl") as String
-            add(Page(i - 1, "", "https:$imageUrl"))
+    override fun pageListParse(response: Response): List<Page> =
+        mutableListOf<Page>().apply {
+            val document = response.asJsoup()
+            val url = response.request.url.toString()
+            val script =
+                document.selectFirst("script:containsData(function request)")!!.data()
+                    .replace("function ge(e){return document.getElementById(e);}", "")
+                    .replace("ge\\(.*\\).src".toRegex(), "imageUrl")
+                    .replace("spp()", "")
+            val quickJs = QuickJs.create()
+            val totalPage = quickJs.evaluate(nview + script.replace("document.location", "\"$url\"") + "ps") as Int
+            for (i in 1..totalPage) {
+                val imageUrl = quickJs.evaluate(nview + script.replace("document.location", "\"$url-$i\"") + "imageUrl") as String
+                add(Page(i - 1, "", "https:$imageUrl"))
+            }
+            quickJs.close()
         }
-        quickJs.close()
-    }
 
     override fun pageListParse(document: Document): List<Page> = throw UnsupportedOperationException()
 

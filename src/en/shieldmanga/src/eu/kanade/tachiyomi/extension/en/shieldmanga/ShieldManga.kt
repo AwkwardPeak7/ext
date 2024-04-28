@@ -5,9 +5,10 @@ import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import okhttp3.OkHttpClient
 
 class ShieldManga : Madara("Shield Manga", "https://shieldmanga.io", "en") {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1)
+            .build()
 
     // The website does not flag the content.
     override val filterNonMangaItems = false

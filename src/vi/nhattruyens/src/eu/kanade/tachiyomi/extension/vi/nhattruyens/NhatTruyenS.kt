@@ -24,15 +24,17 @@ class NhatTruyenS : WPComics(
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select(searchMangaSelector())
-            .filter { element -> element.select("figure > div > a[rel='nofollow']").isNullOrEmpty() }
-            .map { element ->
-                searchMangaFromElement(element)
-            }
+        val mangas =
+            document.select(searchMangaSelector())
+                .filter { element -> element.select("figure > div > a[rel='nofollow']").isNullOrEmpty() }
+                .map { element ->
+                    searchMangaFromElement(element)
+                }
 
-        val hasNextPage = searchMangaNextPageSelector().let { selector ->
-            document.select(selector).first()
-        } != null
+        val hasNextPage =
+            searchMangaNextPageSelector().let { selector ->
+                document.select(selector).first()
+            } != null
 
         return MangasPage(mangas, hasNextPage)
     }

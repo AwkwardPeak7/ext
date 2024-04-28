@@ -31,16 +31,17 @@ abstract class SandraAndWoo(
     protected abstract val archive: String
 
     private val manga: SManga
-        get() = SManga.create().apply {
-            title = name
-            artist = illustrator
-            author = writer
-            description = synopsis
-            genre = genres
-            status = state
-            thumbnail_url = thumbnail
-            setUrlWithoutDomain(archive)
-        }
+        get() =
+            SManga.create().apply {
+                title = name
+                artist = illustrator
+                author = writer
+                description = synopsis
+                genre = genres
+                status = state
+                thumbnail_url = thumbnail
+                setUrlWithoutDomain(archive)
+            }
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         val mangasPage = MangasPage(listOf(manga), false)
@@ -78,12 +79,13 @@ abstract class SandraAndWoo(
             } else {
                 roundHalfwayUp(lastChapterNumber)
             }
-        val chapter = SChapter.create().apply {
-            url = path
-            name = title
-            chapter_number = chapterNumber
-            date_upload = date
-        }
+        val chapter =
+            SChapter.create().apply {
+                url = path
+                name = title
+                chapter_number = chapterNumber
+                date_upload = date
+            }
 
         return Pair(chapterNumber, chapter)
     }

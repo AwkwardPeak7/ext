@@ -21,16 +21,18 @@ class AComics : ParsedHttpSource() {
 
     override val lang = "ru"
 
-    override val client = network.client.newBuilder()
-        .addNetworkInterceptor { chain ->
-            val newReq = chain
-                .request()
-                .newBuilder()
-                .addHeader("Cookie", "ageRestrict=17;")
-                .build()
+    override val client =
+        network.client.newBuilder()
+            .addNetworkInterceptor { chain ->
+                val newReq =
+                    chain
+                        .request()
+                        .newBuilder()
+                        .addHeader("Cookie", "ageRestrict=17;")
+                        .build()
 
-            chain.proceed(newReq)
-        }.build()
+                chain.proceed(newReq)
+            }.build()
 
     override val supportsLatest = true
 
@@ -40,13 +42,14 @@ class AComics : ParsedHttpSource() {
 
     override fun popularMangaSelector() = "table.list-loadable > tbody > tr"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        thumbnail_url = element.selectFirst("a > img")?.absUrl("src")
-        element.selectFirst("div.title > a")!!.run {
-            setUrlWithoutDomain(attr("href") + "/about")
-            title = text()
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            thumbnail_url = element.selectFirst("a > img")?.absUrl("src")
+            element.selectFirst("div.title > a")!!.run {
+                setUrlWithoutDomain(attr("href") + "/about")
+                title = text()
+            }
         }
-    }
 
     override fun popularMangaNextPageSelector() = "span.button:not(:has(a)) + span.button > a"
 
@@ -66,39 +69,42 @@ class AComics : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = if (query.isNotEmpty()) {
-            "$baseUrl/search?keyword=$query"
-        } else {
-            val urlBuilder = "$baseUrl/comics?type=0&subscribe=0&issue_count=2&sort=subscr_count"
-                .toHttpUrl()
-                .newBuilder()
-                .addQueryParameter("skip", "${10 * (page - 1)}")
-            for (filter in if (filters.isEmpty()) getFilterList() else filters) {
-                when (filter) {
-                    is GenreList -> {
-                        val categories = filter.state.filter { it.state }.joinToString(",") { it.id }
-                        urlBuilder.addQueryParameter("categories", categories)
-                    }
-                    is Status -> {
-                        val status = when (filter.state) {
-                            1 -> "no"
-                            2 -> "yes"
-                            else -> "0"
+        val url =
+            if (query.isNotEmpty()) {
+                "$baseUrl/search?keyword=$query"
+            } else {
+                val urlBuilder =
+                    "$baseUrl/comics?type=0&subscribe=0&issue_count=2&sort=subscr_count"
+                        .toHttpUrl()
+                        .newBuilder()
+                        .addQueryParameter("skip", "${10 * (page - 1)}")
+                for (filter in if (filters.isEmpty()) getFilterList() else filters) {
+                    when (filter) {
+                        is GenreList -> {
+                            val categories = filter.state.filter { it.state }.joinToString(",") { it.id }
+                            urlBuilder.addQueryParameter("categories", categories)
                         }
-                        urlBuilder.addQueryParameter("updatable", status)
-                    }
-                    is RatingList -> {
-                        filter.state.forEach {
-                            if (it.state) {
-                                urlBuilder.addQueryParameter("ratings[]", it.id)
+                        is Status -> {
+                            val status =
+                                when (filter.state) {
+                                    1 -> "no"
+                                    2 -> "yes"
+                                    else -> "0"
+                                }
+                            urlBuilder.addQueryParameter("updatable", status)
+                        }
+                        is RatingList -> {
+                            filter.state.forEach {
+                                if (it.state) {
+                                    urlBuilder.addQueryParameter("ratings[]", it.id)
+                                }
                             }
                         }
+                        else -> {}
                     }
-                    else -> {}
                 }
+                urlBuilder.build().toString()
             }
-            urlBuilder.build().toString()
-        }
         return GET(url, headers)
     }
 
@@ -109,23 +115,25 @@ class AComics : ParsedHttpSource() {
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     // =========================== Manga Details ============================
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        val article = document.selectFirst("article.common-article")!!
-        with(article) {
-            title = selectFirst(".page-header-with-menu h1")!!.text()
-            genre = select("p.serial-about-badges a.category").joinToString { it.text() }
-            author = select("p.serial-about-authors a, p:contains(Автор оригинала)").joinToString { it.ownText() }
-            description = selectFirst("section.serial-about-text")?.text()
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            val article = document.selectFirst("article.common-article")!!
+            with(article) {
+                title = selectFirst(".page-header-with-menu h1")!!.text()
+                genre = select("p.serial-about-badges a.category").joinToString { it.text() }
+                author = select("p.serial-about-authors a, p:contains(Автор оригинала)").joinToString { it.ownText() }
+                description = selectFirst("section.serial-about-text")?.text()
+            }
         }
-    }
 
     // ============================== Chapters ==============================
     override fun chapterListParse(response: Response): List<SChapter> {
         val doc = response.asJsoup()
-        val count = doc
-            .selectFirst("p:has(b:contains(Количество выпусков:))")!!
-            .ownText()
-            .toInt()
+        val count =
+            doc
+                .selectFirst("p:has(b:contains(Количество выпусков:))")!!
+                .ownText()
+                .toInt()
 
         val comicPath = doc.location().substringBefore("/about")
 
@@ -188,11 +196,12 @@ class AComics : ParsedHttpSource() {
         ),
     )
 
-    override fun getFilterList() = FilterList(
-        Status(),
-        RatingList(),
-        GenreList(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Status(),
+            RatingList(),
+            GenreList(),
+        )
 }
 
 private const val DEFAULT_COMIC_QUERIES = "categories=&ratings[]=1&ratings[]=2&ratings[]=3&ratings[]=4&ratings[]=5&ratings[]=6&type=0&updatable=0&issue_count=2"

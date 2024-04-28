@@ -16,9 +16,10 @@ class Ngomik : MangaThemesia("Ngomik", "https://ngomik.net", "id", "/manga") {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = baseUrl.toHttpUrl().newBuilder()
-            .addPathSegment(mangaUrlDirectory.substring(1))
-            .addQueryParameter("page", page.toString())
+        val url =
+            baseUrl.toHttpUrl().newBuilder()
+                .addPathSegment(mangaUrlDirectory.substring(1))
+                .addQueryParameter("page", page.toString())
 
         if (query.isNullOrBlank().not()) {
             url.addQueryParameter("title", query)
@@ -61,9 +62,10 @@ class Ngomik : MangaThemesia("Ngomik", "https://ngomik.net", "id", "/manga") {
         return GET(url.build())
     }
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("User-Agent", userAgent)
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("User-Agent", userAgent)
+            .add("Referer", baseUrl)
 
     override val projectPageString = "/pj"
 

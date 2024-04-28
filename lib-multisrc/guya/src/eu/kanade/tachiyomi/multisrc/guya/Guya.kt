@@ -37,12 +37,13 @@ abstract class Guya(
 
     private val scanlatorCacheUrl by lazy { "$baseUrl/api/get_all_groups/" }
 
-    override fun headersBuilder() = Headers.Builder().add(
-        "User-Agent",
-        "(Android ${Build.VERSION.RELEASE}; " +
-            "${Build.MANUFACTURER} ${Build.MODEL}) " +
-            "Tachiyomi/${AppInfo.getVersionName()} ${Build.ID}",
-    )
+    override fun headersBuilder() =
+        Headers.Builder().add(
+            "User-Agent",
+            "(Android ${Build.VERSION.RELEASE}; " +
+                "${Build.MANUFACTURER} ${Build.MODEL}) " +
+                "Tachiyomi/${AppInfo.getVersionName()} ${Build.ID}",
+        )
 
     private val scanlators: ScanlatorStore = ScanlatorStore()
 
@@ -150,9 +151,10 @@ abstract class Guya(
 
         val json = JSONObject(res)
         val chapterNum = chapter.name.split(" - ")[0]
-        val pages = json.getJSONObject("chapters")
-            .getJSONObject(chapterNum)
-            .getJSONObject("groups")
+        val pages =
+            json.getJSONObject("chapters")
+                .getJSONObject(chapterNum)
+                .getJSONObject("groups")
         val metadata = JSONObject()
 
         metadata.put("chapter", chapterNum)
@@ -238,23 +240,24 @@ abstract class Guya(
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
         val scanlatorKeys = scanlators.keys().toTypedArray()
 
-        val preference = ListPreference(screen.context).apply {
-            key = "preferred_scanlator"
-            title = "Preferred scanlator"
-            entries = Array(scanlatorKeys.size) { scanlators.getValueFromKey(scanlatorKeys[it]) }
-            entryValues = scanlatorKeys
-            summary = "Current: %s\n\n" +
-                "This setting sets the scanlation group to prioritize " +
-                "on chapter refresh/update. It will get the next available if " +
-                "your preferred scanlator isn't an option (yet)."
+        val preference =
+            ListPreference(screen.context).apply {
+                key = "preferred_scanlator"
+                title = "Preferred scanlator"
+                entries = Array(scanlatorKeys.size) { scanlators.getValueFromKey(scanlatorKeys[it]) }
+                entryValues = scanlatorKeys
+                summary = "Current: %s\n\n" +
+                    "This setting sets the scanlation group to prioritize " +
+                    "on chapter refresh/update. It will get the next available if " +
+                    "your preferred scanlator isn't an option (yet)."
 
-            setDefaultValue("1")
+                setDefaultValue("1")
 
-            setOnPreferenceChangeListener { _, newValue ->
-                val selected = newValue.toString()
-                preferences.edit().putString(scanlatorPreference, selected).commit()
+                setOnPreferenceChangeListener { _, newValue ->
+                    val selected = newValue.toString()
+                    preferences.edit().putString(scanlatorPreference, selected).commit()
+                }
             }
-        }
 
         screen.addPreference(preference)
     }
@@ -344,21 +347,23 @@ abstract class Guya(
         manga.title = title.ifEmpty { json.getString("title") }
         manga.artist = json.optString("artist")
         manga.author = json.optString("author")
-        manga.description = json.optString("description").let {
-            if ('<' !in it) return@let it // no HTML
-            Jsoup.parseBodyFragment(it).body().run {
-                select(Evaluator.Tag("a")).remove()
-                text()
+        manga.description =
+            json.optString("description").let {
+                if ('<' !in it) return@let it // no HTML
+                Jsoup.parseBodyFragment(it).body().run {
+                    select(Evaluator.Tag("a")).remove()
+                    text()
+                }
             }
-        }
         manga.url = json.getString("slug")
 
         val cover = json.optString("cover")
-        manga.thumbnail_url = when {
-            cover.startsWith("http") -> cover
-            cover.isNotEmpty() -> "$baseUrl/$cover"
-            else -> null
-        }
+        manga.thumbnail_url =
+            when {
+                cover.startsWith("http") -> cover
+                cover.isNotEmpty() -> "$baseUrl/$cover"
+                else -> null
+            }
 
         return manga
     }
@@ -479,8 +484,9 @@ abstract class Guya(
         private fun update(blocking: Boolean = true) {
             if (scanlatorMap.isEmpty() && retryCount < totalRetries) {
                 try {
-                    val call = client.newCall(GET(scanlatorCacheUrl, headers))
-                        .asObservable()
+                    val call =
+                        client.newCall(GET(scanlatorCacheUrl, headers))
+                            .asObservable()
 
                     if (blocking) {
                         call.toBlocking()

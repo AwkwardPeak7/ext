@@ -9,9 +9,10 @@ class NewManhua : Madara(
     "https://newmanhua.com",
     "en",
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1)
+            .build()
 
     override val useNewChapterEndpoint = true
 

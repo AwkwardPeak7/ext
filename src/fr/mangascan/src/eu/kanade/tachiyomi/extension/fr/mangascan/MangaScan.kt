@@ -13,10 +13,11 @@ class MangaScan : MMRCMS(
     detailsTitleSelector = "div.col-sm-12 h1",
 ) {
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .set("Referer", "$baseUrl/")
-            .set("Accept", "image/avif,image/webp,*/*")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .set("Referer", "$baseUrl/")
+                .set("Accept", "image/avif,image/webp,*/*")
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }

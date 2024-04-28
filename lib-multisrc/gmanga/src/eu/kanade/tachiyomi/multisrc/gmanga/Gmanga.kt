@@ -36,8 +36,9 @@ abstract class Gmanga(
 
     override val client = network.cloudflareClient
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = searchMangaRequest(page, "", getFilterList())
 
@@ -48,11 +49,13 @@ abstract class Gmanga(
     }
 
     override fun latestUpdatesParse(response: Response): MangasPage {
-        val releases = response.parseAs<LatestChaptersDto>().releases
-            .filterNot { it.manga.isNovel }
+        val releases =
+            response.parseAs<LatestChaptersDto>().releases
+                .filterNot { it.manga.isNovel }
 
-        val entries = releases.map { it.manga.toSManga(::createThumbnail) }
-            .distinctBy { it.url }
+        val entries =
+            releases.map { it.manga.toSManga(::createThumbnail) }
+                .distinctBy { it.url }
 
         return MangasPage(
             entries,
@@ -75,67 +78,80 @@ abstract class Gmanga(
         val dateRangeFilter = filterList.findInstance<DateRangeFilter>()!!
         val categoryFilter = filterList.findInstance<CategoryFilter>() ?: CategoryFilter(emptyList())
 
-        val body = SearchPayload(
-            oneshot = OneShot(
-                value = oneShotFilter.state.first().run {
-                    when {
-                        isIncluded() -> true
-                        else -> false
-                    }
-                },
-            ),
-            title = query,
-            page = page,
-            mangaTypes = IncludeExclude(
-                include = mangaTypeFilter.state.filter { it.isIncluded() }.map { it.id },
-                exclude = mangaTypeFilter.state.filter { it.isExcluded() }.map { it.id },
-            ),
-            storyStatus = IncludeExclude(
-                include = storyStatusFilter.state.filter { it.isIncluded() }.map { it.id },
-                exclude = storyStatusFilter.state.filter { it.isExcluded() }.map { it.id },
-            ),
-            tlStatus = IncludeExclude(
-                include = translationStatusFilter.state.filter { it.isIncluded() }.map { it.id },
-                exclude = translationStatusFilter.state.filter { it.isExcluded() }.map { it.id },
-            ),
-            categories = IncludeExclude(
-                // always include null, maybe to avoid shifting index in the backend
-                include = listOf(null) + categoryFilter.state.filter { it.isIncluded() }.map { it.id },
-                exclude = categoryFilter.state.filter { it.isExcluded() }.map { it.id },
-            ),
-            chapters = MinMax(
-                min = chapterCountFilter.min.run {
-                    when {
-                        state == "" -> ""
-                        isValid() -> state
-                        else -> throw Exception("الحد الأدنى لعدد الفصول غير صالح")
-                    }
-                },
-                max = chapterCountFilter.max.run {
-                    when {
-                        state == "" -> ""
-                        isValid() -> state
-                        else -> throw Exception("الحد الأقصى لعدد الفصول غير صالح")
-                    }
-                },
-            ),
-            dates = StartEnd(
-                start = dateRangeFilter.start.run {
-                    when {
-                        state == "" -> ""
-                        isValid() -> state
-                        else -> throw Exception("تاريخ بداية غير صالح")
-                    }
-                },
-                end = dateRangeFilter.end.run {
-                    when {
-                        state == "" -> ""
-                        isValid() -> state
-                        else -> throw Exception("تاريخ نهاية غير صالح")
-                    }
-                },
-            ),
-        ).let(json::encodeToString).toRequestBody(MEDIA_TYPE)
+        val body =
+            SearchPayload(
+                oneshot =
+                    OneShot(
+                        value =
+                            oneShotFilter.state.first().run {
+                                when {
+                                    isIncluded() -> true
+                                    else -> false
+                                }
+                            },
+                    ),
+                title = query,
+                page = page,
+                mangaTypes =
+                    IncludeExclude(
+                        include = mangaTypeFilter.state.filter { it.isIncluded() }.map { it.id },
+                        exclude = mangaTypeFilter.state.filter { it.isExcluded() }.map { it.id },
+                    ),
+                storyStatus =
+                    IncludeExclude(
+                        include = storyStatusFilter.state.filter { it.isIncluded() }.map { it.id },
+                        exclude = storyStatusFilter.state.filter { it.isExcluded() }.map { it.id },
+                    ),
+                tlStatus =
+                    IncludeExclude(
+                        include = translationStatusFilter.state.filter { it.isIncluded() }.map { it.id },
+                        exclude = translationStatusFilter.state.filter { it.isExcluded() }.map { it.id },
+                    ),
+                categories =
+                    IncludeExclude(
+                        // always include null, maybe to avoid shifting index in the backend
+                        include = listOf(null) + categoryFilter.state.filter { it.isIncluded() }.map { it.id },
+                        exclude = categoryFilter.state.filter { it.isExcluded() }.map { it.id },
+                    ),
+                chapters =
+                    MinMax(
+                        min =
+                            chapterCountFilter.min.run {
+                                when {
+                                    state == "" -> ""
+                                    isValid() -> state
+                                    else -> throw Exception("الحد الأدنى لعدد الفصول غير صالح")
+                                }
+                            },
+                        max =
+                            chapterCountFilter.max.run {
+                                when {
+                                    state == "" -> ""
+                                    isValid() -> state
+                                    else -> throw Exception("الحد الأقصى لعدد الفصول غير صالح")
+                                }
+                            },
+                    ),
+                dates =
+                    StartEnd(
+                        start =
+                            dateRangeFilter.start.run {
+                                when {
+                                    state == "" -> ""
+                                    isValid() -> state
+                                    else -> throw Exception("تاريخ بداية غير صالح")
+                                }
+                            },
+                        end =
+                            dateRangeFilter.end.run {
+                                when {
+                                    state == "" -> ""
+                                    isValid() -> state
+                                    else -> throw Exception("تاريخ نهاية غير صالح")
+                                }
+                            },
+                    ),
+            ).let(json::encodeToString).toRequestBody(MEDIA_TYPE)
 
         return POST("$baseUrl/api/mangas/search", headers, body)
     }
@@ -156,15 +172,16 @@ abstract class Gmanga(
             filterAttempts++
 
             try {
-                categories = client.newCall(GET("$baseUrl/mangas/", headers))
-                    .await()
-                    .asJsoup()
-                    .select(".js-react-on-rails-component").html()
-                    .parseAs<FiltersDto>()
-                    .run {
-                        categories ?: categoryTypes!!.flatMap { it.categories!! }
-                    }
-                    .map { TagFilterData(it.id.toString(), it.name) }
+                categories =
+                    client.newCall(GET("$baseUrl/mangas/", headers))
+                        .await()
+                        .asJsoup()
+                        .select(".js-react-on-rails-component").html()
+                        .parseAs<FiltersDto>()
+                        .run {
+                            categories ?: categoryTypes!!.flatMap { it.categories!! }
+                        }
+                        .map { TagFilterData(it.id.toString(), it.name) }
 
                 filtersState = FilterState.Fetched
             } catch (e: Exception) {
@@ -174,51 +191,56 @@ abstract class Gmanga(
         }
     }
 
-    protected open fun getTypesFilter() = listOf(
-        TagFilterData("1", "يابانية", Filter.TriState.STATE_INCLUDE),
-        TagFilterData("2", "كورية", Filter.TriState.STATE_INCLUDE),
-        TagFilterData("3", "صينية", Filter.TriState.STATE_INCLUDE),
-        TagFilterData("4", "عربية", Filter.TriState.STATE_INCLUDE),
-        TagFilterData("5", "كوميك", Filter.TriState.STATE_INCLUDE),
-        TagFilterData("6", "هواة", Filter.TriState.STATE_INCLUDE),
-        TagFilterData("7", "إندونيسية", Filter.TriState.STATE_INCLUDE),
-        TagFilterData("8", "روسية", Filter.TriState.STATE_INCLUDE),
-    )
+    protected open fun getTypesFilter() =
+        listOf(
+            TagFilterData("1", "يابانية", Filter.TriState.STATE_INCLUDE),
+            TagFilterData("2", "كورية", Filter.TriState.STATE_INCLUDE),
+            TagFilterData("3", "صينية", Filter.TriState.STATE_INCLUDE),
+            TagFilterData("4", "عربية", Filter.TriState.STATE_INCLUDE),
+            TagFilterData("5", "كوميك", Filter.TriState.STATE_INCLUDE),
+            TagFilterData("6", "هواة", Filter.TriState.STATE_INCLUDE),
+            TagFilterData("7", "إندونيسية", Filter.TriState.STATE_INCLUDE),
+            TagFilterData("8", "روسية", Filter.TriState.STATE_INCLUDE),
+        )
 
-    protected open fun getStatusFilter() = listOf(
-        TagFilterData("2", "مستمرة"),
-        TagFilterData("3", "منتهية"),
-    )
+    protected open fun getStatusFilter() =
+        listOf(
+            TagFilterData("2", "مستمرة"),
+            TagFilterData("3", "منتهية"),
+        )
 
-    protected open fun getTranslationFilter() = listOf(
-        TagFilterData("0", "منتهية"),
-        TagFilterData("1", "مستمرة"),
-        TagFilterData("2", "متوقفة"),
-        TagFilterData("3", "غير مترجمة", Filter.TriState.STATE_EXCLUDE),
-    )
+    protected open fun getTranslationFilter() =
+        listOf(
+            TagFilterData("0", "منتهية"),
+            TagFilterData("1", "مستمرة"),
+            TagFilterData("2", "متوقفة"),
+            TagFilterData("3", "غير مترجمة", Filter.TriState.STATE_EXCLUDE),
+        )
 
     override fun getFilterList(): FilterList {
         CoroutineScope(Dispatchers.IO).launch { fetchFilters() }
 
-        val filters = mutableListOf<Filter<*>>(
-            MangaTypeFilter(getTypesFilter()),
-            OneShotFilter(),
-            StoryStatusFilter(getStatusFilter()),
-            TranslationStatusFilter(getTranslationFilter()),
-            ChapterCountFilter(),
-            DateRangeFilter(),
-        )
+        val filters =
+            mutableListOf<Filter<*>>(
+                MangaTypeFilter(getTypesFilter()),
+                OneShotFilter(),
+                StoryStatusFilter(getStatusFilter()),
+                TranslationStatusFilter(getTranslationFilter()),
+                ChapterCountFilter(),
+                DateRangeFilter(),
+            )
 
-        filters += if (filtersState == FilterState.Fetched) {
-            listOf(
-                CategoryFilter(categories),
-            )
-        } else {
-            listOf(
-                Filter.Separator(),
-                Filter.Header("اضغط على\"إعادة تعيين\"لمحاولة تحميل التصنيفات"),
-            )
-        }
+        filters +=
+            if (filtersState == FilterState.Fetched) {
+                listOf(
+                    CategoryFilter(categories),
+                )
+            } else {
+                listOf(
+                    Filter.Separator(),
+                    Filter.Header("اضغط على\"إعادة تعيين\"لمحاولة تحميل التصنيفات"),
+                )
+            }
 
         return FilterList(filters)
     }
@@ -247,25 +269,28 @@ abstract class Gmanga(
 
     final override fun chapterListParse(response: Response) = chaptersParse(response).sortChapters()
 
-    private fun List<SChapter>.sortChapters() = sortedWith(
-        compareBy(
-            { -it.chapter_number },
-            { -it.date_upload },
-        ),
-    )
+    private fun List<SChapter>.sortChapters() =
+        sortedWith(
+            compareBy(
+                { -it.chapter_number },
+                { -it.date_upload },
+            ),
+        )
 
     override fun pageListParse(response: Response): List<Page> {
-        val data = response.asJsoup()
-            .select(".js-react-on-rails-component").html()
-            .parseAs<ReaderDto>()
-            .readerDataAction.readerData.release
+        val data =
+            response.asJsoup()
+                .select(".js-react-on-rails-component").html()
+                .parseAs<ReaderDto>()
+                .readerDataAction.readerData.release
 
         val hasWebP = data.webpPages.isNotEmpty()
 
-        val (pages, directory) = when {
-            hasWebP -> data.webpPages to "hq_webp"
-            else -> data.pages to "hq"
-        }
+        val (pages, directory) =
+            when {
+                hasWebP -> data.webpPages to "hq_webp"
+                else -> data.pages to "hq"
+            }
 
         return pages.sortedWith(pageSort).mapIndexed { index, pageUri ->
             Page(

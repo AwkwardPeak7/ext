@@ -63,22 +63,24 @@ abstract class FoolSlide(
         return GET("$baseUrl$urlModifier/latest/$page/")
     }
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        element.select("a[title]").first()!!.let {
-            setUrlWithoutDomain(it.attr("href"))
-            title = it.text()
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            element.select("a[title]").first()!!.let {
+                setUrlWithoutDomain(it.attr("href"))
+                title = it.text()
+            }
+            element.select("img").first()?.let {
+                thumbnail_url = it.absUrl("src").replace("/thumb_", "/")
+            }
         }
-        element.select("img").first()?.let {
-            thumbnail_url = it.absUrl("src").replace("/thumb_", "/")
-        }
-    }
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        element.select("a[title]").first()!!.let {
-            setUrlWithoutDomain(it.attr("href"))
-            title = it.text()
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            element.select("a[title]").first()!!.let {
+                setUrlWithoutDomain(it.attr("href"))
+                title = it.text()
+            }
         }
-    }
 
     override fun popularMangaNextPageSelector() = "div.next"
 
@@ -122,14 +124,15 @@ abstract class FoolSlide(
                 .let { response -> pageListParse(response).first().imageUrl }
     }
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        document.select(mangaDetailsInfoSelector).firstOrNull()?.html()?.let { infoHtml ->
-            author = Regex("""(?i)(Author|Autore)</b>:\s?([^\n<]*)[\n<]""").find(infoHtml)?.groupValues?.get(2)
-            artist = Regex("""Artist</b>:\s?([^\n<]*)[\n<]""").find(infoHtml)?.groupValues?.get(1)
-            description = Regex("""(?i)(Synopsis|Description|Trama)</b>:\s?([^\n<]*)[\n<]""").find(infoHtml)?.groupValues?.get(2)
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            document.select(mangaDetailsInfoSelector).firstOrNull()?.html()?.let { infoHtml ->
+                author = Regex("""(?i)(Author|Autore)</b>:\s?([^\n<]*)[\n<]""").find(infoHtml)?.groupValues?.get(2)
+                artist = Regex("""Artist</b>:\s?([^\n<]*)[\n<]""").find(infoHtml)?.groupValues?.get(1)
+                description = Regex("""(?i)(Synopsis|Description|Trama)</b>:\s?([^\n<]*)[\n<]""").find(infoHtml)?.groupValues?.get(2)
+            }
+            thumbnail_url = getDetailsThumbnail(document)
         }
-        thumbnail_url = getDetailsThumbnail(document)
-    }
 
     protected open val allowAdult: Boolean
         get() = preferences.getBoolean("adult", true)
@@ -147,13 +150,14 @@ abstract class FoolSlide(
 
     protected open val chapterUrlSelector = "a[title]"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        val urlElement = element.select(chapterUrlSelector).first()!!
-        val dateElement = element.select(chapterDateSelector).first()!!
-        setUrlWithoutDomain(urlElement.attr("href"))
-        name = urlElement.text()
-        date_upload = parseChapterDate(dateElement.text().substringAfter(", ")) ?: 0
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            val urlElement = element.select(chapterUrlSelector).first()!!
+            val dateElement = element.select(chapterDateSelector).first()!!
+            setUrlWithoutDomain(urlElement.attr("href"))
+            name = urlElement.text()
+            date_upload = parseChapterDate(dateElement.text().substringAfter(", ")) ?: 0
+        }
 
     protected open fun parseChapterDate(date: String): Long? {
         val lcDate = date.lowercase(Locale.ROOT)
@@ -210,10 +214,11 @@ abstract class FoolSlide(
 
                 if (result != null) {
                     // Result parsed but no year, copy current year over
-                    result = Calendar.getInstance().apply {
-                        time = result!!
-                        set(Calendar.YEAR, Calendar.getInstance().get(Calendar.YEAR))
-                    }.time
+                    result =
+                        Calendar.getInstance().apply {
+                            time = result!!
+                            set(Calendar.YEAR, Calendar.getInstance().get(Calendar.YEAR))
+                        }.time
                 }
             } else {
                 break
@@ -238,16 +243,17 @@ abstract class FoolSlide(
         val now = Calendar.getInstance()
 
         // Map English unit to Java unit
-        val javaUnit = when (unit) {
-            "year", "yr" -> Calendar.YEAR
-            "month" -> Calendar.MONTH
-            "week", "wk" -> Calendar.WEEK_OF_MONTH
-            "day" -> Calendar.DAY_OF_MONTH
-            "hour", "hr" -> Calendar.HOUR
-            "minute", "min" -> Calendar.MINUTE
-            "second", "sec" -> Calendar.SECOND
-            else -> return null
-        }
+        val javaUnit =
+            when (unit) {
+                "year", "yr" -> Calendar.YEAR
+                "month" -> Calendar.MONTH
+                "week", "wk" -> Calendar.WEEK_OF_MONTH
+                "day" -> Calendar.DAY_OF_MONTH
+                "hour", "hr" -> Calendar.HOUR
+                "minute", "min" -> Calendar.MINUTE
+                "second", "sec" -> Calendar.SECOND
+                else -> return null
+            }
 
         now.add(javaUnit, -number)
 
@@ -270,9 +276,10 @@ abstract class FoolSlide(
         val pages = json.parseToJsonElement(jsonStr).jsonArray
         return pages.mapIndexed { i, jsonEl ->
             // Create dummy element to resolve relative URL
-            val absUrl = document.createElement("a")
-                .attr("href", jsonEl.jsonObject["url"]!!.jsonPrimitive.content)
-                .absUrl("href")
+            val absUrl =
+                document.createElement("a")
+                    .attr("href", jsonEl.jsonObject["url"]!!.jsonPrimitive.content)
+                    .absUrl("href")
             Page(i, "", absUrl)
         }
     }
@@ -298,11 +305,13 @@ abstract class FoolSlide(
     companion object {
         private val ORDINAL_SUFFIXES = listOf("st", "nd", "rd", "th")
         private val DATE_FORMAT_1 = SimpleDateFormat("yyyy.MM.dd", Locale.US)
-        private val DATE_FORMATS_WITH_ORDINAL_SUFFIXES = ORDINAL_SUFFIXES.map {
-            SimpleDateFormat("dd'$it' MMMM, yyyy", Locale.US)
-        }
-        private val DATE_FORMATS_WITH_ORDINAL_SUFFIXES_NO_YEAR = ORDINAL_SUFFIXES.map {
-            SimpleDateFormat("dd'$it' MMMM", Locale.US)
-        }
+        private val DATE_FORMATS_WITH_ORDINAL_SUFFIXES =
+            ORDINAL_SUFFIXES.map {
+                SimpleDateFormat("dd'$it' MMMM, yyyy", Locale.US)
+            }
+        private val DATE_FORMATS_WITH_ORDINAL_SUFFIXES_NO_YEAR =
+            ORDINAL_SUFFIXES.map {
+                SimpleDateFormat("dd'$it' MMMM", Locale.US)
+            }
     }
 }

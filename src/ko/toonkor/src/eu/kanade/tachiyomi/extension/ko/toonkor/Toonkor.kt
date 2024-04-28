@@ -88,11 +88,12 @@ class Toonkor : ConfigurableSource, ParsedHttpSource() {
         val sort = filterList.findUriPartFilter<SortFilter>()
 
         // Hentai doesn't have a "completed" sort, ignore it if it's selected (equivalent to returning popular)
-        val requestPath = when {
-            query.isNotBlank() -> "/bbs/search.php?sfl=wr_subject%7C%7Cwr_content&stx=$query"
-            type.isSelection("Hentai") && sort.isSelection("Completed") -> type.toUriPart()
-            else -> type.toUriPart() + sort.toUriPart()
-        }
+        val requestPath =
+            when {
+                query.isNotBlank() -> "/bbs/search.php?sfl=wr_subject%7C%7Cwr_content&stx=$query"
+                type.isSelection("Hentai") && sort.isSelection("Completed") -> type.toUriPart()
+                else -> type.toUriPart() + sort.toUriPart()
+            }
 
         return GET(baseUrl + requestPath, headers)
     }
@@ -141,8 +142,9 @@ class Toonkor : ConfigurableSource, ParsedHttpSource() {
     private val pageListRegex = Regex("""src="([^"]*)"""")
 
     override fun pageListParse(document: Document): List<Page> {
-        val encoded = document.select("script:containsData(toon_img)").firstOrNull()?.data()
-            ?.substringAfter("'")?.substringBefore("'") ?: throw Exception("toon_img script not found")
+        val encoded =
+            document.select("script:containsData(toon_img)").firstOrNull()?.data()
+                ?.substringAfter("'")?.substringBefore("'") ?: throw Exception("toon_img script not found")
 
         val decoded = Base64.decode(encoded, Base64.DEFAULT).toString(Charset.defaultCharset())
 
@@ -168,17 +170,19 @@ class Toonkor : ConfigurableSource, ParsedHttpSource() {
 
     private class SortFilter(vals: Array<Pair<String, String>>) : UriPartFilter("Sort", vals)
 
-    private fun getTypeList() = arrayOf(
-        Pair("Webtoons", webtoonsRequestPath),
-        Pair("Manga", "/%EB%8B%A8%ED%96%89%EB%B3%B8"),
-        Pair("Hentai", "/%EB%A7%9D%EA%B0%80"),
-    )
+    private fun getTypeList() =
+        arrayOf(
+            Pair("Webtoons", webtoonsRequestPath),
+            Pair("Manga", "/%EB%8B%A8%ED%96%89%EB%B3%B8"),
+            Pair("Hentai", "/%EB%A7%9D%EA%B0%80"),
+        )
 
-    private fun getSortList() = arrayOf(
-        Pair("Popular", ""),
-        Pair("Latest", latestRequestModifier),
-        Pair("Completed", "/%EC%99%84%EA%B2%B0"),
-    )
+    private fun getSortList() =
+        arrayOf(
+            Pair("Popular", ""),
+            Pair("Latest", latestRequestModifier),
+            Pair("Completed", "/%EC%99%84%EA%B2%B0"),
+        )
 
     open class UriPartFilter(displayName: String, private val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
@@ -196,24 +200,25 @@ class Toonkor : ConfigurableSource, ParsedHttpSource() {
     }
 
     override fun setupPreferenceScreen(screen: androidx.preference.PreferenceScreen) {
-        val baseUrlPref = androidx.preference.EditTextPreference(screen.context).apply {
-            key = BASE_URL_PREF_TITLE
-            title = BASE_URL_PREF_TITLE
-            summary = BASE_URL_PREF_SUMMARY
-            this.setDefaultValue(defaultBaseUrl)
-            dialogTitle = BASE_URL_PREF_TITLE
-            dialogMessage = "Default: $defaultBaseUrl"
+        val baseUrlPref =
+            androidx.preference.EditTextPreference(screen.context).apply {
+                key = BASE_URL_PREF_TITLE
+                title = BASE_URL_PREF_TITLE
+                summary = BASE_URL_PREF_SUMMARY
+                this.setDefaultValue(defaultBaseUrl)
+                dialogTitle = BASE_URL_PREF_TITLE
+                dialogMessage = "Default: $defaultBaseUrl"
 
-            setOnPreferenceChangeListener { _, newValue ->
-                try {
-                    val res = preferences.edit().putString(BASE_URL_PREF, newValue as String).commit()
-                    res
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    false
+                setOnPreferenceChangeListener { _, newValue ->
+                    try {
+                        val res = preferences.edit().putString(BASE_URL_PREF, newValue as String).commit()
+                        res
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
                 }
             }
-        }
 
         screen.addPreference(baseUrlPref)
     }

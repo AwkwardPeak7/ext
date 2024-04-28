@@ -13,9 +13,10 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 class PojokManga : Madara("Pojok Manga", "https://pojokmanga.net", "id", SimpleDateFormat("MMM dd, yyyy", Locale.US)) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(20, 4, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(20, 4, TimeUnit.SECONDS)
+            .build()
 
     override val useNewChapterEndpoint = true
 
@@ -99,12 +100,13 @@ class PojokManga : Madara("Pojok Manga", "https://pojokmanga.net", "id", SimpleD
     override fun getFilterList(): FilterList {
         val filters = super.getFilterList().toMutableList()
 
-        filters += listOf(
-            Filter.Separator(),
-            Filter.Header("NOTE: cant be used with other filter!"),
-            Filter.Header("$name Project List page"),
-            ProjectFilter(),
-        )
+        filters +=
+            listOf(
+                Filter.Separator(),
+                Filter.Header("NOTE: cant be used with other filter!"),
+                Filter.Header("$name Project List page"),
+                ProjectFilter(),
+            )
 
         return FilterList(filters)
     }

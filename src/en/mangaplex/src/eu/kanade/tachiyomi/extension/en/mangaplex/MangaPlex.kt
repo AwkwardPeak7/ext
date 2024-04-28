@@ -34,9 +34,10 @@ class MangaPlex : ParsedHttpSource() {
 
         manga.thumbnail_url = element.select(".post-thumb img").attr("src")
         // using search for manga page and chapter list
-        manga.url = element.select(
-            "h3.post-title a",
-        ).attr("href").substringBeforeLast("-chapter").replace("$baseUrl/", "/search/").replace("-", "+")
+        manga.url =
+            element.select(
+                "h3.post-title a",
+            ).attr("href").substringBeforeLast("-chapter").replace("$baseUrl/", "/search/").replace("-", "+")
         val mangaTitleSelector = element.select(".post-details p.post-excerpt").text().substringAfter("Read ").substringBefore(" Chapter")
         manga.title =
             if (mangaTitleSelector.contains(
@@ -91,16 +92,18 @@ class MangaPlex : ParsedHttpSource() {
 
     override fun chapterListParse(response: Response): List<SChapter> {
         var document = response.asJsoup()
-        val chapters = document.select(chapterListSelector())
-            .map(::chapterFromElement)
-            .toMutableList()
+        val chapters =
+            document.select(chapterListSelector())
+                .map(::chapterFromElement)
+                .toMutableList()
         var nextPage = 2
 
         while (document.select(paginationNextPageSelector).isNotEmpty()) {
             val currentPage = document.select("meta[property=\"og:url\"]").attr("content")
             document = client.newCall(chapterListRequest(currentPage, nextPage)).execute().asJsoup()
-            chapters += document.select(chapterListSelector())
-                .map(::chapterFromElement)
+            chapters +=
+                document.select(chapterListSelector())
+                    .map(::chapterFromElement)
             nextPage++
         }
 

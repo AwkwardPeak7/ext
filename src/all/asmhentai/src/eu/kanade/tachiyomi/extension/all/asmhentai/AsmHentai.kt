@@ -23,8 +23,9 @@ class AsmHentai(
 
     override fun Element.mangaThumbnail() = selectFirst(".image img")?.imgAttr()
 
-    override fun Element.mangaLang() = select("a:has(.flag)").attr("href")
-        .removeSuffix("/").substringAfterLast("/")
+    override fun Element.mangaLang() =
+        select("a:has(.flag)").attr("href")
+            .removeSuffix("/").substringAfterLast("/")
 
     override fun popularMangaSelector() = ".preview_item"
 
@@ -94,9 +95,10 @@ class AsmHentai(
             }
     }
 
-    override fun getFilterList() = FilterList(
-        listOf(
-            Filter.Header("HINT: Separate search term with comma (,)"),
-        ) + super.getFilterList().list,
-    )
+    override fun getFilterList() =
+        FilterList(
+            listOf(
+                Filter.Header("HINT: Separate search term with comma (,)"),
+            ) + super.getFilterList().list,
+        )
 }

@@ -13,20 +13,23 @@ class MangasChan : MangaThemesia(
     "pt-BR",
     dateFormat = SimpleDateFormat("MMMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val headers = request.headers.newBuilder()
-                .removeAll("X-Requested-With")
-                .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                val headers =
+                    request.headers.newBuilder()
+                        .removeAll("X-Requested-With")
+                        .build()
 
-            chain.proceed(request.newBuilder().headers(headers).build())
-        }
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+                chain.proceed(request.newBuilder().headers(headers).build())
+            }
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("X-Requested-With", randomString((10..20).random()))
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("X-Requested-With", randomString((10..20).random()))
 
     override val altNamePrefix = "Nomes alternativos: "
 

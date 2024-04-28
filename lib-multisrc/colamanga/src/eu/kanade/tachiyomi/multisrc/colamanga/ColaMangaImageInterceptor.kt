@@ -21,10 +21,11 @@ class ColaMangaImageInterceptor : Interceptor {
         }
 
         val key = request.url.fragment!!.substringAfter(KEY_PREFIX).toByteArray()
-        val output = Cipher.getInstance("AES/CBC/PKCS7Padding").let {
-            it.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
-            it.doFinal(response.body.bytes())
-        }
+        val output =
+            Cipher.getInstance("AES/CBC/PKCS7Padding").let {
+                it.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
+                it.doFinal(response.body.bytes())
+            }
 
         return response.newBuilder()
             .body(output.toResponseBody(mediaType))

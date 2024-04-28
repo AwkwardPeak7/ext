@@ -10,14 +10,15 @@ internal class GenreFilter(
     companion object {
         internal val NOTE = Header("NOTE: can't be used with text search!")
 
-        private val genres = arrayOf(
-            "All",
-            "BL",
-            "Action",
-            "Comedy",
-            "Romance",
-            "Thriller",
-            "Drama",
-        )
+        private val genres =
+            arrayOf(
+                "All",
+                "BL",
+                "Action",
+                "Comedy",
+                "Romance",
+                "Thriller",
+                "Drama",
+            )
     }
 }

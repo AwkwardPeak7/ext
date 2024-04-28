@@ -12,11 +12,12 @@ data class ApiSearchComic(
     val ComicTitle: String,
     val CoverImage: String,
 ) {
-    fun toSManga(cdnUrl: String) = SManga.create().apply {
-        title = ComicTitle
-        thumbnail_url = "$cdnUrl$CoverImage#thumbnail"
-        url = "/comics/$id-${ComicTitle.titleToSlug()}"
-    }
+    fun toSManga(cdnUrl: String) =
+        SManga.create().apply {
+            title = ComicTitle
+            thumbnail_url = "$cdnUrl$CoverImage#thumbnail"
+            url = "/comics/$id-${ComicTitle.titleToSlug()}"
+        }
 }
 
 @Serializable
@@ -52,15 +53,16 @@ data class ApiChapter(
     val ChapterName: String,
     val chapterDate: String,
 ) {
-    fun toSChapter(mangaUrl: String) = SChapter.create().apply {
-        url = "$mangaUrl/$chapterID-chapter-$chapterNumber"
-        chapter_number = chapterNumber.toFloat()
-        name = "Chapter $chapterNumber"
-        if (ChapterName.isNotEmpty()) {
-            name += ": $ChapterName"
+    fun toSChapter(mangaUrl: String) =
+        SChapter.create().apply {
+            url = "$mangaUrl/$chapterID-chapter-$chapterNumber"
+            chapter_number = chapterNumber.toFloat()
+            name = "Chapter $chapterNumber"
+            if (ChapterName.isNotEmpty()) {
+                name += ": $ChapterName"
+            }
+            date_upload = chapterDate.parseDate()
         }
-        date_upload = chapterDate.parseDate()
-    }
 }
 
 @Serializable
@@ -79,10 +81,11 @@ data class ApiChapterPages(
     data class ApiPages(val pages: String)
 }
 
-private fun String.titleToSlug() = this.trim()
-    .lowercase()
-    .replace(DisasterScans.titleSpecialCharactersRegex, "-")
-    .replace(DisasterScans.trailingHyphenRegex, "")
+private fun String.titleToSlug() =
+    this.trim()
+        .lowercase()
+        .replace(DisasterScans.titleSpecialCharactersRegex, "-")
+        .replace(DisasterScans.trailingHyphenRegex, "")
 
 private fun String.parseDate(): Long {
     return runCatching {

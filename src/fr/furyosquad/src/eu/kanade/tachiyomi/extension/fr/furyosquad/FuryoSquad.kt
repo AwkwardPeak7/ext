@@ -30,11 +30,12 @@ class FuryoSquad : ParsedHttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .rateLimit(1)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .rateLimit(1)
+            .build()
 
     // Popular
 
@@ -201,36 +202,42 @@ class FuryoSquad : ParsedHttpSource() {
 
         return if (value != null) {
             when (date.split(" ")[4]) {
-                "minute", "minutes" -> Calendar.getInstance().apply {
-                    add(Calendar.MINUTE, value * -1)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
-                "heure", "heures" -> Calendar.getInstance().apply {
-                    add(Calendar.HOUR_OF_DAY, value * -1)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
-                "jour", "jours" -> Calendar.getInstance().apply {
-                    add(Calendar.DATE, value * -1)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
-                "semaine", "semaines" -> Calendar.getInstance().apply {
-                    add(Calendar.DATE, value * 7 * -1)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
-                "mois" -> Calendar.getInstance().apply {
-                    add(Calendar.MONTH, value * -1)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
-                "an", "ans", "année", "années" -> Calendar.getInstance().apply {
-                    add(Calendar.YEAR, value * -1)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
+                "minute", "minutes" ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.MINUTE, value * -1)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
+                "heure", "heures" ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.HOUR_OF_DAY, value * -1)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
+                "jour", "jours" ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.DATE, value * -1)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
+                "semaine", "semaines" ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.DATE, value * 7 * -1)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
+                "mois" ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.MONTH, value * -1)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
+                "an", "ans", "année", "années" ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.YEAR, value * -1)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }.timeInMillis
                 else -> {
                     return 0L
                 }

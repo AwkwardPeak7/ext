@@ -61,29 +61,33 @@ class MangaOnline : ParsedHttpSource(), ConfigurableSource {
         addRandomUAPreferenceToScreen(screen)
     }
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        name = element.selectFirst("a")!!.ownText()
-        date_upload = element.selectFirst("a span.date")?.ownText()!!.toDate()
-        setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            name = element.selectFirst("a")!!.ownText()
+            date_upload = element.selectFirst("a span.date")?.ownText()!!.toDate()
+            setUrlWithoutDomain(element.selectFirst("a")!!.absUrl("href"))
+        }
 
     override fun chapterListSelector() = "div.episodiotitle"
 
     override fun imageUrlParse(document: Document) = ""
 
-    override fun latestUpdatesFromElement(element: Element) = SManga.create().apply {
-        title = element.selectFirst("h3 a")!!.ownText()
-            .replace("Capítulo\\s+([\\d.]+)".toRegex(), "")
-            .trim()
+    override fun latestUpdatesFromElement(element: Element) =
+        SManga.create().apply {
+            title =
+                element.selectFirst("h3 a")!!.ownText()
+                    .replace("Capítulo\\s+([\\d.]+)".toRegex(), "")
+                    .trim()
 
-        thumbnail_url = element.selectFirst("img")?.absUrl("src")
+            thumbnail_url = element.selectFirst("img")?.absUrl("src")
 
-        val mangaUrl = element.selectFirst("h3 a")!!.absUrl("href")
-            .replace("-capitulo-[\\d-]+".toRegex(), "")
-            .replace("capitulo", "manga")
+            val mangaUrl =
+                element.selectFirst("h3 a")!!.absUrl("href")
+                    .replace("-capitulo-[\\d-]+".toRegex(), "")
+                    .replace("capitulo", "manga")
 
-        setUrlWithoutDomain(mangaUrl)
-    }
+            setUrlWithoutDomain(mangaUrl)
+        }
 
     override fun latestUpdatesNextPageSelector() = null
 
@@ -100,16 +104,18 @@ class MangaOnline : ParsedHttpSource(), ConfigurableSource {
 
     override fun latestUpdatesSelector() = popularMangaSelector()
 
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        val containerInfo = document.selectFirst("div.content > div.sheader")
-        title = containerInfo!!.selectFirst("h1")!!.ownText()
-        thumbnail_url = containerInfo.selectFirst("img")?.absUrl("src")
-        description = containerInfo.selectFirst("p:last-child")?.ownText()
-        genre = containerInfo.select("div.sgeneros a")
-            .map { it.ownText() }
-            .filter { it.length > 1 }
-            .joinToString()
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            val containerInfo = document.selectFirst("div.content > div.sheader")
+            title = containerInfo!!.selectFirst("h1")!!.ownText()
+            thumbnail_url = containerInfo.selectFirst("img")?.absUrl("src")
+            description = containerInfo.selectFirst("p:last-child")?.ownText()
+            genre =
+                containerInfo.select("div.sgeneros a")
+                    .map { it.ownText() }
+                    .filter { it.length > 1 }
+                    .joinToString()
+        }
 
     override fun pageListParse(document: Document): List<Page> {
         return document.select("img[loading=lazy]").mapIndexed { i, it ->
@@ -117,11 +123,12 @@ class MangaOnline : ParsedHttpSource(), ConfigurableSource {
         }
     }
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        title = element.selectFirst("h3 a")!!.ownText()
-        thumbnail_url = element.selectFirst("img")?.absUrl("src")
-        setUrlWithoutDomain(element.selectFirst("h3 a")!!.absUrl("href"))
-    }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            title = element.selectFirst("h3 a")!!.ownText()
+            thumbnail_url = element.selectFirst("img")?.absUrl("src")
+            setUrlWithoutDomain(element.selectFirst("h3 a")!!.absUrl("href"))
+        }
 
     override fun popularMangaNextPageSelector() = null
 
@@ -139,16 +146,18 @@ class MangaOnline : ParsedHttpSource(), ConfigurableSource {
         filters: FilterList,
     ): Request {
         if (query.isNotBlank()) {
-            val url = "$baseUrl/search".toHttpUrl().newBuilder()
-                .addPathSegment(query)
-                .build()
+            val url =
+                "$baseUrl/search".toHttpUrl().newBuilder()
+                    .addPathSegment(query)
+                    .build()
             return GET(url, headers)
         }
 
-        val path = when (val genre = (filters.first() as GenreList).selected) {
-            Genre.GLOBAL -> "$baseUrl/${genre.id}"
-            else -> "$baseUrl/genero/${genre.id}"
-        }
+        val path =
+            when (val genre = (filters.first() as GenreList).selected) {
+                Genre.GLOBAL -> "$baseUrl/${genre.id}"
+                else -> "$baseUrl/genero/${genre.id}"
+            }
 
         return GET("$path/page/$page", headers)
     }
@@ -172,28 +181,32 @@ class MangaOnline : ParsedHttpSource(), ConfigurableSource {
 
     private fun fetchMangaGenre() {
         try {
-            val request = client
-                .newCall(GET("$baseUrl/generos/", headers))
-                .execute()
+            val request =
+                client
+                    .newCall(GET("$baseUrl/generos/", headers))
+                    .execute()
 
             val document = request.asJsoup()
 
-            genresSet = document.select(".wp-content a").map { element ->
-                val id = element.absUrl("href")
-                    .split("/")
-                    .last { it.isNotEmpty() }
-                Genre(element.ownText(), id)
-            }.toSet()
+            genresSet =
+                document.select(".wp-content a").map { element ->
+                    val id =
+                        element.absUrl("href")
+                            .split("/")
+                            .last { it.isNotEmpty() }
+                    Genre(element.ownText(), id)
+                }.toSet()
         } catch (e: Exception) {
             Log.e("MangaOnline", e.stackTraceToString())
         }
     }
 
-    private fun String.toDate() = try {
-        dateFormat.parse(trim())!!.time
-    } catch (_: Exception) {
-        0L
-    }
+    private fun String.toDate() =
+        try {
+            dateFormat.parse(trim())!!.time
+        } catch (_: Exception) {
+            0L
+        }
 
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
 }

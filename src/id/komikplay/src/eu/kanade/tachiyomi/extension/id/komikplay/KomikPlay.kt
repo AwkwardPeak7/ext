@@ -51,11 +51,12 @@ class KomikPlay : ZManga("KomikPlay", "https://komikplay.com", "id", SimpleDateF
         return GET(url.build(), headers)
     }
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("NOTE: cant be used with other filter!"),
-        Filter.Header("$name Project List page"),
-        ProjectFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("NOTE: cant be used with other filter!"),
+            Filter.Header("$name Project List page"),
+            ProjectFilter(),
+        )
 
     override val hasProjectPage = true
 }

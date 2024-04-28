@@ -42,11 +42,12 @@ class LittleGarden : ParsedHttpSource() {
 
     override fun popularMangaNextPageSelector(): String? = null
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.select(".item-title .name").text().trim()
-        setUrlWithoutDomain(element.select("a").attr("href"))
-        thumbnail_url = element.select(".thumb").attr("style").substringAfter("(").substringBefore(")")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.select(".item-title .name").text().trim()
+            setUrlWithoutDomain(element.select("a").attr("href"))
+            thumbnail_url = element.select(".thumb").attr("style").substringAfter("(").substringBefore(")")
+        }
 
     // Latest
     override fun latestUpdatesRequest(page: Int) = GET(baseUrl)
@@ -55,17 +56,19 @@ class LittleGarden : ParsedHttpSource() {
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst("h3")!!.text().trim()
-        setUrlWithoutDomain(element.select("a").attr("href").substringBeforeLast("/"))
-        thumbnail_url = element.select(".img.image-item").attr("style").substringAfter("(").substringBefore(")")
-    }
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.selectFirst("h3")!!.text().trim()
+            setUrlWithoutDomain(element.select("a").attr("href").substringBeforeLast("/"))
+            thumbnail_url = element.select(".img.image-item").attr("style").substringAfter("(").substringBefore(")")
+        }
 
     override fun latestUpdatesParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val mangas = document.select(latestUpdatesSelector()).map { element ->
-            latestUpdatesFromElement(element)
-        }.distinctBy { it.title }
+        val mangas =
+            document.select(latestUpdatesSelector()).map { element ->
+                latestUpdatesFromElement(element)
+            }.distinctBy { it.title }
         return MangasPage(mangas, false)
     }
 
@@ -91,9 +94,10 @@ class LittleGarden : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val headers = headersBuilder()
-            .add("query", query)
-            .build()
+        val headers =
+            headersBuilder()
+                .add("query", query)
+                .build()
         return GET(baseUrl, headers)
     }
 
@@ -110,66 +114,70 @@ class LittleGarden : ParsedHttpSource() {
         val slug = slugRegex.find(document.toString())?.groupValues?.get(1)
 
         fun buildQuery(queryAction: () -> String) = queryAction().replace("%", "$")
-        val query = buildQuery {
-            """
-            query chapters(
-            	%slug: String,
-            	%limit: Float,
-            	%skip: Float,
-            	%order: Float!,
-            	%isAdmin: Boolean!
-            ) {
-            	chapters(
-            		limit: %limit,
-            		skip: %skip,
-            		where: {
-            			deleted: false,
-            			published: %isAdmin,
-            			manga: {
-                            slug: %slug,
-                            published: %isAdmin,
-                            deleted: false
+        val query =
+            buildQuery {
+                """
+                query chapters(
+                	%slug: String,
+                	%limit: Float,
+                	%skip: Float,
+                	%order: Float!,
+                	%isAdmin: Boolean!
+                ) {
+                	chapters(
+                		limit: %limit,
+                		skip: %skip,
+                		where: {
+                			deleted: false,
+                			published: %isAdmin,
+                			manga: {
+                                slug: %slug,
+                                published: %isAdmin,
+                                deleted: false
+                            }
+                		},
+                        order: [{ field: "number", order: %order }]
+                	) {
+                		published
+                        likes
+                        id
+                        number
+                        thumb
+                        manga {
+                          id
+                          name
+                          slug
+                          __typename
                         }
-            		},
-                    order: [{ field: "number", order: %order }]
-            	) {
-            		published
-                    likes
-                    id
-                    number
-                    thumb
-                    manga {
-                      id
-                      name
-                      slug
-                      __typename
-                    }
-                    __typename
-            	}
+                        __typename
+                	}
+                }
+                """.trimIndent()
             }
-            """.trimIndent()
-        }
-        val payload = buildJsonObject {
-            put("operationName", "chapters")
-            put("query", query)
-            putJsonObject("variables") {
-                put("slug", slug)
-                put("order", -1)
-                put("limit", 2000)
-                put("skip", 0)
-                put("isAdmin", true)
+        val payload =
+            buildJsonObject {
+                put("operationName", "chapters")
+                put("query", query)
+                putJsonObject("variables") {
+                    put("slug", slug)
+                    put("order", -1)
+                    put("limit", 2000)
+                    put("skip", 0)
+                    put("isAdmin", true)
+                }
             }
-        }
         val body = payload.toString().toRequestBody(JSON_MEDIA_TYPE)
-        val newHeaders = headersBuilder()
-            .add("Content-Length", body.contentLength().toString())
-            .add("Content-Type", body.contentType().toString())
-            .build()
-        val request = Request.Builder()
-            .method("POST", body)
-            .url("https://littlexgarden.com/graphql") // Request directly their data rather than scraping a page as chapters are dynamically loaded
-            .headers(newHeaders)
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Content-Length", body.contentLength().toString())
+                .add("Content-Type", body.contentType().toString())
+                .build()
+        val request =
+            Request.Builder()
+                .method("POST", body)
+                .url("https://littlexgarden.com/graphql") // Request directly their data rather than scraping a page as chapters are dynamically loaded
+                .headers(newHeaders)
+                .build()
         val resp = client.newCall(request).execute()
         val chapters = Json.parseToJsonElement(resp.body.string()).jsonObject["data"]?.jsonObject?.get("chapters")?.jsonArray
         if (chapters != null) {

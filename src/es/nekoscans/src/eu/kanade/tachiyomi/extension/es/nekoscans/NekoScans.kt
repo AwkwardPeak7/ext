@@ -18,9 +18,10 @@ class NekoScans : MangaThemesia(
     mangaUrlDirectory = "/proyecto",
     dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(2, 1, TimeUnit.SECONDS)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2, 1, TimeUnit.SECONDS)
+            .build()
 
     override val seriesStatusSelector = ".tsinfo .imptdt:contains(estado) i"
 
@@ -28,9 +29,10 @@ class NekoScans : MangaThemesia(
         countViews(document)
 
         val chapterUrl = document.location()
-        val htmlPages = document.select(pageSelector)
-            .filterNot { it.imgAttr().isEmpty() }
-            .mapIndexed { i, img -> Page(i, chapterUrl, img.imgAttr()) }
+        val htmlPages =
+            document.select(pageSelector)
+                .filterNot { it.imgAttr().isEmpty() }
+                .mapIndexed { i, img -> Page(i, chapterUrl, img.imgAttr()) }
 
         // Some sites also loads pages via javascript
         if (htmlPages.isNotEmpty()) {
@@ -45,14 +47,16 @@ class NekoScans : MangaThemesia(
         }
 
         val imageListJson = JSON_IMAGE_LIST_REGEX.find(docString)?.destructured?.toList()?.get(0).orEmpty()
-        val imageList = try {
-            json.parseToJsonElement(imageListJson).jsonArray
-        } catch (_: IllegalArgumentException) {
-            emptyList()
-        }
-        val scriptPages = imageList.mapIndexed { i, jsonEl ->
-            Page(i, chapterUrl, jsonEl.jsonPrimitive.content)
-        }
+        val imageList =
+            try {
+                json.parseToJsonElement(imageListJson).jsonArray
+            } catch (_: IllegalArgumentException) {
+                emptyList()
+            }
+        val scriptPages =
+            imageList.mapIndexed { i, jsonEl ->
+                Page(i, chapterUrl, jsonEl.jsonPrimitive.content)
+            }
 
         return scriptPages
     }

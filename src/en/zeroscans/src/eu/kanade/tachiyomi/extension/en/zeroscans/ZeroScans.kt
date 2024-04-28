@@ -49,9 +49,10 @@ class ZeroScans : HttpSource() {
     override fun latestUpdatesParse(response: Response): MangasPage {
         val newChapters = response.parseAs<NewChaptersResponseDto>()
 
-        val titlesList = newChapters.all.mapNotNull {
-            comicList.firstOrNull { comic -> comic.slug == it.slug }
-        }.map { comic -> zsHelper.zsComicEntryToSManga(comic) }
+        val titlesList =
+            newChapters.all.mapNotNull {
+                comicList.firstOrNull { comic -> comic.slug == it.slug }
+            }.map { comic -> zsHelper.zsComicEntryToSManga(comic) }
 
         return MangasPage(titlesList, false)
     }
@@ -118,33 +119,35 @@ class ZeroScans : HttpSource() {
     ): List<SManga>? {
         if (type.isNullOrBlank()) return null
 
-        val rankingEntries = when (type) {
-            "weekly" -> {
-                if (!ascending) {
-                    rankings.weekly.reversed()
-                } else {
-                    rankings.weekly
+        val rankingEntries =
+            when (type) {
+                "weekly" -> {
+                    if (!ascending) {
+                        rankings.weekly.reversed()
+                    } else {
+                        rankings.weekly
+                    }
+                }
+                "monthly" -> {
+                    if (!ascending) {
+                        rankings.monthly.reversed()
+                    } else {
+                        rankings.monthly
+                    }
+                }
+                else -> {
+                    if (!ascending) {
+                        rankings.allTime.reversed()
+                    } else {
+                        rankings.allTime
+                    }
                 }
             }
-            "monthly" -> {
-                if (!ascending) {
-                    rankings.monthly.reversed()
-                } else {
-                    rankings.monthly
-                }
-            }
-            else -> {
-                if (!ascending) {
-                    rankings.allTime.reversed()
-                } else {
-                    rankings.allTime
-                }
-            }
-        }
 
-        val titlesList = rankingEntries.mapNotNull { rankingEntry ->
-            comicList.firstOrNull { rankingEntry.slug == it.slug }
-        }.map { comic -> zsHelper.zsComicEntryToSManga(comic) }
+        val titlesList =
+            rankingEntries.mapNotNull { rankingEntry ->
+                comicList.firstOrNull { rankingEntry.slug == it.slug }
+            }.map { comic -> zsHelper.zsComicEntryToSManga(comic) }
 
         return titlesList
     }
@@ -154,8 +157,9 @@ class ZeroScans : HttpSource() {
         val mangaSlug = "$baseUrl${manga.url}".toHttpUrl().pathSegments[1]
 
         try {
-            val comic = comicList.first { comic -> comic.slug == mangaSlug }
-                .let { zsHelper.zsComicEntryToSManga(it) }
+            val comic =
+                comicList.first { comic -> comic.slug == mangaSlug }
+                    .let { zsHelper.zsComicEntryToSManga(it) }
 
             return Observable.just(comic)
         } catch (e: NoSuchElementException) {
@@ -233,9 +237,10 @@ class ZeroScans : HttpSource() {
         val allQualityZSPages = response.parseAs<ZeroScansResponseDto<ZeroScansPageResponseDto>>().data.chapter
 
         val highResZSPages = allQualityZSPages.highQuality.takeIf { it.isNotEmpty() } ?: allQualityZSPages.goodQuality
-        val pages = highResZSPages.mapIndexed { index, url ->
-            Page(index, imageUrl = url)
-        }
+        val pages =
+            highResZSPages.mapIndexed { index, url ->
+                Page(index, imageUrl = url)
+            }
 
         return pages
     }
@@ -258,12 +263,13 @@ class ZeroScans : HttpSource() {
         if (statusList.isNotEmpty()) {
             filters.add(StatusFilter(statusList))
         }
-        filters += listOf(
-            SortFilter(sortList),
-            RankingsHeader(),
-            RankingsHeader2(),
-            RankingsFilter(rankingList),
-        )
+        filters +=
+            listOf(
+                SortFilter(sortList),
+                RankingsHeader(),
+                RankingsHeader2(),
+                RankingsFilter(rankingList),
+            )
 
         return FilterList(filters)
     }
@@ -285,13 +291,14 @@ class ZeroScans : HttpSource() {
 
     class Sort(val name: String, val type: String)
 
-    private val sortList = listOf(
-        Sort("Alphabetic", "alphabetic"),
-        Sort("Rating", "rating"),
-        Sort("Chapter Count", "chapter_count"),
-        Sort("Bookmark Count", "bookmark_count"),
-        Sort("View Count", "view_count"),
-    )
+    private val sortList =
+        listOf(
+            Sort("Alphabetic", "alphabetic"),
+            Sort("Rating", "rating"),
+            Sort("Chapter Count", "chapter_count"),
+            Sort("Bookmark Count", "bookmark_count"),
+            Sort("View Count", "view_count"),
+        )
 
     class RankingsHeader :
         Filter.Header("Note: Genre, Sort, Status filter and Search query")
@@ -304,17 +311,19 @@ class ZeroScans : HttpSource() {
 
     class Ranking(val name: String, val type: String? = null)
 
-    private val rankingList = listOf(
-        Ranking("None"),
-        Ranking("All Time", "all-time"),
-        Ranking("Weekly", "weekly"),
-        Ranking("Monthly", "monthly"),
-    )
+    private val rankingList =
+        listOf(
+            Ranking("None"),
+            Ranking("All Time", "all-time"),
+            Ranking("Weekly", "weekly"),
+            Ranking("Monthly", "monthly"),
+        )
 
     // Helpers
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromString(it.body.string())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromString(it.body.string())
+        }
 
     private fun comicsDataRequest(): Request {
         return GET("$baseUrl/$API_PATH/comics")
@@ -327,12 +336,14 @@ class ZeroScans : HttpSource() {
     private fun updateComicsData() {
         val response = client.newCall(comicsDataRequest()).execute()
         comicsDataParse(response).let {
-            genreList = it.genres.map { genreDto ->
-                Genre(genreDto.name, genreDto.id)
-            }
-            statusList = it.statuses.map { statusDto ->
-                Status(statusDto.name, statusDto.id)
-            }
+            genreList =
+                it.genres.map { genreDto ->
+                    Genre(genreDto.name, genreDto.id)
+                }
+            statusList =
+                it.statuses.map { statusDto ->
+                    Status(statusDto.name, statusDto.id)
+                }
             comicList = it.comics
             rankings = it.rankings
         }

@@ -6,10 +6,11 @@ class ProgressiveParser(private val text: String) {
     fun substringBetween(
         left: String,
         right: String,
-    ): String = with(text) {
-        val leftIndex = indexOf(left, startIndex) + left.length
-        val rightIndex = indexOf(right, leftIndex)
-        startIndex = rightIndex + right.length
-        return substring(leftIndex, rightIndex)
-    }
+    ): String =
+        with(text) {
+            val leftIndex = indexOf(left, startIndex) + left.length
+            val rightIndex = indexOf(right, leftIndex)
+            startIndex = rightIndex + right.length
+            return substring(leftIndex, rightIndex)
+        }
 }

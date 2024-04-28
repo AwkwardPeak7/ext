@@ -11,9 +11,10 @@ class TempleScan : HeanCms(
 ) {
     override val versionId = 3
 
-    override val client = super.client.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1)
+            .build()
 
     override val mangaSubDirectory = "comic"
 }

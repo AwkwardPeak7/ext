@@ -81,49 +81,55 @@ class Netcomics(
         }
     }
 
-    override fun searchMangaParse(response: Response) = response.data<List<Title>>().ifEmpty {
-        error("No more pages")
-    }.map {
-        SManga.create().apply {
-            url = it.slug
-            title = it.toString()
-            genre = it.genres
-            author = it.authors
-            artist = it.artists
-            description = it.description
-            thumbnail_url = it.thumbnail
-            status = when {
-                it.isCompleted -> SManga.COMPLETED
-                else -> SManga.ONGOING
+    override fun searchMangaParse(response: Response) =
+        response.data<List<Title>>().ifEmpty {
+            error("No more pages")
+        }.map {
+            SManga.create().apply {
+                url = it.slug
+                title = it.toString()
+                genre = it.genres
+                author = it.authors
+                artist = it.artists
+                description = it.description
+                thumbnail_url = it.thumbnail
+                status =
+                    when {
+                        it.isCompleted -> SManga.COMPLETED
+                        else -> SManga.ONGOING
+                    }
+            }
+        }.run { MangasPage(this, size == 20) }
+
+    override fun chapterListParse(response: Response) =
+        response.data<List<Chapter>>().map {
+            SChapter.create().apply {
+                url = it.path
+                name = it.toString()
+                date_upload = it.timestamp
+                chapter_number = it.number
             }
         }
-    }.run { MangasPage(this, size == 20) }
 
-    override fun chapterListParse(response: Response) = response.data<List<Chapter>>().map {
-        SChapter.create().apply {
-            url = it.path
-            name = it.toString()
-            date_upload = it.timestamp
-            chapter_number = it.number
+    override fun pageListParse(response: Response) =
+        response.data<PageList>().map {
+            Page(it.seq, "", it.toString())
         }
-    }
 
-    override fun pageListParse(response: Response) = response.data<PageList>().map {
-        Page(it.seq, "", it.toString())
-    }
+    override fun fetchLatestUpdates(page: Int) =
+        apiUrl.fetch("title", ::searchMangaParse) {
+            addEncodedPathSegment("new")
+            addEncodedQueryParameter("no", page.toString())
+            addEncodedQueryParameter("size", "20")
+            addEncodedQueryParameter("day", day)
+        }
 
-    override fun fetchLatestUpdates(page: Int) = apiUrl.fetch("title", ::searchMangaParse) {
-        addEncodedPathSegment("new")
-        addEncodedQueryParameter("no", page.toString())
-        addEncodedQueryParameter("size", "20")
-        addEncodedQueryParameter("day", day)
-    }
-
-    override fun fetchPopularManga(page: Int) = apiUrl.fetch("title", ::searchMangaParse) {
-        addEncodedPathSegment("free")
-        addEncodedQueryParameter("no", page.toString())
-        addEncodedQueryParameter("size", "20")
-    }
+    override fun fetchPopularManga(page: Int) =
+        apiUrl.fetch("title", ::searchMangaParse) {
+            addEncodedPathSegment("free")
+            addEncodedQueryParameter("no", page.toString())
+            addEncodedQueryParameter("size", "20")
+        }
 
     override fun fetchSearchManga(
         page: Int,
@@ -143,17 +149,19 @@ class Netcomics(
 
     override fun fetchMangaDetails(manga: SManga) = rx.Observable.just(manga.apply { initialized = true })!!
 
-    override fun fetchChapterList(manga: SManga) = apiUrl.fetch("chapter", ::chapterListParse) {
-        addEncodedPathSegment("list")
-        addEncodedPathSegment(manga.id)
-        addEncodedPathSegment("rent")
-    }
+    override fun fetchChapterList(manga: SManga) =
+        apiUrl.fetch("chapter", ::chapterListParse) {
+            addEncodedPathSegment("list")
+            addEncodedPathSegment(manga.id)
+            addEncodedPathSegment("rent")
+        }
 
-    override fun fetchPageList(chapter: SChapter) = apiUrl.fetch("chapter", ::pageListParse) {
-        addEncodedPathSegment("viewer")
-        addEncodedPathSegment(quality)
-        addEncodedPathSegments(chapter.url)
-    }
+    override fun fetchPageList(chapter: SChapter) =
+        apiUrl.fetch("chapter", ::pageListParse) {
+            addEncodedPathSegment("viewer")
+            addEncodedPathSegment(quality)
+            addEncodedPathSegments(chapter.url)
+        }
 
     override fun getMangaUrl(manga: SManga) = "$baseUrl/$site/comic/${manga.slug}"
 
@@ -232,13 +240,14 @@ class Netcomics(
     private inline val FilterList.genre: String
         get() = find { it is GenreFilter }?.toString() ?: ""
 
-    private inline fun <reified T> Response.data() = json.decodeFromJsonElement<T>(
-        json.parseToJsonElement(body.string()).run {
-            jsonObject["data"] ?: throw Error(
-                jsonObject["message"]!!.jsonPrimitive.content,
-            )
-        },
-    )
+    private inline fun <reified T> Response.data() =
+        json.decodeFromJsonElement<T>(
+            json.parseToJsonElement(body.string()).run {
+                jsonObject["data"] ?: throw Error(
+                    jsonObject["message"]!!.jsonPrimitive.content,
+                )
+            },
+        )
 
     private inline fun <R> HttpUrl.fetch(
         path: String,

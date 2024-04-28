@@ -26,35 +26,38 @@ data class Manga(
     @Serializable(with = EmptyArrayOrTaxonomySerializer::class)
     val taxonomy: Taxonomy,
 ) {
-    fun toSManga() = SManga.create().apply {
-        url = "/manga/$slug.$id"
-        thumbnail_url = image
-        title = name
-        description = this@Manga.description
-        genre = (
-            taxonomy.genres.map {
-                it.name
-            }.let {
-                type?.run {
-                    it.plus(
-                        this.replaceFirstChar {
-                            if (it.isLowerCase()) {
-                                it.titlecase(Locale.getDefault())
-                            } else {
-                                it.toString()
-                            }
-                        },
-                    )
+    fun toSManga() =
+        SManga.create().apply {
+            url = "/manga/$slug.$id"
+            thumbnail_url = image
+            title = name
+            description = this@Manga.description
+            genre =
+                (
+                    taxonomy.genres.map {
+                        it.name
+                    }.let {
+                        type?.run {
+                            it.plus(
+                                this.replaceFirstChar {
+                                    if (it.isLowerCase()) {
+                                        it.titlecase(Locale.getDefault())
+                                    } else {
+                                        it.toString()
+                                    }
+                                },
+                            )
+                        }
+                    }
+                )?.joinToString()
+            status =
+                when (this@Manga.status) {
+                    "ongoing" -> SManga.ONGOING
+                    "completed" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
                 }
-            }
-        )?.joinToString()
-        status = when (this@Manga.status) {
-            "ongoing" -> SManga.ONGOING
-            "completed" -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
+            initialized = true
         }
-        initialized = true
-    }
 }
 
 @Serializable

@@ -28,8 +28,9 @@ class VortexScans : HttpSource() {
 
     private val json by injectLazy<Json>()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
 
     private val titleCache by lazy {
         val response = client.newCall(GET("$baseUrl/api/query?perPage=9999", headers)).execute()
@@ -44,12 +45,14 @@ class VortexScans : HttpSource() {
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val slugs = document.select("div:contains(Popular) + div.swiper div.manga-swipe > a")
-            .map { it.absUrl("href").substringAfterLast("/series/") }
+        val slugs =
+            document.select("div:contains(Popular) + div.swiper div.manga-swipe > a")
+                .map { it.absUrl("href").substringAfterLast("/series/") }
 
-        val entries = slugs.mapNotNull {
-            titleCache[it]?.toSManga(baseUrl)
-        }
+        val entries =
+            slugs.mapNotNull {
+                titleCache[it]?.toSManga(baseUrl)
+            }
 
         return MangasPage(entries, false)
     }
@@ -63,14 +66,15 @@ class VortexScans : HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val url = "$baseUrl/api/query".toHttpUrl().newBuilder().apply {
-            addQueryParameter("page", page.toString())
-            addQueryParameter("perPage", perPage.toString())
-            addQueryParameter("searchTerm", query.trim())
-            filters.filterIsInstance<UrlPartFilter>().forEach {
-                it.addUrlParameter(this)
-            }
-        }.build()
+        val url =
+            "$baseUrl/api/query".toHttpUrl().newBuilder().apply {
+                addQueryParameter("page", page.toString())
+                addQueryParameter("perPage", perPage.toString())
+                addQueryParameter("searchTerm", query.trim())
+                filters.filterIsInstance<UrlPartFilter>().forEach {
+                    it.addUrlParameter(this)
+                }
+            }.build()
 
         return GET(url, headers)
     }
@@ -79,20 +83,22 @@ class VortexScans : HttpSource() {
         val data = response.parseAs<SearchResponse>()
         val page = response.request.url.queryParameter("page")!!.toInt()
 
-        val entries = data.posts
-            .filterNot { it.isNovel }
-            .map { it.toSManga(baseUrl) }
+        val entries =
+            data.posts
+                .filterNot { it.isNovel }
+                .map { it.toSManga(baseUrl) }
 
         val hasNextPage = data.totalCount > (page * perPage)
 
         return MangasPage(entries, hasNextPage)
     }
 
-    override fun getFilterList() = FilterList(
-        StatusFilter(),
-        TypeFilter(),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            StatusFilter(),
+            TypeFilter(),
+            GenreFilter(),
+        )
 
     override fun mangaDetailsRequest(manga: SManga): Request {
         val id = manga.url.substringAfterLast("#")

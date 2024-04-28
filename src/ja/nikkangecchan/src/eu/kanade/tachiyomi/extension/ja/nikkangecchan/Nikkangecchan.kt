@@ -23,12 +23,13 @@ class Nikkangecchan : ParsedHttpSource() {
 
     override val supportsLatest = false
 
-    private val catalogHeaders = Headers.Builder()
-        .apply {
-            add("User-Agent", USER_AGENT)
-            add("Referer", baseUrl)
-        }
-        .build()
+    private val catalogHeaders =
+        Headers.Builder()
+            .apply {
+                add("User-Agent", USER_AGENT)
+                add("Referer", baseUrl)
+            }
+            .build()
 
     override fun popularMangaRequest(page: Int): Request = GET(baseUrl, catalogHeaders)
 
@@ -108,11 +109,12 @@ class Nikkangecchan : ParsedHttpSource() {
     override fun imageUrlParse(document: Document) = ""
 
     override fun imageRequest(page: Page): Request {
-        val headers = Headers.Builder()
-            .apply {
-                add("User-Agent", USER_AGENT)
-                add("Referer", baseUrl + page.url.substringBeforeLast("/"))
-            }
+        val headers =
+            Headers.Builder()
+                .apply {
+                    add("User-Agent", USER_AGENT)
+                    add("Referer", baseUrl + page.url.substringBeforeLast("/"))
+                }
 
         return GET(page.imageUrl!!, headers.build())
     }

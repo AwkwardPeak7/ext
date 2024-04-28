@@ -33,12 +33,13 @@ class Hiveworks : ParsedHttpSource() {
 
     // Client
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .retryOnConnectionFailure(true)
-        .followRedirects(true)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .retryOnConnectionFailure(true)
+            .followRedirects(true)
+            .build()
 
     // Popular
 
@@ -53,16 +54,18 @@ class Hiveworks : ParsedHttpSource() {
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select(popularMangaSelector()).filterNot {
-            val url = it.select("a.comiclink").first()!!.attr("abs:href")
-            url.contains("sparklermonthly.com") || url.contains("explosm.net") // Filter Unsupported Comics
-        }.map { element ->
-            popularMangaFromElement(element)
-        }
+        val mangas =
+            document.select(popularMangaSelector()).filterNot {
+                val url = it.select("a.comiclink").first()!!.attr("abs:href")
+                url.contains("sparklermonthly.com") || url.contains("explosm.net") // Filter Unsupported Comics
+            }.map { element ->
+                popularMangaFromElement(element)
+            }
 
-        val hasNextPage = popularMangaNextPageSelector()?.let { selector ->
-            document.select(selector).first()
-        } != null
+        val hasNextPage =
+            popularMangaNextPageSelector()?.let { selector ->
+                document.select(selector).first()
+            } != null
 
         return MangasPage(mangas, hasNextPage)
     }
@@ -121,35 +124,38 @@ class Hiveworks : ParsedHttpSource() {
         val document = response.asJsoup()
 
         val selectManga = document.select(searchMangaSelector()).toList()
-        val mangas = when {
-            url.endsWith("localSearch") -> {
-                selectManga.filter { it.text().contains(searchQuery, true) }.map { element -> searchMangaFromElement(element) }
+        val mangas =
+            when {
+                url.endsWith("localSearch") -> {
+                    selectManga.filter { it.text().contains(searchQuery, true) }.map { element -> searchMangaFromElement(element) }
+                }
+                url.contains("originals") -> {
+                    selectManga.map { element -> searchOriginalMangaFromElement(element) }
+                }
+                else -> {
+                    selectManga.map { element -> searchMangaFromElement(element) }
+                }
             }
-            url.contains("originals") -> {
-                selectManga.map { element -> searchOriginalMangaFromElement(element) }
-            }
-            else -> {
-                selectManga.map { element -> searchMangaFromElement(element) }
-            }
-        }
 
-        val hasNextPage = searchMangaNextPageSelector()?.let { selector ->
-            document.select(selector).first()
-        } != null
+        val hasNextPage =
+            searchMangaNextPageSelector()?.let { selector ->
+                document.select(selector).first()
+            } != null
 
         return MangasPage(mangas, hasNextPage)
     }
 
     override fun searchMangaFromElement(element: Element) = mangaFromElement(element)
 
-    private fun searchOriginalMangaFromElement(element: Element): SManga = SManga.create().apply {
-        thumbnail_url = element.select("img")[1].attr("abs:src")
-        title = element.select("div.header").text().substringBefore("by").trim()
-        author = element.select("div.header").text().substringAfter("by").trim()
-        artist = author
-        description = element.select("div.description").text().trim()
-        url = element.select("a").first()!!.attr("href")
-    }
+    private fun searchOriginalMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            thumbnail_url = element.select("img")[1].attr("abs:src")
+            title = element.select("div.header").text().substringBefore("by").trim()
+            author = element.select("div.header").text().substringAfter("by").trim()
+            artist = author
+            description = element.select("div.description").text().trim()
+            url = element.select("a").first()!!.attr("href")
+        }
 
     // Common
 
@@ -292,21 +298,22 @@ class Hiveworks : ParsedHttpSource() {
 
     // Filters
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Only one filter can be used at a time"),
-        Filter.Separator(),
-        UpdateDay(),
-        RatingFilter(),
-        GenreFilter(),
-        TitleFilter(),
-        SortFilter(),
-        Filter.Separator(),
-        Filter.Header("Extra Lists"),
-        OriginalsFilter(),
-        KidsFilter(),
-        CompletedFilter(),
-        HiatusFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Only one filter can be used at a time"),
+            Filter.Separator(),
+            UpdateDay(),
+            RatingFilter(),
+            GenreFilter(),
+            TitleFilter(),
+            SortFilter(),
+            Filter.Separator(),
+            Filter.Header("Extra Lists"),
+            OriginalsFilter(),
+            KidsFilter(),
+            CompletedFilter(),
+            HiatusFilter(),
+        )
 
     private class OriginalsFilter : Filter.CheckBox("Original Comics")
 

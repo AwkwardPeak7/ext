@@ -9,7 +9,8 @@ class MangaSect : Liliana(
     "en",
     usesPostSearch = true,
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(1)
+            .build()
 }

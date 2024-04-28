@@ -35,22 +35,24 @@ class ArabsHentai : ParsedHttpSource() {
             .rateLimit(2)
             .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .set("Referer", "$baseUrl/")
-        .set("Origin", baseUrl)
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .set("Referer", "$baseUrl/")
+            .set("Origin", baseUrl)
 
     // ============================== Popular ===============================
     override fun popularMangaRequest(page: Int) = GET("$baseUrl/manga/page/$page/?orderby=new-manga", headers)
 
     override fun popularMangaSelector() = "#archive-content .wp-manga"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        element.selectFirst(".data h3 a")!!.run {
-            setUrlWithoutDomain(absUrl("href"))
-            title = text()
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            element.selectFirst(".data h3 a")!!.run {
+                setUrlWithoutDomain(absUrl("href"))
+                title = text()
+            }
+            thumbnail_url = element.selectFirst("a .poster img")?.imgAttr()
         }
-        thumbnail_url = element.selectFirst("a .poster img")?.imgAttr()
-    }
 
     override fun popularMangaNextPageSelector() = ".pagination a.arrow_pag i#nextpagination"
 
@@ -91,59 +93,63 @@ class ArabsHentai : ParsedHttpSource() {
 
     override fun searchMangaSelector() = ".search-page .result-item article"
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        element.selectFirst(".details .title")!!.run {
-            setUrlWithoutDomain(selectFirst("a")!!.absUrl("href"))
-            title = ownText()
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            element.selectFirst(".details .title")!!.run {
+                setUrlWithoutDomain(selectFirst("a")!!.absUrl("href"))
+                title = ownText()
+            }
+            thumbnail_url = element.selectFirst(".image .thumbnail a img")?.imgAttr()
         }
-        thumbnail_url = element.selectFirst(".image .thumbnail a img")?.imgAttr()
-    }
 
     override fun searchMangaNextPageSelector() = ".pagination span.current + a"
 
     // =========================== Manga Details ============================
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        document.selectFirst(".content")!!.run {
-            title = selectFirst(".sheader .data h1")!!.text()
-            thumbnail_url = selectFirst(".sheader .poster img")?.imgAttr()
-            val genres = mutableListOf<String>()
-            selectFirst("#manga-info")?.run {
-                description = "\u061C" + select(".wp-content p").text() +
-                    "\n" + "أسماء أُخرى: " + select("div b:contains(أسماء أُخرى) + span").text()
-                status = select("div b:contains(حالة المانجا) + span").text().parseStatus()
-                author = select("div b:contains(الكاتب) + span a").text()
-                artist = select("div b:contains(الرسام) + span a").text()
-                genres += select("div b:contains(نوع العمل) + span a").text()
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            document.selectFirst(".content")!!.run {
+                title = selectFirst(".sheader .data h1")!!.text()
+                thumbnail_url = selectFirst(".sheader .poster img")?.imgAttr()
+                val genres = mutableListOf<String>()
+                selectFirst("#manga-info")?.run {
+                    description = "\u061C" + select(".wp-content p").text() +
+                        "\n" + "أسماء أُخرى: " + select("div b:contains(أسماء أُخرى) + span").text()
+                    status = select("div b:contains(حالة المانجا) + span").text().parseStatus()
+                    author = select("div b:contains(الكاتب) + span a").text()
+                    artist = select("div b:contains(الرسام) + span a").text()
+                    genres += select("div b:contains(نوع العمل) + span a").text()
+                }
+                genres += select(".data .sgeneros a").map { it.text() }
+                genre = genres.joinToString()
             }
-            genres += select(".data .sgeneros a").map { it.text() }
-            genre = genres.joinToString()
         }
-    }
 
-    private fun String?.parseStatus() = when {
-        this == null -> SManga.UNKNOWN
-        this.contains("مستمر", ignoreCase = true) -> SManga.ONGOING
-        this.contains("مكتمل", ignoreCase = true) -> SManga.COMPLETED
-        this.contains("متوقف", ignoreCase = true) -> SManga.ON_HIATUS
-        this.contains("ملغية", ignoreCase = true) -> SManga.CANCELLED
-        else -> SManga.UNKNOWN
-    }
+    private fun String?.parseStatus() =
+        when {
+            this == null -> SManga.UNKNOWN
+            this.contains("مستمر", ignoreCase = true) -> SManga.ONGOING
+            this.contains("مكتمل", ignoreCase = true) -> SManga.COMPLETED
+            this.contains("متوقف", ignoreCase = true) -> SManga.ON_HIATUS
+            this.contains("ملغية", ignoreCase = true) -> SManga.CANCELLED
+            else -> SManga.UNKNOWN
+        }
 
     // ============================== Chapters ==============================
     override fun chapterListSelector() = "#chapter-list a[href*='/manga/'], .oneshot-reader .images .image-item a[href$='manga-paged=1']"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        val url = element.attr("href")
-        if (url.contains("style=paged")) {
-            setUrlWithoutDomain(url.substringBeforeLast("?"))
-            name = "ونشوت"
-            date_upload = 0L
-        } else {
-            name = element.select(".chapternum").text()
-            date_upload = element.select(".chapterdate").text().parseChapterDate()
-            setUrlWithoutDomain(url)
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            val url = element.attr("href")
+            if (url.contains("style=paged")) {
+                setUrlWithoutDomain(url.substringBeforeLast("?"))
+                name = "ونشوت"
+                date_upload = 0L
+            } else {
+                name = element.select(".chapternum").text()
+                date_upload = element.select(".chapterdate").text().parseChapterDate()
+                setUrlWithoutDomain(url)
+            }
         }
-    }
 
     private fun String?.parseChapterDate(): Long {
         if (this == null) return 0L
@@ -191,9 +197,10 @@ class ArabsHentai : ParsedHttpSource() {
     private fun fetchGenres() {
         if (fetchGenresAttempts < 3 && genreList.isEmpty()) {
             try {
-                genreList = client.newCall(genresRequest()).execute()
-                    .asJsoup()
-                    .let(::parseGenres)
+                genreList =
+                    client.newCall(genresRequest()).execute()
+                        .asJsoup()
+                        .let(::parseGenres)
             } catch (_: Exception) {
             } finally {
                 fetchGenresAttempts++

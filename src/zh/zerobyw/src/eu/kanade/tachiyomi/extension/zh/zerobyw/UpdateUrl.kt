@@ -30,24 +30,25 @@ fun SharedPreferences.clearOldBaseUrl(): SharedPreferences {
     return this
 }
 
-fun getBaseUrlPreference(context: Context) = EditTextPreference(context).apply {
-    key = BASE_URL_PREF
-    title = "网址"
-    summary = "正常情况下会自动更新。" +
-        "如果出现错误，请在 GitHub 上报告，并且可以在 https://zerobyw.github.io/ 找到最新网址手动填写。" +
-        "填写时按照 $DEFAULT_BASE_URL 格式。"
-    setDefaultValue(DEFAULT_BASE_URL)
+fun getBaseUrlPreference(context: Context) =
+    EditTextPreference(context).apply {
+        key = BASE_URL_PREF
+        title = "网址"
+        summary = "正常情况下会自动更新。" +
+            "如果出现错误，请在 GitHub 上报告，并且可以在 https://zerobyw.github.io/ 找到最新网址手动填写。" +
+            "填写时按照 $DEFAULT_BASE_URL 格式。"
+        setDefaultValue(DEFAULT_BASE_URL)
 
-    setOnPreferenceChangeListener { _, newValue ->
-        try {
-            checkBaseUrl(newValue as String)
-            true
-        } catch (_: Throwable) {
-            Toast.makeText(context, "网址格式错误", Toast.LENGTH_LONG).show()
-            false
+        setOnPreferenceChangeListener { _, newValue ->
+            try {
+                checkBaseUrl(newValue as String)
+                true
+            } catch (_: Throwable) {
+                Toast.makeText(context, "网址格式错误", Toast.LENGTH_LONG).show()
+                false
+            }
         }
     }
-}
 
 fun ciGetUrl(client: OkHttpClient): String {
     return try {
@@ -75,23 +76,25 @@ class UpdateUrlInterceptor(
         val baseUrl = preferences.baseUrl
         if (!url.toString().startsWith(baseUrl)) return chain.proceed(request)
 
-        val failedResult = try {
-            val response = chain.proceed(request)
-            if (response.isSuccessful) return response
-            response.close()
-            Result.success(response)
-        } catch (e: IOException) {
-            if (chain.call().isCanceled()) throw e
-            Result.failure(e)
-        }
+        val failedResult =
+            try {
+                val response = chain.proceed(request)
+                if (response.isSuccessful) return response
+                response.close()
+                Result.success(response)
+            } catch (e: IOException) {
+                if (chain.call().isCanceled()) throw e
+                Result.failure(e)
+            }
 
-        val newUrl = try {
-            val newUrl = chain.proceed(GET(LATEST_DOMAIN_URL)).body.string()
-            require(newUrl != baseUrl)
-            newUrl
-        } catch (_: Throwable) {
-            return failedResult.getOrThrow()
-        }
+        val newUrl =
+            try {
+                val newUrl = chain.proceed(GET(LATEST_DOMAIN_URL)).body.string()
+                require(newUrl != baseUrl)
+                newUrl
+            } catch (_: Throwable) {
+                return failedResult.getOrThrow()
+            }
 
         preferences.baseUrl = newUrl
         val (scheme, host) = newUrl.split("://")

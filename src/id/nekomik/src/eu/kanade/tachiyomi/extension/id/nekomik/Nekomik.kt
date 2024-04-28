@@ -10,25 +10,28 @@ import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 
 class Nekomik : MangaThemesia("Nekomik", "https://nekomik.me", "id") {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 
     override val hasProjectPage = true
 
     override fun pageListParse(document: Document): List<Page> {
-        val obfuscatedJs = document.selectFirst("script:containsData(fromCharCode)")?.data()
-            ?: return super.pageListParse(document)
+        val obfuscatedJs =
+            document.selectFirst("script:containsData(fromCharCode)")?.data()
+                ?: return super.pageListParse(document)
 
-        val data = QuickJs.create().use { context ->
-            context.evaluate(
-                """
-                ts_reader = { run: function(...args) { whatever = args[0] } };
-                $obfuscatedJs;
-                JSON.stringify(whatever);
-                """.trimIndent(),
-            ) as String
-        }
+        val data =
+            QuickJs.create().use { context ->
+                context.evaluate(
+                    """
+                    ts_reader = { run: function(...args) { whatever = args[0] } };
+                    $obfuscatedJs;
+                    JSON.stringify(whatever);
+                    """.trimIndent(),
+                ) as String
+            }
 
         val tsReader = json.decodeFromString<TSReader>(data)
         val imageUrls = tsReader.sources.firstOrNull()?.images ?: return emptyList()

@@ -60,18 +60,20 @@ abstract class DbMultiverse(override val lang: String, private val internalLang:
             .let { Observable.just(MangasPage(it, hasNextPage = false)) }
     }
 
-    private fun createManga(type: String) = SManga.create().apply {
-        title = when (type) {
-            "comic" -> "DB Multiverse"
-            "namekseijin" -> "Namekseijin Densetsu"
-            "strip" -> "Minicomic"
-            else -> name
+    private fun createManga(type: String) =
+        SManga.create().apply {
+            title =
+                when (type) {
+                    "comic" -> "DB Multiverse"
+                    "namekseijin" -> "Namekseijin Densetsu"
+                    "strip" -> "Minicomic"
+                    else -> name
+                }
+            status = SManga.ONGOING
+            url = "/$internalLang/chapters.html?comic=$type"
+            description = "Dragon Ball Multiverse (DBM) is a free online comic, made by a whole team of fans. It's our personal sequel to DBZ."
+            thumbnail_url = "$baseUrl/imgs/read/$type.jpg"
         }
-        status = SManga.ONGOING
-        url = "/$internalLang/chapters.html?comic=$type"
-        description = "Dragon Ball Multiverse (DBM) is a free online comic, made by a whole team of fans. It's our personal sequel to DBZ."
-        thumbnail_url = "$baseUrl/imgs/read/$type.jpg"
-    }
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return manga.apply {

@@ -12,9 +12,10 @@ class HikariScan : MangaThemesia(
     "pt-BR",
     dateFormat = SimpleDateFormat("MMMMM dd, yyyy", Locale("pt", "BR")),
 ) {
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 1, 2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 1, 2)
+            .build()
 
     // =========================== Manga Details ============================
     override val altNamePrefix = "Títulos alternativos: "

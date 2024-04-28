@@ -15,12 +15,13 @@ class MajorScans : MangaThemesia(
 
     override val pageSelector = "div#readerarea img:not(noscript img)"
 
-    override fun String?.parseStatus(): Int = when {
-        this == null -> SManga.UNKNOWN
-        listOf("devam ediyor", "güncel").any { this.contains(it, ignoreCase = true) } -> SManga.ONGOING
-        this.contains("tamamlandı", ignoreCase = true) -> SManga.COMPLETED
-        this.contains("bırakıldı", ignoreCase = true) -> SManga.CANCELLED
-        this.contains("sezon finali", ignoreCase = true) -> SManga.ON_HIATUS
-        else -> SManga.UNKNOWN
-    }
+    override fun String?.parseStatus(): Int =
+        when {
+            this == null -> SManga.UNKNOWN
+            listOf("devam ediyor", "güncel").any { this.contains(it, ignoreCase = true) } -> SManga.ONGOING
+            this.contains("tamamlandı", ignoreCase = true) -> SManga.COMPLETED
+            this.contains("bırakıldı", ignoreCase = true) -> SManga.CANCELLED
+            this.contains("sezon finali", ignoreCase = true) -> SManga.ON_HIATUS
+            else -> SManga.UNKNOWN
+        }
 }

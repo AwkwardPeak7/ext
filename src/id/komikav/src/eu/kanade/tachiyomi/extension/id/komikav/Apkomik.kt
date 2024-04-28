@@ -14,9 +14,10 @@ class Apkomik : MangaThemesia(
     // Formerly "Komik AV (WP Manga Stream)"
     override val id = 7875815514004535629
 
-    override val client = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 
     override val hasProjectPage = true
 }

@@ -82,9 +82,10 @@ class TencentComics : ParsedHttpSource() {
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val mangas = document.select(popularMangaSelector()).map { element ->
-            popularMangaFromElement(element)
-        }
+        val mangas =
+            document.select(popularMangaSelector()).map { element ->
+                popularMangaFromElement(element)
+            }
         // next page buttons do not exist
         // even if the total searches happen to be 12 the website fills the next page anyway
         return MangasPage(mangas, mangas.size == 12)
@@ -114,13 +115,14 @@ class TencentComics : ParsedHttpSource() {
             title = document.select("h2.works-intro-title.ui-left > strong").text().trim()
             description = document.select("p.works-intro-short").text().trim()
             author = document.select("p.works-intro-digi > span > em").text().trim()
-            status = when (document.select("label.works-intro-status").text().trim()) {
-                "连载中" -> SManga.ONGOING
-                "已完结" -> SManga.COMPLETED
-                "連載中" -> SManga.ONGOING
-                "已完結" -> SManga.COMPLETED
-                else -> SManga.UNKNOWN
-            }
+            status =
+                when (document.select("label.works-intro-status").text().trim()) {
+                    "连载中" -> SManga.ONGOING
+                    "已完结" -> SManga.COMPLETED
+                    "連載中" -> SManga.ONGOING
+                    "已完結" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
         }
     }
 
@@ -246,28 +248,31 @@ class TencentComics : ParsedHttpSource() {
         val document = response.asJsoup()
         // Normal search
         return if (response.request.url.host.contains("m.ac.qq.com")) {
-            val mangas = document.select(searchMangaSelector()).map { element ->
-                searchMangaFromElement(element)
-            }
+            val mangas =
+                document.select(searchMangaSelector()).map { element ->
+                    searchMangaFromElement(element)
+                }
             MangasPage(mangas, mangas.size == 10)
             // Filter search
         } else {
-            val mangas = document.select(popularMangaSelector()).map { element ->
-                popularMangaFromElement(element)
-            }
+            val mangas =
+                document.select(popularMangaSelector()).map { element ->
+                    popularMangaFromElement(element)
+                }
             // next page buttons do not exist
             // even if the total searches happen to be 12 the website fills the next page anyway
             MangasPage(mangas, mangas.size == 12)
         }
     }
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("注意：不影響按標題搜索"),
-        PopularityFilter(),
-        VipFilter(),
-        StatusFilter(),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("注意：不影響按標題搜索"),
+            PopularityFilter(),
+            VipFilter(),
+            StatusFilter(),
+            GenreFilter(),
+        )
 
     private open class UriPartFilter(displayName: String, val vals: Array<Pair<String, String>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {

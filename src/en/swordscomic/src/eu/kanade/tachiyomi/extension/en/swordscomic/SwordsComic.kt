@@ -85,8 +85,9 @@ class SwordsComic : HttpSource() {
                 SChapter.create().apply {
                     name = element.select("strong").text()
                     setUrlWithoutDomain(element.attr("href"))
-                    date_upload = element.select("small").text()
-                        .let { SimpleDateFormat("dd MMM yyyy", Locale.US).parse(it)?.time ?: 0L }
+                    date_upload =
+                        element.select("small").text()
+                            .let { SimpleDateFormat("dd MMM yyyy", Locale.US).parse(it)?.time ?: 0L }
                 }
             }
             .reversed()

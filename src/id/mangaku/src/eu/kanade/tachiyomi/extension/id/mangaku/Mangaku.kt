@@ -60,11 +60,12 @@ class Mangaku : ParsedHttpSource() {
         }
     }
 
-    override fun popularMangaRequest(page: Int): Request = POST(
-        "$baseUrl/daftar-komik-bahasa-indonesia/",
-        headers,
-        FormBody.Builder().add("ritem", "hot").build(),
-    )
+    override fun popularMangaRequest(page: Int): Request =
+        POST(
+            "$baseUrl/daftar-komik-bahasa-indonesia/",
+            headers,
+            FormBody.Builder().add("ritem", "hot").build(),
+        )
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
@@ -84,11 +85,12 @@ class Mangaku : ParsedHttpSource() {
 
     override fun popularMangaSelector() = "#data .npx .an a"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        title = element.ownText()
-        thumbnail_url = element.selectFirst("img")?.attr("abs:data-src")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            title = element.ownText()
+            thumbnail_url = element.selectFirst("img")?.attr("abs:data-src")
+        }
 
     override fun popularMangaNextPageSelector(): String? = null
 
@@ -96,11 +98,12 @@ class Mangaku : ParsedHttpSource() {
 
     override fun latestUpdatesSelector() = "div.kiri_anime div.utao"
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.select("div.uta div.luf a.series").attr("href"))
-        title = element.select("div.uta div.luf a.series").text()
-        thumbnail_url = element.select("div.uta div.imgu img").attr("abs:data-src")
-    }
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select("div.uta div.luf a.series").attr("href"))
+            title = element.select("div.uta div.luf a.series").text()
+            thumbnail_url = element.select("div.uta div.imgu img").attr("abs:data-src")
+        }
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
@@ -112,66 +115,76 @@ class Mangaku : ParsedHttpSource() {
 
     override fun searchMangaSelector() = ".listupd .bs"
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.select(".bsx a").attr("href"))
-        title = element.select(".bigor .tt a").text()
-        thumbnail_url = element.select(".bsx img").attr("abs:data-src")
-    }
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.select(".bsx a").attr("href"))
+            title = element.select(".bigor .tt a").text()
+            thumbnail_url = element.select(".bsx img").attr("abs:data-src")
+        }
 
     override fun searchMangaNextPageSelector(): String? = null
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document
-            .select("h1.titles a, h1.title").text()
-            .replace("Bahasa Indonesia", "").trim()
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title =
+                document
+                    .select("h1.titles a, h1.title").text()
+                    .replace("Bahasa Indonesia", "").trim()
 
-        thumbnail_url = document
-            .select("#sidebar-a a[imageanchor] > img, #abc a[imageanchor] > img")
-            .attr("abs:src")
+            thumbnail_url =
+                document
+                    .select("#sidebar-a a[imageanchor] > img, #abc a[imageanchor] > img")
+                    .attr("abs:src")
 
-        genre = document.select(".inf:contains(Genre) p a, .inf:contains(Type) p").joinToString { it.text() }
-        document.select("#wrapper-a #content-a .inf, #abc .inf").forEach { row ->
-            when (row.select(".infx").text()) {
-                "Author" -> author = row.select("p").text()
-                "Sinopsis" -> description = row.select("p").text()
+            genre = document.select(".inf:contains(Genre) p a, .inf:contains(Type) p").joinToString { it.text() }
+            document.select("#wrapper-a #content-a .inf, #abc .inf").forEach { row ->
+                when (row.select(".infx").text()) {
+                    "Author" -> author = row.select("p").text()
+                    "Sinopsis" -> description = row.select("p").text()
+                }
+            }
+            val altName = document.selectFirst(".inf:contains(Alternative) p")?.ownText().takeIf { it.isNullOrBlank().not() }
+            altName?.let {
+                description = "$description\n\nAlternative Name: $altName".trim()
             }
         }
-        val altName = document.selectFirst(".inf:contains(Alternative) p")?.ownText().takeIf { it.isNullOrBlank().not() }
-        altName?.let {
-            description = "$description\n\nAlternative Name: $altName".trim()
-        }
-    }
 
     override fun chapterListSelector() = "#content-b > div > a, .fndsosmed-social + div > a"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        name = element.text().let {
-            if (it.contains("–")) {
-                it.split("–")[1].trim()
-            } else {
-                it
-            }
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            name =
+                element.text().let {
+                    if (it.contains("–")) {
+                        it.split("–")[1].trim()
+                    } else {
+                        it
+                    }
+                }
         }
-    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun pageListParse(document: Document): List<Page> {
         val interfaceName = randomString()
 
-        val decodeScriptOriginal = document
-            .select("script:containsData(dtx = )")
-            .joinToString("\n") { it.data() }
-        val decodeScript = decodeScriptOriginal.replace(urlsnxRe) {
-            it.value + "window.$interfaceName.passPayload(JSON.stringify(urlsnx));"
-        }
+        val decodeScriptOriginal =
+            document
+                .select("script:containsData(dtx = )")
+                .joinToString("\n") { it.data() }
+        val decodeScript =
+            decodeScriptOriginal.replace(urlsnxRe) {
+                it.value + "window.$interfaceName.passPayload(JSON.stringify(urlsnx));"
+            }
 
-        val wpRoutineUrl = document
-            .selectFirst("script[src*=wp-routine]")!!
-            .attr("abs:src")
-        val wpRoutineScript = client
-            .newCall(GET(wpRoutineUrl, headers))
-            .execute().use { it.body.string() }
+        val wpRoutineUrl =
+            document
+                .selectFirst("script[src*=wp-routine]")!!
+                .attr("abs:src")
+        val wpRoutineScript =
+            client
+                .newCall(GET(wpRoutineUrl, headers))
+                .execute().use { it.body.string() }
 
         val handler = Handler(Looper.getMainLooper())
         val latch = CountDownLatch(1)
@@ -187,17 +200,18 @@ class Mangaku : ParsedHttpSource() {
             webview.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             webview.addJavascriptInterface(jsInterface, interfaceName)
 
-            webview.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(
-                    view: WebView,
-                    url: String,
-                ) {
-                    view.evaluateJavascript(jQueryScript) {}
-                    view.evaluateJavascript(cryptoJSScript) {}
-                    view.evaluateJavascript(wpRoutineScript) {}
-                    view.evaluateJavascript(decodeScript) {}
+            webview.webViewClient =
+                object : WebViewClient() {
+                    override fun onPageFinished(
+                        view: WebView,
+                        url: String,
+                    ) {
+                        view.evaluateJavascript(jQueryScript) {}
+                        view.evaluateJavascript(cryptoJSScript) {}
+                        view.evaluateJavascript(wpRoutineScript) {}
+                        view.evaluateJavascript(decodeScript) {}
+                    }
                 }
-            }
             webview.loadDataWithBaseURL(
                 document.location(),
                 "",

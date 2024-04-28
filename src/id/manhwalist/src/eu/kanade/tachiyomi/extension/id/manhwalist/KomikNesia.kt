@@ -8,9 +8,10 @@ class KomikNesia : MangaThemesia("KomikNesia", "https://komiknesia.xyz", "id") {
     // ManhwaList -> KomikNesia
     override val id = 4039555433611432280
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 
     override val hasProjectPage = true
 

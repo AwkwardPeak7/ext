@@ -42,16 +42,17 @@ open class OtakuSanctuary(
     private val json: Json by injectLazy()
 
     // There's no popular list, this will have to do
-    override fun popularMangaRequest(page: Int) = POST(
-        "$baseUrl/Manga/Newest",
-        headers,
-        FormBody.Builder().apply {
-            add("Lang", helper.otakusanLang())
-            add("Page", page.toString())
-            add("Type", "Include")
-            add("Dir", "NewPostedDate")
-        }.build(),
-    )
+    override fun popularMangaRequest(page: Int) =
+        POST(
+            "$baseUrl/Manga/Newest",
+            headers,
+            FormBody.Builder().apply {
+                add("Lang", helper.otakusanLang())
+                add("Page", page.toString())
+                add("Type", "Include")
+                add("Dir", "NewPostedDate")
+            }.build(),
+        )
 
     private fun parseMangaCollection(elements: Elements): List<SManga> {
         val page = emptyList<SManga>().toMutableList()
@@ -70,19 +71,22 @@ open class OtakuSanctuary(
             }
 
             // ignore languages that dont match current ext
-            val language = element.select("img.flag").attr("abs:src")
-                .substringAfter("flags/")
-                .substringBefore(".png")
+            val language =
+                element.select("img.flag").attr("abs:src")
+                    .substringAfter("flags/")
+                    .substringBefore(".png")
             if (helper.otakusanLang() != "all" && language != helper.otakusanLang()) {
                 continue
             }
 
-            page += SManga.create().apply {
-                setUrlWithoutDomain(url)
-                title = element.select("div.mdl-card__supporting-text a[target=_blank]").text()
-                    .replaceFirstChar { it.titlecase() }
-                thumbnail_url = element.select("div.container-3-4.background-contain img").first()!!.attr("abs:src")
-            }
+            page +=
+                SManga.create().apply {
+                    setUrlWithoutDomain(url)
+                    title =
+                        element.select("div.mdl-card__supporting-text a[target=_blank]").text()
+                            .replaceFirstChar { it.titlecase() }
+                    thumbnail_url = element.select("div.container-3-4.background-contain img").first()!!.attr("abs:src")
+                }
         }
         return page
     }
@@ -102,13 +106,14 @@ open class OtakuSanctuary(
         page: Int,
         query: String,
         filters: FilterList,
-    ): Request = GET(
-        baseUrl.toHttpUrl().newBuilder().apply {
-            addPathSegments("Home/Search")
-            addQueryParameter("search", query)
-        }.build().toString(),
-        headers,
-    )
+    ): Request =
+        GET(
+            baseUrl.toHttpUrl().newBuilder().apply {
+                addPathSegments("Home/Search")
+                addQueryParameter("search", query)
+            }.build().toString(),
+            headers,
+        )
 
     override fun searchMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
@@ -120,32 +125,37 @@ open class OtakuSanctuary(
         val document = response.asJsoup()
 
         return SManga.create().apply {
-            title = document.select("h1.title.text-lg-left.text-overflow-2-line")
-                .text()
-                .replaceFirstChar { it.titlecase() }
-            author = document.select("tr:contains(Tác Giả) a.capitalize").first()!!.text()
-                .replaceFirstChar { it.titlecase() }
-            description = document.select("div.summary p").joinToString("\n") {
-                it.run {
-                    select(Evaluator.Tag("br")).prepend("\\n")
-                    this.text().replace("\\n", "\n").replace("\n ", "\n")
-                }
-            }.trim()
+            title =
+                document.select("h1.title.text-lg-left.text-overflow-2-line")
+                    .text()
+                    .replaceFirstChar { it.titlecase() }
+            author =
+                document.select("tr:contains(Tác Giả) a.capitalize").first()!!.text()
+                    .replaceFirstChar { it.titlecase() }
+            description =
+                document.select("div.summary p").joinToString("\n") {
+                    it.run {
+                        select(Evaluator.Tag("br")).prepend("\\n")
+                        this.text().replace("\\n", "\n").replace("\n ", "\n")
+                    }
+                }.trim()
             genre = document.select("div.genres a").joinToString { it.text() }
             thumbnail_url = document.select("div.container-3-4.background-contain img").attr("abs:src")
 
             val statusString = document.select("tr:contains(Tình Trạng) td").first()!!.text().trim()
-            status = when (statusString) {
-                "Ongoing" -> SManga.ONGOING
-                "Done" -> SManga.COMPLETED
-                else -> SManga.UNKNOWN
-            }
+            status =
+                when (statusString) {
+                    "Ongoing" -> SManga.ONGOING
+                    "Done" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
         }
     }
 
-    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.US).apply {
-        timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")
-    }
+    private val dateFormat =
+        SimpleDateFormat("dd/MM/yyyy", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")
+        }
 
     private fun parseDate(date: String): Long {
         if (date.contains("cách đây")) {
@@ -186,15 +196,16 @@ open class OtakuSanctuary(
         val vi = document.select("#dataip").attr("value")
         val numericId = document.select("#inpit-c").attr("data-chapter-id")
 
-        val data = json.parseToJsonElement(
-            client.newCall(
-                POST(
-                    "$baseUrl/Manga/UpdateView",
-                    headers,
-                    FormBody.Builder().add("chapId", numericId).build(),
-                ),
-            ).execute().body.string(),
-        ).jsonObject
+        val data =
+            json.parseToJsonElement(
+                client.newCall(
+                    POST(
+                        "$baseUrl/Manga/UpdateView",
+                        headers,
+                        FormBody.Builder().add("chapId", numericId).build(),
+                    ),
+                ).execute().body.string(),
+            ).jsonObject
 
         if (data["view"] != null) {
             val usingservers = mutableListOf(0, 0, 0)
@@ -206,28 +217,33 @@ open class OtakuSanctuary(
 
                 if (url.contains(
                         "ImageSyncing",
-                    ) || url.contains(
+                    ) ||
+                    url.contains(
                         "FetchService",
                     ) || url.contains(
                         "otakusan.net_",
                     ) && (
                         url.contains(
                             "extendContent",
-                        ) || url.contains(
-                            "/Extend",
-                        )
-                    ) && !url.contains(
+                        ) ||
+                            url.contains(
+                                "/Extend",
+                            )
+                    ) &&
+                    !url.contains(
                         "fetcher.otakusan.net",
-                    ) && !url.contains(
+                    ) &&
+                    !url.contains(
                         "image3.otakusan.net",
                     ) && !url.contains("image3.otakuscan.net") && !url.contains("[GDP]") && !url.contains("[GDT]")
                 ) {
                     if (url.startsWith("/api/Value/")) {
-                        val serverUrl = if (helper.otakusanLang() == "us" && indexServer == 1) {
-                            US_SERVERS[0]
-                        } else {
-                            SERVERS[indexServer]
-                        }
+                        val serverUrl =
+                            if (helper.otakusanLang() == "us" && indexServer == 1) {
+                                US_SERVERS[0]
+                            } else {
+                                SERVERS[indexServer]
+                            }
                         url = "$serverUrl$url"
                     }
 
@@ -241,17 +257,19 @@ open class OtakuSanctuary(
                 Page(idx, imageUrl = url)
             }
         } else {
-            val alternate = json.parseToJsonElement(
-                client.newCall(
-                    POST(
-                        "$baseUrl/Manga/CheckingAlternate",
-                        headers,
-                        FormBody.Builder().add("chapId", numericId).build(),
-                    ),
-                ).execute().body.string(),
-            ).jsonObject
-            val content = alternate["Content"]?.jsonPrimitive?.content
-                ?: throw Exception("No pages found")
+            val alternate =
+                json.parseToJsonElement(
+                    client.newCall(
+                        POST(
+                            "$baseUrl/Manga/CheckingAlternate",
+                            headers,
+                            FormBody.Builder().add("chapId", numericId).build(),
+                        ),
+                    ).execute().body.string(),
+                ).jsonObject
+            val content =
+                alternate["Content"]?.jsonPrimitive?.content
+                    ?: throw Exception("No pages found")
             return json.parseToJsonElement(content).jsonArray.mapIndexed { idx, it ->
                 Page(idx, imageUrl = helper.processUrl(it.jsonPrimitive.content, vi))
             }
@@ -266,19 +284,23 @@ open class OtakuSanctuary(
 
         if (url.contains(
                 "ImageSyncing",
-            ) || url.contains(
+            ) ||
+            url.contains(
                 "FetchService",
             ) || url.contains(
                 "otakusan.net_",
             ) && (
                 url.contains(
                     "extendContent",
-                ) || url.contains(
-                    "/Extend",
-                )
-            ) && !url.contains(
+                ) ||
+                    url.contains(
+                        "/Extend",
+                    )
+            ) &&
+            !url.contains(
                 "fetcher.otakusan.net",
-            ) && !url.contains(
+            ) &&
+            !url.contains(
                 "image3.otakusan.net",
             ) && !url.contains("image3.otakuscan.net") && !url.contains("[GDP]") && !url.contains("[GDT]")
         ) {

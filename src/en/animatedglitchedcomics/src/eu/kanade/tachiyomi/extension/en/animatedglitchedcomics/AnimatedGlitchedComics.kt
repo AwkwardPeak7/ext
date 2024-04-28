@@ -10,7 +10,8 @@ class AnimatedGlitchedComics : MangaThemesia(
     "en",
     mangaUrlDirectory = "/series",
 ) {
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimit(1)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(1)
+            .build()
 }

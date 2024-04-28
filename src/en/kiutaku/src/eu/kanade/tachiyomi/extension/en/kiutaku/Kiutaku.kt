@@ -40,11 +40,12 @@ class Kiutaku : ParsedHttpSource() {
 
     override fun popularMangaSelector() = "div.blog > div.items-row"
 
-    override fun popularMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("a.item-link")!!.attr("href"))
-        thumbnail_url = element.selectFirst("img")?.attr("src")
-        title = element.selectFirst("h2")?.text() ?: "Cosplay"
-    }
+    override fun popularMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("a.item-link")!!.attr("href"))
+            thumbnail_url = element.selectFirst("img")?.attr("src")
+            title = element.selectFirst("h2")?.text() ?: "Cosplay"
+        }
 
     override fun popularMangaNextPageSelector() = "nav > a.pagination-next:not([disabled])"
 
@@ -93,15 +94,17 @@ class Kiutaku : ParsedHttpSource() {
     override fun searchMangaNextPageSelector() = popularMangaNextPageSelector()
 
     // =========================== Manga Details ============================
-    override fun mangaDetailsParse(document: Document) = SManga.create().apply {
-        status = SManga.COMPLETED
-        update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
-        title = document.selectFirst("div.article-header")?.text() ?: "Cosplay"
-        genre = document.selectFirst("div.article-tags")
-            ?.select("a.tag > span")
-            ?.eachText()
-            ?.joinToString { it.trimStart('#') }
-    }
+    override fun mangaDetailsParse(document: Document) =
+        SManga.create().apply {
+            status = SManga.COMPLETED
+            update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
+            title = document.selectFirst("div.article-header")?.text() ?: "Cosplay"
+            genre =
+                document.selectFirst("div.article-tags")
+                    ?.select("a.tag > span")
+                    ?.eachText()
+                    ?.joinToString { it.trimStart('#') }
+        }
 
     // ============================== Chapters ==============================
     // Fix chapter order
@@ -109,12 +112,13 @@ class Kiutaku : ParsedHttpSource() {
 
     override fun chapterListSelector() = "nav.pagination:first-of-type a"
 
-    override fun chapterFromElement(element: Element) = SChapter.create().apply {
-        setUrlWithoutDomain(element.attr("href"))
-        val text = element.text()
-        name = "Page $text"
-        chapter_number = text.toFloatOrNull() ?: 1F
-    }
+    override fun chapterFromElement(element: Element) =
+        SChapter.create().apply {
+            setUrlWithoutDomain(element.attr("href"))
+            val text = element.text()
+            name = "Page $text"
+            chapter_number = text.toFloatOrNull() ?: 1F
+        }
 
     // =============================== Pages ================================
     override fun pageListParse(document: Document): List<Page> {

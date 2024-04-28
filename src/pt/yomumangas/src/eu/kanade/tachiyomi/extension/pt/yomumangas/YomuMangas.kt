@@ -28,22 +28,25 @@ class YomuMangas : HttpSource() {
 
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 1, 1, TimeUnit.SECONDS)
-        .rateLimitHost(API_URL.toHttpUrl(), 1, 1, TimeUnit.SECONDS)
-        .rateLimitHost(CDN_URL.toHttpUrl(), 1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 1, 1, TimeUnit.SECONDS)
+            .rateLimitHost(API_URL.toHttpUrl(), 1, 1, TimeUnit.SECONDS)
+            .rateLimitHost(CDN_URL.toHttpUrl(), 1, 2, TimeUnit.SECONDS)
+            .build()
 
     private val json: Json by injectLazy()
 
     private val apiHeaders: Headers by lazy { apiHeadersBuilder().build() }
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Origin", baseUrl)
-        .add("Referer", baseUrl)
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Origin", baseUrl)
+            .add("Referer", baseUrl)
 
-    private fun apiHeadersBuilder(): Headers.Builder = headersBuilder()
-        .add("Accept", ACCEPT_JSON)
+    private fun apiHeadersBuilder(): Headers.Builder =
+        headersBuilder()
+            .add("Accept", ACCEPT_JSON)
 
     override fun popularMangaRequest(page: Int): Request {
         return GET("$API_URL/mangas/home", apiHeaders)
@@ -70,9 +73,10 @@ class YomuMangas : HttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val apiUrl = "$API_URL/mangas/search".toHttpUrl().newBuilder()
-            .addQueryParameter("query", query)
-            .addQueryParameter("page", page.toString())
+        val apiUrl =
+            "$API_URL/mangas/search".toHttpUrl().newBuilder()
+                .addQueryParameter("query", query)
+                .addQueryParameter("page", page.toString())
 
         filters.filterIsInstance<UrlQueryFilter>()
             .forEach { it.addQueryParameter(apiUrl) }
@@ -90,9 +94,10 @@ class YomuMangas : HttpSource() {
     override fun getMangaUrl(manga: SManga): String = baseUrl + manga.url
 
     override fun mangaDetailsRequest(manga: SManga): Request {
-        val id = manga.url
-            .substringAfter("/manga/")
-            .substringBefore("/")
+        val id =
+            manga.url
+                .substringAfter("/manga/")
+                .substringBefore("/")
 
         return GET("$API_URL/mangas/$id", apiHeaders)
     }
@@ -137,69 +142,75 @@ class YomuMangas : HttpSource() {
     override fun imageUrlParse(response: Response): String = ""
 
     override fun imageRequest(page: Page): Request {
-        val newHeaders = headersBuilder()
-            .add("Accept", ACCEPT_IMAGE)
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Accept", ACCEPT_IMAGE)
+                .build()
 
         return GET(page.imageUrl!!, newHeaders)
     }
 
-    override fun getFilterList(): FilterList = FilterList(
-        StatusFilter(getStatusList()),
-        TypeFilter(getTypesList()),
-        NsfwContentFilter(),
-        AdultContentFilter(),
-        GenreFilter(getGenresList()),
-    )
+    override fun getFilterList(): FilterList =
+        FilterList(
+            StatusFilter(getStatusList()),
+            TypeFilter(getTypesList()),
+            NsfwContentFilter(),
+            AdultContentFilter(),
+            GenreFilter(getGenresList()),
+        )
 
-    private fun getStatusList(): List<Status> = listOf(
-        Status("Todos", ""),
-        Status("Lançando", "RELEASING"),
-        Status("Finalizado", "FINISHED"),
-        Status("Cancelado", "CANCELLED"),
-        Status("Hiato", "HIATUS"),
-        Status("Não lançado", "NOT_YET_RELEASED"),
-        Status("Traduzindo", "TRANSLATING"),
-        Status("Desconhecido", "UNKNOWN"),
-    )
+    private fun getStatusList(): List<Status> =
+        listOf(
+            Status("Todos", ""),
+            Status("Lançando", "RELEASING"),
+            Status("Finalizado", "FINISHED"),
+            Status("Cancelado", "CANCELLED"),
+            Status("Hiato", "HIATUS"),
+            Status("Não lançado", "NOT_YET_RELEASED"),
+            Status("Traduzindo", "TRANSLATING"),
+            Status("Desconhecido", "UNKNOWN"),
+        )
 
-    private fun getTypesList(): List<Type> = listOf(
-        Type("Todos", ""),
-        Type("Mangá", "MANGA"),
-        Type("Manhwa", "MANHWA"),
-        Type("Mangá em hiato", "MANGA_HIATUS"),
-        Type("Webcomic", "WEBCOMIC"),
-        Type("Webtoon", "WEBTOON"),
-        Type("Hentai", "HENTAI"),
-        Type("Doujinshi", "DOUJIN"),
-        Type("One-shot", "ONESHOT"),
-    )
+    private fun getTypesList(): List<Type> =
+        listOf(
+            Type("Todos", ""),
+            Type("Mangá", "MANGA"),
+            Type("Manhwa", "MANHWA"),
+            Type("Mangá em hiato", "MANGA_HIATUS"),
+            Type("Webcomic", "WEBCOMIC"),
+            Type("Webtoon", "WEBTOON"),
+            Type("Hentai", "HENTAI"),
+            Type("Doujinshi", "DOUJIN"),
+            Type("One-shot", "ONESHOT"),
+        )
 
-    private fun getGenresList(): List<Genre> = listOf(
-        Genre("Ação", "1"),
-        Genre("Aventura", "8"),
-        Genre("Comédia", "2"),
-        Genre("Drama", "3"),
-        Genre("Ecchi", "15"),
-        Genre("Esportes", "14"),
-        Genre("Fantasia", "6"),
-        Genre("Hentai", "19"),
-        Genre("Horror", "4"),
-        Genre("Mahou shoujo", "18"),
-        Genre("Mecha", "17"),
-        Genre("Mistério", "7"),
-        Genre("Música", "16"),
-        Genre("Psicológico", "9"),
-        Genre("Romance", "13"),
-        Genre("Sci-fi", "11"),
-        Genre("Slice of life", "10"),
-        Genre("Sobrenatural", "5"),
-        Genre("Suspense", "12"),
-    )
+    private fun getGenresList(): List<Genre> =
+        listOf(
+            Genre("Ação", "1"),
+            Genre("Aventura", "8"),
+            Genre("Comédia", "2"),
+            Genre("Drama", "3"),
+            Genre("Ecchi", "15"),
+            Genre("Esportes", "14"),
+            Genre("Fantasia", "6"),
+            Genre("Hentai", "19"),
+            Genre("Horror", "4"),
+            Genre("Mahou shoujo", "18"),
+            Genre("Mecha", "17"),
+            Genre("Mistério", "7"),
+            Genre("Música", "16"),
+            Genre("Psicológico", "9"),
+            Genre("Romance", "13"),
+            Genre("Sci-fi", "11"),
+            Genre("Slice of life", "10"),
+            Genre("Sobrenatural", "5"),
+            Genre("Suspense", "12"),
+        )
 
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromString(it.body.string())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromString(it.body.string())
+        }
 
     companion object {
         private const val ACCEPT_IMAGE = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"

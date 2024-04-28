@@ -50,12 +50,13 @@ class OrderByFilter(
     default: String? = null,
 ) : SelectFilter("Order by", options.map { Pair(it, it) }, default) {
     companion object {
-        private val options = listOf(
-            "Views",
-            "Bookmarks",
-            "Number of chapters",
-            "Rating",
-        )
+        private val options =
+            listOf(
+                "Views",
+                "Bookmarks",
+                "Number of chapters",
+                "Rating",
+            )
 
         val POPULAR = FilterList(OrderByFilter("Views"))
     }
@@ -63,31 +64,34 @@ class OrderByFilter(
 
 class SortFilter : SelectFilter("Sort By", options) {
     companion object {
-        private val options = listOf(
-            Pair("Descending", "desc"),
-            Pair("Ascending", "asc"),
-        )
+        private val options =
+            listOf(
+                Pair("Descending", "desc"),
+                Pair("Ascending", "asc"),
+            )
     }
 }
 
 class TypeFilter : CheckBoxFilterGroup("Type", options) {
     companion object {
-        private val options = listOf(
-            Pair("Manga", "Japanese"),
-            Pair("Manhwa", "Korean"),
-            Pair("Manhua", "Chinese"),
-            Pair("Comic", "English"),
-        )
+        private val options =
+            listOf(
+                Pair("Manga", "Japanese"),
+                Pair("Manhwa", "Korean"),
+                Pair("Manhua", "Chinese"),
+                Pair("Comic", "English"),
+            )
     }
 }
 
 class StatusFilter : CheckBoxFilterGroup("Status", options.map { Pair(it, it) }) {
     companion object {
-        private val options = listOf(
-            "Ongoing",
-            "Completed",
-            "Cancelled",
-            "Hiatus",
-        )
+        private val options =
+            listOf(
+                "Ongoing",
+                "Completed",
+                "Cancelled",
+                "Hiatus",
+            )
     }
 }

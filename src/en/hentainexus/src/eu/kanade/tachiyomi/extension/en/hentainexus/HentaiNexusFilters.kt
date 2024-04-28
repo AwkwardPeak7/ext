@@ -29,13 +29,14 @@ open class AdvSearchEntryFilter(
 data class AdvSearchEntry(val key: String, val text: String, val exclude: Boolean)
 
 internal fun combineQuery(filters: FilterList): String {
-    val advSearch = filters.filterIsInstance<AdvSearchEntryFilter>().flatMap { filter ->
-        val splitState = filter.state.split(",").map(String::trim).filterNot(String::isBlank)
+    val advSearch =
+        filters.filterIsInstance<AdvSearchEntryFilter>().flatMap { filter ->
+            val splitState = filter.state.split(",").map(String::trim).filterNot(String::isBlank)
 
-        splitState.map {
-            AdvSearchEntry(filter.key, it.removePrefix("-"), it.startsWith("-"))
+            splitState.map {
+                AdvSearchEntry(filter.key, it.removePrefix("-"), it.startsWith("-"))
+            }
         }
-    }
 
     return buildString {
         advSearch.forEach { entry ->

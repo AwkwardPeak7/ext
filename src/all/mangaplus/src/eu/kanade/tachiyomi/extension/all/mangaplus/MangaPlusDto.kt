@@ -91,16 +91,18 @@ class TitleDetailView(
         get() = chapterList.isNotEmpty() && chapterList.all(Chapter::isVerticalOnly)
 
     private val isOneShot: Boolean
-        get() = chapterList.size == 1 && chapterList.firstOrNull()
-            ?.name?.equals("one-shot", true) == true
+        get() =
+            chapterList.size == 1 && chapterList.firstOrNull()
+                ?.name?.equals("one-shot", true) == true
 
     private val isReEdition: Boolean
         get() = viewingPeriodDescription.contains(REEDITION_REGEX)
 
     private val isCompleted: Boolean
-        get() = nonAppearanceInfo.contains(COMPLETED_REGEX) || isOneShot ||
-            titleLabels.releaseSchedule == ReleaseSchedule.COMPLETED ||
-            titleLabels.releaseSchedule == ReleaseSchedule.DISABLED
+        get() =
+            nonAppearanceInfo.contains(COMPLETED_REGEX) || isOneShot ||
+                titleLabels.releaseSchedule == ReleaseSchedule.COMPLETED ||
+                titleLabels.releaseSchedule == ReleaseSchedule.DISABLED
 
     private val isSimulpub: Boolean
         get() = isSimulReleased || titleLabels.isSimulpub
@@ -108,48 +110,51 @@ class TitleDetailView(
     private val isOnHiatus: Boolean
         get() = nonAppearanceInfo.contains(HIATUS_REGEX)
 
-    private fun createGenres(intl: Intl): List<String> = buildList {
-        if (isSimulpub && !isReEdition && !isOneShot && !isCompleted) {
-            add("Simulrelease")
-        }
+    private fun createGenres(intl: Intl): List<String> =
+        buildList {
+            if (isSimulpub && !isReEdition && !isOneShot && !isCompleted) {
+                add("Simulrelease")
+            }
 
-        if (isOneShot) {
-            add("One-shot")
-        }
+            if (isOneShot) {
+                add("One-shot")
+            }
 
-        if (isReEdition) {
-            add("Re-edition")
-        }
+            if (isReEdition) {
+                add("Re-edition")
+            }
 
-        if (isWebtoon) {
-            add("Webtoon")
-        }
+            if (isWebtoon) {
+                add("Webtoon")
+            }
 
-        if (label?.magazine != null) {
-            add(intl.format("serialization", label.magazine))
-        }
+            if (label?.magazine != null) {
+                add(intl.format("serialization", label.magazine))
+            }
 
-        if (!isCompleted) {
-            val scheduleLabel = intl["schedule_" + titleLabels.releaseSchedule.toString().lowercase()]
-            add(intl.format("schedule", scheduleLabel))
-        }
+            if (!isCompleted) {
+                val scheduleLabel = intl["schedule_" + titleLabels.releaseSchedule.toString().lowercase()]
+                add(intl.format("schedule", scheduleLabel))
+            }
 
-        val ratingLabel = intl["rating_" + rating.toString().lowercase()]
-        add(intl.format("rating", ratingLabel))
-    }
+            val ratingLabel = intl["rating_" + rating.toString().lowercase()]
+            add(intl.format("rating", ratingLabel))
+        }
 
     private val viewingInformation: String?
         get() = viewingPeriodDescription.takeIf { !isCompleted }
 
-    fun toSManga(intl: Intl): SManga = title.toSManga().apply {
-        description = "${overview.orEmpty()}\n\n${viewingInformation.orEmpty()}".trim()
-        status = when {
-            isCompleted -> SManga.COMPLETED
-            isOnHiatus -> SManga.ON_HIATUS
-            else -> SManga.ONGOING
+    fun toSManga(intl: Intl): SManga =
+        title.toSManga().apply {
+            description = "${overview.orEmpty()}\n\n${viewingInformation.orEmpty()}".trim()
+            status =
+                when {
+                    isCompleted -> SManga.COMPLETED
+                    isOnHiatus -> SManga.ON_HIATUS
+                    else -> SManga.ONGOING
+                }
+            genre = createGenres(intl).joinToString()
         }
-        genre = createGenres(intl).joinToString()
-    }
 
     companion object {
         private val COMPLETED_REGEX = "completado|complete|completo".toRegex()
@@ -190,18 +195,19 @@ enum class Rating {
 @Serializable
 class Label(val label: LabelCode? = LabelCode.WEEKLY_SHOUNEN_JUMP) {
     val magazine: String?
-        get() = when (label) {
-            LabelCode.WEEKLY_SHOUNEN_JUMP -> "Weekly Shounen Jump"
-            LabelCode.JUMP_SQUARE -> "Jump SQ."
-            LabelCode.V_JUMP -> "V Jump"
-            LabelCode.SHOUNEN_JUMP_GIGA -> "Shounen Jump GIGA"
-            LabelCode.WEEKLY_YOUNG_JUMP -> "Weekly Young Jump"
-            LabelCode.TONARI_NO_YOUNG_JUMP -> "Tonari no Young Jump"
-            LabelCode.SHOUNEN_JUMP_PLUS -> "Shounen Jump+"
-            LabelCode.MANGA_PLUS_CREATORS -> "MANGA Plus Creators"
-            LabelCode.SAIKYOU_JUMP -> "Saikyou Jump"
-            else -> null
-        }
+        get() =
+            when (label) {
+                LabelCode.WEEKLY_SHOUNEN_JUMP -> "Weekly Shounen Jump"
+                LabelCode.JUMP_SQUARE -> "Jump SQ."
+                LabelCode.V_JUMP -> "V Jump"
+                LabelCode.SHOUNEN_JUMP_GIGA -> "Shounen Jump GIGA"
+                LabelCode.WEEKLY_YOUNG_JUMP -> "Weekly Young Jump"
+                LabelCode.TONARI_NO_YOUNG_JUMP -> "Tonari no Young Jump"
+                LabelCode.SHOUNEN_JUMP_PLUS -> "Shounen Jump+"
+                LabelCode.MANGA_PLUS_CREATORS -> "MANGA Plus Creators"
+                LabelCode.SAIKYOU_JUMP -> "Saikyou Jump"
+                else -> null
+            }
 }
 
 @Serializable
@@ -260,13 +266,14 @@ class Title(
     val viewCount: Int = 0,
     val language: Language? = Language.ENGLISH,
 ) {
-    fun toSManga(): SManga = SManga.create().apply {
-        title = name
-        author = this@Title.author?.replace(" / ", ", ")
-        artist = author
-        thumbnail_url = portraitImageUrl
-        url = "#/titles/$titleId"
-    }
+    fun toSManga(): SManga =
+        SManga.create().apply {
+            title = name
+            author = this@Title.author?.replace(" / ", ", ")
+            artist = author
+            thumbnail_url = portraitImageUrl
+            url = "#/titles/$titleId"
+        }
 }
 
 enum class Language {
@@ -309,12 +316,13 @@ class Chapter(
     val isExpired: Boolean
         get() = subTitle == null
 
-    fun toSChapter(): SChapter = SChapter.create().apply {
-        name = "${this@Chapter.name} - $subTitle"
-        date_upload = 1000L * startTimeStamp
-        url = "#/viewer/$chapterId"
-        chapter_number = this@Chapter.name.substringAfter("#").toFloatOrNull() ?: -1f
-    }
+    fun toSChapter(): SChapter =
+        SChapter.create().apply {
+            name = "${this@Chapter.name} - $subTitle"
+            date_upload = 1000L * startTimeStamp
+            url = "#/viewer/$chapterId"
+            chapter_number = this@Chapter.name.substringAfter("#").toFloatOrNull() ?: -1f
+        }
 }
 
 @Serializable

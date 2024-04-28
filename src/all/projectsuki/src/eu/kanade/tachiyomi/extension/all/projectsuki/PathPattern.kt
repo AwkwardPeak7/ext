@@ -40,12 +40,13 @@ data class PathPattern(val paths: List<Regex?>) {
  * @author Federico d'Alonzo &lt;me@npgx.dev&gt;
  */
 data class PathMatchResult(val doesMatch: Boolean, val matchResults: List<MatchResult?>?) {
-    operator fun get(name: String): MatchGroup? = matchResults?.firstNotNullOfOrNull {
-        it?.groups
-            // this throws if the group by "name" isn't found AND can return null too
-            ?.runCatching { get(name) }
-            ?.getOrNull()
-    }
+    operator fun get(name: String): MatchGroup? =
+        matchResults?.firstNotNullOfOrNull {
+            it?.groups
+                // this throws if the group by "name" isn't found AND can return null too
+                ?.runCatching { get(name) }
+                ?.getOrNull()
+        }
 
     init {
         if (matchResults?.isEmpty() == true) {
@@ -64,10 +65,11 @@ fun HttpUrl.matchAgainst(
     ignoreEmptySegments: Boolean = true,
 ): PathMatchResult {
     val actualSegments: List<String> = if (ignoreEmptySegments) pathSegments.filter { it.isNotBlank() } else pathSegments
-    val sizeReq = when (allowSubPaths) {
-        false -> actualSegments.size == pattern.paths.size
-        true -> actualSegments.size >= pattern.paths.size
-    }
+    val sizeReq =
+        when (allowSubPaths) {
+            false -> actualSegments.size == pattern.paths.size
+            true -> actualSegments.size >= pattern.paths.size
+        }
 
     if (!sizeReq) return PathMatchResult(false, null)
 

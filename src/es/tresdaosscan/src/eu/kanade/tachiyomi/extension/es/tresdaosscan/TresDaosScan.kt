@@ -14,7 +14,8 @@ class TresDaosScan : MangaThemesia(
     // Site move from Madara to MangaThemesia
     override val versionId = 3
 
-    override val client = super.client.newBuilder()
-        .rateLimit(2)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimit(2)
+            .build()
 }

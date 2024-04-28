@@ -33,11 +33,12 @@ class Iqiyi : ParsedHttpSource() {
 
     override fun popularMangaSelector(): String = "ul.cartoon-hot-ul > li.cartoon-hot-list"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst("a.cartoon-item-tit")!!.text()
-        url = element.selectFirst("a.cartoon-item-tit")!!.attr("href").drop(7)
-        thumbnail_url = element.selectFirst("img")!!.attr("src")
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.selectFirst("a.cartoon-item-tit")!!.text()
+            url = element.selectFirst("a.cartoon-item-tit")!!.attr("href").drop(7)
+            thumbnail_url = element.selectFirst("img")!!.attr("src")
+        }
 
     // Latest
 
@@ -63,27 +64,30 @@ class Iqiyi : ParsedHttpSource() {
 
     override fun searchMangaSelector(): String = "ul.stacksList > li.stacksBook"
 
-    override fun searchMangaFromElement(element: Element): SManga = SManga.create().apply {
-        title = element.selectFirst("h3.stacksBook-tit > a")!!.text()
-        url = element.selectFirst("h3.stacksBook-tit > a")!!.attr("href").drop(7)
-        thumbnail_url = element.selectFirst("img")!!.attr("src")
-    }
+    override fun searchMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            title = element.selectFirst("h3.stacksBook-tit > a")!!.text()
+            url = element.selectFirst("h3.stacksBook-tit > a")!!.attr("href").drop(7)
+            thumbnail_url = element.selectFirst("img")!!.attr("src")
+        }
 
     // Details
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.selectFirst("div.detail-tit > h1")!!.text()
-        thumbnail_url = document.selectFirst("div.detail-cover > img")!!.attr("src")
-        author = document.selectFirst("p.author > span.author-name")!!.text()
-        artist = author
-        genre = document.select("div.detail-tit > a.detail-categ").eachText().joinToString(", ")
-        description = document.selectFirst("p.detail-docu")!!.text()
-        status = when (document.selectFirst("span.cata-info")!!.text()) {
-            "连载中" -> SManga.ONGOING
-            "完结" -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.selectFirst("div.detail-tit > h1")!!.text()
+            thumbnail_url = document.selectFirst("div.detail-cover > img")!!.attr("src")
+            author = document.selectFirst("p.author > span.author-name")!!.text()
+            artist = author
+            genre = document.select("div.detail-tit > a.detail-categ").eachText().joinToString(", ")
+            description = document.selectFirst("p.detail-docu")!!.text()
+            status =
+                when (document.selectFirst("span.cata-info")!!.text()) {
+                    "连载中" -> SManga.ONGOING
+                    "完结" -> SManga.COMPLETED
+                    else -> SManga.UNKNOWN
+                }
         }
-    }
 
     // Chapters
 

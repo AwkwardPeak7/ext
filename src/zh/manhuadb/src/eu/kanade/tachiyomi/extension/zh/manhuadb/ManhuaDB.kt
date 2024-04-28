@@ -50,8 +50,9 @@ class ManhuaDB : MDB("漫画DB", "https://www.manhuadb.com"), ConfigurableSource
         imgData: String,
         readerConfig: Element,
     ): List<String> {
-        val list: List<Image> = Base64.decode(imgData, Base64.DEFAULT)
-            .let { json.decodeFromString(String(it)) }
+        val list: List<Image> =
+            Base64.decode(imgData, Base64.DEFAULT)
+                .let { json.decodeFromString(String(it)) }
         val host = readerConfig.attr("data-host")
         val dir = readerConfig.attr("data-img_pre")
         val useWebp = preferences.getBoolean(WEBP_PREF, true)

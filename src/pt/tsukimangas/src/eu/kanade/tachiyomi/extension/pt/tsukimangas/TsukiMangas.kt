@@ -47,8 +47,9 @@ class TsukiMangas : HttpSource() {
             .build()
     }
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     private val json: Json by injectLazy()
 
@@ -57,13 +58,14 @@ class TsukiMangas : HttpSource() {
 
     override fun popularMangaParse(response: Response): MangasPage {
         val item = response.parseAs<MangaListDto>()
-        val mangas = item.data.map {
-            SManga.create().apply {
-                url = "/obra" + it.entryPath
-                thumbnail_url = baseUrl + it.imagePath
-                title = it.title
+        val mangas =
+            item.data.map {
+                SManga.create().apply {
+                    url = "/obra" + it.entryPath
+                    thumbnail_url = baseUrl + it.imagePath
+                    title = it.title
+                }
             }
-        }
         val hasNextPage = item.page < item.lastPage
         return MangasPage(mangas, hasNextPage)
     }
@@ -105,17 +107,18 @@ class TsukiMangas : HttpSource() {
         filters: FilterList,
     ): Request {
         val params = TsukiMangasFilters.getSearchParameters(filters)
-        val url = "$apiUrl/mangas".toHttpUrl().newBuilder()
-            .addQueryParameter("page", page.toString())
-            .addQueryParameter("title", query.trim())
-            .addIfNotBlank("filter", params.filter)
-            .addIfNotBlank("format", params.format)
-            .addIfNotBlank("status", params.status)
-            .addIfNotBlank("adult_content", params.adult)
-            .apply {
-                params.genres.forEach { addQueryParameter("genres[]", it) }
-                params.tags.forEach { addQueryParameter("tags[]", it) }
-            }.build()
+        val url =
+            "$apiUrl/mangas".toHttpUrl().newBuilder()
+                .addQueryParameter("page", page.toString())
+                .addQueryParameter("title", query.trim())
+                .addIfNotBlank("filter", params.filter)
+                .addIfNotBlank("format", params.format)
+                .addIfNotBlank("status", params.status)
+                .addIfNotBlank("adult_content", params.adult)
+                .apply {
+                    params.genres.forEach { addQueryParameter("genres[]", it) }
+                    params.tags.forEach { addQueryParameter("tags[]", it) }
+                }.build()
 
         return GET(url, headers)
     }
@@ -130,28 +133,31 @@ class TsukiMangas : HttpSource() {
 
     override fun getMangaUrl(manga: SManga) = baseUrl + manga.url
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val mangaDto = response.parseAs<CompleteMangaDto>()
-        url = "/obra" + mangaDto.entryPath
-        thumbnail_url = baseUrl + mangaDto.imagePath
-        title = mangaDto.title
-        artist = mangaDto.staff
-        genre = mangaDto.genres.joinToString { it.genre }
-        status = parseStatus(mangaDto.status.orEmpty())
-        description = buildString {
-            mangaDto.synopsis?.also { append("$it\n\n") }
-            if (mangaDto.titles.isNotEmpty()) {
-                append("Títulos alternativos: ${mangaDto.titles.joinToString { it.title }}")
-            }
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val mangaDto = response.parseAs<CompleteMangaDto>()
+            url = "/obra" + mangaDto.entryPath
+            thumbnail_url = baseUrl + mangaDto.imagePath
+            title = mangaDto.title
+            artist = mangaDto.staff
+            genre = mangaDto.genres.joinToString { it.genre }
+            status = parseStatus(mangaDto.status.orEmpty())
+            description =
+                buildString {
+                    mangaDto.synopsis?.also { append("$it\n\n") }
+                    if (mangaDto.titles.isNotEmpty()) {
+                        append("Títulos alternativos: ${mangaDto.titles.joinToString { it.title }}")
+                    }
+                }
         }
-    }
 
-    private fun parseStatus(status: String) = when (status) {
-        "Ativo" -> SManga.ONGOING
-        "Completo" -> SManga.COMPLETED
-        "Hiato" -> SManga.ON_HIATUS
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String) =
+        when (status) {
+            "Ativo" -> SManga.ONGOING
+            "Completo" -> SManga.COMPLETED
+            "Hiato" -> SManga.ON_HIATUS
+            else -> SManga.UNKNOWN
+        }
 
     // ============================== Chapters ==============================
     override fun chapterListRequest(manga: SManga): Request {
@@ -219,9 +225,10 @@ class TsukiMangas : HttpSource() {
     }
 
     // ============================= Utilities ==============================
-    private inline fun <reified T> Response.parseAs(): T = use {
-        json.decodeFromStream(it.body.byteStream())
-    }
+    private inline fun <reified T> Response.parseAs(): T =
+        use {
+            json.decodeFromStream(it.body.byteStream())
+        }
 
     private fun HttpUrl.Builder.addIfNotBlank(
         query: String,
@@ -240,11 +247,12 @@ class TsukiMangas : HttpSource() {
 
     private val pageNumberRegex = Regex("""(\d+)\.(png|jpg|jpeg|gif|webp)$""")
 
-    private fun String.extractPageNumber() = pageNumberRegex
-        .find(substringBefore("?"))
-        ?.groupValues
-        ?.get(1)
-        ?.toInt() ?: 0
+    private fun String.extractPageNumber() =
+        pageNumberRegex
+            .find(substringBefore("?"))
+            ?.groupValues
+            ?.get(1)
+            ?.toInt() ?: 0
 
     /**
      * This may sound stupid (because it is), but a similar approach exists
@@ -261,20 +269,22 @@ class TsukiMangas : HttpSource() {
         } else {
             response.close()
             val url = request.url.toString()
-            val newUrl = when {
-                url.startsWith(MAIN_CDN) -> url.replace("$MAIN_CDN/tsuki", SECONDARY_CDN)
-                url.startsWith(SECONDARY_CDN) -> url.replace(SECONDARY_CDN, "$MAIN_CDN/tsuki")
-                else -> url
-            }
+            val newUrl =
+                when {
+                    url.startsWith(MAIN_CDN) -> url.replace("$MAIN_CDN/tsuki", SECONDARY_CDN)
+                    url.startsWith(SECONDARY_CDN) -> url.replace(SECONDARY_CDN, "$MAIN_CDN/tsuki")
+                    else -> url
+                }
 
             val newRequest = GET(newUrl, request.headers)
             chain.proceed(newRequest)
         }
     }
 
-    private val apiHeadersRegex = Regex(
-        """headers\.common(?:\.(?<key>[0-9A-Za-z_]+)|\[['"](?<key2>[0-9A-Za-z-_]+)['"]])\s*=\s*['"](?<value>[a-zA-Z0-9_ :;.,\\/?!(){}\[\]@<>=\-+*#$&`|~^%]+)['"]""",
-    )
+    private val apiHeadersRegex =
+        Regex(
+            """headers\.common(?:\.(?<key>[0-9A-Za-z_]+)|\[['"](?<key2>[0-9A-Za-z-_]+)['"]])\s*=\s*['"](?<value>[a-zA-Z0-9_ :;.,\\/?!(){}\[\]@<>=\-+*#$&`|~^%]+)['"]""",
+        )
 
     private val apiHeaders by lazy {
         val document = client.newCall(GET(baseUrl, headers)).execute().asJsoup()
@@ -294,9 +304,10 @@ class TsukiMangas : HttpSource() {
             return chain.proceed(request)
         }
 
-        val newRequest = request.newBuilder().apply {
-            apiHeaders.entries.forEach { addHeader(it.key, it.value) }
-        }.build()
+        val newRequest =
+            request.newBuilder().apply {
+                apiHeaders.entries.forEach { addHeader(it.key, it.value) }
+            }.build()
 
         return chain.proceed(newRequest)
     }

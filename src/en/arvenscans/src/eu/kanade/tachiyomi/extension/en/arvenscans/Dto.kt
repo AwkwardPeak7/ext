@@ -31,47 +31,52 @@ class Manga(
     private val seriesStatus: String? = null,
     private val genres: List<Name>? = emptyList(),
 ) {
-    fun toSManga(baseUrl: String) = SManga.create().apply {
-        url = "$slug#$id"
-        title = postTitle
-        thumbnail_url = "$baseUrl/_next/image".toHttpUrl().newBuilder().apply {
-            addQueryParameter("url", featuredImage)
-            addQueryParameter("w", "828")
-            addQueryParameter("q", "75")
-        }.toString()
-        author = this@Manga.author?.takeUnless { it.isEmpty() }
-        artist = this@Manga.artist?.takeUnless { it.isEmpty() }
-        description = buildString {
-            postContent?.takeUnless { it.isEmpty() }?.let { desc ->
-                val tmpDesc = desc.replace("\n", "<br>")
+    fun toSManga(baseUrl: String) =
+        SManga.create().apply {
+            url = "$slug#$id"
+            title = postTitle
+            thumbnail_url =
+                "$baseUrl/_next/image".toHttpUrl().newBuilder().apply {
+                    addQueryParameter("url", featuredImage)
+                    addQueryParameter("w", "828")
+                    addQueryParameter("q", "75")
+                }.toString()
+            author = this@Manga.author?.takeUnless { it.isEmpty() }
+            artist = this@Manga.artist?.takeUnless { it.isEmpty() }
+            description =
+                buildString {
+                    postContent?.takeUnless { it.isEmpty() }?.let { desc ->
+                        val tmpDesc = desc.replace("\n", "<br>")
 
-                append(Jsoup.parse(tmpDesc).text())
-            }
-            alternativeTitles?.takeUnless { it.isEmpty() }?.let { altName ->
-                append("\n\n")
-                append("Alternative Names: ")
-                append(altName)
-            }
-        }.trim()
-        genre = getGenres()
-        status = when (seriesStatus) {
-            "ONGOING", "COMING_SOON" -> SManga.ONGOING
-            "COMPLETED" -> SManga.COMPLETED
-            "CANCELLED", "DROPPED" -> SManga.CANCELLED
-            else -> SManga.UNKNOWN
+                        append(Jsoup.parse(tmpDesc).text())
+                    }
+                    alternativeTitles?.takeUnless { it.isEmpty() }?.let { altName ->
+                        append("\n\n")
+                        append("Alternative Names: ")
+                        append(altName)
+                    }
+                }.trim()
+            genre = getGenres()
+            status =
+                when (seriesStatus) {
+                    "ONGOING", "COMING_SOON" -> SManga.ONGOING
+                    "COMPLETED" -> SManga.COMPLETED
+                    "CANCELLED", "DROPPED" -> SManga.CANCELLED
+                    else -> SManga.UNKNOWN
+                }
+            initialized = true
         }
-        initialized = true
-    }
 
-    fun getGenres() = buildList {
-        when (seriesType) {
-            "MANGA" -> add("Manga")
-            "MANHUA" -> add("Manhua")
-            "MANHWA" -> add("Manhwa")
-            else -> {}
-        }
-        genres?.forEach { add(it.name) }
-    }.distinct().joinToString()
+    fun getGenres() =
+        buildList {
+            when (seriesType) {
+                "MANGA" -> add("Manga")
+                "MANHUA" -> add("Manhua")
+                "MANHWA" -> add("Manhwa")
+                else -> {}
+            }
+            genres?.forEach { add(it.name) }
+        }.distinct().joinToString()
 }
 
 @Serializable
@@ -98,16 +103,18 @@ class Chapter(
 ) {
     fun isPublic() = chapterStatus == "PUBLIC"
 
-    fun toSChapter(mangaSlug: String) = SChapter.create().apply {
-        url = "/series/$mangaSlug/$slug#$id"
-        name = "Chapter $number"
-        scanlator = createdBy.name
-        date_upload = try {
-            dateFormat.parse(createdAt)!!.time
-        } catch (_: ParseException) {
-            0L
+    fun toSChapter(mangaSlug: String) =
+        SChapter.create().apply {
+            url = "/series/$mangaSlug/$slug#$id"
+            name = "Chapter $number"
+            scanlator = createdBy.name
+            date_upload =
+                try {
+                    dateFormat.parse(createdAt)!!.time
+                } catch (_: ParseException) {
+                    0L
+                }
         }
-    }
 }
 
 private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH)

@@ -34,13 +34,15 @@ class HoneyManga : HttpSource() {
     override val lang = "uk"
     override val supportsLatest = true
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Origin", baseUrl)
-        .add("Referer", baseUrl)
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Origin", baseUrl)
+            .add("Referer", baseUrl)
 
-    override val client = network.client.newBuilder()
-        .rateLimitHost(API_URL.toHttpUrl(), 10)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .rateLimitHost(API_URL.toHttpUrl(), 10)
+            .build()
 
     // ============================== Popular ===============================
     override fun popularMangaRequest(page: Int) = makeHoneyMangaRequest(page, "likes")
@@ -59,9 +61,10 @@ class HoneyManga : HttpSource() {
         filters: FilterList,
     ): Request {
         if (query.length >= 3) {
-            val url = "$SEARCH_API_URL/v2/manga/pattern".toHttpUrl().newBuilder()
-                .addQueryParameter("query", query)
-                .build()
+            val url =
+                "$SEARCH_API_URL/v2/manga/pattern".toHttpUrl().newBuilder()
+                    .addQueryParameter("query", query)
+                    .build()
             return GET(url, headers)
         } else {
             throw UnsupportedOperationException("Запит має містити щонайменше 3 символи / The query must contain at least 3 characters")
@@ -77,33 +80,36 @@ class HoneyManga : HttpSource() {
         return GET(url, headers)
     }
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val mangaDto = response.asClass<CompleteHoneyMangaDto>()
-        title = mangaDto.title
-        thumbnail_url = "$IMAGE_STORAGE_URL/${mangaDto.posterId}"
-        url = "$baseUrl/book/${mangaDto.id}"
-        description = mangaDto.description
-        genre = mangaDto.genresAndTags?.joinToString()
-        artist = mangaDto.artists?.joinToString()
-        author = mangaDto.authors?.joinToString()
-        status = when (mangaDto.titleStatus.orEmpty()) {
-            "Онгоінг" -> SManga.ONGOING
-            "Завершено" -> SManga.COMPLETED
-            "Покинуто" -> SManga.CANCELLED
-            "Призупинено" -> SManga.ON_HIATUS
-            else -> SManga.UNKNOWN
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val mangaDto = response.asClass<CompleteHoneyMangaDto>()
+            title = mangaDto.title
+            thumbnail_url = "$IMAGE_STORAGE_URL/${mangaDto.posterId}"
+            url = "$baseUrl/book/${mangaDto.id}"
+            description = mangaDto.description
+            genre = mangaDto.genresAndTags?.joinToString()
+            artist = mangaDto.artists?.joinToString()
+            author = mangaDto.authors?.joinToString()
+            status =
+                when (mangaDto.titleStatus.orEmpty()) {
+                    "Онгоінг" -> SManga.ONGOING
+                    "Завершено" -> SManga.COMPLETED
+                    "Покинуто" -> SManga.CANCELLED
+                    "Призупинено" -> SManga.ON_HIATUS
+                    else -> SManga.UNKNOWN
+                }
         }
-    }
 
     // ============================== Chapters ==============================
     override fun chapterListRequest(manga: SManga): Request {
         val url = "$API_URL/v2/chapter/cursor-list"
-        val body = buildJsonObject {
-            put("mangaId", manga.url.substringAfterLast('/'))
-            put("sortOrder", "DESC")
-            put("page", "1")
-            put("pageSize", "10000") // most likely there will not be any more pageSize
-        }.toString().toRequestBody(JSON_MEDIA_TYPE)
+        val body =
+            buildJsonObject {
+                put("mangaId", manga.url.substringAfterLast('/'))
+                put("sortOrder", "DESC")
+                put("page", "1")
+                put("pageSize", "10000") // most likely there will not be any more pageSize
+            }.toString().toRequestBody(JSON_MEDIA_TYPE)
         return POST(url, headers, body)
     }
 
@@ -150,14 +156,15 @@ class HoneyManga : HttpSource() {
         page: Int,
         sortBy: String,
     ): Request {
-        val body = buildJsonObject {
-            put("page", page)
-            put("pageSize", DEFAULT_PAGE_SIZE)
-            putJsonObject("sort") {
-                put("sortBy", sortBy)
-                put("sortOrder", "DESC")
-            }
-        }.toString().toRequestBody(JSON_MEDIA_TYPE)
+        val body =
+            buildJsonObject {
+                put("page", page)
+                put("pageSize", DEFAULT_PAGE_SIZE)
+                putJsonObject("sort") {
+                    put("sortBy", sortBy)
+                    put("sortOrder", "DESC")
+                }
+            }.toString().toRequestBody(JSON_MEDIA_TYPE)
 
         return POST("$API_URL/v2/manga/cursor-list", headers, body)
     }
@@ -169,11 +176,12 @@ class HoneyManga : HttpSource() {
         )
     }
 
-    private fun makeSManga(mangaDto: HoneyMangaDto) = SManga.create().apply {
-        title = mangaDto.title
-        thumbnail_url = "$IMAGE_STORAGE_URL/${mangaDto.posterId}"
-        url = "$baseUrl/book/${mangaDto.id}"
-    }
+    private fun makeSManga(mangaDto: HoneyMangaDto) =
+        SManga.create().apply {
+            title = mangaDto.title
+            thumbnail_url = "$IMAGE_STORAGE_URL/${mangaDto.posterId}"
+            url = "$baseUrl/book/${mangaDto.id}"
+        }
 
     companion object {
         private const val API_URL = "https://data.api.honey-manga.com.ua"
@@ -197,8 +205,9 @@ class HoneyManga : HttpSource() {
 
         private val json: Json by injectLazy()
 
-        private inline fun <reified T> Response.asClass(): T = use {
-            json.decodeFromStream(it.body.byteStream())
-        }
+        private inline fun <reified T> Response.asClass(): T =
+            use {
+                json.decodeFromStream(it.body.byteStream())
+            }
     }
 }

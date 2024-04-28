@@ -106,11 +106,12 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
         val prefClearNew = preferences.getBoolean(NEW_ONLY_KEY, NEW_ONLY_DEFAULT)
 
         if (archive.isnew == "true" && prefClearNew) {
-            val clearNew = Request.Builder()
-                .url("$baseUrl/api/archives/${archive.arcid}/isnew")
-                .headers(headers)
-                .delete()
-                .build()
+            val clearNew =
+                Request.Builder()
+                    .url("$baseUrl/api/archives/${archive.arcid}/isnew")
+                    .headers(headers)
+                    .delete()
+                    .build()
 
             client.newCall(clearNew).execute()
         }
@@ -243,23 +244,25 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
         return MangasPage(archives, currentStart + lastResultCount < lastRecordsFiltered)
     }
 
-    private fun archiveToSManga(archive: Archive) = SManga.create().apply {
-        url = "/reader?id=${archive.arcid}"
-        title = archive.title
-        description = archive.title
-        thumbnail_url = getThumbnailUri(archive.arcid)
-        genre = archive.tags?.replace(",", ", ")
-        artist = getArtist(archive.tags)
-        author = artist
-        status = SManga.COMPLETED
-    }
-
-    override fun headersBuilder() = Headers.Builder().apply {
-        if (apiKey.isNotEmpty()) {
-            val apiKey64 = Base64.encodeToString(apiKey.toByteArray(), Base64.NO_WRAP)
-            add("Authorization", "Bearer $apiKey64")
+    private fun archiveToSManga(archive: Archive) =
+        SManga.create().apply {
+            url = "/reader?id=${archive.arcid}"
+            title = archive.title
+            description = archive.title
+            thumbnail_url = getThumbnailUri(archive.arcid)
+            genre = archive.tags?.replace(",", ", ")
+            artist = getArtist(archive.tags)
+            author = artist
+            status = SManga.COMPLETED
         }
-    }
+
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            if (apiKey.isNotEmpty()) {
+                val apiKey64 = Base64.encodeToString(apiKey.toByteArray(), Base64.NO_WRAP)
+                add("Authorization", "Bearer $apiKey64")
+            }
+        }
 
     private class DescendingOrder(overrideState: Boolean = false) : Filter.CheckBox("Descending Order", overrideState)
 
@@ -273,15 +276,16 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
 
     private class CategorySelect(categories: Array<Pair<String?, String>>) : UriPartFilter("Category", categories)
 
-    override fun getFilterList() = FilterList(
-        CategorySelect(getCategoryPairs(categories)),
-        Filter.Separator(),
-        DescendingOrder(),
-        NewArchivesOnly(),
-        UntaggedArchivesOnly(),
-        StartingPage(startingPageStats()),
-        SortByNamespace(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            CategorySelect(getCategoryPairs(categories)),
+            Filter.Separator(),
+            DescendingOrder(),
+            NewArchivesOnly(),
+            UntaggedArchivesOnly(),
+            StartingPage(startingPageStats()),
+            SortByNamespace(),
+        )
 
     private var categories = emptyList<Category>()
 
@@ -441,11 +445,12 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
             .observeOn(Schedulers.io())
             .subscribe(
                 {
-                    categories = try {
-                        json.decodeFromString(it.body.string())
-                    } catch (e: Exception) {
-                        emptyList()
-                    }
+                    categories =
+                        try {
+                            json.decodeFromString(it.body.string())
+                        } catch (e: Exception) {
+                            emptyList()
+                        }
                 },
                 {},
             )
@@ -525,14 +530,15 @@ open class LANraragi(private val suffix: String = "") : ConfigurableSource, Unme
     }
 
     // Headers (currently auth) are done in headersBuilder
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .dns(Dns.SYSTEM)
-        .addInterceptor { chain ->
-            val response = chain.proceed(chain.request())
-            if (response.code == 401) throw IOException("If the server is in No-Fun Mode make sure the extension's API Key is correct.")
-            response
-        }
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .dns(Dns.SYSTEM)
+            .addInterceptor { chain ->
+                val response = chain.proceed(chain.request())
+                if (response.code == 401) throw IOException("If the server is in No-Fun Mode make sure the extension's API Key is correct.")
+                response
+            }
+            .build()
 
     init {
         if (baseUrl.isNotBlank()) {

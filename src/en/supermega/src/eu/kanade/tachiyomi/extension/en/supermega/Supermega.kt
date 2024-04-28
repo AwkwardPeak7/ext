@@ -42,13 +42,15 @@ class Supermega : ParsedHttpSource() {
         return Observable.just(MangasPage(arrayListOf(manga), false))
     }
 
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> = fetchPopularManga(1)
-        .map { it.mangas.first().apply { initialized = true } }
+    override fun fetchMangaDetails(manga: SManga): Observable<SManga> =
+        fetchPopularManga(1)
+            .map { it.mangas.first().apply { initialized = true } }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        val latestComicNumber = client.newCall(
-            GET(baseUrl),
-        ).execute().asJsoup().select("[name='bigbuttonprevious']").first()!!.parent()!!.attr("href").substringAfter("?i=").toInt() + 1
+        val latestComicNumber =
+            client.newCall(
+                GET(baseUrl),
+            ).execute().asJsoup().select("[name='bigbuttonprevious']").first()!!.parent()!!.attr("href").substringAfter("?i=").toInt() + 1
         return Observable.just(
             IntRange(1, latestComicNumber).reversed().map { it ->
                 SChapter.create().apply {
@@ -60,32 +62,34 @@ class Supermega : ParsedHttpSource() {
         )
     }
 
-    override fun pageListParse(document: Document) = document.select("img[border='4']")
-        .mapIndexed { i, element ->
-            Page(i, "", element.attr("src"))
-        }
+    override fun pageListParse(document: Document) =
+        document.select("img[border='4']")
+            .mapIndexed { i, element ->
+                Page(i, "", element.attr("src"))
+            }
 
     // idk if this is needed i just copied the megatokyo extension lul
     // certificate wasn't trusted for some reason so trusted all certificates
     private fun getUnsafeOkHttpClient(): OkHttpClient {
         // Create a trust manager that does not validate certificate chains
-        val trustAllCerts = arrayOf<TrustManager>(
-            object : X509TrustManager {
-                override fun checkClientTrusted(
-                    chain: Array<out X509Certificate>?,
-                    authType: String?,
-                ) {
-                }
+        val trustAllCerts =
+            arrayOf<TrustManager>(
+                object : X509TrustManager {
+                    override fun checkClientTrusted(
+                        chain: Array<out X509Certificate>?,
+                        authType: String?,
+                    ) {
+                    }
 
-                override fun checkServerTrusted(
-                    chain: Array<out X509Certificate>?,
-                    authType: String?,
-                ) {
-                }
+                    override fun checkServerTrusted(
+                        chain: Array<out X509Certificate>?,
+                        authType: String?,
+                    ) {
+                    }
 
-                override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
-            },
-        )
+                    override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
+                },
+            )
 
         // Install the all-trusting trust manager
         val sslContext = SSLContext.getInstance("SSL")

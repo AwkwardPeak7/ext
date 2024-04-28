@@ -33,22 +33,25 @@ class LeerCapitulo : ParsedHttpSource() {
 
     override val baseUrl = "https://www.leercapitulo.com"
 
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 1, 3)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 1, 3)
+            .build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int): Request = GET(baseUrl, headers)
 
     override fun popularMangaSelector(): String = ".hot-manga > .thumbnails > a"
 
-    override fun popularMangaFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.attr("abs:href"))
-        title = element.attr("title")
-        thumbnail_url = element.selectFirst("img")!!.imgAttr()
-    }
+    override fun popularMangaFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.attr("abs:href"))
+            title = element.attr("title")
+            thumbnail_url = element.selectFirst("img")!!.imgAttr()
+        }
 
     override fun popularMangaNextPageSelector(): String? = null
 
@@ -105,24 +108,26 @@ class LeerCapitulo : ParsedHttpSource() {
             return super.searchMangaParse(response)
         }
 
-        val mangas = json.decodeFromString<List<MangaDto>>(response.body.string()).map {
-            SManga.create().apply {
-                setUrlWithoutDomain(it.link)
-                title = it.label
-                thumbnail_url = baseUrl + it.thumbnail
+        val mangas =
+            json.decodeFromString<List<MangaDto>>(response.body.string()).map {
+                SManga.create().apply {
+                    setUrlWithoutDomain(it.link)
+                    title = it.label
+                    thumbnail_url = baseUrl + it.thumbnail
+                }
             }
-        }
 
         return MangasPage(mangas, hasNextPage = false)
     }
 
     override fun searchMangaSelector(): String = "div.cate-manga div.mainpage-manga"
 
-    override fun searchMangaFromElement(element: Element) = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst("div.media-body a")!!.attr("href"))
-        title = element.selectFirst("div.media-body a")!!.text()
-        thumbnail_url = element.selectFirst("img")!!.imgAttr()
-    }
+    override fun searchMangaFromElement(element: Element) =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst("div.media-body a")!!.attr("href"))
+            title = element.selectFirst("div.media-body a")!!.text()
+            thumbnail_url = element.selectFirst("img")!!.imgAttr()
+        }
 
     override fun searchMangaNextPageSelector(): String = "ul.pagination > li.active + li"
 
@@ -140,90 +145,101 @@ class LeerCapitulo : ParsedHttpSource() {
 
     override fun latestUpdatesSelector(): String = ".mainpage-manga"
 
-    override fun latestUpdatesFromElement(element: Element): SManga = SManga.create().apply {
-        setUrlWithoutDomain(element.selectFirst(".media-body > a")!!.attr("abs:href"))
-        title = element.selectFirst("h4")!!.text()
-        thumbnail_url = element.selectFirst("img")!!.imgAttr()
-    }
+    override fun latestUpdatesFromElement(element: Element): SManga =
+        SManga.create().apply {
+            setUrlWithoutDomain(element.selectFirst(".media-body > a")!!.attr("abs:href"))
+            title = element.selectFirst("h4")!!.text()
+            thumbnail_url = element.selectFirst("img")!!.imgAttr()
+        }
 
     override fun latestUpdatesNextPageSelector(): String? = null
 
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.selectFirst("h1")!!.text()
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.selectFirst("h1")!!.text()
 
-        val altNames = document.selectFirst(".description-update > span:contains(Títulos Alternativos:) + :matchText")?.text()
-        val desc = document.selectFirst("#example2")!!.text()
-        description = when (altNames) {
-            null -> desc
-            else -> "$desc\n\nAlt name(s): $altNames"
+            val altNames = document.selectFirst(".description-update > span:contains(Títulos Alternativos:) + :matchText")?.text()
+            val desc = document.selectFirst("#example2")!!.text()
+            description =
+                when (altNames) {
+                    null -> desc
+                    else -> "$desc\n\nAlt name(s): $altNames"
+                }
+
+            genre = document.select(".description-update a[href^='/genre/']").joinToString { it.text() }
+            status = document.selectFirst(".description-update > span:contains(Estado:) + :matchText")!!.text().toStatus()
+            thumbnail_url = document.selectFirst(".cover-detail > img")!!.imgAttr()
         }
-
-        genre = document.select(".description-update a[href^='/genre/']").joinToString { it.text() }
-        status = document.selectFirst(".description-update > span:contains(Estado:) + :matchText")!!.text().toStatus()
-        thumbnail_url = document.selectFirst(".cover-detail > img")!!.imgAttr()
-    }
 
     override fun chapterListSelector(): String = ".chapter-list > ul > li"
 
-    override fun chapterFromElement(element: Element): SChapter = SChapter.create().apply {
-        with(element.selectFirst("a.xanh")!!) {
-            setUrlWithoutDomain(attr("abs:href"))
-            name = text()
+    override fun chapterFromElement(element: Element): SChapter =
+        SChapter.create().apply {
+            with(element.selectFirst("a.xanh")!!) {
+                setUrlWithoutDomain(attr("abs:href"))
+                name = text()
+            }
         }
-    }
 
     override fun pageListParse(document: Document): List<Page> {
-        val orderList = document.selectFirst("meta[property=ad:check]")?.attr("content")
-            ?.replace("[^\\d]+".toRegex(), "-")
-            ?.split("-")
+        val orderList =
+            document.selectFirst("meta[property=ad:check]")?.attr("content")
+                ?.replace("[^\\d]+".toRegex(), "-")
+                ?.split("-")
 
         val useReversedString = orderList?.any { it == "01" }
 
         val arrayData = document.selectFirst("#array_data")!!.text()
 
-        val scriptUrl = document.selectFirst("section.bodycontainer > script[src$=.js]")?.attr("abs:src")
-            ?: throw Exception("Script not found")
+        val scriptUrl =
+            document.selectFirst("section.bodycontainer > script[src$=.js]")?.attr("abs:src")
+                ?: throw Exception("Script not found")
 
         val scriptData = client.newCall(GET(scriptUrl, headers)).execute().body.string()
 
-        val deobfuscatedScript = Deobfuscator.deobfuscateScript(scriptData)
-            ?: throw Exception("Unable to deobfuscate script")
+        val deobfuscatedScript =
+            Deobfuscator.deobfuscateScript(scriptData)
+                ?: throw Exception("Unable to deobfuscate script")
 
         val keyRegex = """'([A-Z0-9]{62})'""".toRegex(RegexOption.IGNORE_CASE)
 
         val (key1, key2) = keyRegex.findAll(deobfuscatedScript).map { it.groupValues[1] }.toList()
 
-        val encodedUrls = arrayData.replace(Regex("[A-Z0-9]", RegexOption.IGNORE_CASE)) {
-            val index = key2.indexOf(it.value)
-            key1[index].toString()
-        }
+        val encodedUrls =
+            arrayData.replace(Regex("[A-Z0-9]", RegexOption.IGNORE_CASE)) {
+                val index = key2.indexOf(it.value)
+                key1[index].toString()
+            }
 
         val urlList = String(Base64.decode(encodedUrls, Base64.DEFAULT), Charset.forName("UTF-8")).split(",")
 
-        val sortedUrls = orderList?.map {
-            if (useReversedString == true) urlList[it.reversed().toInt()] else urlList[it.toInt()]
-        }?.reversed() ?: urlList
+        val sortedUrls =
+            orderList?.map {
+                if (useReversedString == true) urlList[it.reversed().toInt()] else urlList[it.toInt()]
+            }?.reversed() ?: urlList
 
         return sortedUrls.mapIndexed { i, image_url ->
             Page(i, imageUrl = image_url)
         }
     }
 
-    private fun Element.imgAttr(): String = when {
-        hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
-        hasAttr("data-src") -> attr("abs:data-src")
-        else -> attr("abs:src")
-    }
+    private fun Element.imgAttr(): String =
+        when {
+            hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
+            hasAttr("data-src") -> attr("abs:data-src")
+            else -> attr("abs:src")
+        }
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
-    private fun String.toStatus() = when (this) {
-        "Ongoing" -> SManga.ONGOING
-        "Paused" -> SManga.ON_HIATUS
-        "Completed" -> SManga.COMPLETED
-        "Cancelled" -> SManga.CANCELLED
-        else -> SManga.UNKNOWN
-    }
+    private fun String.toStatus() =
+        when (this) {
+            "Ongoing" -> SManga.ONGOING
+            "Paused" -> SManga.ON_HIATUS
+            "Completed" -> SManga.COMPLETED
+            "Cancelled" -> SManga.CANCELLED
+            else -> SManga.UNKNOWN
+        }
 
     @Serializable
     class MangaDto(

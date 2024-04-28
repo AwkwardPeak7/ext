@@ -6,43 +6,44 @@ import eu.kanade.tachiyomi.source.SourceFactory
 import okhttp3.OkHttpClient
 
 class HentaiHandFactory : SourceFactory {
-    override fun createSources(): List<Source> = listOf(
-        // https://hentaihand.com/api/languages?per_page=50
-        HentaiHandOther(),
-        HentaiHandEn(),
-        HentaiHandZh(),
-        HentaiHandJa(),
-        HentaiHandNoText(),
-        HentaiHandEo(),
-        HentaiHandCeb(),
-        HentaiHandCs(),
-        HentaiHandAr(),
-        HentaiHandSk(),
-        HentaiHandMn(),
-        HentaiHandUk(),
-        HentaiHandLa(),
-        HentaiHandTl(),
-        HentaiHandEs(),
-        HentaiHandIt(),
-        HentaiHandKo(),
-        HentaiHandTh(),
-        HentaiHandPl(),
-        HentaiHandFr(),
-        HentaiHandPtBr(),
-        HentaiHandDe(),
-        HentaiHandFi(),
-        HentaiHandRu(),
-        HentaiHandHu(),
-        HentaiHandId(),
-        HentaiHandVi(),
-        HentaiHandNl(),
-        HentaiHandHi(),
-        HentaiHandTr(),
-        HentaiHandEl(),
-        HentaiHandSr(),
-        HentaiHandJv(),
-        HentaiHandBg(),
-    )
+    override fun createSources(): List<Source> =
+        listOf(
+            // https://hentaihand.com/api/languages?per_page=50
+            HentaiHandOther(),
+            HentaiHandEn(),
+            HentaiHandZh(),
+            HentaiHandJa(),
+            HentaiHandNoText(),
+            HentaiHandEo(),
+            HentaiHandCeb(),
+            HentaiHandCs(),
+            HentaiHandAr(),
+            HentaiHandSk(),
+            HentaiHandMn(),
+            HentaiHandUk(),
+            HentaiHandLa(),
+            HentaiHandTl(),
+            HentaiHandEs(),
+            HentaiHandIt(),
+            HentaiHandKo(),
+            HentaiHandTh(),
+            HentaiHandPl(),
+            HentaiHandFr(),
+            HentaiHandPtBr(),
+            HentaiHandDe(),
+            HentaiHandFi(),
+            HentaiHandRu(),
+            HentaiHandHu(),
+            HentaiHandId(),
+            HentaiHandVi(),
+            HentaiHandNl(),
+            HentaiHandHi(),
+            HentaiHandTr(),
+            HentaiHandEl(),
+            HentaiHandSr(),
+            HentaiHandJv(),
+            HentaiHandBg(),
+        )
 }
 
 abstract class HentaiHandCommon(
@@ -50,9 +51,10 @@ abstract class HentaiHandCommon(
     hhLangId: List<Int> = emptyList(),
     // altLangId: Int? = null
 ) : HentaiHand("HentaiHand", "https://hentaihand.com", lang, false, hhLangId) {
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .addInterceptor { authIntercept(it) }
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .addInterceptor { authIntercept(it) }
+            .build()
 }
 
 class HentaiHandOther : HentaiHandCommon("all") {

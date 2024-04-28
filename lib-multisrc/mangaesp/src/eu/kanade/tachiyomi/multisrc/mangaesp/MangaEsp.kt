@@ -34,19 +34,22 @@ abstract class MangaEsp(
 
     protected val json: Json by injectLazy()
 
-    protected val intl = Intl(
-        language = lang,
-        baseLanguage = "en",
-        availableLanguages = setOf("en", "es"),
-        classLoader = this::class.java.classLoader!!,
-    )
+    protected val intl =
+        Intl(
+            language = lang,
+            baseLanguage = "en",
+            availableLanguages = setOf("en", "es"),
+            classLoader = this::class.java.classLoader!!,
+        )
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client: OkHttpClient =
+        network.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int): Request = GET("$apiBaseUrl/api/topSerie", headers)
 
@@ -104,8 +107,9 @@ abstract class MangaEsp(
     ): MangasPage {
         val document = response.asJsoup()
         val script = document.select("script:containsData(self.__next_f.push)").joinToString { it.data() }
-        val jsonString = MANGA_LIST_REGEX.find(script)?.groupValues?.get(1)
-            ?: throw Exception(intl["comics_list_error"])
+        val jsonString =
+            MANGA_LIST_REGEX.find(script)?.groupValues?.get(1)
+                ?: throw Exception(intl["comics_list_error"])
         val unescapedJson = jsonString.unescape()
         comicsList = json.decodeFromString<List<SeriesDto>>(unescapedJson).toMutableList()
         return parseComicsList(page, query, filters)
@@ -170,8 +174,9 @@ abstract class MangaEsp(
 
     override fun mangaDetailsParse(response: Response): SManga {
         val responseBody = response.body.string()
-        val mangaDetailsJson = MANGA_DETAILS_REGEX.find(responseBody)?.groupValues?.get(1)
-            ?: throw Exception(intl["comic_data_error"])
+        val mangaDetailsJson =
+            MANGA_DETAILS_REGEX.find(responseBody)?.groupValues?.get(1)
+                ?: throw Exception(intl["comic_data_error"])
         val unescapedJson = mangaDetailsJson.unescape()
 
         return json.decodeFromString<SeriesDto>(unescapedJson).toSMangaDetails()
@@ -179,8 +184,9 @@ abstract class MangaEsp(
 
     override fun chapterListParse(response: Response): List<SChapter> {
         val responseBody = response.body.string()
-        val mangaDetailsJson = MANGA_DETAILS_REGEX.find(responseBody)?.groupValues?.get(1)
-            ?: throw Exception(intl["comic_data_error"])
+        val mangaDetailsJson =
+            MANGA_DETAILS_REGEX.find(responseBody)?.groupValues?.get(1)
+                ?: throw Exception(intl["comic_data_error"])
         val unescapedJson = mangaDetailsJson.unescape()
         val series = json.decodeFromString<SeriesDto>(unescapedJson)
         return series.chapters.map { it.toSChapter(series.slug) }
@@ -193,17 +199,19 @@ abstract class MangaEsp(
         }
     }
 
-    override fun getFilterList() = FilterList(
-        SortByFilter(intl["sort_by_filter_title"], getSortProperties()),
-        StatusFilter(intl["status_filter_title"], getStatusList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            SortByFilter(intl["sort_by_filter_title"], getSortProperties()),
+            StatusFilter(intl["status_filter_title"], getStatusList()),
+        )
 
-    protected open fun getSortProperties(): List<SortProperty> = listOf(
-        SortProperty(intl["sort_by_filter_name"], "name"),
-        SortProperty(intl["sort_by_filter_views"], "views"),
-        SortProperty(intl["sort_by_filter_updated"], "updated_at"),
-        SortProperty(intl["sort_by_filter_added"], "created_at"),
-    )
+    protected open fun getSortProperties(): List<SortProperty> =
+        listOf(
+            SortProperty(intl["sort_by_filter_name"], "name"),
+            SortProperty(intl["sort_by_filter_views"], "views"),
+            SortProperty(intl["sort_by_filter_updated"], "updated_at"),
+            SortProperty(intl["sort_by_filter_added"], "created_at"),
+        )
 
     data class SortProperty(val name: String, val value: String) {
         override fun toString(): String = name
@@ -223,12 +231,13 @@ abstract class MangaEsp(
         statusList,
     )
 
-    protected open fun getStatusList() = arrayOf(
-        Pair(intl["status_filter_ongoing"], 1),
-        Pair(intl["status_filter_hiatus"], 2),
-        Pair(intl["status_filter_dropped"], 3),
-        Pair(intl["status_filter_completed"], 4),
-    )
+    protected open fun getStatusList() =
+        arrayOf(
+            Pair(intl["status_filter_ongoing"], 1),
+            Pair(intl["status_filter_hiatus"], 2),
+            Pair(intl["status_filter_dropped"], 3),
+            Pair(intl["status_filter_completed"], 4),
+        )
 
     private open class UriPartFilter(displayName: String, private val vals: Array<Pair<String, Int>>) :
         Filter.Select<String>(displayName, vals.map { it.first }.toTypedArray()) {
@@ -239,12 +248,13 @@ abstract class MangaEsp(
 
     override fun imageUrlParse(response: Response): String = throw UnsupportedOperationException()
 
-    private fun Element.imgAttr(): String = when {
-        hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
-        hasAttr("data-src") -> attr("abs:data-src")
-        hasAttr("data-cfsrc") -> attr("abs:data-cfsrc")
-        else -> attr("abs:src")
-    }
+    private fun Element.imgAttr(): String =
+        when {
+            hasAttr("data-lazy-src") -> attr("abs:data-lazy-src")
+            hasAttr("data-src") -> attr("abs:data-src")
+            hasAttr("data-cfsrc") -> attr("abs:data-cfsrc")
+            else -> attr("abs:src")
+        }
 
     private fun String.unescape(): String {
         return UNESCAPE_REGEX.replace(this, "$1")

@@ -19,9 +19,10 @@ import rx.Observable
 class MangaRawOrg : MangaThemesia("Manga Raw.org", "https://mangaraw.org", "ja") {
     override val id = 6223520752496636410
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(4)
+            .build()
 
     override fun popularMangaRequest(page: Int): Request = GET("$baseUrl/search?order=popular&page=$page", headers)
 
@@ -47,8 +48,9 @@ class MangaRawOrg : MangaThemesia("Manga Raw.org", "https://mangaraw.org", "ja")
 
     override fun searchMangaNextPageSelector() = "a[rel=next]"
 
-    override fun mangaDetailsParse(document: Document): SManga = super.mangaDetailsParse(document)
-        .apply { description = document.select("div.bottom").firstOrNull()?.ownText() }
+    override fun mangaDetailsParse(document: Document): SManga =
+        super.mangaDetailsParse(document)
+            .apply { description = document.select("div.bottom").firstOrNull()?.ownText() }
 
     override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
         return client.newCall(pageListRequest(chapter))

@@ -10,35 +10,38 @@ class SetsuScans : Madara(
     "https://setsuscans.com",
     "en",
 ) {
-    override val client = super.client.newBuilder()
-        .addNetworkInterceptor { chain ->
-            val request = chain.request()
-            val url = request.url
-            if (url.host == "i0.wp.com") {
-                val newUrl = url.newBuilder()
-                    .removeAllQueryParameters("fit")
-                    .build()
+    override val client =
+        super.client.newBuilder()
+            .addNetworkInterceptor { chain ->
+                val request = chain.request()
+                val url = request.url
+                if (url.host == "i0.wp.com") {
+                    val newUrl =
+                        url.newBuilder()
+                            .removeAllQueryParameters("fit")
+                            .build()
 
-                return@addNetworkInterceptor chain.proceed(
-                    request.newBuilder()
-                        .url(newUrl)
-                        .build(),
-                )
+                    return@addNetworkInterceptor chain.proceed(
+                        request.newBuilder()
+                            .url(newUrl)
+                            .build(),
+                    )
+                }
+
+                return@addNetworkInterceptor chain.proceed(request)
             }
-
-            return@addNetworkInterceptor chain.proceed(request)
-        }
-        .addInterceptor(::handleFailedImages)
-        .rateLimit(2)
-        .build()
+            .addInterceptor(::handleFailedImages)
+            .rateLimit(2)
+            .build()
 
     private fun handleFailedImages(chain: Interceptor.Chain): Response {
         val response: Response = chain.proceed(chain.request())
         val url = response.request.url
         if (url.host == "i0.wp.com" && response.code == 404) {
             val ssl = response.request.url.queryParameter("ssl")
-            var newUrl = url.newBuilder()
-                .removeAllQueryParameters("ssl")
+            var newUrl =
+                url.newBuilder()
+                    .removeAllQueryParameters("ssl")
 
             if (ssl.isNullOrBlank()) {
                 newUrl = newUrl.addQueryParameter("ssl", "0")
@@ -50,9 +53,10 @@ class SetsuScans : Madara(
                 newUrl = newUrl.addQueryParameter("ssl", (ssl.toInt() + 1).toString())
             }
 
-            val newRequest = chain.request().newBuilder()
-                .url(newUrl.build())
-                .build()
+            val newRequest =
+                chain.request().newBuilder()
+                    .url(newUrl.build())
+                    .build()
             return client.newCall(newRequest).execute()
         }
         return response

@@ -14,9 +14,10 @@ class KnightNoScanlation : Madara(
     "es",
     SimpleDateFormat("MMMM dd, yyyy", Locale("es")),
 ) {
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2, 1, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2, 1, TimeUnit.SECONDS)
+            .build()
 
     override val mangaSubString = "sr"
 

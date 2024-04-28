@@ -24,16 +24,18 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
 
     private val preferences = getSharedPreferences(id)
 
-    override val baseUrl = when (System.getenv("CI")) {
-        "true" -> getCiBaseUrl()
-        else -> preferences.baseUrl
-    }
+    override val baseUrl =
+        when (System.getenv("CI")) {
+            "true" -> getCiBaseUrl()
+            else -> preferences.baseUrl
+        }
 
     private val updateUrlInterceptor = UpdateUrlInterceptor(preferences)
 
-    override val client = network.client.newBuilder()
-        .addInterceptor(updateUrlInterceptor)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .addInterceptor(updateUrlInterceptor)
+            .build()
 
     override fun popularMangaSelector() = ".gallary_item"
 
@@ -68,18 +70,20 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
             }
             return popularMangaRequest(page)
         }
-        val builder = "$baseUrl/search/index.php".toHttpUrl().newBuilder()
-            .addQueryParameter("s", "create_time_DESC")
-            .addQueryParameter("q", query)
-            .addQueryParameter("p", page.toString())
+        val builder =
+            "$baseUrl/search/index.php".toHttpUrl().newBuilder()
+                .addQueryParameter("s", "create_time_DESC")
+                .addQueryParameter("q", query)
+                .addQueryParameter("p", page.toString())
         return GET(builder.build(), headers)
     }
 
-    override fun headersBuilder() = Headers.Builder()
-        .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0")
-        .set("referer", baseUrl)
-        .set("sec-fetch-mode", "no-cors")
-        .set("sec-fetch-site", "cross-site")
+    override fun headersBuilder() =
+        Headers.Builder()
+            .add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0")
+            .set("referer", baseUrl)
+            .set("sec-fetch-mode", "no-cors")
+            .set("sec-fetch-site", "cross-site")
 
     override fun popularMangaFromElement(element: Element) = mangaFromElement(element)
 
@@ -92,8 +96,9 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
         val manga = SManga.create()
         manga.url = link.attr("href")
         manga.title = link.text()
-        manga.thumbnail_url = element.selectFirst("img")!!.absUrl("src")
-            .replaceBefore(':', "http")
+        manga.thumbnail_url =
+            element.selectFirst("img")!!.absUrl("src")
+                .replaceBefore(':', "http")
         // maybe the local cache cause the old source (url) can not be update. but the image can be update on detailpage.
         // ps. new machine can be load img normal.
 
@@ -101,10 +106,11 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
     }
 
     override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        val chapter = SChapter.create().apply {
-            url = manga.url
-            name = "Ch. 1"
-        }
+        val chapter =
+            SChapter.create().apply {
+                url = manga.url
+                name = "Ch. 1"
+            }
         return Observable.just(listOf(chapter))
     }
 
@@ -143,10 +149,11 @@ class wnacg : ParsedHttpSource(), ConfigurableSource {
 
     // >>> Filters >>>
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("注意：分类不支持搜索"),
-        CategoryFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("注意：分类不支持搜索"),
+            CategoryFilter(),
+        )
 
     private class CategoryFilter : UriPartFilter(
         "分类",

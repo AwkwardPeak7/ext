@@ -16,16 +16,18 @@ class SilenceScan : MangaThemesia(
 ) {
     override val versionId: Int = 2
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
     override val altNamePrefix = "Nome alternativo: "
 
-    override fun String?.parseStatus() = when {
-        this == null -> SManga.UNKNOWN
-        this.contains("Em Andamento") -> SManga.ONGOING
-        this.contains("Completo") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    override fun String?.parseStatus() =
+        when {
+            this == null -> SManga.UNKNOWN
+            this.contains("Em Andamento") -> SManga.ONGOING
+            this.contains("Completo") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 }

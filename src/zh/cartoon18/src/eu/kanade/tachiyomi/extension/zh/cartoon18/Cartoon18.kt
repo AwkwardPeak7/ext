@@ -35,27 +35,30 @@ class Cartoon18 : HttpSource(), ConfigurableSource {
 
     override val client = network.client.newBuilder().followRedirects(false).build()
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder() =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
     override fun popularMangaRequest(page: Int) = GET("$baseUrlWithLang?sort=hits&page=$page", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
-        val mangas = document.select("#videos div.card").map { card ->
-            val cardBody = card.select(".card-body")
-            val link = cardBody.select("a")
-            val genres = cardBody.select("div a.badge")
-            SManga.create().apply {
-                url = link.attr("href")
-                title = link.text()
-                thumbnail_url = card.select("img").attr("data-src")
-                genre = genres.joinToString { elm -> elm.text() }
+        val mangas =
+            document.select("#videos div.card").map { card ->
+                val cardBody = card.select(".card-body")
+                val link = cardBody.select("a")
+                val genres = cardBody.select("div a.badge")
+                SManga.create().apply {
+                    url = link.attr("href")
+                    title = link.text()
+                    thumbnail_url = card.select("img").attr("data-src")
+                    genre = genres.joinToString { elm -> elm.text() }
+                }
             }
-        }
-        val isLastPage = document.selectFirst("nav .pagination .next").run {
-            this == null || hasClass("disabled")
-        }
+        val isLastPage =
+            document.selectFirst("nav .pagination .next").run {
+                this == null || hasClass("disabled")
+            }
         return MangasPage(mangas, !isLastPage)
     }
 
@@ -178,22 +181,24 @@ class Cartoon18 : HttpSource(), ConfigurableSource {
     private fun fetchKeywords() {
         if (fetchKeywordsAttempts < 3 && keywordsList.isEmpty()) {
             try {
-                keywordsList = client.newCall(GET("$baseUrlWithLang/category", headers)).execute()
-                    .use { response ->
-                        val document = response.asJsoup()
-                        val items = document.select("div.content a.btn")
-                        buildList(items.size + 1) {
-                            add(Keyword("None", ""))
-                            items.mapTo(this) { keyword ->
-                                val queryValue = URLDecoder.decode(
-                                    keyword.attr("href")
-                                        .substringAfterLast('/'),
-                                    "UTF-8",
-                                )
-                                Keyword(keyword.text(), queryValue)
+                keywordsList =
+                    client.newCall(GET("$baseUrlWithLang/category", headers)).execute()
+                        .use { response ->
+                            val document = response.asJsoup()
+                            val items = document.select("div.content a.btn")
+                            buildList(items.size + 1) {
+                                add(Keyword("None", ""))
+                                items.mapTo(this) { keyword ->
+                                    val queryValue =
+                                        URLDecoder.decode(
+                                            keyword.attr("href")
+                                                .substringAfterLast('/'),
+                                            "UTF-8",
+                                        )
+                                    Keyword(keyword.text(), queryValue)
+                                }
                             }
                         }
-                    }
             } catch (_: Exception) {
             } finally {
                 fetchKeywordsAttempts++

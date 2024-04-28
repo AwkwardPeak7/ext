@@ -33,8 +33,9 @@ class AnimeSama : ParsedHttpSource() {
 
     private val json: Json by injectLazy()
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Accept-Language", "fr-FR")
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .add("Accept-Language", "fr-FR")
 
     // Popular
     override fun popularMangaRequest(page: Int): Request {
@@ -76,9 +77,10 @@ class AnimeSama : ParsedHttpSource() {
         query: String,
         filters: FilterList,
     ): Request {
-        val uri = Uri.parse("$baseUrl/search/search.php").buildUpon()
-            .appendQueryParameter("terme", query + " [SCANS]")
-            .appendQueryParameter("s", "Search")
+        val uri =
+            Uri.parse("$baseUrl/search/search.php").buildUpon()
+                .appendQueryParameter("terme", query + " [SCANS]")
+                .appendQueryParameter("s", "Search")
         return GET(uri.toString(), headers)
     }
 
@@ -91,7 +93,8 @@ class AnimeSama : ParsedHttpSource() {
             title = element.select("h5").text()
             setUrlWithoutDomain(element.select("a").attr("href"))
             thumbnail_url =
-                cdn_url + title.replace(
+                cdn_url +
+                title.replace(
                     " [SCANS]",
                     "",
                 ).replace(" ", "-").trim() + "carre.jpg"
@@ -99,12 +102,13 @@ class AnimeSama : ParsedHttpSource() {
     }
 
     // Details
-    override fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
-        title = document.select("div.carousel-item:nth-child(1) > div:nth-child(2) > h5:nth-child(1)").text()
-        description = document.select("div.carousel-item:nth-child(2) > div:nth-child(2) > p:nth-child(1)").text()
-        thumbnail_url = document.select("div.carousel-item:nth-child(1) > img:nth-child(1)").attr("src")
-        genre = document.select("div.carousel-item:nth-child(2) > div:nth-child(2) > p:nth-child(2)").text().replace("Genres : ", "")
-    }
+    override fun mangaDetailsParse(document: Document): SManga =
+        SManga.create().apply {
+            title = document.select("div.carousel-item:nth-child(1) > div:nth-child(2) > h5:nth-child(1)").text()
+            description = document.select("div.carousel-item:nth-child(2) > div:nth-child(2) > p:nth-child(1)").text()
+            thumbnail_url = document.select("div.carousel-item:nth-child(1) > img:nth-child(1)").attr("src")
+            genre = document.select("div.carousel-item:nth-child(2) > div:nth-child(2) > p:nth-child(2)").text().replace("Genres : ", "")
+        }
 
     // Chapters
     override fun chapterListSelector() = throw UnsupportedOperationException()
@@ -115,9 +119,10 @@ class AnimeSama : ParsedHttpSource() {
         val document = response.asJsoup()
         val javascriptUrl = document.select("body > script:nth-child(3)").attr("abs:src")
 
-        val newHeaders = headersBuilder()
-            .add("Accept-Version", "v1")
-            .build()
+        val newHeaders =
+            headersBuilder()
+                .add("Accept-Version", "v1")
+                .build()
 
         val request = GET(javascriptUrl, newHeaders)
         val responsejs = client.newCall(request).execute()
@@ -146,12 +151,14 @@ class AnimeSama : ParsedHttpSource() {
         val episode = url[url.size - 1]
         val allEpisodes = jsonDataString.split("var")
 
-        val theEpisode = allEpisodes.firstOrNull { it.contains("eps$episode") }
-            ?: return emptyList()
+        val theEpisode =
+            allEpisodes.firstOrNull { it.contains("eps$episode") }
+                ?: return emptyList()
 
-        val final_list = theEpisode
-            .substringAfter("[")
-            .substringBefore("]")
+        val final_list =
+            theEpisode
+                .substringAfter("[")
+                .substringBefore("]")
 
         return final_list
             .substring(0, final_list.lastIndexOf(",")).replace("""'""".toRegex(), "\"")
@@ -168,9 +175,10 @@ class AnimeSama : ParsedHttpSource() {
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
     override fun imageRequest(page: Page): Request {
-        val imgHeaders = headersBuilder()
-            .add("Referer", baseUrl)
-            .build()
+        val imgHeaders =
+            headersBuilder()
+                .add("Referer", baseUrl)
+                .build()
 
         return GET(page.imageUrl!!, imgHeaders)
     }

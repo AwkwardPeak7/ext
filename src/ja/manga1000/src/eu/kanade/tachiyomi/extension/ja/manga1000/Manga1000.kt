@@ -48,10 +48,11 @@ class Manga1000 : FMReader("Manga1000", "https://manga1000.top", "ja") {
 
     private fun parseChapterDate(date: String): Long {
         val value = date.split(' ')[dateValueIndex].toInt()
-        val chapterDate = Calendar.getInstance().apply {
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
+        val chapterDate =
+            Calendar.getInstance().apply {
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
 
         when (date.split(' ')[dateWordIndex]) {
             "mins", "minutes" -> chapterDate.add(Calendar.MINUTE, value * -1)

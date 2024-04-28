@@ -12,10 +12,11 @@ import java.io.IOException
 import java.security.MessageDigest
 
 class AscalonScans : MangaThemesia("AscalonScans", "https://ascalonscans.com", "en") {
-    override val client = super.client.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .addInterceptor(::jsChallengeInterceptor)
-        .build()
+    override val client =
+        super.client.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .addInterceptor(::jsChallengeInterceptor)
+            .build()
 
     private fun jsChallengeInterceptor(chain: Interceptor.Chain): Response {
         val request = chain.request()

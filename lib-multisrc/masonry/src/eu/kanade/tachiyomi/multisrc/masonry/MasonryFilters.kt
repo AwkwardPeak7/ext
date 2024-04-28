@@ -13,27 +13,29 @@ abstract class SelectFilter(
 }
 
 class SortFilter : SelectFilter("Sort by", sortFilterOptions) {
-    fun getUriPartIfNeeded(part: String) = when (part) {
-        "search" -> {
-            when (state) {
-                2 -> ""
-                else -> selected
+    fun getUriPartIfNeeded(part: String) =
+        when (part) {
+            "search" -> {
+                when (state) {
+                    2 -> ""
+                    else -> selected
+                }
             }
-        }
-        "tag" -> {
-            when (state) {
-                0 -> ""
-                else -> selected
+            "tag" -> {
+                when (state) {
+                    0 -> ""
+                    else -> selected
+                }
             }
+            else -> ""
         }
-        else -> ""
-    }
 }
 
-private val sortFilterOptions = listOf(
-    Pair("Trending", "sort/trending"),
-    Pair("Newest", "sort/newest"),
-    Pair("Popular", "sort/popular"),
-)
+private val sortFilterOptions =
+    listOf(
+        Pair("Trending", "sort/trending"),
+        Pair("Newest", "sort/newest"),
+        Pair("Popular", "sort/popular"),
+    )
 
 class TagFilter(options: List<Pair<String, String>>) : SelectFilter("Tags", options)

@@ -34,23 +34,24 @@ class TheLibraryOfOhara(override val lang: String, private val siteLang: String)
     }
 
     // only show entries which contain pictures only.
-    override fun popularMangaSelector() = when (lang) {
-        "en" ->
-            "#categories-7 ul li.cat-item-589813936," + // Chapter Secrets
-                "#categories-7 ul li.cat-item-607613583, " + // Chapter Secrets Specials
-                "#categories-7 ul li.cat-item-43972770, " + // Charlotte Family
-                "#categories-7 ul li.cat-item-9363667, " + // Complete Guides
-                "#categories-7 ul li.cat-item-634609261, " + // Parody Chapter
-                "#categories-7 ul li.cat-item-699200615, " + // Return to the Reverie
-                "#categories-7 ul li.cat-item-139757, " + // SBS
-                "#categories-7 ul li.cat-item-22695, " + // Timeline
-                "#categories-7 ul li.cat-item-648324575" // Vivre Card Databook
-        "id" -> "#categories-7 ul li.cat-item-702404482, #categories-7 ul li.cat-item-699200615" // Chapter Secrets Bahasa Indonesia, Return to the Reverie
-        "fr" -> "#categories-7 ul li.cat-item-699200615" // Return to the Reverie
-        "ar" -> "#categories-7 ul li.cat-item-699200615" // Return to the Reverie
-        "it" -> "#categories-7 ul li.cat-item-699200615" // Return to the Reverie
-        else -> "#categories-7 ul li.cat-item-693784776, #categories-7 ul li.cat-item-699200615" // Chapter Secrets (multilingual), Return to the Reverie
-    }
+    override fun popularMangaSelector() =
+        when (lang) {
+            "en" ->
+                "#categories-7 ul li.cat-item-589813936," + // Chapter Secrets
+                    "#categories-7 ul li.cat-item-607613583, " + // Chapter Secrets Specials
+                    "#categories-7 ul li.cat-item-43972770, " + // Charlotte Family
+                    "#categories-7 ul li.cat-item-9363667, " + // Complete Guides
+                    "#categories-7 ul li.cat-item-634609261, " + // Parody Chapter
+                    "#categories-7 ul li.cat-item-699200615, " + // Return to the Reverie
+                    "#categories-7 ul li.cat-item-139757, " + // SBS
+                    "#categories-7 ul li.cat-item-22695, " + // Timeline
+                    "#categories-7 ul li.cat-item-648324575" // Vivre Card Databook
+            "id" -> "#categories-7 ul li.cat-item-702404482, #categories-7 ul li.cat-item-699200615" // Chapter Secrets Bahasa Indonesia, Return to the Reverie
+            "fr" -> "#categories-7 ul li.cat-item-699200615" // Return to the Reverie
+            "ar" -> "#categories-7 ul li.cat-item-699200615" // Return to the Reverie
+            "it" -> "#categories-7 ul li.cat-item-699200615" // Return to the Reverie
+            else -> "#categories-7 ul li.cat-item-693784776, #categories-7 ul li.cat-item-699200615" // Chapter Secrets (multilingual), Return to the Reverie
+        }
 
     override fun popularMangaFromElement(element: Element): SManga {
         val manga = SManga.create()
@@ -124,21 +125,23 @@ class TheLibraryOfOhara(override val lang: String, private val siteLang: String)
 
         // Reverie
         if (mangaTitle.contains("Reverie")) {
-            imgElement = document.select("article").firstOrNull { element ->
-                val chapterTitle = element.select("h2.entry-title a").text()
-                (
-                    chapterTitle.contains(
-                        siteLang,
-                    ) || (lang == "en" && !chapterTitle.contains(Regex("""(French|Arabic|Italian|Indonesia|Spanish)""")))
-                )
-            }
+            imgElement =
+                document.select("article").firstOrNull { element ->
+                    val chapterTitle = element.select("h2.entry-title a").text()
+                    (
+                        chapterTitle.contains(
+                            siteLang,
+                        ) || (lang == "en" && !chapterTitle.contains(Regex("""(French|Arabic|Italian|Indonesia|Spanish)""")))
+                    )
+                }
         }
         // Chapter Secrets (multilingual)
         if (mangaTitle.contains("Chapter Secrets") && lang != "en") {
-            imgElement = document.select("article").firstOrNull {
-                val chapterTitle = it.select("h2.entry-title a").text()
-                ((lang == "id" && chapterTitle.contains("Indonesia")) || (lang == "es" && !chapterTitle.contains("Indonesia")))
-            }
+            imgElement =
+                document.select("article").firstOrNull {
+                    val chapterTitle = it.select("h2.entry-title a").text()
+                    ((lang == "id" && chapterTitle.contains("Indonesia")) || (lang == "es" && !chapterTitle.contains("Indonesia")))
+                }
         }
 
         // Fallback
@@ -195,13 +198,14 @@ class TheLibraryOfOhara(override val lang: String, private val siteLang: String)
                 "it" -> allChapters.filter { it.name.contains("Italian") }.toMutableList()
                 "id" -> allChapters.filter { it.name.contains("Indonesia") }.toMutableList()
                 "es" -> allChapters.filter { it.name.contains("Spanish") }.toMutableList()
-                else -> allChapters.filter { // english
-                    !it.name.contains("French") &&
-                        !it.name.contains("Arabic") &&
-                        !it.name.contains("Italian") &&
-                        !it.name.contains("Indonesia") &&
-                        !it.name.contains("Spanish")
-                }.toMutableList()
+                else ->
+                    allChapters.filter { // english
+                        !it.name.contains("French") &&
+                            !it.name.contains("Arabic") &&
+                            !it.name.contains("Italian") &&
+                            !it.name.contains("Indonesia") &&
+                            !it.name.contains("Spanish")
+                    }.toMutableList()
             }
         }
 

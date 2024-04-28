@@ -19,9 +19,10 @@ class DemonSect : Madara(
     // Changed their name from Prisma Scans to Demon Sect.
     override val id: Long = 8168108118738519332
 
-    override val client: OkHttpClient = super.client.newBuilder()
-        .rateLimit(1, 2, TimeUnit.SECONDS)
-        .build()
+    override val client: OkHttpClient =
+        super.client.newBuilder()
+            .rateLimit(1, 2, TimeUnit.SECONDS)
+            .build()
 
     override val useLoadMoreRequest = LoadMoreStrategy.Never
 

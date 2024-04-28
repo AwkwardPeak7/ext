@@ -26,14 +26,16 @@ abstract class Zbulu(
 ) : ParsedHttpSource() {
     override val supportsLatest = true
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .connectTimeout(1, TimeUnit.MINUTES)
-        .readTimeout(1, TimeUnit.MINUTES)
-        .writeTimeout(1, TimeUnit.MINUTES)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .writeTimeout(1, TimeUnit.MINUTES)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = Headers.Builder()
-        .add("Content-Encoding", "identity")
+    override fun headersBuilder(): Headers.Builder =
+        Headers.Builder()
+            .add("Content-Encoding", "identity")
 
     // Decreases calls, helps with Cloudflare
     private fun String.addTrailingSlash() = if (!this.endsWith("/")) "$this/" else this
@@ -81,15 +83,16 @@ abstract class Zbulu(
         val authorFilter = filterList.find { it is AuthorFilter } as AuthorFilter
         val genreFilter = filterList.find { it is GenreFilter } as GenreFilter
 
-        val url = when {
-            query.isNotBlank() -> "$baseUrl/?s=$query"
-            authorFilter.state.isNotBlank() -> "$baseUrl/author/${authorFilter.state.replace(" ", "-")}/page-$page"
-            genreFilter.state != 0 -> {
-                val genre = genreFilter.toUriPart().let { if (it == "completed") "completed" else "genre/$it" }
-                "$baseUrl/$genre/page-$page"
+        val url =
+            when {
+                query.isNotBlank() -> "$baseUrl/?s=$query"
+                authorFilter.state.isNotBlank() -> "$baseUrl/author/${authorFilter.state.replace(" ", "-")}/page-$page"
+                genreFilter.state != 0 -> {
+                    val genre = genreFilter.toUriPart().let { if (it == "completed") "completed" else "genre/$it" }
+                    "$baseUrl/$genre/page-$page"
+                }
+                else -> "$baseUrl/manga-list/page-$page/"
             }
-            else -> "$baseUrl/manga-list/page-$page/"
-        }
 
         return GET(url, headers)
     }
@@ -115,12 +118,13 @@ abstract class Zbulu(
         }
     }
 
-    private fun parseStatus(status: String?) = when {
-        status == null -> SManga.UNKNOWN
-        status.contains("Ongoing") -> SManga.ONGOING
-        status.contains("Completed") -> SManga.COMPLETED
-        else -> SManga.UNKNOWN
-    }
+    private fun parseStatus(status: String?) =
+        when {
+            status == null -> SManga.UNKNOWN
+            status.contains("Ongoing") -> SManga.ONGOING
+            status.contains("Completed") -> SManga.COMPLETED
+            else -> SManga.UNKNOWN
+        }
 
     // Chapters
 
@@ -154,27 +158,34 @@ abstract class Zbulu(
         return if (date.contains("ago")) {
             val value = date.split(' ')[0].toInt()
             when {
-                "second" in date -> Calendar.getInstance().apply {
-                    add(Calendar.SECOND, value * -1)
-                }.timeInMillis
-                "minute" in date -> Calendar.getInstance().apply {
-                    add(Calendar.MINUTE, value * -1)
-                }.timeInMillis
-                "hour" in date -> Calendar.getInstance().apply {
-                    add(Calendar.HOUR_OF_DAY, value * -1)
-                }.timeInMillis
-                "day" in date -> Calendar.getInstance().apply {
-                    add(Calendar.DATE, value * -1)
-                }.timeInMillis
-                "week" in date -> Calendar.getInstance().apply {
-                    add(Calendar.DATE, value * 7 * -1)
-                }.timeInMillis
-                "month" in date -> Calendar.getInstance().apply {
-                    add(Calendar.MONTH, value * -1)
-                }.timeInMillis
-                "year" in date -> Calendar.getInstance().apply {
-                    add(Calendar.YEAR, value * -1)
-                }.timeInMillis
+                "second" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.SECOND, value * -1)
+                    }.timeInMillis
+                "minute" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.MINUTE, value * -1)
+                    }.timeInMillis
+                "hour" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.HOUR_OF_DAY, value * -1)
+                    }.timeInMillis
+                "day" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.DATE, value * -1)
+                    }.timeInMillis
+                "week" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.DATE, value * 7 * -1)
+                    }.timeInMillis
+                "month" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.MONTH, value * -1)
+                    }.timeInMillis
+                "year" in date ->
+                    Calendar.getInstance().apply {
+                        add(Calendar.YEAR, value * -1)
+                    }.timeInMillis
                 else -> {
                     0L
                 }
@@ -202,13 +213,14 @@ abstract class Zbulu(
 
     private class AuthorFilter : Filter.Text("Author")
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("Cannot combine search types!"),
-        Filter.Header("Author name must be exact."),
-        Filter.Separator(),
-        AuthorFilter(),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("Cannot combine search types!"),
+            Filter.Header("Author name must be exact."),
+            Filter.Separator(),
+            AuthorFilter(),
+            GenreFilter(),
+        )
 
     // [...document.querySelectorAll('.sub-menu li a')].map(a => `Pair("${a.textContent}", "${a.getAttribute('href')}")`).join(',\n')
     // from $baseUrl

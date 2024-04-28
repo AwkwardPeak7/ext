@@ -31,11 +31,12 @@ data class BrowseSeries(
     val prefix: Int,
     val thumbnail: String?,
 ) {
-    fun toSManga(cdnUrl: String) = SManga.create().apply {
-        title = this@BrowseSeries.title
-        url = "/series/$prefix-$id-$slug"
-        thumbnail_url = thumbnail?.let { cdnUrl + it }
-    }
+    fun toSManga(cdnUrl: String) =
+        SManga.create().apply {
+            title = this@BrowseSeries.title
+            url = "/series/$prefix-$id-$slug"
+            thumbnail_url = thumbnail?.let { cdnUrl + it }
+        }
 }
 
 @Serializable
@@ -71,41 +72,45 @@ data class Series(
     val artists: List<GenreHolder>? = emptyList(),
     val genres: List<GenreHolder>? = emptyList(),
 ) {
-    fun toSManga(cdnUrl: String) = SManga.create().apply {
-        title = this@Series.title
-        url = "/series/$prefix-$id-$slug"
-        thumbnail_url = cdnUrl + thumbnail
-        author = authors?.joinToString { it.name.trim() }
-        artist = artists?.joinToString { it.name.trim() }
-        genre = (otherGenres + genres?.map { it.name.trim() }.orEmpty())
-            .distinct().joinToString { it.trim() }
-        description = story?.let { Jsoup.parse(it).text() }
-        if (otherNames?.isNotEmpty() == true) {
-            if (description.isNullOrEmpty()) {
-                description = "Alternative Names:\n"
-            } else {
-                description += "\n\nAlternative Names:\n"
-            }
-            description += otherNames.joinToString("\n") { "• ${it.trim()}" }
-        }
-        status = when (this@Series.status?.trim()) {
-            "ongoing" -> SManga.ONGOING
-            "completed" -> SManga.COMPLETED
-            "onhold" -> SManga.ON_HIATUS
-            else -> SManga.UNKNOWN
-        }
-    }
-
-    private val otherGenres = listOfNotNull(serieType, mainGenres, type)
-        .map { word ->
-            word.trim().replaceFirstChar {
-                if (it.isLowerCase()) {
-                    it.titlecase(Locale.getDefault())
+    fun toSManga(cdnUrl: String) =
+        SManga.create().apply {
+            title = this@Series.title
+            url = "/series/$prefix-$id-$slug"
+            thumbnail_url = cdnUrl + thumbnail
+            author = authors?.joinToString { it.name.trim() }
+            artist = artists?.joinToString { it.name.trim() }
+            genre =
+                (otherGenres + genres?.map { it.name.trim() }.orEmpty())
+                    .distinct().joinToString { it.trim() }
+            description = story?.let { Jsoup.parse(it).text() }
+            if (otherNames?.isNotEmpty() == true) {
+                if (description.isNullOrEmpty()) {
+                    description = "Alternative Names:\n"
                 } else {
-                    it.toString()
+                    description += "\n\nAlternative Names:\n"
+                }
+                description += otherNames.joinToString("\n") { "• ${it.trim()}" }
+            }
+            status =
+                when (this@Series.status?.trim()) {
+                    "ongoing" -> SManga.ONGOING
+                    "completed" -> SManga.COMPLETED
+                    "onhold" -> SManga.ON_HIATUS
+                    else -> SManga.UNKNOWN
+                }
+        }
+
+    private val otherGenres =
+        listOfNotNull(serieType, mainGenres, type)
+            .map { word ->
+                word.trim().replaceFirstChar {
+                    if (it.isLowerCase()) {
+                        it.titlecase(Locale.getDefault())
+                    } else {
+                        it.toString()
+                    }
                 }
             }
-        }
 }
 
 @Serializable
@@ -115,11 +120,12 @@ data class Chapter(
     val slug: String,
     val createdAt: String? = null,
 ) {
-    fun toSChapter(prefix: String) = SChapter.create().apply {
-        url = "/read/webtoon/$prefix-$id-$slug"
-        name = this@Chapter.name
-        date_upload = runCatching { dateFormat.parse(createdAt!!)!!.time }.getOrDefault(0L)
-    }
+    fun toSChapter(prefix: String) =
+        SChapter.create().apply {
+            url = "/read/webtoon/$prefix-$id-$slug"
+            name = this@Chapter.name
+            date_upload = runCatching { dateFormat.parse(createdAt!!)!!.time }.getOrDefault(0L)
+        }
 
     companion object {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.ENGLISH)

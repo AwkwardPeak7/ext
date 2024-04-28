@@ -38,14 +38,16 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
 
     private val json: Json by injectLazy()
 
-    val langApiInfix = when (lang) {
-        "it" -> langOption.infix
-        else -> "v3/po"
-    }
+    val langApiInfix =
+        when (lang) {
+            "it" -> langOption.infix
+            else -> "v3/po"
+        }
 
-    override val client = network.client.newBuilder()
-        .rateLimit(5, 2, TimeUnit.SECONDS)
-        .build()
+    override val client =
+        network.client.newBuilder()
+            .rateLimit(5, 2, TimeUnit.SECONDS)
+            .build()
 
     private fun apiHeaders(url: String): Headers {
         val date = apiDateFormat.format(Date())
@@ -107,9 +109,10 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
     }
 
     override fun latestUpdatesRequest(page: Int): Request {
-        val url = "$baseUrl/${langOption.infix}/latest-releases".toHttpUrl().newBuilder()
-            .addQueryParameter("page", "$page")
-            .build()
+        val url =
+            "$baseUrl/${langOption.infix}/latest-releases".toHttpUrl().newBuilder()
+                .addQueryParameter("page", "$page")
+                .build()
         return GET(url, headers)
     }
 
@@ -146,9 +149,10 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
     private fun findChapterPassword(document: Document): String {
         val regxPasswordUrl = """\/pages\/%5Btype%5D\/%5Bidmanga%5D\/%5Biddetail%5D-.+\.js""".toRegex()
         val regxFindPassword = """AES\.decrypt\(\w+,"(?<password>[^"]+)"\)""".toRegex(RegexOption.MULTILINE)
-        val jsDecryptUrl = document.select("script")
-            .map { it.absUrl("src") }
-            .first { regxPasswordUrl.find(it) != null }
+        val jsDecryptUrl =
+            document.select("script")
+                .map { it.absUrl("src") }
+                .first { regxPasswordUrl.find(it) != null }
         val jsDecrypt = client.newCall(GET(jsDecryptUrl, headers)).execute().asJsoup().html()
         return regxFindPassword.find(jsDecrypt)?.groups?.get("password")!!.value.trim()
     }
@@ -170,10 +174,11 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
         filters: FilterList,
     ): Request {
         val maxResult = 6
-        val url = "$apiUrl/api/$langApiInfix/searchforms/$maxResult/".toHttpUrl().newBuilder()
-            .addPathSegment(query)
-            .addPathSegment("${page - 1}")
-            .build()
+        val url =
+            "$apiUrl/api/$langApiInfix/searchforms/$maxResult/".toHttpUrl().newBuilder()
+                .addPathSegment(query)
+                .addPathSegment("${page - 1}")
+                .build()
         return GET(url, apiHeaders(url.toString()))
     }
 
@@ -186,9 +191,10 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
             val mangaUrl = query.substringAfter(slugPrefix)
             return client.newCall(GET("$baseUrl/${langOption.infix}/$mangaUrl", headers))
                 .asObservableSuccess().map { response ->
-                    val manga = mangaDetailsParse(response).apply {
-                        url = mangaUrl
-                    }
+                    val manga =
+                        mangaDetailsParse(response).apply {
+                            url = mangaUrl
+                        }
                     MangasPage(listOf(manga), false)
                 }
         }
@@ -198,9 +204,10 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
     override fun imageUrlParse(response: Response): String = ""
 
     override fun searchMangaParse(response: Response): MangasPage {
-        val mangasDto = response.parseAs<MangaListDto>().apply {
-            currentPage = response.request.url.pathSegments.last()
-        }
+        val mangasDto =
+            response.parseAs<MangaListDto>().apply {
+                currentPage = response.request.url.pathSegments.last()
+            }
 
         return MangasPage(
             mangas = mangasDto.toSManga(langOption.infix),
@@ -249,7 +256,8 @@ class UnionMangas(private val langOption: LanguageOption) : HttpSource() {
         val domain = "yaoi-chan.xyz"
         val slugPrefix = "slug:"
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
-        val apiDateFormat = SimpleDateFormat("EE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH)
-            .apply { timeZone = TimeZone.getTimeZone("GMT") }
+        val apiDateFormat =
+            SimpleDateFormat("EE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.ENGLISH)
+                .apply { timeZone = TimeZone.getTimeZone("GMT") }
     }
 }

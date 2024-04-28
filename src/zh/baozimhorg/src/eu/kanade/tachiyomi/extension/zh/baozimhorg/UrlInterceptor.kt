@@ -15,10 +15,11 @@ object UrlInterceptor : Interceptor {
         }
 
         val mangaUrl = "/manga/$slug/"
-        val headRequest = request.newBuilder()
-            .head()
-            .url(url.resolve(mangaUrl)!!)
-            .build()
+        val headRequest =
+            request.newBuilder()
+                .head()
+                .url(url.resolve(mangaUrl)!!)
+                .build()
         // might redirect multiple times
         val headResponse = chain.proceed(headRequest)
         if (headResponse.priorResponse == null) return chain.proceed(request)

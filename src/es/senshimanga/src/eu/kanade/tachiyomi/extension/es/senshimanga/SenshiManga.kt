@@ -31,17 +31,20 @@ class SenshiManga : HttpSource() {
 
     private val json: Json by injectLazy()
 
-    override val client: OkHttpClient = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 3)
-        .rateLimitHost(apiBaseUrl.toHttpUrl(), 3)
-        .build()
+    override val client: OkHttpClient =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 3)
+            .rateLimitHost(apiBaseUrl.toHttpUrl(), 3)
+            .build()
 
-    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override fun headersBuilder(): Headers.Builder =
+        super.headersBuilder()
+            .add("Referer", "$baseUrl/")
 
-    private val apiHeaders: Headers = headersBuilder()
-        .add("Organization-Domain", "senshimanga.com")
-        .build()
+    private val apiHeaders: Headers =
+        headersBuilder()
+            .add("Organization-Domain", "senshimanga.com")
+            .build()
 
     override fun popularMangaRequest(page: Int): Request =
         GET("$apiBaseUrl/api/manga-custom?page=$page&limit=$PAGE_LIMIT&order=popular", apiHeaders)
@@ -85,14 +88,16 @@ class SenshiManga : HttpSource() {
         return MangasPage(mangas, hasNextPage)
     }
 
-    override fun getFilterList() = FilterList(
-        SortByFilter("Ordenar por", getSortList()),
-    )
+    override fun getFilterList() =
+        FilterList(
+            SortByFilter("Ordenar por", getSortList()),
+        )
 
-    private fun getSortList() = arrayOf(
-        Pair("Popularidad", "popular"),
-        Pair("Recientes", "latest"),
-    )
+    private fun getSortList() =
+        arrayOf(
+            Pair("Popularidad", "popular"),
+            Pair("Recientes", "latest"),
+        )
 
     override fun getMangaUrl(manga: SManga): String = "$baseUrl/manga/${manga.url}"
 

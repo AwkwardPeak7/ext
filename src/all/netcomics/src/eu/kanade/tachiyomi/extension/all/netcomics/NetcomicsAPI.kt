@@ -83,15 +83,16 @@ data class Chapter(
     private inline val isLocked: Boolean
         get() = is_free == "N" && is_order != "Y"
 
-    override fun toString() = buildString {
-        if (chapter_name.isEmpty()) {
-            append("Ch.")
-            append(chapter_no)
-        } else {
-            append(chapter_name)
+    override fun toString() =
+        buildString {
+            if (chapter_name.isEmpty()) {
+                append("Ch.")
+                append(chapter_no)
+            } else {
+                append(chapter_name)
+            }
+            if (isLocked) append(" \uD83D\uDD12")
         }
-        if (isLocked) append(" \uD83D\uDD12")
-    }
 }
 
 @Serializable

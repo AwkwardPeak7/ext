@@ -30,54 +30,62 @@ class WarForRayuba : HttpSource() {
 
     override val supportsLatest = false
 
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimit(4)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimit(4)
+            .build()
 
-    private val json = Json {
-        isLenient = true
-        ignoreUnknownKeys = true
-        allowSpecialFloatingPointValues = true
-        useArrayPolymorphism = true
-        prettyPrint = true
-    }
+    private val json =
+        Json {
+            isLenient = true
+            ignoreUnknownKeys = true
+            allowSpecialFloatingPointValues = true
+            useArrayPolymorphism = true
+            prettyPrint = true
+        }
 
-    private val cubariHeaders = Headers.Builder().apply {
-        add(
-            "User-Agent",
-            "(Android ${Build.VERSION.RELEASE}; " +
-                "${Build.MANUFACTURER} ${Build.MODEL}) " +
-                "Tachiyomi/${AppInfo.getVersionName()} " +
-                Build.ID,
-        )
-    }.build()
+    private val cubariHeaders =
+        Headers.Builder().apply {
+            add(
+                "User-Agent",
+                "(Android ${Build.VERSION.RELEASE}; " +
+                    "${Build.MANUFACTURER} ${Build.MODEL}) " +
+                    "Tachiyomi/${AppInfo.getVersionName()} " +
+                    Build.ID,
+            )
+        }.build()
 
-    override fun headersBuilder() = Headers.Builder().apply {
-        add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0 ")
-        add("Referer", baseUrl)
-    }
+    override fun headersBuilder() =
+        Headers.Builder().apply {
+            add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0 ")
+            add("Referer", baseUrl)
+        }
 
     override fun popularMangaRequest(page: Int) = GET("https://github.com/xrabohrok/WarMap/tree/main/tools", headers)
 
     override fun popularMangaParse(response: Response): MangasPage {
         val document = response.asJsoup()
 
-        val mangas = document.select(
-            "#repo-content-pjax-container .Details div[role=row] div[role=rowheader] a[href*='.json']",
-        ).map { element ->
-            SManga.create().apply {
-                val githubRawUrl = "https://raw.githubusercontent.com/xrabohrok/WarMap/" + element.attr(
-                    "abs:href",
-                ).replace(".*(?=main)".toRegex(), "")
-                val githubData: RoundDto = json.decodeFromString(
-                    client.newCall(GET(githubRawUrl, headers)).execute().body.string(),
-                )
+        val mangas =
+            document.select(
+                "#repo-content-pjax-container .Details div[role=row] div[role=rowheader] a[href*='.json']",
+            ).map { element ->
+                SManga.create().apply {
+                    val githubRawUrl =
+                        "https://raw.githubusercontent.com/xrabohrok/WarMap/" +
+                            element.attr(
+                                "abs:href",
+                            ).replace(".*(?=main)".toRegex(), "")
+                    val githubData: RoundDto =
+                        json.decodeFromString(
+                            client.newCall(GET(githubRawUrl, headers)).execute().body.string(),
+                        )
 
-                title = githubData.title
-                thumbnail_url = githubData.cover
-                url = githubRawUrl
+                    title = githubData.title
+                    thumbnail_url = githubData.cover
+                    url = githubRawUrl
+                }
             }
-        }
 
         return MangasPage(mangas, false)
     }
@@ -98,16 +106,17 @@ class WarForRayuba : HttpSource() {
         return GET(baseUrl, headers)
     }
 
-    override fun mangaDetailsParse(response: Response) = SManga.create().apply {
-        val githubData: RoundDto = json.decodeFromString(response.body.string())
+    override fun mangaDetailsParse(response: Response) =
+        SManga.create().apply {
+            val githubData: RoundDto = json.decodeFromString(response.body.string())
 
-        thumbnail_url = githubData.cover
-        status = SManga.UNKNOWN
-        author = githubData.author
-        artist = githubData.artist
-        title = githubData.title
-        description = githubData.description
-    }
+            thumbnail_url = githubData.cover
+            status = SManga.UNKNOWN
+            author = githubData.author
+            artist = githubData.artist
+            title = githubData.title
+            description = githubData.description
+        }
 
     override fun chapterListRequest(manga: SManga): Request {
         return GET(manga.url, headers)
@@ -138,9 +147,10 @@ class WarForRayuba : HttpSource() {
     override fun pageListParse(response: Response): List<Page> {
         val chapterData: List<PageDto> = json.decodeFromString(response.body.string())
 
-        val pageList = chapterData.mapIndexed { index, page ->
-            Page(index, page.src.slice(0..page.src.lastIndexOf(".")), page.src)
-        }
+        val pageList =
+            chapterData.mapIndexed { index, page ->
+                Page(index, page.src.slice(0..page.src.lastIndexOf(".")), page.src)
+            }
 
         return pageList
     }

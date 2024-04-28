@@ -120,11 +120,12 @@ class MangaSaki : ParsedHttpSource() {
         manga.thumbnail_url = document.select("div.field-name-field-image2 div.field-item img").attr("src")
 
         val statusText = document.select("div.field-name-field-status div.field-item").text()
-        manga.status = when {
-            statusText.contains("Ongoing", true) -> SManga.ONGOING
-            statusText.contains("Complete", true) -> SManga.COMPLETED
-            else -> SManga.UNKNOWN
-        }
+        manga.status =
+            when {
+                statusText.contains("Ongoing", true) -> SManga.ONGOING
+                statusText.contains("Complete", true) -> SManga.COMPLETED
+                else -> SManga.UNKNOWN
+            }
 
         return manga
     }
@@ -164,22 +165,24 @@ class MangaSaki : ParsedHttpSource() {
         val chapter = SChapter.create()
         chapter.setUrlWithoutDomain(element.select("a").attr("href"))
         chapter.name = element.select("a").text()
-        chapter.date_upload = try {
-            element.select("td").last()?.text()?.let {
-                dateFormat.parse(it)?.time ?: 0L
-            } ?: 0L
-        } catch (_: ParseException) {
-            0L
-        }
+        chapter.date_upload =
+            try {
+                element.select("td").last()?.text()?.let {
+                    dateFormat.parse(it)?.time ?: 0L
+                } ?: 0L
+            } catch (_: ParseException) {
+                0L
+            }
 
         return chapter
     }
 
     // pages
     override fun pageListParse(document: Document): List<Page> {
-        val jsonString = document.select("script:containsData(showmanga)").first()!!.data()
-            .substringAfter("(Drupal.settings, ")
-            .substringBeforeLast(");")
+        val jsonString =
+            document.select("script:containsData(showmanga)").first()!!.data()
+                .substringAfter("(Drupal.settings, ")
+                .substringBeforeLast(");")
 
         return parseJSON(jsonString).mapIndexed { i, it ->
             Page(i, imageUrl = it)
@@ -188,11 +191,12 @@ class MangaSaki : ParsedHttpSource() {
 
     override fun imageUrlParse(document: Document): String = throw UnsupportedOperationException()
 
-    override fun getFilterList() = FilterList(
-        Filter.Header("NOTE: Ignored if using text search!"),
-        Filter.Separator(),
-        GenreFilter(),
-    )
+    override fun getFilterList() =
+        FilterList(
+            Filter.Header("NOTE: Ignored if using text search!"),
+            Filter.Separator(),
+            GenreFilter(),
+        )
 
     private class GenreFilter : UriPartFilter(
         "Category",

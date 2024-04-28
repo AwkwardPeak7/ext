@@ -15,9 +15,10 @@ class Miaoshang : MCCMS(
     "zh",
     MiaoshangMCCMSConfig(),
 ) {
-    override val client = network.cloudflareClient.newBuilder()
-        .rateLimitHost(baseUrl.toHttpUrl(), 2)
-        .build()
+    override val client =
+        network.cloudflareClient.newBuilder()
+            .rateLimitHost(baseUrl.toHttpUrl(), 2)
+            .build()
 
     private class MiaoshangMCCMSConfig : MCCMSConfig(
         textSearchOnlyPageOne = true,
