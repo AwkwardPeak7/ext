@@ -1,3 +1,5 @@
+import gradle.kotlin.dsl.accessors._1c35da307f1540a2fdd9273b146bf0a7.kotlin
+
 plugins {
     id("com.android.library")
     kotlin("android")
@@ -23,8 +25,16 @@ android {
         }
     }
 
-    kotlinOptions {
-        freeCompilerArgs += "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        jvmToolchain(17)
+        compilerOptions {
+            freeCompilerArgs.add("-opt-in=kotlinx.serialization.ExperimentalSerializationApi")
+        }
     }
 }
 
