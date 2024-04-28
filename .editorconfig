@@ -1,7 +1,7 @@
 # Editor configuration, see https://editorconfig.org
 root = true
 
-[*.kt]
+[*.{kt,kts}]
 charset = utf-8
 end_of_line = lf
 indent_size = 4
@@ -12,12 +12,14 @@ ij_kotlin_allow_trailing_comma = true
 ij_kotlin_allow_trailing_comma_on_call_site = true
 ij_kotlin_name_count_to_use_star_import = 2147483647
 ij_kotlin_name_count_to_use_star_import_for_members = 2147483647
-ktlint_experimental = enabled
-ktlint_experimental_argument-list-wrapping = disabled # Doesn't play well with Android Studio
-ktlint_experimental_comment-wrapping = disabled
 ktlint_standard_property-naming = disabled
+ktlint_function_signature_body_expression_wrapping = default
+ktlint_standard_parameter-wrapping = disabled
+ktlint_standard_property-wrapping = disabled
+ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_parameter-list-wrapping = disabled
 
-[*.properties]
+[*.{properties,gradle,xml}]
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
