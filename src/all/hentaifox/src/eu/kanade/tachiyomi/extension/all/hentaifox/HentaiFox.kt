@@ -1,103 +1,195 @@
 package eu.kanade.tachiyomi.extension.all.hentaifox
 
-import eu.kanade.tachiyomi.multisrc.galleryadults.GalleryAdults
-import eu.kanade.tachiyomi.multisrc.galleryadults.toDate
-import eu.kanade.tachiyomi.source.model.Filter
+import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.model.FilterList
-import okhttp3.HttpUrl
+import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.source.model.SManga
+import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.util.asJsoup
+import okhttp3.FormBody
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.Request
+import okhttp3.Response
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import rx.Observable
 
 class HentaiFox(
-    lang: String = "all",
-    override val mangaLang: String = LANGUAGE_MULTI,
-) : GalleryAdults(
-    "HentaiFox",
-    "https://hentaifox.com",
-    lang = lang,
-) {
-    override val supportsLatest = mangaLang.isNotBlank()
+    override val lang: String,
+    private val siteLang: String,
+) : HttpSource() {
+    override val name = "HentaiFox"
+    override val baseUrl = "https://hentaifox.com"
+    override val supportsLatest = lang != "all"
+    override val client = network.cloudflareClient
 
-    private val languages: List<Pair<String, String>> = listOf(
-        Pair(LANGUAGE_ENGLISH, "1"),
-        Pair(LANGUAGE_TRANSLATED, "2"),
-        Pair(LANGUAGE_JAPANESE, "5"),
-        Pair(LANGUAGE_CHINESE, "6"),
-        Pair(LANGUAGE_KOREAN, "11"),
-    )
-    private val langCode = languages.firstOrNull { lang -> lang.first == mangaLang }?.second
-
-    override fun Element.mangaLang() = attr("data-languages")
-        .split(' ').let {
-            when {
-                it.contains(langCode) -> mangaLang
-                // search result doesn't have "data-languages" which will return a list with 1 blank element
-                it.size > 1 || (it.size == 1 && it.first().isNotBlank()) -> "other"
-                // if we don't know which language to filter then set to mangaLang to not filter at all
-                else -> mangaLang
-            }
-        }
-
-    override val useShortTitlePreference = false
-    override fun Element.mangaTitle(selector: String): String? = mangaFullTitle(selector)
-
-    override fun Element.getInfo(tag: String): String {
-        return select("ul.${tag.lowercase()} a")
-            .joinToString {
-                val name = it.ownText()
-                if (tag.contains(regexTag)) {
-                    genres[name] = it.attr("href")
-                        .removeSuffix("/").substringAfterLast('/')
+    override fun popularMangaRequest(page: Int): Request {
+        val url = "$baseUrl/".toHttpUrl().newBuilder().apply {
+            if (lang != "all") {
+                addPathSegments("language/$siteLang/popular/")
+                if (page > 1) {
+                    addPathSegments("pag/$page/")
                 }
-                listOf(
-                    name,
-                    it.select(".split_tag").text()
-                        .removePrefix("| ")
-                        .trim(),
-                )
-                    .filter { s -> s.isNotBlank() }
-                    .joinToString()
+            } else {
+                if (page > 1) {
+                    addPathSegments("page/$page/")
+                }
             }
+        }.build()
+
+        return GET(url, headers)
     }
 
-    override fun Element.getTime(): Long =
-        selectFirst(".pages:contains(Posted:)")?.ownText()
-            ?.removePrefix("Posted: ")
-            .toDate(simpleDateFormat)
+    override fun popularMangaParse(response: Response): MangasPage {
+        val document = response.asJsoup()
 
-    override fun HttpUrl.Builder.addPageUri(page: Int): HttpUrl.Builder {
-        val url = toString()
-        when {
-            url == "$baseUrl/" && page == 2 ->
-                addPathSegments("page/$page")
-            url.contains('?') ->
-                addQueryParameter("page", page.toString())
-            else ->
-                addPathSegments("pag/$page")
+        val entries = document.select(".lc_galleries .thumb").map {
+            SManga.create().apply {
+                setUrlWithoutDomain(
+                    it.selectFirst(".inner_thumb a")!!.absUrl("href"),
+                )
+                title = it.selectFirst(".g_title")!!.text()
+                thumbnail_url = it.selectFirst(".inner_thumb img")?.absUrl("src")
+            }
         }
-        addPathSegment("") // trailing slash (/)
-        return this
+        val hasNextPage = document.selectFirst(".pagination li.active + li:not(.disabled)") != null
+
+        return MangasPage(entries, hasNextPage)
     }
 
-    /**
-     * Convert space( ) typed in search-box into plus(+) in URL. Then:
-     * - ignore the word preceding by a special character (e.g. 'school-girl' will ignore 'girl')
-     *    => replace to plus(+),
-     * - use plus(+) for separate terms, as AND condition.
-     * - use double quote(") to search for exact match.
-     */
-    override fun buildQueryString(tags: List<String>, query: String): String {
-        val regexSpecialCharacters = Regex("""[^a-zA-Z0-9"]+(?=[a-zA-Z0-9"])""")
-        return (tags + query + mangaLang).filterNot { it.isBlank() }.joinToString("+") {
-            it.trim().replace(regexSpecialCharacters, "+")
+    override fun latestUpdatesRequest(page: Int): Request {
+        val url = "$baseUrl/".toHttpUrl().newBuilder().apply {
+            if (lang != "all") {
+                addPathSegments("language/$siteLang/")
+                if (page > 1) {
+                    addPathSegments("pag/$page/")
+                }
+            } else {
+                if (page > 1) {
+                    addPathSegments("page/$page/")
+                }
+            }
+        }.build()
+
+        return GET(url, headers)
+    }
+
+    override fun latestUpdatesParse(response: Response) = popularMangaParse(response)
+
+    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+        val url = "$baseUrl/search/".toHttpUrl().newBuilder().apply {
+            val tags = filters.filterIsInstance<TextFilter>().flatMap { it.values }.toMutableList()
+            if (query.isNotBlank()) {
+                tags += query.trim().replace(spaceRegex, "+")
+            }
+            if (lang != "all") {
+                tags += siteLang
+            }
+            addQueryParameter("q", tags.joinToString("+"))
+            filters.filterIsInstance<SortFilter>().first().selected?.let {
+                addQueryParameter("sort", it)
+            }
+        }.build()
+
+        return GET(url, headers)
+    }
+
+    override fun getFilterList() = getFilters()
+
+    override fun searchMangaParse(response: Response) = popularMangaParse(response)
+
+    override fun mangaDetailsParse(response: Response): SManga {
+        val document = response.asJsoup()
+
+        return with(document.selectFirst(".gallery_top")!!) {
+            SManga.create().apply {
+                update_strategy = UpdateStrategy.ONLY_FETCH_ONCE
+                status = SManga.COMPLETED
+                title = selectFirst("h1")!!.text()
+                thumbnail_url = selectFirst(".cover img")?.absUrl("src")
+                genre = getInfo("tags")
+                author = getInfo("artists")
+                description = buildString {
+                    listOf("parodies", "characters", "groups", "languages", "category")
+                        .forEach { tag ->
+                            getInfo(tag)
+                                .takeIf { it.isNotBlank() }
+                                ?.let { "$tag: $it\n" }
+                                ?.let { append(it) }
+                        }
+                    document.select("span.pages").eachText().forEach {
+                        if (it.isNotBlank()) {
+                            append(it, "\n")
+                        }
+                    }
+                }
+            }
         }
     }
 
-    override val favoritePath = "includes/user_favs.php"
-    override val pagesRequest = "includes/thumbs_loader.php"
+    private fun Element.getInfo(tag: String): String {
+        return select("ul.$tag a").joinToString { it.ownText() }
+    }
 
-    override fun getFilterList() = FilterList(
-        listOf(
-            Filter.Header("HINT: Use double quote (\") for exact match"),
-        ) + super.getFilterList().list,
-    )
+    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
+        return Observable.just(
+            listOf(
+                SChapter.create().apply {
+                    url = manga.url
+                    name = "Chapter"
+                },
+            ),
+        )
+    }
+
+    override fun chapterListParse(response: Response) = throw UnsupportedOperationException()
+
+    override fun pageListParse(response: Response): List<Page> {
+        val document = response.asJsoup()
+
+        val totalPages = document.getInputIdValue("load_pages")
+
+        val pages = document.select(".g_thumb img")
+
+        if ((totalPages.toIntOrNull() ?: 0) > pages.size) {
+            val form = FormBody.Builder()
+                .add("u_id", document.getInputIdValue("gallery_id"))
+                .add("g_id", document.getInputIdValue("load_id"))
+                .add("img_dir", document.getInputIdValue("load_dir"))
+                .add("visible_pages", pages.size.toString())
+                .add("total_pages", totalPages)
+                .add("type", "2")
+                .build()
+
+            val headers = headersBuilder()
+                .add("X-Requested-With", "XMLHttpRequest")
+                .build()
+
+            val morePages = client.newCall(POST("$baseUrl/includes/thumbs_loader.php", headers, form))
+                .execute()
+                .asJsoup()
+                .select("img")
+
+            pages.addAll(morePages)
+        }
+
+        return pages.mapIndexed { idx, img ->
+            Page(idx, imageUrl = img.absUrl("data-src").thumbnailToFull())
+        }
+    }
+
+    private fun Document.getInputIdValue(id: String): String {
+        return select("input[id=$id]").attr("value")
+    }
+
+    private fun String.thumbnailToFull(): String {
+        val ext = substringAfterLast(".")
+        return replace("t.$ext", ".$ext")
+    }
+
+    override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 }
