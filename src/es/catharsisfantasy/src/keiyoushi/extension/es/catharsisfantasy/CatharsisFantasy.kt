@@ -1,11 +1,11 @@
 package keiyoushi.extension.es.catharsisfantasy
 
 import android.annotation.SuppressLint
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 import java.security.SecureRandom

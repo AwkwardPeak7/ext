@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.lscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 
 class LScans : MangaThemesia(
     "L Scans",

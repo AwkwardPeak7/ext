@@ -1,10 +1,10 @@
 package keiyoushi.extension.all.namicomi
 
+import eu.kanade.tachiyomi.source.model.Filter
+import eu.kanade.tachiyomi.source.model.FilterList
 import keiyoushi.extension.all.namicomi.dto.ContentRatingDto
 import keiyoushi.extension.all.namicomi.dto.StatusDto
 import keiyoushi.lib.i18n.Intl
-import eu.kanade.tachiyomi.source.model.Filter
-import eu.kanade.tachiyomi.source.model.FilterList
 import okhttp3.HttpUrl
 
 class NamiComiFilters {

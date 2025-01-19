@@ -1,8 +1,8 @@
 package keiyoushi.extension.tr.mangakings
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.text.SimpleDateFormat
 import java.util.Locale

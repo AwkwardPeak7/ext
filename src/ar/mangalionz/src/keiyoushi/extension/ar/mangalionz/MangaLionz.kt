@@ -1,7 +1,7 @@
 package keiyoushi.extension.ar.mangalionz
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.madara.Madara
 import org.jsoup.nodes.Element
 import java.text.SimpleDateFormat
 import java.util.Locale

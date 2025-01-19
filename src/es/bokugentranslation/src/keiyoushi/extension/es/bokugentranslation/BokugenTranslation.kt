@@ -6,8 +6,8 @@ import android.os.Looper
 import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebView
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

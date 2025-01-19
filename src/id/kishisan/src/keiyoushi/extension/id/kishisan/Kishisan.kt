@@ -1,7 +1,7 @@
 package keiyoushi.extension.id.kishisan
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 
 class Kishisan : ZeistManga("Kishisan", "https://www.kishisan.site", "id") {
     override val client = super.client.newBuilder()

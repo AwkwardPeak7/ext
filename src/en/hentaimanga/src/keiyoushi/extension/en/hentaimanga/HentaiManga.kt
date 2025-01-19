@@ -1,8 +1,8 @@
 package keiyoushi.extension.en.hentaimanga
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.FormBody
 import okhttp3.Request
 import org.jsoup.nodes.Element

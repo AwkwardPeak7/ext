@@ -1,9 +1,9 @@
 package keiyoushi.extension.en.yakshascans
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.FormBody
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient

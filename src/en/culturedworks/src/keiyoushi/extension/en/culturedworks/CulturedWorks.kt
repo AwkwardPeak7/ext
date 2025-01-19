@@ -1,9 +1,9 @@
 package keiyoushi.extension.en.culturedworks
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 

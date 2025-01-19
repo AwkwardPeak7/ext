@@ -1,14 +1,14 @@
 package keiyoushi.extension.ja.rawdevartart
 
+import eu.kanade.tachiyomi.source.model.MangasPage
+import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.source.model.SManga
 import keiyoushi.extension.ja.rawdevartart.dto.ChapterDetailsDto
 import keiyoushi.extension.ja.rawdevartart.dto.ChapterDto
 import keiyoushi.extension.ja.rawdevartart.dto.MangaDetailsDto
 import keiyoushi.extension.ja.rawdevartart.dto.MangaDto
 import keiyoushi.extension.ja.rawdevartart.dto.PaginatedMangaList
-import eu.kanade.tachiyomi.source.model.MangasPage
-import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.source.model.SChapter
-import eu.kanade.tachiyomi.source.model.SManga
 import org.jsoup.Jsoup
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols

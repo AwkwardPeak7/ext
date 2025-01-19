@@ -1,8 +1,8 @@
 package keiyoushi.extension.all.magicaltranslators
 
-import keiyoushi.multisrc.guya.Guya
 import eu.kanade.tachiyomi.source.SourceFactory
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushi.multisrc.guya.Guya
 import okhttp3.Response
 
 class MagicalTranslatorsFactory : SourceFactory {

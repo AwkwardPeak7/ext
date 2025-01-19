@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.preference.PreferenceScreen
-import keiyoushi.multisrc.manhwaz.ManhwaZ
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import keiyoushi.multisrc.manhwaz.ManhwaZ
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

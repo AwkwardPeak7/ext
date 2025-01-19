@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.manhuafast
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 

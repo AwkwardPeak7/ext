@@ -1,9 +1,9 @@
 package keiyoushi.extension.id.mangasusu
 
 import app.cash.quickjs.QuickJs
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import okhttp3.Cookie

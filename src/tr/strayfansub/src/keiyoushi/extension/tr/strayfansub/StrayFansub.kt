@@ -1,8 +1,8 @@
 package keiyoushi.extension.tr.strayfansub
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat

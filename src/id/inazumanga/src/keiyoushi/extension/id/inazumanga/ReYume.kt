@@ -1,8 +1,8 @@
 package keiyoushi.extension.id.inazumanga
 
-import keiyoushi.multisrc.makaru.Makaru
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.makaru.Makaru
 import okhttp3.Response
 
 class ReYume : Makaru("ReYume", "https://www.re-yume.my.id", "id") {

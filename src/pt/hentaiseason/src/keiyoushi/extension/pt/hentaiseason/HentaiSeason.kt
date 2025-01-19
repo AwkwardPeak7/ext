@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.hentaiseason
 
-import keiyoushi.multisrc.gattsu.Gattsu
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.gattsu.Gattsu
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 

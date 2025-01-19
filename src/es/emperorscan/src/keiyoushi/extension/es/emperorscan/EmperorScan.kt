@@ -3,13 +3,13 @@ package keiyoushi.extension.es.emperorscan
 import android.app.Application
 import android.content.SharedPreferences
 import androidx.preference.PreferenceScreen
+import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import keiyoushi.lib.randomua.addRandomUAPreferenceToScreen
 import keiyoushi.lib.randomua.getPrefCustomUA
 import keiyoushi.lib.randomua.getPrefUAType
 import keiyoushi.lib.randomua.setRandomUserAgent
 import keiyoushi.multisrc.madara.Madara
-import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
-import eu.kanade.tachiyomi.source.ConfigurableSource
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get

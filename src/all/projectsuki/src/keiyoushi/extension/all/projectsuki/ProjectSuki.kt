@@ -2,13 +2,6 @@ package keiyoushi.extension.all.projectsuki
 
 import android.os.Build
 import androidx.preference.PreferenceScreen
-import keiyoushi.extension.all.projectsuki.activities.INTENT_BOOK_QUERY_PREFIX
-import keiyoushi.extension.all.projectsuki.activities.INTENT_READ_QUERY_PREFIX
-import keiyoushi.extension.all.projectsuki.activities.INTENT_SEARCH_QUERY_PREFIX
-import keiyoushi.extension.all.projectsuki.activities.ProjectSukiSearchUrlActivity
-import keiyoushi.lib.randomua.getPrefCustomUA
-import keiyoushi.lib.randomua.getPrefUAType
-import keiyoushi.lib.randomua.setRandomUserAgent
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
@@ -22,6 +15,13 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.extension.all.projectsuki.activities.INTENT_BOOK_QUERY_PREFIX
+import keiyoushi.extension.all.projectsuki.activities.INTENT_READ_QUERY_PREFIX
+import keiyoushi.extension.all.projectsuki.activities.INTENT_SEARCH_QUERY_PREFIX
+import keiyoushi.extension.all.projectsuki.activities.ProjectSukiSearchUrlActivity
+import keiyoushi.lib.randomua.getPrefCustomUA
+import keiyoushi.lib.randomua.getPrefUAType
+import keiyoushi.lib.randomua.setRandomUserAgent
 import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl

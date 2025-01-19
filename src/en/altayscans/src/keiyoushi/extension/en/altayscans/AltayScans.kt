@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.altayscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 
 class AltayScans : MangaThemesia(
     "Altay Scans",

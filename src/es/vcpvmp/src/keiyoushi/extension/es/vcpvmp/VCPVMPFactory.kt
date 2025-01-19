@@ -1,8 +1,8 @@
 package keiyoushi.extension.es.vcpvmp
 
-import keiyoushi.multisrc.vercomics.VerComics
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushi.multisrc.vercomics.VerComics
 
 class VCPVMPFactory : SourceFactory {
     override fun createSources(): List<Source> = listOf(

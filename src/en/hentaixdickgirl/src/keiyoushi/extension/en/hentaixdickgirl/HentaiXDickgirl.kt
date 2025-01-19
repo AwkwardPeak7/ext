@@ -1,8 +1,8 @@
 package keiyoushi.extension.en.hentaixdickgirl
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
+import keiyoushi.multisrc.madara.Madara
 import org.jsoup.nodes.Document
 
 class HentaiXDickgirl : Madara("HentaiXDickgirl", "https://hentaixdickgirl.com", "en") {

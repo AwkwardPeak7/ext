@@ -4,9 +4,9 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
+import eu.kanade.tachiyomi.source.model.Page
 import keiyoushi.lib.unpacker.Unpacker
 import keiyoushi.multisrc.madara.Madara
-import eu.kanade.tachiyomi.source.model.Page
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

@@ -1,8 +1,8 @@
 package keiyoushi.extension.all.hentaiera
 
-import keiyoushi.multisrc.galleryadults.GalleryAdults
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushi.multisrc.galleryadults.GalleryAdults
 
 class HentaiEraFactory : SourceFactory {
 

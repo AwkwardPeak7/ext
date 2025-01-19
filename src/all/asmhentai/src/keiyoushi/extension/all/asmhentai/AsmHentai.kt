@@ -1,10 +1,10 @@
 package keiyoushi.extension.all.asmhentai
 
+import eu.kanade.tachiyomi.source.model.Filter
+import eu.kanade.tachiyomi.source.model.FilterList
 import keiyoushi.multisrc.galleryadults.GalleryAdults
 import keiyoushi.multisrc.galleryadults.Genre
 import keiyoushi.multisrc.galleryadults.imgAttr
-import eu.kanade.tachiyomi.source.model.Filter
-import eu.kanade.tachiyomi.source.model.FilterList
 import okhttp3.FormBody
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

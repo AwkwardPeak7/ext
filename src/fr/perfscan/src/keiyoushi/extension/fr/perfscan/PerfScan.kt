@@ -1,7 +1,7 @@
 package keiyoushi.extension.fr.perfscan
 
-import keiyoushi.multisrc.heancms.HeanCms
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
+import keiyoushi.multisrc.heancms.HeanCms
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 

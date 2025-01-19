@@ -1,7 +1,7 @@
 package keiyoushi.extension.all.sandraandwoo.translations
 
-import keiyoushi.extension.all.sandraandwoo.SandraAndWoo
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.extension.all.sandraandwoo.SandraAndWoo
 
 class SandraAndWooEN : SandraAndWoo(lang = "en") {
     override val name = "Sandra and Woo"

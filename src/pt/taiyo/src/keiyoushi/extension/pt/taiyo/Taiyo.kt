@@ -2,10 +2,6 @@ package keiyoushi.extension.pt.taiyo
 
 import android.app.Application
 import android.content.SharedPreferences
-import keiyoushi.extension.pt.taiyo.dto.AdditionalInfoDto
-import keiyoushi.extension.pt.taiyo.dto.ChapterListDto
-import keiyoushi.extension.pt.taiyo.dto.MediaChapterDto
-import keiyoushi.extension.pt.taiyo.dto.SearchResultDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -17,6 +13,10 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.extension.pt.taiyo.dto.AdditionalInfoDto
+import keiyoushi.extension.pt.taiyo.dto.ChapterListDto
+import keiyoushi.extension.pt.taiyo.dto.MediaChapterDto
+import keiyoushi.extension.pt.taiyo.dto.SearchResultDto
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

@@ -1,9 +1,9 @@
 package keiyoushi.extension.all.thunderscans
 
 import androidx.preference.PreferenceScreen
+import eu.kanade.tachiyomi.source.SourceFactory
 import keiyoushi.multisrc.mangathemesia.MangaThemesiaAlt
 import keiyoushi.multisrc.mangathemesia.MangaThemesiaPaidChapterHelper
-import eu.kanade.tachiyomi.source.SourceFactory
 import java.text.SimpleDateFormat
 import java.util.Locale
 

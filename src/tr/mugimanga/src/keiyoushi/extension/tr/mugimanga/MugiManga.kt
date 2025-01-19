@@ -1,8 +1,8 @@
 package keiyoushi.extension.tr.mugimanga
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.madara.Madara
 import org.jsoup.nodes.Document
 import java.lang.Exception
 import java.text.SimpleDateFormat

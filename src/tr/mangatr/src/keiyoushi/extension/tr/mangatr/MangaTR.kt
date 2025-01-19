@@ -1,6 +1,5 @@
 package keiyoushi.extension.tr.mangatr
 
-import keiyoushi.multisrc.fmreader.FMReader
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -9,6 +8,7 @@ import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.fmreader.FMReader
 import okhttp3.FormBody
 import okhttp3.Response
 import org.jsoup.nodes.Document

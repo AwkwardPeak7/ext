@@ -220,7 +220,7 @@ private data class CompressionContext(
     var c: String = "",
     var wc: String = "",
     var w: String = "",
-    var enlargeIn: Int = 2,  // Compensate for the first entry which should not count
+    var enlargeIn: Int = 2, // Compensate for the first entry which should not count
     var dictSize: Int = 3,
     var numBits: Int = 2,
     val data: StringBuilder = StringBuilder(uncompressedLength / 3),

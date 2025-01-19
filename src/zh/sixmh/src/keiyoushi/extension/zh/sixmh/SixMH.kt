@@ -2,10 +2,10 @@ package keiyoushi.extension.zh.sixmh
 
 import android.app.Application
 import android.os.Build
-import keiyoushi.multisrc.mccms.MCCMS
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mccms.MCCMS
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.Response

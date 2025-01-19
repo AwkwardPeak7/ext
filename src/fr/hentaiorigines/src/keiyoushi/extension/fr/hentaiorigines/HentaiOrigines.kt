@@ -1,7 +1,7 @@
 package keiyoushi.extension.fr.hentaiorigines
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.POST
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale

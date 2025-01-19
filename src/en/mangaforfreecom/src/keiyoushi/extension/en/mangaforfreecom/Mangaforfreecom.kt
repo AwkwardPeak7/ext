@@ -1,8 +1,8 @@
 package keiyoushi.extension.en.mangaforfreecom
 
 import android.annotation.SuppressLint
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 import java.security.cert.X509Certificate

@@ -4,10 +4,10 @@ import android.app.Application
 import android.widget.Toast
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
-import keiyoushi.multisrc.fuzzydoodle.FuzzyDoodle
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import keiyoushi.multisrc.fuzzydoodle.FuzzyDoodle
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

@@ -2,13 +2,13 @@ package keiyoushi.extension.all.snowmtl
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import keiyoushi.extension.all.snowmtl.interceptors.TranslationInterceptor
 import keiyoushi.extension.all.snowmtl.translator.BingTranslator
 import keiyoushi.extension.all.snowmtl.translator.TranslatorEngine
 import keiyoushi.multisrc.machinetranslations.Language
 import keiyoushi.multisrc.machinetranslations.MachineTranslations
 import keiyoushi.multisrc.machinetranslations.interceptors.ComposedImageInterceptor
-import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import java.util.concurrent.TimeUnit
 
 @RequiresApi(Build.VERSION_CODES.O)

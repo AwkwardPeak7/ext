@@ -5,11 +5,6 @@ import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceScreen
-import keiyoushi.extension.vi.yurineko.dto.ErrorResponseDto
-import keiyoushi.extension.vi.yurineko.dto.MangaDto
-import keiyoushi.extension.vi.yurineko.dto.MangaListDto
-import keiyoushi.extension.vi.yurineko.dto.ReadResponseDto
-import keiyoushi.extension.vi.yurineko.dto.UserDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
@@ -21,6 +16,11 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import keiyoushi.extension.vi.yurineko.dto.ErrorResponseDto
+import keiyoushi.extension.vi.yurineko.dto.MangaDto
+import keiyoushi.extension.vi.yurineko.dto.MangaListDto
+import keiyoushi.extension.vi.yurineko.dto.ReadResponseDto
+import keiyoushi.extension.vi.yurineko.dto.UserDto
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.CacheControl

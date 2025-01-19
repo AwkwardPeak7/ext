@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.galaxscanlator
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import java.util.concurrent.TimeUnit
 
 class GalaxScanlator : ZeistManga(

@@ -1,9 +1,9 @@
 package keiyoushi.extension.pt.manhastro
 
 import android.util.Base64
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.madara.Madara
 import kotlinx.serialization.decodeFromString
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient

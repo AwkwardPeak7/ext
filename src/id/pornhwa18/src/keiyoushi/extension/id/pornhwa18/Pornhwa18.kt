@@ -1,7 +1,7 @@
 package keiyoushi.extension.id.pornhwa18
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Request
 
 class Pornhwa18 : Madara("Pornhwa18", "https://pornhwa18.com", "id") {

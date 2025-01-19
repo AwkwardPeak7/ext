@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.nirvanascan
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 import java.text.SimpleDateFormat
 import java.util.Locale
 

@@ -5,13 +5,6 @@ import android.content.SharedPreferences
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
-import keiyoushi.extension.all.namicomi.dto.ChapterListDto
-import keiyoushi.extension.all.namicomi.dto.EntityAccessMapDto
-import keiyoushi.extension.all.namicomi.dto.EntityAccessRequestDto
-import keiyoushi.extension.all.namicomi.dto.EntityAccessRequestItemDto
-import keiyoushi.extension.all.namicomi.dto.MangaDto
-import keiyoushi.extension.all.namicomi.dto.MangaListDto
-import keiyoushi.extension.all.namicomi.dto.PageListDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
@@ -22,6 +15,13 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import keiyoushi.extension.all.namicomi.dto.ChapterListDto
+import keiyoushi.extension.all.namicomi.dto.EntityAccessMapDto
+import keiyoushi.extension.all.namicomi.dto.EntityAccessRequestDto
+import keiyoushi.extension.all.namicomi.dto.EntityAccessRequestItemDto
+import keiyoushi.extension.all.namicomi.dto.MangaDto
+import keiyoushi.extension.all.namicomi.dto.MangaListDto
+import keiyoushi.extension.all.namicomi.dto.PageListDto
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import okhttp3.CacheControl

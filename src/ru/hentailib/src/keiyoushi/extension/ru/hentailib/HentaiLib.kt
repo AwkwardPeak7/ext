@@ -4,8 +4,8 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.preference.EditTextPreference
-import keiyoushi.multisrc.libgroup.LibGroup
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushi.multisrc.libgroup.LibGroup
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

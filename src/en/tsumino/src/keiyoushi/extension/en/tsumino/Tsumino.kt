@@ -1,10 +1,5 @@
 package keiyoushi.extension.en.tsumino
 
-import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.cfDecodeEmails
-import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.getArtists
-import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.getChapter
-import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.getCollection
-import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.getDesc
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservableSuccess
@@ -16,6 +11,11 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.cfDecodeEmails
+import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.getArtists
+import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.getChapter
+import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.getCollection
+import keiyoushi.extension.en.tsumino.TsuminoUtils.Companion.getDesc
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement

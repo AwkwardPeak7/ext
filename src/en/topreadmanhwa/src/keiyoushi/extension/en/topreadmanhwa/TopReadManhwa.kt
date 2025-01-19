@@ -1,8 +1,8 @@
 package keiyoushi.extension.en.topreadmanhwa
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat

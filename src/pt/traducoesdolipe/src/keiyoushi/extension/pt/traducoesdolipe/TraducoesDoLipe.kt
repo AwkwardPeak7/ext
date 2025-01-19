@@ -1,9 +1,9 @@
 package keiyoushi.extension.pt.traducoesdolipe
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import kotlinx.serialization.decodeFromString
 import okhttp3.Response
 import org.jsoup.nodes.Document

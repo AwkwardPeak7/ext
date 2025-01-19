@@ -1,8 +1,8 @@
 package keiyoushi.extension.pt.ssreading
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Locale

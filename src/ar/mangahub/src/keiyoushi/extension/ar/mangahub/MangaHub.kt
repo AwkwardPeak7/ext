@@ -1,7 +1,7 @@
 package keiyoushi.extension.ar.mangahub
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 
 class MangaHub : ZeistManga(
     "MangaHub",

@@ -1,9 +1,9 @@
 package keiyoushi.extension.tr.hentaizm
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.asObservable
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.FormBody
 import okhttp3.Interceptor
 import okhttp3.Response

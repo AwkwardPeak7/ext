@@ -1,10 +1,5 @@
 package keiyoushi.extension.uk.honeymanga
 
-import keiyoushi.extension.uk.honeymanga.dtos.CompleteHoneyMangaDto
-import keiyoushi.extension.uk.honeymanga.dtos.HoneyMangaChapterPagesDto
-import keiyoushi.extension.uk.honeymanga.dtos.HoneyMangaChapterResponseDto
-import keiyoushi.extension.uk.honeymanga.dtos.HoneyMangaDto
-import keiyoushi.extension.uk.honeymanga.dtos.HoneyMangaResponseDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
@@ -14,6 +9,11 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import keiyoushi.extension.uk.honeymanga.dtos.CompleteHoneyMangaDto
+import keiyoushi.extension.uk.honeymanga.dtos.HoneyMangaChapterPagesDto
+import keiyoushi.extension.uk.honeymanga.dtos.HoneyMangaChapterResponseDto
+import keiyoushi.extension.uk.honeymanga.dtos.HoneyMangaDto
+import keiyoushi.extension.uk.honeymanga.dtos.HoneyMangaResponseDto
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.decodeFromStream

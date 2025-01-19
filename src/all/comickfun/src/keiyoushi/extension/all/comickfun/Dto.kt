@@ -1,10 +1,10 @@
 package keiyoushi.extension.all.comickfun
 
+import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.source.model.SManga
 import keiyoushi.extension.all.comickfun.Comick.Companion.GROUP_TAGS_DEFAULT
 import keiyoushi.extension.all.comickfun.Comick.Companion.INCLUDE_MU_TAGS_DEFAULT
 import keiyoushi.extension.all.comickfun.Comick.Companion.SCORE_POSITION_DEFAULT
-import eu.kanade.tachiyomi.source.model.SChapter
-import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal

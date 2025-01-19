@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.wonderlandscan
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import java.text.SimpleDateFormat
 import java.util.Locale

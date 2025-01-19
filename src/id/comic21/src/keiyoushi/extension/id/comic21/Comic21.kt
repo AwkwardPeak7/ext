@@ -1,7 +1,7 @@
 package keiyoushi.extension.id.comic21
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import org.jsoup.nodes.Document
 
 class Comic21 : MangaThemesia(

@@ -1,17 +1,17 @@
 package keiyoushi.extension.id.komikrealm
 
-import keiyoushi.multisrc.zeistmanga.Genre
-import keiyoushi.multisrc.zeistmanga.Status
-import keiyoushi.multisrc.zeistmanga.Type
-import keiyoushi.multisrc.zeistmanga.ZeistManga
-import keiyoushi.multisrc.zeistmanga.ZeistMangaDto
-import keiyoushi.multisrc.zeistmanga.ZeistMangaIntl
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.zeistmanga.Genre
+import keiyoushi.multisrc.zeistmanga.Status
+import keiyoushi.multisrc.zeistmanga.Type
+import keiyoushi.multisrc.zeistmanga.ZeistManga
+import keiyoushi.multisrc.zeistmanga.ZeistMangaDto
+import keiyoushi.multisrc.zeistmanga.ZeistMangaIntl
 import kotlinx.serialization.decodeFromString
 import okhttp3.Request
 import okhttp3.Response

@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.cerisescans
 
-import keiyoushi.multisrc.peachscan.PeachScan
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.peachscan.PeachScan
 
 class CeriseScan : PeachScan(
     "Cerise Scan",

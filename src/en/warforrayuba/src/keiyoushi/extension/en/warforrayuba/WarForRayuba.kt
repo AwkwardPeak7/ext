@@ -2,8 +2,6 @@ package keiyoushi.extension.en.warforrayuba
 
 import android.os.Build
 import eu.kanade.tachiyomi.AppInfo
-import keiyoushi.extension.en.warforrayuba.dto.PageDto
-import keiyoushi.extension.en.warforrayuba.dto.RoundDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
@@ -14,6 +12,8 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.extension.en.warforrayuba.dto.PageDto
+import keiyoushi.extension.en.warforrayuba.dto.RoundDto
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.Headers

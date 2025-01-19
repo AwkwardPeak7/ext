@@ -1,8 +1,8 @@
 package keiyoushi.extension.en.arvenscans
 
-import keiyoushi.multisrc.iken.Iken
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.iken.Iken
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray

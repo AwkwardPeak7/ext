@@ -1,8 +1,8 @@
 package keiyoushi.extension.all.mangadex
 
 import android.util.Log
-import keiyoushi.extension.all.mangadex.dto.ImageReportDto
 import eu.kanade.tachiyomi.network.POST
+import keiyoushi.extension.all.mangadex.dto.ImageReportDto
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.Call

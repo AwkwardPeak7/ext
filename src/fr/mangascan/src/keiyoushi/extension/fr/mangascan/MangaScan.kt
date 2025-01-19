@@ -1,8 +1,8 @@
 package keiyoushi.extension.fr.mangascan
 
-import keiyoushi.multisrc.mmrcms.MMRCMS
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.mmrcms.MMRCMS
 import okhttp3.Request
 
 class MangaScan : MMRCMS(

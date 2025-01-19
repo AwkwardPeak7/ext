@@ -1,7 +1,7 @@
 package keiyoushi.extension.es.asialotus
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 
 class AsiaLotus : MangaThemesia(
     "Asia Lotus",

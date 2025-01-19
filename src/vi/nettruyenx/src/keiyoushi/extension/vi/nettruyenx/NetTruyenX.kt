@@ -1,7 +1,7 @@
 package keiyoushi.extension.vi.nettruyenx
 
-import keiyoushi.multisrc.wpcomics.WPComics
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.wpcomics.WPComics
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat
 import java.util.Locale

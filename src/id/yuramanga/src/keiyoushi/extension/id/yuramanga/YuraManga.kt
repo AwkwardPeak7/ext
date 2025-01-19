@@ -1,7 +1,7 @@
 package keiyoushi.extension.id.yuramanga
 
-import keiyoushi.multisrc.zmanga.ZManga
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.zmanga.ZManga
 import org.jsoup.nodes.Document
 import java.io.IOException
 import java.text.SimpleDateFormat

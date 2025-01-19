@@ -1,7 +1,7 @@
 package keiyoushi.extension.tr.koreliscans
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.MangasPage
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Locale

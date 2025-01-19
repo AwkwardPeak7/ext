@@ -1,8 +1,8 @@
 package keiyoushi.extension.tr.golgebahcesi
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat
 import java.util.Locale

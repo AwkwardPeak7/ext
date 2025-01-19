@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.comickiba
 
-import keiyoushi.multisrc.liliana.Liliana
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.liliana.Liliana
 
 class Manhuagold : Liliana(
     "Manhuagold",

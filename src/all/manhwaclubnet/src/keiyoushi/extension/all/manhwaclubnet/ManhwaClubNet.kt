@@ -1,7 +1,7 @@
 package keiyoushi.extension.all.manhwaclubnet
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Response
 
 class ManhwaClubNet(lang: String) : Madara(

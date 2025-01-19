@@ -1,9 +1,9 @@
 package keiyoushi.extension.es.templescanesp
 
-import keiyoushi.multisrc.mangaesp.MangaEsp
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.mangaesp.MangaEsp
 import okhttp3.FormBody
 import okhttp3.Response
 

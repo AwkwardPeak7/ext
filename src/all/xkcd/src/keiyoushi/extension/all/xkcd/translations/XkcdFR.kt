@@ -1,9 +1,9 @@
 package keiyoushi.extension.all.xkcd.translations
 
-import keiyoushi.extension.all.xkcd.Xkcd
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.extension.all.xkcd.Xkcd
 import okhttp3.Response
 
 class XkcdFR : Xkcd("https://xkcd.lapin.org", "fr") {

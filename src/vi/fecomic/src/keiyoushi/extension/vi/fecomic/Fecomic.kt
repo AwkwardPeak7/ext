@@ -1,8 +1,8 @@
 package keiyoushi.extension.vi.fecomic
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.jsoup.nodes.Element
 import java.text.SimpleDateFormat

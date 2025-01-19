@@ -1,7 +1,7 @@
 package keiyoushi.extension.ar.yurimoonsub
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import org.jsoup.nodes.Document
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets

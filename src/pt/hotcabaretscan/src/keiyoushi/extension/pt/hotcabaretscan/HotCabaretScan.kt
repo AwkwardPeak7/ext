@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.hotcabaretscan
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response

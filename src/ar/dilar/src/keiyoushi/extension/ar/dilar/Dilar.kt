@@ -5,11 +5,11 @@ import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
-import keiyoushi.multisrc.gmanga.Gmanga
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.gmanga.Gmanga
 import okhttp3.Request
 import okhttp3.Response
 import uy.kohesive.injekt.Injekt

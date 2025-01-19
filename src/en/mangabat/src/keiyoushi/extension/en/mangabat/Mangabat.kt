@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.mangabat
 
-import keiyoushi.multisrc.mangabox.MangaBox
 import eu.kanade.tachiyomi.network.GET
+import keiyoushi.multisrc.mangabox.MangaBox
 import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale

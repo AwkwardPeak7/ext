@@ -1,12 +1,12 @@
 package keiyoushi.extension.all.eternalmangas
 
-import keiyoushi.multisrc.mangaesp.MangaEsp
-import keiyoushi.multisrc.mangaesp.SeriesDto
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangaesp.MangaEsp
+import keiyoushi.multisrc.mangaesp.SeriesDto
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import okhttp3.FormBody

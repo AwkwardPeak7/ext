@@ -1,10 +1,10 @@
 package keiyoushi.extension.zh.dmzj
 
-import keiyoushi.extension.zh.dmzj.utils.RSA
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.extension.zh.dmzj.utils.RSA
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoBuf

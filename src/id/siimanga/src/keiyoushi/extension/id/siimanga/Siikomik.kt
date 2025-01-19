@@ -1,8 +1,8 @@
 package keiyoushi.extension.id.siimanga
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Request
 
 class Siikomik : MangaThemesia(

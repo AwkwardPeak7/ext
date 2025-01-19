@@ -1,7 +1,7 @@
 package keiyoushi.extension.bg.utsukushii
 
-import keiyoushi.multisrc.mmrcms.MMRCMS
 import eu.kanade.tachiyomi.network.GET
+import keiyoushi.multisrc.mmrcms.MMRCMS
 import okhttp3.Request
 
 class Utsukushii : MMRCMS("Utsukushii", "https://utsukushii-bg.com", "bg") {

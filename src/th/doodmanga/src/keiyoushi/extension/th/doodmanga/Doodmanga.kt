@@ -1,8 +1,8 @@
 package keiyoushi.extension.th.doodmanga
 
 import app.cash.quickjs.QuickJs
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat

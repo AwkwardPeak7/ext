@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.origamiorpheans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 import java.text.SimpleDateFormat
 import java.util.Locale

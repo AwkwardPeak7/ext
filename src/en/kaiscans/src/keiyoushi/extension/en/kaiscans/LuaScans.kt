@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.kaiscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 
 class LuaScans : MangaThemesia("Lua Scans (unoriginal)", "https://ponvi.online", "en") {
     override val client = super.client.newBuilder()

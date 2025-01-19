@@ -1,7 +1,7 @@
 package keiyoushi.extension.tr.raindropfansub
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Response
 import org.jsoup.Jsoup
 import java.text.SimpleDateFormat

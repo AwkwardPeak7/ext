@@ -1,15 +1,15 @@
 package keiyoushi.extension.es.gistamishouse
 
-import keiyoushi.multisrc.zeistmanga.Genre
-import keiyoushi.multisrc.zeistmanga.Status
-import keiyoushi.multisrc.zeistmanga.Type
-import keiyoushi.multisrc.zeistmanga.ZeistManga
-import keiyoushi.multisrc.zeistmanga.ZeistMangaDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.zeistmanga.Genre
+import keiyoushi.multisrc.zeistmanga.Status
+import keiyoushi.multisrc.zeistmanga.Type
+import keiyoushi.multisrc.zeistmanga.ZeistManga
+import keiyoushi.multisrc.zeistmanga.ZeistMangaDto
 import kotlinx.serialization.decodeFromString
 import okhttp3.Response
 

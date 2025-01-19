@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.hentai3zcc
 
-import keiyoushi.multisrc.manga18.Manga18
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.manga18.Manga18
 import org.jsoup.nodes.Element
 
 class Hentai3zCC : Manga18("Hentai3z.CC", "https://hentai3z.cc", "en") {

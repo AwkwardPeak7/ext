@@ -1,13 +1,13 @@
 package keiyoushi.extension.ar.mangatales
 
-import keiyoushi.multisrc.gmanga.Gmanga
-import keiyoushi.multisrc.gmanga.TagFilterData
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.gmanga.Gmanga
+import keiyoushi.multisrc.gmanga.TagFilterData
 import okhttp3.Request
 import okhttp3.Response
 

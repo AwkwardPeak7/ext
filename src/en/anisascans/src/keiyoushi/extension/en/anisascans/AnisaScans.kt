@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.anisascans
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 
 class AnisaScans : Madara(
     "Anisa Scans",

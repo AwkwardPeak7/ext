@@ -1,8 +1,8 @@
 package keiyoushi.extension.es.celestialmoon
 
+import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
 import keiyoushi.lib.cookieinterceptor.CookieInterceptor
 import keiyoushi.multisrc.mangathemesia.MangaThemesia
-import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.text.SimpleDateFormat
 import java.util.Locale

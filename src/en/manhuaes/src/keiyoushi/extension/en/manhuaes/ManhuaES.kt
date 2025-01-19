@@ -1,9 +1,9 @@
 package keiyoushi.extension.en.manhuaes
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Response
 
 class ManhuaES : Madara("Manhua ES", "https://manhuaes.com", "en") {

@@ -1,7 +1,7 @@
 package keiyoushi.extension.ja.comicgardo
 
-import keiyoushi.multisrc.gigaviewer.GigaViewer
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.gigaviewer.GigaViewer
 import okhttp3.OkHttpClient
 import org.jsoup.nodes.Element
 

@@ -2,15 +2,15 @@ package keiyoushi.extension.pt.sssscanlator
 
 import android.app.Application
 import androidx.preference.PreferenceScreen
+import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import eu.kanade.tachiyomi.source.ConfigurableSource
+import eu.kanade.tachiyomi.source.model.Page
 import keiyoushi.lib.randomua.addRandomUAPreferenceToScreen
 import keiyoushi.lib.randomua.getPrefCustomUA
 import keiyoushi.lib.randomua.getPrefUAType
 import keiyoushi.lib.randomua.setRandomUserAgent
 import keiyoushi.multisrc.mangathemesia.MangaThemesia
-import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.interceptor.rateLimit
-import eu.kanade.tachiyomi.source.ConfigurableSource
-import eu.kanade.tachiyomi.source.model.Page
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import uy.kohesive.injekt.Injekt

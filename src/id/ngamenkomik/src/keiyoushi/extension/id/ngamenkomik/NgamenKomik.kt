@@ -1,10 +1,10 @@
 package keiyoushi.extension.id.ngamenkomik
 
+import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import keiyoushi.multisrc.zeistmanga.Genre
 import keiyoushi.multisrc.zeistmanga.Status
 import keiyoushi.multisrc.zeistmanga.Type
 import keiyoushi.multisrc.zeistmanga.ZeistManga
-import eu.kanade.tachiyomi.network.interceptor.rateLimit
 
 class NgamenKomik : ZeistManga("NgamenKomik", "https://ngamenkomik05.blogspot.com", "id") {
     override val client = super.client.newBuilder()

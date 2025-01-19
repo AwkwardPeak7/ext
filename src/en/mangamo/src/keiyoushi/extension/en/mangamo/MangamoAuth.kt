@@ -1,11 +1,11 @@
 package keiyoushi.extension.en.mangamo
 
+import eu.kanade.tachiyomi.network.POST
 import keiyoushi.extension.en.mangamo.MangamoHelper.Companion.parseJson
 import keiyoushi.extension.en.mangamo.dto.FirebaseAuthDto
 import keiyoushi.extension.en.mangamo.dto.FirebaseRegisterDto
 import keiyoushi.extension.en.mangamo.dto.MangamoLoginDto
 import keiyoushi.extension.en.mangamo.dto.TokenRefreshDto
-import eu.kanade.tachiyomi.network.POST
 import okhttp3.Headers
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody

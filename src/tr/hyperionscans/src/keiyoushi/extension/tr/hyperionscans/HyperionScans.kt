@@ -1,7 +1,7 @@
 package keiyoushi.extension.tr.hyperionscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import java.text.SimpleDateFormat
 import java.util.Locale
 

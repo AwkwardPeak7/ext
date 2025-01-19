@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.gedecomix
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.madara.Madara
 import org.jsoup.nodes.Element
 
 class GEDEComix : Madara(

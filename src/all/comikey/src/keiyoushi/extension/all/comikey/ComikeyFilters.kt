@@ -1,8 +1,8 @@
 package keiyoushi.extension.all.comikey
 
-import keiyoushi.lib.i18n.Intl
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushi.lib.i18n.Intl
 import okhttp3.HttpUrl
 
 fun getComikeyFilters(intl: Intl) = FilterList(

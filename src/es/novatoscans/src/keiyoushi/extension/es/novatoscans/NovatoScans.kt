@@ -1,7 +1,7 @@
 package keiyoushi.extension.es.novatoscans
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 
 class NovatoScans : ZeistManga(
     "Novato Scans",

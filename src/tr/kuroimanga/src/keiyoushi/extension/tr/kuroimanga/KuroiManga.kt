@@ -1,8 +1,8 @@
 package keiyoushi.extension.tr.kuroimanga
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.madara.Madara
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.text.SimpleDateFormat

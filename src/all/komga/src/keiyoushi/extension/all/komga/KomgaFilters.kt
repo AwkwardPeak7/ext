@@ -1,8 +1,8 @@
 package keiyoushi.extension.all.komga
 
+import eu.kanade.tachiyomi.source.model.Filter
 import keiyoushi.extension.all.komga.dto.AuthorDto
 import keiyoushi.extension.all.komga.dto.LibraryDto
-import eu.kanade.tachiyomi.source.model.Filter
 import okhttp3.HttpUrl
 
 interface UriFilter {

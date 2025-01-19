@@ -1,8 +1,8 @@
 package keiyoushi.extension.tr.pijamalikoi
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale

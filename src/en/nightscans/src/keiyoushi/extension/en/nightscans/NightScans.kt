@@ -1,9 +1,9 @@
 package keiyoushi.extension.en.nightscans
 
 import androidx.preference.PreferenceScreen
+import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import keiyoushi.multisrc.mangathemesia.MangaThemesiaAlt
 import keiyoushi.multisrc.mangathemesia.MangaThemesiaPaidChapterHelper
-import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 

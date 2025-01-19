@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.sinensis
 
-import keiyoushi.multisrc.peachscan.PeachScan
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.peachscan.PeachScan
 
 class SinensisScan : PeachScan(
     "Sinensis Scan",

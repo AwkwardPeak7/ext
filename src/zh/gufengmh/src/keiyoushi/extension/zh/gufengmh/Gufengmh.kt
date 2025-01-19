@@ -1,10 +1,10 @@
 package keiyoushi.extension.zh.gufengmh
 
-import keiyoushi.multisrc.sinmh.ProgressiveParser
-import keiyoushi.multisrc.sinmh.SinMH
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.sinmh.ProgressiveParser
+import keiyoushi.multisrc.sinmh.SinMH
 import org.jsoup.nodes.Document
 import rx.Observable
 import rx.Single

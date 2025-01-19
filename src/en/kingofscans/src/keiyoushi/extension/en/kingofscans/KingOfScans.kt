@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.kingofscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import org.jsoup.nodes.Document
 
 class KingOfScans : MangaThemesia(

@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.hentai4free
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Request
 
 class Hentai4Free : Madara("Hentai4Free", "https://hentai4free.net", "en") {

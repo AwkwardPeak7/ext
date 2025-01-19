@@ -1,11 +1,11 @@
 package keiyoushi.extension.all.manhwa18cc
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Request
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

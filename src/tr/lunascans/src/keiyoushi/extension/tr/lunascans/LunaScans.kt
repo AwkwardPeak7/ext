@@ -1,7 +1,7 @@
 package keiyoushi.extension.tr.lunascans
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.Page
+import keiyoushi.multisrc.madara.Madara
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat
 import java.util.Locale

@@ -1,7 +1,7 @@
 package keiyoushi.extension.es.yaoimanga
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 
 class YaoiManga : Madara(

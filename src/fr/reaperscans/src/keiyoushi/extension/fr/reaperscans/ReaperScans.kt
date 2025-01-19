@@ -1,7 +1,7 @@
 package keiyoushi.extension.fr.reaperscans
 
-import keiyoushi.multisrc.keyoapp.Keyoapp
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.keyoapp.Keyoapp
 import org.jsoup.nodes.Document
 
 class ReaperScans : Keyoapp(

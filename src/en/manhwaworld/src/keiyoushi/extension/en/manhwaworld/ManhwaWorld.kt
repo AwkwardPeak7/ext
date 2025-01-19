@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.manhwaworld
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 class ManhwaWorld : Madara(

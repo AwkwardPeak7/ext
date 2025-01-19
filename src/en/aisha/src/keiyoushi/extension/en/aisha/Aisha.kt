@@ -1,9 +1,9 @@
 package keiyoushi.extension.en.aisha
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.madara.Madara
 import rx.Observable
 
 class Aisha : Madara(

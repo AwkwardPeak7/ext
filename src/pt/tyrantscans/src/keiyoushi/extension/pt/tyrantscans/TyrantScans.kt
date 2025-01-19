@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.tyrantscans
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.network.GET
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import okhttp3.Request
 
 class TyrantScans : ZeistManga("Tyrant Scans", "https://www.tyrantscans.com", "pt-BR") {

@@ -1,8 +1,8 @@
 package keiyoushi.extension.pt.nocturnesummer
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import java.text.SimpleDateFormat

@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.suryascans
 
-import keiyoushi.multisrc.keyoapp.Keyoapp
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.keyoapp.Keyoapp
 import java.util.concurrent.TimeUnit
 
 class GenzToons : Keyoapp(

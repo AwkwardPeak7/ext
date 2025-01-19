@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.kappabeast
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import org.jsoup.nodes.Document
 
 class KappaBeast : MangaThemesia(

@@ -2,7 +2,6 @@ package keiyoushi.multisrc.machinetranslations
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import keiyoushi.multisrc.machinetranslations.interceptors.ComposedImageInterceptor
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -11,6 +10,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
+import keiyoushi.multisrc.machinetranslations.interceptors.ComposedImageInterceptor
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

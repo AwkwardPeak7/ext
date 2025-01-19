@@ -1,11 +1,11 @@
 package keiyoushi.extension.all.pandachaika
 
+import eu.kanade.tachiyomi.network.GET
 import keiyoushi.extension.all.pandachaika.ZipParser.inflateRaw
 import keiyoushi.extension.all.pandachaika.ZipParser.parseAllCDs
 import keiyoushi.extension.all.pandachaika.ZipParser.parseEOCD
 import keiyoushi.extension.all.pandachaika.ZipParser.parseEOCD64
 import keiyoushi.extension.all.pandachaika.ZipParser.parseLocalFile
-import eu.kanade.tachiyomi.network.GET
 import kotlinx.serialization.Serializable
 import okhttp3.Headers
 import okhttp3.OkHttpClient

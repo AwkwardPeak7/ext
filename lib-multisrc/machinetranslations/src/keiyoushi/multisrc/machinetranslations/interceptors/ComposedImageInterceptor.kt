@@ -12,10 +12,10 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import androidx.annotation.RequiresApi
+import eu.kanade.tachiyomi.network.GET
 import keiyoushi.multisrc.machinetranslations.Dialog
 import keiyoushi.multisrc.machinetranslations.Language
 import keiyoushi.multisrc.machinetranslations.MachineTranslations.Companion.PAGE_REGEX
-import eu.kanade.tachiyomi.network.GET
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor

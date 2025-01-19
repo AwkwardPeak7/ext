@@ -5,6 +5,10 @@ import android.text.TextWatcher
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.source.model.Page
+import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.source.model.SManga
 import keiyoushi.extension.all.mangadex.dto.AggregateVolume
 import keiyoushi.extension.all.mangadex.dto.ArtistDto
 import keiyoushi.extension.all.mangadex.dto.AtHomeDto
@@ -30,10 +34,6 @@ import keiyoushi.extension.all.mangadex.dto.UnknownEntity
 import keiyoushi.extension.all.mangadex.dto.UserAttributes
 import keiyoushi.extension.all.mangadex.dto.UserDto
 import keiyoushi.lib.i18n.Intl
-import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.source.model.SChapter
-import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule

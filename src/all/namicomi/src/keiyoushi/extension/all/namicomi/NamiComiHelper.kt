@@ -1,5 +1,7 @@
 package keiyoushi.extension.all.namicomi
 
+import eu.kanade.tachiyomi.source.model.SChapter
+import eu.kanade.tachiyomi.source.model.SManga
 import keiyoushi.extension.all.namicomi.dto.AbstractTagDto
 import keiyoushi.extension.all.namicomi.dto.ChapterDataDto
 import keiyoushi.extension.all.namicomi.dto.ContentRatingDto
@@ -10,8 +12,6 @@ import keiyoushi.extension.all.namicomi.dto.OrganizationDto
 import keiyoushi.extension.all.namicomi.dto.StatusDto
 import keiyoushi.extension.all.namicomi.dto.UnknownEntity
 import keiyoushi.lib.i18n.Intl
-import eu.kanade.tachiyomi.source.model.SChapter
-import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus

@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.readattackontitanshingekinokyojinmanga
 
-import keiyoushi.multisrc.mangacatalog.MangaCatalog
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.mangacatalog.MangaCatalog
 import org.jsoup.nodes.Element
 
 class ReadAttackOnTitanShingekiNoKyojinManga : MangaCatalog("Read Attack on Titan Shingeki no Kyojin Manga", "https://ww9.readsnk.com", "en") {

@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.adultwebtoon
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.POST
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.FormBody
 import okhttp3.Request
 

@@ -1,9 +1,9 @@
 package keiyoushi.extension.id.shiyurasub
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import okhttp3.Request
 import okhttp3.Response
 

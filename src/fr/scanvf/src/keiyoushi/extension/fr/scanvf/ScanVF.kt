@@ -1,8 +1,8 @@
 package keiyoushi.extension.fr.scanvf
 
-import keiyoushi.multisrc.mmrcms.MMRCMS
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mmrcms.MMRCMS
 import kotlin.math.min
 
 class ScanVF : MMRCMS(

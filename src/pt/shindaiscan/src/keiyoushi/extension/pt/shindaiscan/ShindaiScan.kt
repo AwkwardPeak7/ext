@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.shindaiscan
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Response
 import java.text.SimpleDateFormat
 import java.util.Locale

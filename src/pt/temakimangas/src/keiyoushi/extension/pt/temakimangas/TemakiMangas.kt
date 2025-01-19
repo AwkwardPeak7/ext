@@ -1,8 +1,8 @@
 package keiyoushi.extension.pt.temakimangas
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import okhttp3.Response
 
 class TemakiMangas : ZeistManga(

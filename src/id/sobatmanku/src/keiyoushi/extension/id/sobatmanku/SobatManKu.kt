@@ -1,7 +1,7 @@
 package keiyoushi.extension.id.sobatmanku
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import okhttp3.Response
 
 class SobatManKu : ZeistManga("SobatManKu", "https://www.sobatmanku19.cab", "id") {

@@ -4,9 +4,9 @@ import android.app.Application
 import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.preference.PreferenceScreen
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.ConfigurableSource
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 

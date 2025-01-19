@@ -1,8 +1,8 @@
 package keiyoushi.extension.id.komiktap
 
 import app.cash.quickjs.QuickJs
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Cookie
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType

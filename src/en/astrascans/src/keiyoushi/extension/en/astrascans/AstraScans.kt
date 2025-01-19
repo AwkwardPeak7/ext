@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.astrascans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 
 class AstraScans : MangaThemesia(
     "Astra Scans",

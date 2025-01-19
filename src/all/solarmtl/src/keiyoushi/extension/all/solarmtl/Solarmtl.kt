@@ -2,9 +2,9 @@ package keiyoushi.extension.all.solarmtl
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import keiyoushi.multisrc.machinetranslations.Language
 import keiyoushi.multisrc.machinetranslations.MachineTranslations
-import eu.kanade.tachiyomi.network.interceptor.rateLimit
 
 @RequiresApi(Build.VERSION_CODES.O)
 class Solarmtl(

@@ -1,9 +1,9 @@
 package keiyoushi.extension.en.toonily
 
-import keiyoushi.lib.cookieinterceptor.CookieInterceptor
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushi.lib.cookieinterceptor.CookieInterceptor
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request

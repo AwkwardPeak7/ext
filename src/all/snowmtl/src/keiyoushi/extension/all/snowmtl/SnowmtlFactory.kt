@@ -2,8 +2,8 @@ package keiyoushi.extension.all.snowmtl
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import keiyoushi.multisrc.machinetranslations.Language
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushi.multisrc.machinetranslations.Language
 
 @RequiresApi(Build.VERSION_CODES.O)
 class SnowmtlFactory : SourceFactory {

@@ -1,12 +1,12 @@
 package keiyoushi.extension.pt.animexnovel
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
-import keiyoushi.multisrc.zeistmanga.ZeistMangaDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.zeistmanga.ZeistManga
+import keiyoushi.multisrc.zeistmanga.ZeistMangaDto
 import kotlinx.serialization.decodeFromString
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Response

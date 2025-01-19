@@ -1,8 +1,8 @@
 package keiyoushi.extension.all.asmhentai
 
-import keiyoushi.multisrc.galleryadults.GalleryAdults
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushi.multisrc.galleryadults.GalleryAdults
 
 class ASMHFactory : SourceFactory {
     override fun createSources(): List<Source> = listOf(

@@ -1,10 +1,10 @@
 package keiyoushi.extension.all.miauscan
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.SourceFactory
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Request
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element

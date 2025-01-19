@@ -1,11 +1,11 @@
 package keiyoushi.extension.en.mangamo
 
+import eu.kanade.tachiyomi.source.model.SManga
 import keiyoushi.extension.en.mangamo.dto.ChapterDto
 import keiyoushi.extension.en.mangamo.dto.DocumentDto
 import keiyoushi.extension.en.mangamo.dto.DocumentDtoInternal
 import keiyoushi.extension.en.mangamo.dto.DocumentSerializer
 import keiyoushi.extension.en.mangamo.dto.SeriesDto
-import eu.kanade.tachiyomi.source.model.SManga
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json

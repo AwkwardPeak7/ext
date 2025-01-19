@@ -1,8 +1,8 @@
 package keiyoushi.extension.zh.onemanhua
 
+import eu.kanade.tachiyomi.source.model.FilterList
 import keiyoushi.multisrc.colamanga.ColaManga
 import keiyoushi.multisrc.colamanga.UriPartFilter
-import eu.kanade.tachiyomi.source.model.FilterList
 
 class Onemanhua : ColaManga("COLAMANGA", "https://www.colamanga.com", "zh") {
     override val id = 8252565807829914103 // name used to be "One漫画"

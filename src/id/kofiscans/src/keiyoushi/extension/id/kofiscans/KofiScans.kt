@@ -1,7 +1,7 @@
 package keiyoushi.extension.id.kofiscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 
 class KofiScans : MangaThemesia(

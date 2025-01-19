@@ -1,7 +1,7 @@
 package keiyoushi.extension.all.hniscantrad
 
-import keiyoushi.multisrc.pizzareader.PizzaReader
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.pizzareader.PizzaReader
 import kotlinx.serialization.json.Json
 
 class HNIScantrad : PizzaReader("HNI-Scantrad", "https://hni-scantrad.net", "all") {

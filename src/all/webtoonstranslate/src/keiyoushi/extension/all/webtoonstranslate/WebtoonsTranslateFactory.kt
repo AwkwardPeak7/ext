@@ -1,8 +1,8 @@
 package keiyoushi.extension.all.webtoonstranslate
 
-import keiyoushi.multisrc.webtoons.WebtoonsTranslate
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushi.multisrc.webtoons.WebtoonsTranslate
 
 class WebtoonsTranslateFactory : SourceFactory {
     override fun createSources(): List<Source> = listOf(

@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.slimeread
 
-import keiyoushi.multisrc.slimereadtheme.SlimeReadTheme
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.slimereadtheme.SlimeReadTheme
 
 class SlimeRead : SlimeReadTheme(
     "SlimeRead",

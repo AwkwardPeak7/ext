@@ -1,9 +1,9 @@
 package keiyoushi.extension.tr.shadowceviri
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import okhttp3.Response
 
 class ShadowCeviri : ZeistManga("Shadow Çeviri", "https://shadowceviri.blogspot.com", "tr") {

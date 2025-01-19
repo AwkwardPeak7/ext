@@ -1,7 +1,7 @@
 package keiyoushi.extension.pt.mangabr
 
-import keiyoushi.multisrc.terrascan.TerraScan
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.terrascan.TerraScan
 import java.util.concurrent.TimeUnit
 
 class MangaBR : TerraScan(

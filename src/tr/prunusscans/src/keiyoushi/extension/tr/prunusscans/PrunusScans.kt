@@ -1,7 +1,7 @@
 package keiyoushi.extension.tr.prunusscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 
 class PrunusScans : MangaThemesia(
     "Prunus Scans",

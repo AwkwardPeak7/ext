@@ -1,7 +1,7 @@
 package keiyoushi.extension.all.otakusanctuary
 
-import keiyoushi.multisrc.otakusanctuary.OtakuSanctuary
 import eu.kanade.tachiyomi.source.SourceFactory
+import keiyoushi.multisrc.otakusanctuary.OtakuSanctuary
 
 class OtakuSanctuaryFactory : SourceFactory {
     override fun createSources() = listOf(

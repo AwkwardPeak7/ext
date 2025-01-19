@@ -1,8 +1,8 @@
 package keiyoushi.extension.en.queenscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Request
 
 class QueenScans : MangaThemesia("Fairy Manga", "https://fairymanga.com", "en") {

@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.mangasect
 
-import keiyoushi.multisrc.liliana.Liliana
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.liliana.Liliana
 
 class MangaSect : Liliana(
     "Manga Sect",

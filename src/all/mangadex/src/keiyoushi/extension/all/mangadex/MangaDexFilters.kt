@@ -1,12 +1,12 @@
 package keiyoushi.extension.all.mangadex
 
 import android.content.SharedPreferences
+import eu.kanade.tachiyomi.source.model.Filter
+import eu.kanade.tachiyomi.source.model.FilterList
 import keiyoushi.extension.all.mangadex.dto.ContentRatingDto
 import keiyoushi.extension.all.mangadex.dto.PublicationDemographicDto
 import keiyoushi.extension.all.mangadex.dto.StatusDto
 import keiyoushi.lib.i18n.Intl
-import eu.kanade.tachiyomi.source.model.Filter
-import eu.kanade.tachiyomi.source.model.FilterList
 import okhttp3.HttpUrl
 
 class MangaDexFilters {

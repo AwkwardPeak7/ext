@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.ydcomics
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.Request
 
 class YDComics : MangaThemesia(

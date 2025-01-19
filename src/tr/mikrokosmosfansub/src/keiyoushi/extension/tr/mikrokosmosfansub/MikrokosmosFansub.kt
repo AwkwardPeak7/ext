@@ -1,8 +1,8 @@
 package keiyoushi.extension.tr.mikrokosmosfansub
 
-import keiyoushi.multisrc.zeistmanga.ZeistManga
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.zeistmanga.ZeistManga
 import okhttp3.Response
 import org.jsoup.Jsoup
 

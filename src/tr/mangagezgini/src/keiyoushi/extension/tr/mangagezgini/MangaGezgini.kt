@@ -1,9 +1,9 @@
 package keiyoushi.extension.tr.mangagezgini
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Request
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat

@@ -1,8 +1,8 @@
 package keiyoushi.extension.es.doujinshell
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Response
 import org.jsoup.nodes.Document
 import java.text.SimpleDateFormat

@@ -1,8 +1,8 @@
 package keiyoushi.extension.id.komikstation
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 
 class KomikStation : MangaThemesia("Komik Station", "https://komikstation.co", "id") {

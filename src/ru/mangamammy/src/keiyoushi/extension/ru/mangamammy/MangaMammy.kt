@@ -1,7 +1,7 @@
 package keiyoushi.extension.ru.mangamammy
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale

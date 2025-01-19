@@ -1,7 +1,7 @@
 package keiyoushi.extension.id.lianscans
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import okhttp3.OkHttpClient
 
 class LianScans : MangaThemesia("LianScans", "https://www.lianscans.com", "id") {

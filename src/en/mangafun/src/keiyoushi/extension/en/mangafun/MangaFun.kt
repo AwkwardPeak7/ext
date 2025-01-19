@@ -2,9 +2,6 @@ package keiyoushi.extension.en.mangafun
 
 import android.util.Base64
 import android.util.Log
-import keiyoushi.extension.en.mangafun.MangaFunUtils.toSChapter
-import keiyoushi.extension.en.mangafun.MangaFunUtils.toSManga
-import keiyoushi.lib.lzstring.LZString
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.Filter
@@ -15,6 +12,9 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.extension.en.mangafun.MangaFunUtils.toSChapter
+import keiyoushi.extension.en.mangafun.MangaFunUtils.toSManga
+import keiyoushi.lib.lzstring.LZString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.magusmanga
 
-import keiyoushi.multisrc.keyoapp.Keyoapp
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
+import keiyoushi.multisrc.keyoapp.Keyoapp
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.Response

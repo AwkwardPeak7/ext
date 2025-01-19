@@ -1,8 +1,6 @@
 package keiyoushi.extension.vi.truyengihot
 
 import android.util.Log
-import keiyoushi.extension.vi.truyengihot.TruyenGiHotUtils.imgAttr
-import keiyoushi.extension.vi.truyengihot.TruyenGiHotUtils.textWithNewlines
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
@@ -14,6 +12,8 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.extension.vi.truyengihot.TruyenGiHotUtils.imgAttr
+import keiyoushi.extension.vi.truyengihot.TruyenGiHotUtils.textWithNewlines
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive

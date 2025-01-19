@@ -1,8 +1,8 @@
 package keiyoushi.extension.tr.mangatilkisi
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.madara.Madara
 import okhttp3.FormBody
 import okhttp3.Request
 import java.text.SimpleDateFormat

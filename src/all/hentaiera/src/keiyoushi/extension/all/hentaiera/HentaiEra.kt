@@ -1,11 +1,11 @@
 package keiyoushi.extension.all.hentaiera
 
+import eu.kanade.tachiyomi.network.GET
 import keiyoushi.multisrc.galleryadults.GalleryAdults
 import keiyoushi.multisrc.galleryadults.Genre
 import keiyoushi.multisrc.galleryadults.SearchFlagFilter
 import keiyoushi.multisrc.galleryadults.imgAttr
 import keiyoushi.multisrc.galleryadults.toBinary
-import eu.kanade.tachiyomi.network.GET
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import org.jsoup.nodes.Document

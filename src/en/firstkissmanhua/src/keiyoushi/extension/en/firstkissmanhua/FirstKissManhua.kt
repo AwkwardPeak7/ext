@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.firstkissmanhua
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.madara.Madara
 
 class FirstKissManhua : Madara(
     "First Kiss Manhua",

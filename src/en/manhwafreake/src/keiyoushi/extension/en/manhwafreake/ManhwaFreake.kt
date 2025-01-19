@@ -1,7 +1,7 @@
 package keiyoushi.extension.en.manhwafreake
 
-import keiyoushi.multisrc.mangathemesia.MangaThemesia
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
+import keiyoushi.multisrc.mangathemesia.MangaThemesia
 
 class ManhwaFreake : MangaThemesia(
     "Manhwa Freake",

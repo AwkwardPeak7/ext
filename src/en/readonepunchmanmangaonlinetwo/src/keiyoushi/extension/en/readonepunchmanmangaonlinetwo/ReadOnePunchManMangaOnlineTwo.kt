@@ -1,8 +1,8 @@
 package keiyoushi.extension.en.readonepunchmanmangaonlinetwo
 
-import keiyoushi.multisrc.mangacatalog.MangaCatalog
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
+import keiyoushi.multisrc.mangacatalog.MangaCatalog
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 

@@ -1,7 +1,5 @@
 package keiyoushi.extension.tr.sadscans
 
-import keiyoushi.lib.dataimage.DataImageInterceptor
-import keiyoushi.lib.dataimage.dataImageAsUrl
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -9,6 +7,8 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.ParsedHttpSource
+import keiyoushi.lib.dataimage.DataImageInterceptor
+import keiyoushi.lib.dataimage.dataImageAsUrl
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import rx.Observable

@@ -1,7 +1,7 @@
 package keiyoushi.extension.ar.azora
 
-import keiyoushi.multisrc.madara.Madara
 import eu.kanade.tachiyomi.source.model.SChapter
+import keiyoushi.multisrc.madara.Madara
 import org.jsoup.nodes.Element
 
 class Azora : Madara("Azora", "https://azoramoon.com", "ar") {

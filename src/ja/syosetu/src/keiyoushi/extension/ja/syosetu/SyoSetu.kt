@@ -1,8 +1,8 @@
 package keiyoushi.extension.ja.syosetu
 
-import keiyoushi.multisrc.mangaraw.MangaRawTheme
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
+import keiyoushi.multisrc.mangaraw.MangaRawTheme
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import org.jsoup.nodes.Document

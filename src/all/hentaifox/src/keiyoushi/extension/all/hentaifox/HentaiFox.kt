@@ -1,16 +1,16 @@
 package keiyoushi.extension.all.hentaifox
 
-import keiyoushi.multisrc.galleryadults.GalleryAdults
-import keiyoushi.multisrc.galleryadults.Genre
-import keiyoushi.multisrc.galleryadults.SortOrderFilter
-import keiyoushi.multisrc.galleryadults.imgAttr
-import keiyoushi.multisrc.galleryadults.toDate
 import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.multisrc.galleryadults.GalleryAdults
+import keiyoushi.multisrc.galleryadults.Genre
+import keiyoushi.multisrc.galleryadults.SortOrderFilter
+import keiyoushi.multisrc.galleryadults.imgAttr
+import keiyoushi.multisrc.galleryadults.toDate
 import okhttp3.FormBody
 import okhttp3.Headers
 import okhttp3.HttpUrl

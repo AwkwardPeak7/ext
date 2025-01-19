@@ -6,10 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import keiyoushi.extension.pt.tsukimangas.dto.ChapterListDto
-import keiyoushi.extension.pt.tsukimangas.dto.CompleteMangaDto
-import keiyoushi.extension.pt.tsukimangas.dto.MangaListDto
-import keiyoushi.extension.pt.tsukimangas.dto.PageListDto
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimitHost
@@ -20,6 +16,10 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.extension.pt.tsukimangas.dto.ChapterListDto
+import keiyoushi.extension.pt.tsukimangas.dto.CompleteMangaDto
+import keiyoushi.extension.pt.tsukimangas.dto.MangaListDto
+import keiyoushi.extension.pt.tsukimangas.dto.PageListDto
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import okhttp3.HttpUrl
