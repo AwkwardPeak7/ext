@@ -1,12 +1,12 @@
 package keiyoushi.multisrc.slimereadtheme
 
 import app.cash.quickjs.QuickJs
-import eu.kanade.tachiyomi.extension.pt.slimeread.dto.ChapterDto
-import eu.kanade.tachiyomi.extension.pt.slimeread.dto.LatestResponseDto
-import eu.kanade.tachiyomi.extension.pt.slimeread.dto.MangaInfoDto
-import eu.kanade.tachiyomi.extension.pt.slimeread.dto.PageListDto
-import eu.kanade.tachiyomi.extension.pt.slimeread.dto.PopularMangaDto
-import eu.kanade.tachiyomi.extension.pt.slimeread.dto.toSMangaList
+import keiyoushi.extension.pt.slimeread.dto.ChapterDto
+import keiyoushi.extension.pt.slimeread.dto.LatestResponseDto
+import keiyoushi.extension.pt.slimeread.dto.MangaInfoDto
+import keiyoushi.extension.pt.slimeread.dto.PageListDto
+import keiyoushi.extension.pt.slimeread.dto.PopularMangaDto
+import keiyoushi.extension.pt.slimeread.dto.toSMangaList
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.FilterList

@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name="eu.kanade.tachiyomi.extension.en.hachi.HachiUrlActivity"
+            android:name="keiyoushi.extension.en.hachi.HachiUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

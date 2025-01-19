@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name="eu.kanade.tachiyomi.multisrc.galleryadults.GalleryAdultsUrlActivity"
+            android:name="keiyoushi.multisrc.galleryadults.GalleryAdultsUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">
