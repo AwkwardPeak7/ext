@@ -9,7 +9,7 @@ android {
         minSdk = AndroidConfig.minSdk
     }
 
-    namespace = "eu.kanade.tachiyomi.extension.core"
+    namespace = "keiyoushi.core"
 
     sourceSets {
         named("main") {

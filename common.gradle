@@ -14,7 +14,8 @@ if (theme != null) evaluationDependsOn(theme.path)
 android {
     compileSdk AndroidConfig.compileSdk
 
-    namespace "eu.kanade.tachiyomi.extension"
+    namespace "keiyoushi.extension"
+
     sourceSets {
         main {
             manifest.srcFile "AndroidManifest.xml"
@@ -27,6 +28,7 @@ android {
     defaultConfig {
         minSdk AndroidConfig.minSdk
         targetSdk AndroidConfig.targetSdk
+        applicationId "eu.kanade.tachiyomi.extension"
         applicationIdSuffix project.parent.name + "." + project.name
         versionCode theme == null ? extVersionCode : theme.baseVersionCode + overrideVersionCode
         versionName "1.4.$versionCode"
@@ -36,7 +38,7 @@ android {
         assert extClass.startsWith(".")
         manifestPlaceholders = [
                 appName : "Tachiyomi: $extName",
-                extClass: extClass,
+                extClass: "$namespace.$applicationIdSuffix$extClass",
                 nsfw    : project.ext.find("isNsfw") ? 1 : 0,
         ]
         String baseUrl = project.ext.find("baseUrl") ?: ""
