@@ -1,8 +1,3 @@
-import gradle.kotlin.dsl.accessors._b42addb5bb85d0c415badb0a1dd38db0.formatKotlin
-import gradle.kotlin.dsl.accessors._b42addb5bb85d0c415badb0a1dd38db0.kotlinter
-import gradle.kotlin.dsl.accessors._b42addb5bb85d0c415badb0a1dd38db0.lintKotlin
-import gradle.kotlin.dsl.accessors._b42addb5bb85d0c415badb0a1dd38db0.preBuild
-
 plugins {
     id("com.android.library")
     kotlin("android")
