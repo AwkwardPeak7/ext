@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".all.ehentai.EHUrlActivity"
+            android:name="keiyoushi.extension.all.ehentai.EHUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".zh.bilibilimanga.BilibiliUrlActivity"
+            android:name="keiyoushi.extension.zh.bilibilimanga.BilibiliUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

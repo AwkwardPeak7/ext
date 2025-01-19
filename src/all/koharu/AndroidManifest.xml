@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".all.koharu.KoharuUrlActivity"
+            android:name="keiyoushi.extension.all.koharu.KoharuUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

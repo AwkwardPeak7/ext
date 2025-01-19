@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".all.cubari.CubariUrlActivity"
+            android:name="keiyoushi.extension.all.cubari.CubariUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

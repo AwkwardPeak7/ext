@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".all.mangadex.MangadexUrlActivity"
+            android:name="keiyoushi.extension.all.mangadex.MangadexUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".en.vizshonenjump.VizUrlActivity"
+            android:name="keiyoushi.extension.en.vizshonenjump.VizUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

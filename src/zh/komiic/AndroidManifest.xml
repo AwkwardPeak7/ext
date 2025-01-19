@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".zh.komiic.UrlActivity"
+            android:name="keiyoushi.extension.zh.komiic.UrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

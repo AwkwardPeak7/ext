@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <activity
-            android:name=".vi.truyenhentai18.TruyenHentai18UrlActivity"
+            android:name="keiyoushi.extension.vi.truyenhentai18.TruyenHentai18UrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

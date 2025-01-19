@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".all.pandachaika.PandaChaikaUrlActivity"
+            android:name="keiyoushi.extension.all.pandachaika.PandaChaikaUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

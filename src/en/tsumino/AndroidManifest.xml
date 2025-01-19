@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".en.tsumino.TsuminoUrlActivity"
+            android:name="keiyoushi.extension.en.tsumino.TsuminoUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

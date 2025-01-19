@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".all.xinmeitulu.XinmeituluUrlActivity"
+            android:name="keiyoushi.extension.all.xinmeitulu.XinmeituluUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

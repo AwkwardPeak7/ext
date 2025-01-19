@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".en.oppaistream.OppaiStreamUrlActivity"
+            android:name="keiyoushi.extension.en.oppaistream.OppaiStreamUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

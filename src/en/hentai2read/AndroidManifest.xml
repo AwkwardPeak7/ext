@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".en.hentai2read.Hentai2ReadActivity"
+            android:name="keiyoushi.extension.en.hentai2read.Hentai2ReadActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

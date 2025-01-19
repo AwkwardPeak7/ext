@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".pt.taosect.TaoSectUrlActivity"
+            android:name="keiyoushi.extension.pt.taosect.TaoSectUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

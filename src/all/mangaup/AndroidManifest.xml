@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".all.mangaup.MangaUpUrlActivity"
+            android:name="keiyoushi.extension.all.mangaup.MangaUpUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

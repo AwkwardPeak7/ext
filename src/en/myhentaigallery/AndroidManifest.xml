@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".en.myhentaigallery.MyHentaiGalleryUrlActivity"
+            android:name="keiyoushi.extension.en.myhentaigallery.MyHentaiGalleryUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

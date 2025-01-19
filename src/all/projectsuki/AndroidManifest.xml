@@ -5,7 +5,7 @@
         <!-- The Activities that will handle intents with URLs pertaining to ProjectSuki -->
         <!-- this one handles projectsuki.com/search URLs -->
         <activity
-                android:name=".all.projectsuki.activities.ProjectSukiSearchUrlActivity"
+                android:name="keiyoushi.extension.all.projectsuki.activities.ProjectSukiSearchUrlActivity"
                 android:excludeFromRecents="true"
                 android:exported="true"
                 android:theme="@android:style/Theme.NoDisplay">
@@ -33,7 +33,7 @@
         </activity>
 
         <activity
-                android:name=".all.projectsuki.activities.ProjectSukiBookUrlActivity"
+                android:name="keiyoushi.extension.all.projectsuki.activities.ProjectSukiBookUrlActivity"
                 android:excludeFromRecents="true"
                 android:exported="true"
                 android:theme="@android:style/Theme.NoDisplay">
@@ -51,7 +51,7 @@
         </activity>
 
         <activity
-                android:name=".all.projectsuki.activities.ProjectSukiReadUrlActivity"
+                android:name="keiyoushi.extension.all.projectsuki.activities.ProjectSukiReadUrlActivity"
                 android:excludeFromRecents="true"
                 android:exported="true"
                 android:theme="@android:style/Theme.NoDisplay">

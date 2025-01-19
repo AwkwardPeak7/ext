@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".es.tmohentai.TMOHentaiUrlActivity"
+            android:name="keiyoushi.extension.es.tmohentai.TMOHentaiUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

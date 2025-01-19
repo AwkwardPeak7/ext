@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".en.disasterscans.DisasterScansUrlActivity"
+            android:name="keiyoushi.extension.en.disasterscans.DisasterScansUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

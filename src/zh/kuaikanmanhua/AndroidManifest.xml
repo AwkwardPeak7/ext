@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <activity
-            android:name=".zh.kuaikanmanhua.KuaikanmanhuaUrlActivity"
+            android:name="keiyoushi.extension.zh.kuaikanmanhua.KuaikanmanhuaUrlActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">

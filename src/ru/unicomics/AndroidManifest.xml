@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name=".ru.unicomics.UniComicsActivity"
+            android:name="keiyoushi.extension.ru.unicomics.UniComicsActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">
