@@ -1,0 +1,7 @@
+package keiyoushi.extension.ar.nijitranslations
+
+import keiyoushi.multisrc.madara.Madara
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+class NijiTranslations : Madara("Niji Translations", "https://niji-translations.com", "ar", SimpleDateFormat("MMMM dd, yyyy", Locale("ar")))

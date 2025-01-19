@@ -1,0 +1,14 @@
+package keiyoushi.extension.pt.mysticmoon
+
+import keiyoushi.multisrc.madara.Madara
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+class MysticMoon : Madara(
+    "Mystic Moon",
+    "https://mysticmoon.lat",
+    "pt-BR",
+    SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR")),
+) {
+    override val useNewChapterEndpoint: Boolean = true
+}
