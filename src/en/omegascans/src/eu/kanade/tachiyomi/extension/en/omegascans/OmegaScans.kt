@@ -163,13 +163,17 @@ class OmegaScans : HeanCms("Omega Scans", "https://omegascans.org", "en") {
                         it.jsonPrimitive.content
                     }
 
-                    Page(0, imageUrl = page)
+                    Page(0, imageUrl = "$page#cubari")
                 }
             }
     }
 
     override fun imageRequest(page: Page): Request {
-        return GET("https://x.0ms.dev/q70/" + page.imageUrl!!, cubariHeaders)
+        return if (page.imageUrl!!.contains("#cubari")) {
+            GET(page.imageUrl!!, cubariHeaders)
+        } else {
+            super.imageRequest(page)
+        }
     }
 }
 
