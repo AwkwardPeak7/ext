@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.extension.all.cubari
 
 import android.os.Build
-import android.util.Base64
 import eu.kanade.tachiyomi.AppInfo
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservable
@@ -20,7 +19,6 @@ import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
@@ -44,12 +42,12 @@ class Cubari(override val lang: String) : HttpSource() {
         .build()
 
     private val cubariHeaders = super.headersBuilder()
-        .set(
+        .add(
             "User-Agent",
             "(Android ${Build.VERSION.RELEASE}; " +
                 "${Build.MANUFACTURER} ${Build.MODEL}) " +
-                "Tachiyomi/${AppInfo.getVersionName()} ${Build.ID} " +
-                "Keiyoushi",
+                "Tachiyomi/Mihon/${AppInfo.getVersionName()} (Keiyoushi)" +
+                Build.ID,
         ).build()
 
     override fun latestUpdatesRequest(page: Int): Request {
@@ -223,23 +221,16 @@ class Cubari(override val lang: String) : HttpSource() {
 
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
         return when {
-            // handle direct links or old cubari:source/id format
-            query.startsWith("https://") || query.startsWith("cubari:") -> {
-                val (source, slug) = deepLinkHandler(query)
+            query.startsWith(PROXY_PREFIX) -> {
+                val trimmedQuery = query.removePrefix(PROXY_PREFIX)
                 // Only tag for recently read on search
                 client.newBuilder()
                     .addInterceptor(RemoteStorageUtils.TagInterceptor())
                     .build()
-                    .newCall(GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders))
+                    .newCall(proxySearchRequest(trimmedQuery))
                     .asObservableSuccess()
                     .map { response ->
-                        val result = response.parseAs<JsonObject>()
-                        val manga = SManga.create().apply {
-                            url = "/read/$source/$slug"
-                        }
-                        val mangaList = listOf(parseManga(result, manga))
-
-                        MangasPage(mangaList, false)
+                        proxySearchParse(response, trimmedQuery)
                     }
             }
             else -> {
@@ -263,54 +254,15 @@ class Cubari(override val lang: String) : HttpSource() {
         return GET("$baseUrl/", cubariHeaders)
     }
 
-    private fun deepLinkHandler(query: String): Pair<String, String> {
-        return if (query.startsWith("cubari:")) { // legacy cubari:source/slug format
-            val queryFragments = query.substringAfter("cubari:").split("/", limit = 2)
-            queryFragments[0] to queryFragments[1]
-        } else { // direct url searching
-            val url = query.toHttpUrl()
-            val host = url.host
-            val pathSegments = url.pathSegments
+    private fun proxySearchRequest(query: String): Request {
+        try {
+            val queryFragments = query.split("/")
+            val source = queryFragments[0]
+            val slug = queryFragments[1]
 
-            if (
-                host.endsWith("imgur.com") &&
-                pathSegments.size >= 2 &&
-                pathSegments[0] in listOf("a", "gallery")
-            ) {
-                "imgur" to pathSegments[1]
-            } else if (
-                host.endsWith("reddit.com") &&
-                pathSegments.size >= 2 &&
-                pathSegments[0] == "gallery"
-            ) {
-                "reddit" to pathSegments[1]
-            } else if (
-                host == "imgchest.com" &&
-                pathSegments.size >= 2 &&
-                pathSegments[0] == "p"
-            ) {
-                "imgchest" to pathSegments[1]
-            } else if (
-                host.endsWith("catbox.moe") &&
-                pathSegments.size >= 2 &&
-                pathSegments[0] == "c"
-            ) {
-                "catbox" to pathSegments[1]
-            } else if (
-                host.endsWith("cubari.moe") &&
-                pathSegments.size >= 3
-            ) {
-                pathSegments[1] to pathSegments[2]
-            } else if (
-                host.endsWith(".githubusercontent.com")
-            ) {
-                val src = host.substringBefore(".")
-                val path = url.encodedPath
-
-                "gist" to Base64.encodeToString("$src$path".toByteArray(), Base64.NO_PADDING)
-            } else {
-                throw Exception(SEARCH_FALLBACK_MSG)
-            }
+            return GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders)
+        } catch (_: Exception) {
+            throw Exception(SEARCH_FALLBACK_MSG)
         }
     }
 
@@ -327,6 +279,11 @@ class Cubari(override val lang: String) : HttpSource() {
             .toList()
 
         return parseMangaList(JsonArray(filterList), SortType.ALL)
+    }
+
+    private fun proxySearchParse(response: Response, query: String): MangasPage {
+        val result = response.parseAs<JsonObject>()
+        return parseSearchList(result, query)
     }
 
     // ------------- Helpers and whatnot ---------------
@@ -398,6 +355,16 @@ class Cubari(override val lang: String) : HttpSource() {
         return MangasPage(mangaList, false)
     }
 
+    private fun parseSearchList(payload: JsonObject, query: String): MangasPage {
+        val tempManga = SManga.create().apply {
+            url = "/read/$query"
+        }
+
+        val mangaList = listOf(parseManga(payload, tempManga))
+
+        return MangasPage(mangaList, false)
+    }
+
     private fun parseManga(jsonObj: JsonObject, mangaReference: SManga? = null): SManga =
         SManga.create().apply {
             title = jsonObj["title"]!!.jsonPrimitive.content
@@ -426,10 +393,11 @@ class Cubari(override val lang: String) : HttpSource() {
     }
 
     companion object {
+        const val PROXY_PREFIX = "cubari:"
         const val AUTHOR_FALLBACK = "Unknown"
         const val ARTIST_FALLBACK = "Unknown"
         const val DESCRIPTION_FALLBACK = "No description."
-        const val SEARCH_FALLBACK_MSG = "Please enter a valid Cubari URL"
+        const val SEARCH_FALLBACK_MSG = "Unable to parse. Is your query in the format of $PROXY_PREFIX<source>/<slug>?"
 
         enum class SortType {
             PINNED,
