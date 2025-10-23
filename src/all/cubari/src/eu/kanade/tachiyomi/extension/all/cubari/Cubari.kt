@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import keiyoushi.utils.parseAs
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.boolean
@@ -52,41 +53,37 @@ class Cubari(override val lang: String) : HttpSource() {
                 Build.ID,
         ).build()
 
-    override fun latestUpdatesRequest(page: Int): Request {
-        return GET("$baseUrl/", cubariHeaders)
-    }
+    override fun latestUpdatesRequest(page: Int) =
+        throw UnsupportedOperationException()
 
     override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
-        return client.newBuilder()
-            .addInterceptor(RemoteStorageUtils.HomeInterceptor())
-            .build()
-            .newCall(latestUpdatesRequest(page))
-            .asObservableSuccess()
-            .map { response -> latestUpdatesParse(response) }
+        val mangas = runBlocking {
+            RemoteStorage.getSeriesData()
+                .filter { !it.pinned }
+                .map { it.toSManga() }
+        }
+
+        return Observable.just(MangasPage(mangas, false))
     }
 
-    override fun latestUpdatesParse(response: Response): MangasPage {
-        val result = response.parseAs<JsonArray>()
-        return parseMangaList(result, SortType.UNPINNED)
-    }
+    override fun latestUpdatesParse(response: Response) =
+        throw UnsupportedOperationException()
 
-    override fun popularMangaRequest(page: Int): Request {
-        return GET("$baseUrl/", cubariHeaders)
-    }
+    override fun popularMangaRequest(page: Int) =
+        throw UnsupportedOperationException()
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
-        return client.newBuilder()
-            .addInterceptor(RemoteStorageUtils.HomeInterceptor())
-            .build()
-            .newCall(popularMangaRequest(page))
-            .asObservableSuccess()
-            .map { response -> popularMangaParse(response) }
+        val mangas = runBlocking {
+            RemoteStorage.getSeriesData()
+                .filter { it.pinned }
+                .map { it.toSManga() }
+        }
+
+        return Observable.just(MangasPage(mangas, false))
     }
 
-    override fun popularMangaParse(response: Response): MangasPage {
-        val result = response.parseAs<JsonArray>()
-        return parseMangaList(result, SortType.PINNED)
-    }
+    override fun popularMangaParse(response: Response) =
+        throw UnsupportedOperationException()
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return client.newCall(mangaDetailsRequest(manga))
