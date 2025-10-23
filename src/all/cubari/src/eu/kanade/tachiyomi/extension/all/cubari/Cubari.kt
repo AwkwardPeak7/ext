@@ -35,13 +35,6 @@ class Cubari(override val lang: String) : HttpSource() {
     override val supportsLatest = false
 
     override val client = network.cloudflareClient.newBuilder()
-        .addInterceptor { chain ->
-            val request = chain.request()
-            val headers = request.headers.newBuilder()
-                .removeAll("Accept-Encoding")
-                .build()
-            chain.proceed(request.newBuilder().headers(headers).build())
-        }
         // fix disk cache
         .apply {
             val index = networkInterceptors().indexOfFirst { it is BrotliInterceptor }
@@ -54,7 +47,7 @@ class Cubari(override val lang: String) : HttpSource() {
             "User-Agent",
             "(Android ${Build.VERSION.RELEASE}; " +
                 "${Build.MANUFACTURER} ${Build.MODEL}) " +
-                "Tachiyomi/Mihon/${AppInfo.getVersionName()} (Keiyoushi)" +
+                "Tachiyomi/Mihon/${AppInfo.getVersionName()} (Keiyoushi) " +
                 Build.ID,
         ).build()
 

@@ -34,27 +34,32 @@ class RemoteStorage(
             loadWebPage = false,
             script = """
                 (() => {
-                  const prefix = "remotestorage:cache:nodes:/cubari/series/";
-                  const remoteStorageItems = [];
+                    const prefix = "remotestorage:cache:nodes:/cubari/series/";
+                    const remoteStorageItems = [];
 
-                  for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (!key || key == prefix || !key.startsWith(prefix)) continue;
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (!key || key == prefix || !key.startsWith(prefix)) continue;
 
-                    let value = JSON.parse(localStorage.getItem(key));
-                    if (value.local && value.local.body) {
-                        value = JSON.parse(value.local.body);
-                    } else if (value.common && value.common.body) {
-                        value = JSON.parse(value.common.body);
+                        try {
+                            let value = JSON.parse(localStorage.getItem(key));
+                            if (value.local && value.local.body) {
+                                value = JSON.parse(value.local.body);
+                            } else if (value.common && value.common.body) {
+                                value = JSON.parse(value.common.body);
+                            }
+
+                            remoteStorageItems.push(value);
+                        } catch (e) {
+                            console.error(`Error parsing value for key ${"$"}{key}:`, e);
+                            continue;
+                        }
                     }
 
-                    remoteStorageItems.push(value);
-                  }
+                    let wireClient = localStorage.getItem('remotestorage:wireclient');
+                    if (wireClient) wireClient = JSON.parse(wireClient);
 
-                  let wireClient = localStorage.getItem('remotestorage:wireclient');
-                  if (wireClient) wireClient = JSON.parse(wireClient);
-
-                  return JSON.stringify({wireClient: wireClient, items: remoteStorageItems});
+                    return JSON.stringify({wireClient: wireClient, items: remoteStorageItems});
                 })();
             """.trimIndent(),
             callback = {
