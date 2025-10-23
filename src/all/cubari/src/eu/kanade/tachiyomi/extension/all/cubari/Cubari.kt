@@ -85,6 +85,114 @@ class Cubari(override val lang: String) : HttpSource() {
     override fun popularMangaParse(response: Response) =
         throw UnsupportedOperationException()
 
+    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
+        return when {
+            // handle direct links or old cubari:source/id format
+            query.startsWith("https://") || query.startsWith("cubari:") -> {
+                val (source, slug) = deepLinkHandler(query)
+                // Only tag for recently read on search
+                client.newBuilder()
+                    .addInterceptor(RemoteStorageUtils.TagInterceptor())
+                    .build()
+                    .newCall(GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders))
+                    .asObservableSuccess()
+                    .map { response ->
+                        val result = response.parseAs<JsonObject>()
+                        val manga = SManga.create().apply {
+                            url = "/read/$source/$slug/"
+                        }
+                        val mangaList = listOf(parseManga(result, manga))
+
+                        MangasPage(mangaList, false)
+                    }
+            }
+            else -> {
+                client.newBuilder()
+                    .addInterceptor(RemoteStorageUtils.HomeInterceptor())
+                    .build()
+                    .newCall(searchMangaRequest(page, query, filters))
+                    .asObservableSuccess()
+                    .map { response ->
+                        searchMangaParse(response, query)
+                    }
+                    .map { mangasPage ->
+                        require(mangasPage.mangas.isNotEmpty()) { SEARCH_FALLBACK_MSG }
+                        mangasPage
+                    }
+            }
+        }
+    }
+
+    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
+        return GET("$baseUrl/", cubariHeaders)
+    }
+
+    private fun deepLinkHandler(query: String): Pair<String, String> {
+        return if (query.startsWith("cubari:")) { // legacy cubari:source/slug format
+            val queryFragments = query.substringAfter("cubari:").split("/", limit = 2)
+            queryFragments[0] to queryFragments[1]
+        } else { // direct url searching
+            val url = query.toHttpUrl()
+            val host = url.host
+            val pathSegments = url.pathSegments
+
+            if (
+                host.endsWith("imgur.com") &&
+                pathSegments.size >= 2 &&
+                pathSegments[0] in listOf("a", "gallery")
+            ) {
+                "imgur" to pathSegments[1]
+            } else if (
+                host.endsWith("reddit.com") &&
+                pathSegments.size >= 2 &&
+                pathSegments[0] == "gallery"
+            ) {
+                "reddit" to pathSegments[1]
+            } else if (
+                host == "imgchest.com" &&
+                pathSegments.size >= 2 &&
+                pathSegments[0] == "p"
+            ) {
+                "imgchest" to pathSegments[1]
+            } else if (
+                host.endsWith("catbox.moe") &&
+                pathSegments.size >= 2 &&
+                pathSegments[0] == "c"
+            ) {
+                "catbox" to pathSegments[1]
+            } else if (
+                host.endsWith("cubari.moe") &&
+                pathSegments.size >= 3
+            ) {
+                pathSegments[1] to pathSegments[2]
+            } else if (
+                host.endsWith(".githubusercontent.com")
+            ) {
+                val src = host.substringBefore(".")
+                val path = url.encodedPath
+
+                "gist" to Base64.encodeToString("$src$path".toByteArray(), Base64.NO_PADDING)
+            } else {
+                throw Exception(SEARCH_FALLBACK_MSG)
+            }
+        }
+    }
+
+    override fun searchMangaParse(response: Response): MangasPage {
+        throw UnsupportedOperationException()
+    }
+
+    private fun searchMangaParse(response: Response, query: String): MangasPage {
+        val result = response.parseAs<JsonArray>()
+
+        val filterList = result.asSequence()
+            .map { it as JsonObject }
+            .filter { it["title"].toString().contains(query.trim(), true) }
+            .toList()
+
+        return parseMangaList(JsonArray(filterList), SortType.ALL)
+    }
+
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
         return client.newCall(mangaDetailsRequest(manga))
             .asObservableSuccess()
@@ -216,114 +324,6 @@ class Cubari(override val lang: String) : HttpSource() {
 
     override fun pageListParse(response: Response): List<Page> {
         throw UnsupportedOperationException()
-    }
-
-    override fun fetchSearchManga(page: Int, query: String, filters: FilterList): Observable<MangasPage> {
-        return when {
-            // handle direct links or old cubari:source/id format
-            query.startsWith("https://") || query.startsWith("cubari:") -> {
-                val (source, slug) = deepLinkHandler(query)
-                // Only tag for recently read on search
-                client.newBuilder()
-                    .addInterceptor(RemoteStorageUtils.TagInterceptor())
-                    .build()
-                    .newCall(GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders))
-                    .asObservableSuccess()
-                    .map { response ->
-                        val result = response.parseAs<JsonObject>()
-                        val manga = SManga.create().apply {
-                            url = "/read/$source/$slug/"
-                        }
-                        val mangaList = listOf(parseManga(result, manga))
-
-                        MangasPage(mangaList, false)
-                    }
-            }
-            else -> {
-                client.newBuilder()
-                    .addInterceptor(RemoteStorageUtils.HomeInterceptor())
-                    .build()
-                    .newCall(searchMangaRequest(page, query, filters))
-                    .asObservableSuccess()
-                    .map { response ->
-                        searchMangaParse(response, query)
-                    }
-                    .map { mangasPage ->
-                        require(mangasPage.mangas.isNotEmpty()) { SEARCH_FALLBACK_MSG }
-                        mangasPage
-                    }
-            }
-        }
-    }
-
-    override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        return GET("$baseUrl/", cubariHeaders)
-    }
-
-    private fun deepLinkHandler(query: String): Pair<String, String> {
-        return if (query.startsWith("cubari:")) { // legacy cubari:source/slug format
-            val queryFragments = query.substringAfter("cubari:").split("/", limit = 2)
-            queryFragments[0] to queryFragments[1]
-        } else { // direct url searching
-            val url = query.toHttpUrl()
-            val host = url.host
-            val pathSegments = url.pathSegments
-
-            if (
-                host.endsWith("imgur.com") &&
-                pathSegments.size >= 2 &&
-                pathSegments[0] in listOf("a", "gallery")
-            ) {
-                "imgur" to pathSegments[1]
-            } else if (
-                host.endsWith("reddit.com") &&
-                pathSegments.size >= 2 &&
-                pathSegments[0] == "gallery"
-            ) {
-                "reddit" to pathSegments[1]
-            } else if (
-                host == "imgchest.com" &&
-                pathSegments.size >= 2 &&
-                pathSegments[0] == "p"
-            ) {
-                "imgchest" to pathSegments[1]
-            } else if (
-                host.endsWith("catbox.moe") &&
-                pathSegments.size >= 2 &&
-                pathSegments[0] == "c"
-            ) {
-                "catbox" to pathSegments[1]
-            } else if (
-                host.endsWith("cubari.moe") &&
-                pathSegments.size >= 3
-            ) {
-                pathSegments[1] to pathSegments[2]
-            } else if (
-                host.endsWith(".githubusercontent.com")
-            ) {
-                val src = host.substringBefore(".")
-                val path = url.encodedPath
-
-                "gist" to Base64.encodeToString("$src$path".toByteArray(), Base64.NO_PADDING)
-            } else {
-                throw Exception(SEARCH_FALLBACK_MSG)
-            }
-        }
-    }
-
-    override fun searchMangaParse(response: Response): MangasPage {
-        throw UnsupportedOperationException()
-    }
-
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
-        val result = response.parseAs<JsonArray>()
-
-        val filterList = result.asSequence()
-            .map { it as JsonObject }
-            .filter { it["title"].toString().contains(query.trim(), true) }
-            .toList()
-
-        return parseMangaList(JsonArray(filterList), SortType.ALL)
     }
 
     // ------------- Helpers and whatnot ---------------
