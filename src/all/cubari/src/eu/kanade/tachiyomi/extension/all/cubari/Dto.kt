@@ -6,7 +6,7 @@ import kotlinx.serialization.json.JsonObject
 
 @Serializable
 class LocalStorage(
-    val wireClient: JsonObject?,
+    val wireClient: WireClient?,
     val items: List<RSManga>,
 )
 
@@ -17,9 +17,9 @@ class LocalStorage(
 class RSManga(
     val slug: String,
     val source: String,
-    val coverUrl: String,
+    val coverUrl: String? = null,
     val title: String,
-    val pinned: Boolean,
+    val timestamp: Long,
 ) {
     fun toSManga() = SManga.create().apply {
         url = "/read/$source/$slug"
@@ -27,3 +27,14 @@ class RSManga(
         thumbnail_url = coverUrl
     }
 }
+
+@Serializable
+class WireClient(
+    val href: String,
+    val token: String,
+)
+
+@Serializable
+class RemoteStorageResponse(
+    val items: Map<String, JsonObject>,
+)

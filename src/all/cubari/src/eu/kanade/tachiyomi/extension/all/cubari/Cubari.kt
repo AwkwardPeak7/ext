@@ -16,7 +16,6 @@ import keiyoushi.utils.parseAs
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -24,6 +23,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.brotli.BrotliInterceptor
 import rx.Observable
 
 class Cubari(override val lang: String) : HttpSource() {
@@ -32,7 +32,7 @@ class Cubari(override val lang: String) : HttpSource() {
 
     override val baseUrl = "https://cubari.moe"
 
-    override val supportsLatest = true
+    override val supportsLatest = false
 
     override val client = network.cloudflareClient.newBuilder()
         .addInterceptor { chain ->
@@ -41,6 +41,11 @@ class Cubari(override val lang: String) : HttpSource() {
                 .removeAll("Accept-Encoding")
                 .build()
             chain.proceed(request.newBuilder().headers(headers).build())
+        }
+        // fix disk cache
+        .apply {
+            val index = networkInterceptors().indexOfFirst { it is BrotliInterceptor }
+            if (index >= 0) interceptors().add(networkInterceptors().removeAt(index))
         }
         .build()
 
@@ -53,18 +58,10 @@ class Cubari(override val lang: String) : HttpSource() {
                 Build.ID,
         ).build()
 
+    val remoteStorage = RemoteStorage(client, headers)
+
     override fun latestUpdatesRequest(page: Int) =
         throw UnsupportedOperationException()
-
-    override fun fetchLatestUpdates(page: Int): Observable<MangasPage> {
-        val mangas = runBlocking {
-            RemoteStorage.getSeriesData()
-                .filter { !it.pinned }
-                .map { it.toSManga() }
-        }
-
-        return Observable.just(MangasPage(mangas, false))
-    }
 
     override fun latestUpdatesParse(response: Response) =
         throw UnsupportedOperationException()
@@ -74,8 +71,8 @@ class Cubari(override val lang: String) : HttpSource() {
 
     override fun fetchPopularManga(page: Int): Observable<MangasPage> {
         val mangas = runBlocking {
-            RemoteStorage.getSeriesData()
-                .filter { it.pinned }
+            remoteStorage.getSeriesData()
+                .sortedByDescending { it.timestamp }
                 .map { it.toSManga() }
         }
 
@@ -107,24 +104,20 @@ class Cubari(override val lang: String) : HttpSource() {
                     }
             }
             else -> {
-                client.newBuilder()
-                    .addInterceptor(RemoteStorageUtils.HomeInterceptor())
-                    .build()
-                    .newCall(searchMangaRequest(page, query, filters))
-                    .asObservableSuccess()
-                    .map { response ->
-                        searchMangaParse(response, query)
-                    }
-                    .map { mangasPage ->
-                        require(mangasPage.mangas.isNotEmpty()) { SEARCH_FALLBACK_MSG }
-                        mangasPage
-                    }
+                val mangas = runBlocking {
+                    remoteStorage.getSeriesData()
+                        .filter { it.title.contains(query.trim(), ignoreCase = true) }
+                        .sortedByDescending { it.timestamp }
+                        .map { it.toSManga() }
+                }
+
+                Observable.just(MangasPage(mangas, false))
             }
         }
     }
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
-        return GET("$baseUrl/", cubariHeaders)
+        throw UnsupportedOperationException()
     }
 
     private fun deepLinkHandler(query: String): Pair<String, String> {
@@ -180,17 +173,6 @@ class Cubari(override val lang: String) : HttpSource() {
 
     override fun searchMangaParse(response: Response): MangasPage {
         throw UnsupportedOperationException()
-    }
-
-    private fun searchMangaParse(response: Response, query: String): MangasPage {
-        val result = response.parseAs<JsonArray>()
-
-        val filterList = result.asSequence()
-            .map { it as JsonObject }
-            .filter { it["title"].toString().contains(query.trim(), true) }
-            .toList()
-
-        return parseMangaList(JsonArray(filterList), SortType.ALL)
     }
 
     override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
@@ -376,25 +358,6 @@ class Cubari(override val lang: String) : HttpSource() {
         return chapterList.sortedByDescending { it.chapter_number }
     }
 
-    private fun parseMangaList(payload: JsonArray, sortType: SortType): MangasPage {
-        val mangaList = payload.mapNotNull { jsonEl ->
-            val jsonObj = jsonEl.jsonObject
-            val pinned = jsonObj["pinned"]!!.jsonPrimitive.boolean
-
-            if (sortType == SortType.PINNED && pinned) {
-                parseManga(jsonObj)
-            } else if (sortType == SortType.UNPINNED && !pinned) {
-                parseManga(jsonObj)
-            } else if (sortType == SortType.ALL) {
-                parseManga(jsonObj)
-            } else {
-                null
-            }
-        }
-
-        return MangasPage(mangaList, false)
-    }
-
     private fun parseManga(jsonObj: JsonObject, mangaReference: SManga? = null): SManga =
         SManga.create().apply {
             title = jsonObj["title"]!!.jsonPrimitive.content
@@ -427,11 +390,5 @@ class Cubari(override val lang: String) : HttpSource() {
         const val ARTIST_FALLBACK = "Unknown"
         const val DESCRIPTION_FALLBACK = "No description."
         const val SEARCH_FALLBACK_MSG = "Please enter a valid Cubari URL"
-
-        enum class SortType {
-            PINNED,
-            UNPINNED,
-            ALL,
-        }
     }
 }
