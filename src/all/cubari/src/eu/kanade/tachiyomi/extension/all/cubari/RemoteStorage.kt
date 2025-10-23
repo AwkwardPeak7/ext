@@ -2,8 +2,6 @@ package eu.kanade.tachiyomi.extension.all.cubari
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.os.Handler
-import android.os.Looper
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -18,7 +16,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 object RemoteStorage {
-    private val handler = Handler(Looper.getMainLooper())
     private val context = Injekt.get<Application>()
 
     suspend fun getSeriesData(): List<RSManga> {
