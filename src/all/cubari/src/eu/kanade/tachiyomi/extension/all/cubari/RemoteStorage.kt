@@ -2,6 +2,9 @@ package eu.kanade.tachiyomi.extension.all.cubari
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.util.Log
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -22,6 +25,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.time.Duration.Companion.seconds
 
 class RemoteStorage(
     private val client: OkHttpClient,
@@ -63,7 +67,7 @@ class RemoteStorage(
                 })();
             """.trimIndent(),
             callback = {
-                it.parseAs<LocalStorage>()
+                it.parseAs<String>().parseAs<LocalStorage>()
             },
         )
 
@@ -113,11 +117,30 @@ class RemoteStorage(
         data.items + remoteItems
     }
 
+    suspend fun tagSeries(url: String) {
+        runInWebView(
+            script = """
+                (() => {
+                   tag();
+                   return true;
+                })();
+            """.trimIndent(),
+            callback = {
+                Log.i("Cubari", "in callback...")
+                Thread.sleep(10.seconds.inWholeMilliseconds)
+                Log.i("Cubari", "Cubari::RemoteStorage::tagSeries done")
+            },
+            loadWebPage = true,
+            url = url,
+        )
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     private suspend fun <T> runInWebView(
-        loadWebPage: Boolean,
         script: String,
         callback: (data: String) -> T,
+        loadWebPage: Boolean,
+        url: String = baseUrl,
     ) = withContext(Dispatchers.Main.immediate) {
         suspendCancellableCoroutine { cont ->
             val webview = WebView(context)
@@ -132,7 +155,7 @@ class RemoteStorage(
                     override fun onPageFinished(view: WebView, url: String) {
                         view.evaluateJavascript(script) { result ->
                             if (cont.isActive) {
-                                runCatching { callback(result.parseAs()) }
+                                runCatching { callback(result) }
                                     .onFailure { cont.resumeWithException(it) }
                                     .onSuccess { cont.resume(it) }
                             }
@@ -148,7 +171,7 @@ class RemoteStorage(
                     ) {
                         if (cont.isActive) {
                             cont.resumeWithException(
-                                Exception("WebView error"),
+                                Exception("WebView error when requesting: ${request.url}"),
                             )
                         }
                         webview.stopLoading()
@@ -156,11 +179,28 @@ class RemoteStorage(
                     }
                 }
 
+                webChromeClient = object : WebChromeClient() {
+                    override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
+                        if (consoleMessage == null) { return false }
+                        val logContent = "wv: ${consoleMessage.message()} (${consoleMessage.sourceId()}, line ${consoleMessage.lineNumber()})"
+                        when (consoleMessage.messageLevel()) {
+                            ConsoleMessage.MessageLevel.DEBUG -> Log.d("Cubari", logContent)
+                            ConsoleMessage.MessageLevel.ERROR -> Log.e("Cubari", logContent)
+                            ConsoleMessage.MessageLevel.LOG -> Log.i("Cubari", logContent)
+                            ConsoleMessage.MessageLevel.TIP -> Log.i("Cubari", logContent)
+                            ConsoleMessage.MessageLevel.WARNING -> Log.w("Cubari", logContent)
+                            else -> Log.d("Cubari", logContent)
+                        }
+
+                        return true
+                    }
+                }
+
                 if (loadWebPage) {
-                    loadUrl("https://cubari.moe/")
+                    loadUrl(url)
                 } else {
                     loadDataWithBaseURL(
-                        "https://cubari.moe/",
+                        url,
                         "",
                         "text/html",
                         "UTF-8",
@@ -176,3 +216,5 @@ class RemoteStorage(
         }
     }
 }
+
+private const val baseUrl = "https://cubari.moe/"

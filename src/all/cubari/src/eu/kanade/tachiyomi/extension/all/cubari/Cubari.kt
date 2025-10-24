@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.extension.all.cubari
 
 import android.os.Build
 import android.util.Base64
+import android.util.Log
 import eu.kanade.tachiyomi.AppInfo
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.asObservable
@@ -13,6 +14,9 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import keiyoushi.utils.parseAs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -81,11 +85,15 @@ class Cubari(override val lang: String) : HttpSource() {
             query.startsWith("https://") || query.startsWith("cubari:") -> {
                 val (source, slug) = deepLinkHandler(query)
                 // Only tag for recently read on search
-                client.newBuilder()
-                    .addInterceptor(RemoteStorageUtils.TagInterceptor())
-                    .build()
-                    .newCall(GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders))
+                client.newCall(GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders))
                     .asObservableSuccess()
+                    .also {
+                        GlobalScope.launch(Dispatchers.IO) {
+                            runCatching {
+                                remoteStorage.tagSeries("$baseUrl/read/$source/$slug")
+                            }.onFailure { Log.e("Cubari", "Unable to tag series", it) }
+                        }
+                    }
                     .map { response ->
                         val result = response.parseAs<JsonObject>()
                         val manga = SManga.create().apply {
