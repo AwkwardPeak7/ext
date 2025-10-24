@@ -71,6 +71,8 @@ class Cubari(override val lang: String) : HttpSource() {
             remoteStorage.getSeriesData()
                 .sortedByDescending { it.timestamp }
                 .map { it.toSManga() }
+        }.ifEmpty {
+            throw Exception(SEARCH_FALLBACK_MSG)
         }
 
         return Observable.just(MangasPage(mangas, false))
@@ -84,16 +86,13 @@ class Cubari(override val lang: String) : HttpSource() {
             // handle direct links or old cubari:source/id format
             query.startsWith("https://") || query.startsWith("cubari:") -> {
                 val (source, slug) = deepLinkHandler(query)
-                // Only tag for recently read on search
                 client.newCall(GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders))
                     .asObservableSuccess()
                     .map { response ->
                         val result = response.parseAs<JsonObject>()
 
-                        GlobalScope.launch(Dispatchers.IO) {
-                            runCatching {
-                                remoteStorage.tagSeries(result, source, slug)
-                            }.onFailure { Log.e("Cubari", "Unable to tag series", it) }
+                        runBlocking {
+                            remoteStorage.tagSeries(result, source, slug)
                         }
 
                         val manga = SManga.create().apply {
@@ -110,6 +109,8 @@ class Cubari(override val lang: String) : HttpSource() {
                         .filter { it.title.contains(query.trim(), ignoreCase = true) }
                         .sortedByDescending { it.timestamp }
                         .map { it.toSManga() }
+                }.ifEmpty {
+                    throw Exception(SEARCH_FALLBACK_MSG)
                 }
 
                 Observable.just(MangasPage(mangas, false))
@@ -390,6 +391,6 @@ class Cubari(override val lang: String) : HttpSource() {
         const val AUTHOR_FALLBACK = "Unknown"
         const val ARTIST_FALLBACK = "Unknown"
         const val DESCRIPTION_FALLBACK = "No description."
-        const val SEARCH_FALLBACK_MSG = "Please enter a valid Cubari URL"
+        const val SEARCH_FALLBACK_MSG = "Please enter a valid Cubari URL in search"
     }
 }
