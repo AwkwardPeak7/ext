@@ -170,6 +170,9 @@ class RemoteStorage(
                         return acc;
                     }, {});
 
+                    localStorage.setItem('proxyHistory', true);
+                    localStorage.setItem('storageOnce', 1);
+
                     let tmp = localStorage.getItem('remotestorage:cache:nodes:/');
                     if (!tmp) {
                         localStorage.setItem(
