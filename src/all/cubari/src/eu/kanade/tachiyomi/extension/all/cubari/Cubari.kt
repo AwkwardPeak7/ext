@@ -87,15 +87,15 @@ class Cubari(override val lang: String) : HttpSource() {
                 // Only tag for recently read on search
                 client.newCall(GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders))
                     .asObservableSuccess()
-                    .also {
-                        GlobalScope.launch(Dispatchers.IO) {
-                            runCatching {
-                                remoteStorage.tagSeries("$baseUrl/read/$source/$slug")
-                            }.onFailure { Log.e("Cubari", "Unable to tag series", it) }
-                        }
-                    }
                     .map { response ->
                         val result = response.parseAs<JsonObject>()
+
+                        GlobalScope.launch(Dispatchers.IO) {
+                            runCatching {
+                                remoteStorage.tagSeries(result, source, slug)
+                            }.onFailure { Log.e("Cubari", "Unable to tag series", it) }
+                        }
+
                         val manga = SManga.create().apply {
                             url = "/read/$source/$slug/"
                         }
