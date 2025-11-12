@@ -3,10 +3,6 @@ package eu.kanade.tachiyomi.extension.all.cubari
 import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
-import android.webkit.ConsoleMessage
-import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import eu.kanade.tachiyomi.network.GET
@@ -19,9 +15,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Headers
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
@@ -33,6 +28,7 @@ import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.time.Duration.Companion.seconds
 
 class RemoteStorage(
     private val client: OkHttpClient,
@@ -45,7 +41,7 @@ class RemoteStorage(
         encodeDefaults = true
     }
 
-    suspend fun getSeriesData(): List<RSManga> = coroutineScope {
+    suspend fun getSeriesData(): List<RSManga> {
         val data = runInWebView(
             script = """
                 (() => {
@@ -83,7 +79,7 @@ class RemoteStorage(
         )
 
         if (data.wireClient == null) {
-            return@coroutineScope data.items
+            return data.items
         }
 
         val remoteStorageUrl = data.wireClient.href.toHttpUrl()
@@ -94,7 +90,7 @@ class RemoteStorage(
             .build()
 
         val remoteStorageHeader = headers.newBuilder()
-            .set("Authorization", "Bearerer " + data.wireClient.token)
+            .set("Authorization", "Bearer " + data.wireClient.token)
             .build()
 
         val remoteItems = client.newCall(GET(remoteStorageUrl, remoteStorageHeader))
@@ -111,32 +107,34 @@ class RemoteStorage(
                 }
             }
             .map {
-                async {
-                    val url = data.wireClient.href.toHttpUrl()
-                        .newBuilder()
-                        .addPathSegment("cubari")
-                        .addPathSegment("series")
-                        .addPathSegment(it)
-                        .build()
+                coroutineScope {
+                    async {
+                        val url = data.wireClient.href.toHttpUrl()
+                            .newBuilder()
+                            .addPathSegment("cubari")
+                            .addPathSegment("series")
+                            .addPathSegment(it)
+                            .build()
 
-                    client.newCall(GET(url, remoteStorageHeader))
-                        .await()
-                        .parseAs<RSManga>()
+                        client.newCall(GET(url, remoteStorageHeader))
+                            .await()
+                            .parseAs<RSManga>()
+                    }
                 }
             }.awaitAll()
 
         putSeriesDataInWebView(remoteItems)
 
-        data.items + remoteItems
+        return data.items + remoteItems
     }
 
-    suspend fun tagSeries(series: JsonObject, source: String, slug: String) {
+    suspend fun tagSeries(series: CubariManga, source: String, slug: String) {
         val rsManga = RSManga(
             source = source,
             slug = slug,
-            coverUrl = series["cover"]!!.jsonPrimitive.content,
-            url = "/read/$source/$slug",
-            title = series["title"]!!.jsonPrimitive.content,
+            coverUrl = series.cover,
+            url = "/read/$source/$slug/",
+            title = series.title,
             timestamp = System.currentTimeMillis(),
             pinned = false,
         )
@@ -242,36 +240,37 @@ class RemoteStorage(
                 })();
             """.trimIndent(),
             callback = {
-                if (it == "null") {
-                    null
-                } else {
-                    it.parseAs<String>().parseAs<WireClient?>()
-                }
+                it.takeIf { it != "null" }?.parseAs<String>()?.parseAs<WireClient?>()
             },
         )
             ?: return
 
         val remoteStorageHeader = headers.newBuilder()
-            .set("Authorization", "Bearerer " + wireClient.token)
+            .set("Authorization", "Bearer " + wireClient.token)
             .build()
 
-        data.forEach {
-            val url = wireClient.href.toHttpUrl().newBuilder()
-                .addPathSegment("cubari")
-                .addPathSegment("series")
-                .addPathSegment("${it.source}-${it.slug}")
-                .build()
+        coroutineScope {
+            data.map {
+                async {
+                    val url = wireClient.href.toHttpUrl().newBuilder()
+                        .addPathSegment("cubari")
+                        .addPathSegment("series")
+                        .addPathSegment("${it.source}-${it.slug}")
+                        .build()
 
-            val request = Request.Builder().apply {
-                url(url)
-                method(
-                    method = "PUT",
-                    body = it.toJsonString().toRequestBody("application/json".toMediaType()),
-                )
-                headers(remoteStorageHeader)
-            }.build()
+                    val request = Request.Builder().apply {
+                        url(url)
+                        method(
+                            method = "PUT",
+                            body = it.toJsonString()
+                                .toRequestBody("application/json".toMediaType()),
+                        )
+                        headers(remoteStorageHeader)
+                    }.build()
 
-            client.newCall(request).await().closeQuietly()
+                    client.newCall(request).await().closeQuietly()
+                }
+            }.awaitAll()
         }
     }
 
@@ -279,73 +278,54 @@ class RemoteStorage(
     private suspend fun <T> runInWebView(
         script: String,
         callback: (data: String) -> T,
-    ) = withContext(Dispatchers.Main.immediate) {
-        suspendCancellableCoroutine { cont ->
-            val webview = WebView(context)
+    ) = withTimeout(10.seconds) {
+        withContext(Dispatchers.Main.immediate) {
+            suspendCancellableCoroutine { cont ->
+                val webview = WebView(context)
 
-            webview.apply {
-                with(settings) {
-                    javaScriptEnabled = true
-                    domStorageEnabled = true
-                    databaseEnabled = true
+                fun cleanup() {
+                    webview.stopLoading()
+                    webview.destroy()
                 }
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView, url: String) {
-                        view.evaluateJavascript(script) { result ->
-                            if (cont.isActive) {
-                                runCatching { callback(result) }
-                                    .onFailure { cont.resumeWithException(it) }
-                                    .onSuccess { cont.resume(it) }
+
+                webview.apply {
+                    with(settings) {
+                        javaScriptEnabled = true
+                        domStorageEnabled = true
+                        databaseEnabled = true
+                    }
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView, url: String) {
+                            view.evaluateJavascript(script) { result ->
+                                if (cont.isActive) {
+                                    runCatching { callback(result) }
+                                        .onFailure {
+                                            cleanup()
+                                            cont.resumeWithException(it)
+                                        }
+                                        .onSuccess {
+                                            cleanup()
+                                            cont.resume(it)
+                                        }
+                                } else {
+                                    cleanup()
+                                }
                             }
-                            webview.stopLoading()
-                            webview.destroy()
                         }
                     }
 
-                    override fun onReceivedError(
-                        view: WebView,
-                        request: WebResourceRequest,
-                        error: WebResourceError,
-                    ) {
-                        if (cont.isActive) {
-                            cont.resumeWithException(
-                                Exception("WebView error when requesting: ${request.url}"),
-                            )
-                        }
-                        webview.stopLoading()
-                        webview.destroy()
-                    }
+                    loadDataWithBaseURL(
+                        "https://cubari.moe/",
+                        "",
+                        "text/html",
+                        "UTF-8",
+                        null,
+                    )
                 }
 
-                webChromeClient = object : WebChromeClient() {
-                    override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                        if (consoleMessage == null) { return false }
-                        val logContent = "wv: ${consoleMessage.message()} (${consoleMessage.sourceId()}, line ${consoleMessage.lineNumber()})"
-                        when (consoleMessage.messageLevel()) {
-                            ConsoleMessage.MessageLevel.DEBUG -> Log.d("Cubari", logContent)
-                            ConsoleMessage.MessageLevel.ERROR -> Log.e("Cubari", logContent)
-                            ConsoleMessage.MessageLevel.LOG -> Log.i("Cubari", logContent)
-                            ConsoleMessage.MessageLevel.TIP -> Log.i("Cubari", logContent)
-                            ConsoleMessage.MessageLevel.WARNING -> Log.w("Cubari", logContent)
-                            else -> Log.d("Cubari", logContent)
-                        }
-
-                        return true
-                    }
+                cont.invokeOnCancellation {
+                    cleanup()
                 }
-
-                loadDataWithBaseURL(
-                    "https://cubari.moe/",
-                    "",
-                    "text/html",
-                    "UTF-8",
-                    null,
-                )
-            }
-
-            cont.invokeOnCancellation {
-                webview.stopLoading()
-                webview.destroy()
             }
         }
     }

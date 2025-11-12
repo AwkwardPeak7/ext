@@ -5,8 +5,8 @@ import android.util.Base64
 import android.util.Log
 import eu.kanade.tachiyomi.AppInfo
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.asObservable
 import eu.kanade.tachiyomi.network.asObservableSuccess
+import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
@@ -14,16 +14,11 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
 import keiyoushi.utils.parseAs
-import kotlinx.coroutines.Dispatchers
+import keiyoushi.utils.toJsonString
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.double
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
@@ -86,21 +81,21 @@ class Cubari(override val lang: String) : HttpSource() {
             // handle direct links or old cubari:source/id format
             query.startsWith("https://") || query.startsWith("cubari:") -> {
                 val (source, slug) = deepLinkHandler(query)
-                client.newCall(GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders))
+                val manga = SManga.create().apply {
+                    url = "/read/$source/$slug/"
+                }
+                client.newCall(mangaDetailsRequest(manga))
                     .asObservableSuccess()
-                    .map { response ->
-                        val result = response.parseAs<JsonObject>()
-
+                    .map {
+                        val data = it.parseAs<CubariManga>()
                         runBlocking {
-                            remoteStorage.tagSeries(result, source, slug)
+                            remoteStorage.tagSeries(data, source, slug)
                         }
-
-                        val manga = SManga.create().apply {
+                        val manga = data.toSManga().apply {
                             url = "/read/$source/$slug/"
                         }
-                        val mangaList = listOf(parseManga(result, manga))
 
-                        MangasPage(mangaList, false)
+                        MangasPage(listOf(manga), false)
                     }
             }
             else -> {
@@ -117,6 +112,10 @@ class Cubari(override val lang: String) : HttpSource() {
             }
         }
     }
+
+    override fun getFilterList() = FilterList(
+        Filter.Header("Paste a Cubari URL in the search field"),
+    )
 
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         throw UnsupportedOperationException()
@@ -177,220 +176,123 @@ class Cubari(override val lang: String) : HttpSource() {
         throw UnsupportedOperationException()
     }
 
-    override fun fetchMangaDetails(manga: SManga): Observable<SManga> {
-        return client.newCall(mangaDetailsRequest(manga))
-            .asObservableSuccess()
-            .map { response -> mangaDetailsParse(response, manga) }
-    }
-
     override fun getMangaUrl(manga: SManga): String {
         return "$baseUrl${manga.url}"
     }
 
     override fun mangaDetailsRequest(manga: SManga): Request {
-        return chapterListRequest(manga)
-    }
-
-    override fun mangaDetailsParse(response: Response): SManga {
-        throw UnsupportedOperationException()
-    }
-
-    private fun mangaDetailsParse(response: Response, manga: SManga): SManga {
-        val result = response.parseAs<JsonObject>()
-        return parseManga(result, manga)
-    }
-
-    override fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return client.newCall(chapterListRequest(manga))
-            .asObservable()
-            .map { response -> chapterListParse(response, manga) }
-    }
-
-    // Gets the chapter list based on the series being viewed
-    override fun chapterListRequest(manga: SManga): Request {
-        val urlComponents = manga.url.split("/")
-        val source = urlComponents[2]
-        val slug = urlComponents[3]
+        val url = getMangaUrl(manga).toHttpUrl()
+        val source = url.pathSegments[1]
+        val slug = url.pathSegments[2]
 
         return GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders)
     }
 
+    override fun mangaDetailsParse(response: Response): SManga {
+        val data = response.parseAs<CubariManga>()
+
+        return data.toSManga()
+    }
+
+    override fun chapterListRequest(manga: SManga) = mangaDetailsRequest(manga)
+
+    @OptIn(DelicateCoroutinesApi::class)
     override fun chapterListParse(response: Response): List<SChapter> {
-        throw UnsupportedOperationException()
-    }
+        val data = response.parseAs<CubariManga>()
+        val (source, slug) = response.request.url.pathSegments.let {
+            it[2] to it[4]
+        }
 
-    // Called after the request
-    private fun chapterListParse(response: Response, manga: SManga): List<SChapter> {
-        return parseChapterList(response, manga)
-    }
-
-    override fun fetchPageList(chapter: SChapter): Observable<List<Page>> {
-        return when {
-            chapter.url.contains("/chapter/") -> {
-                client.newCall(pageListRequest(chapter))
-                    .asObservableSuccess()
-                    .map { response ->
-                        directPageListParse(response)
-                    }
-            }
-            else -> {
-                client.newCall(pageListRequest(chapter))
-                    .asObservableSuccess()
-                    .map { response ->
-                        seriesJsonPageListParse(response, chapter)
-                    }
+        GlobalScope.launch {
+            runCatching {
+                remoteStorage.tagSeries(data, source, slug)
             }
         }
+
+        val appendVolume = data.chapters.map { (_, v) -> v.volume }.toSet().size > 1
+
+        return data.chapters.flatMap { (chapterNum, chapter) ->
+            chapter.groups.map { (groupNum, chapterGroup) ->
+                SChapter.create().apply {
+                    scanlator = data.groups[groupNum]
+                    chapter_number = chapterNum.toFloat()
+                    date_upload = chapter.date
+                    name = buildString {
+                        if (
+                            appendVolume &&
+                            chapter.volume.isNotBlank() &&
+                            chapter.volume.lowercase().trim() !in setOf("uncategorized", "null", "na", "")
+                        ) {
+                            append("Vol. ", chapter.volume, " ")
+                        }
+                        if (!chapter.title.orEmpty().contains(chapterNum)) {
+                            append("Ch. ", chapterNum)
+                        }
+                        if (!chapter.title.isNullOrBlank()) {
+                            if (isNotBlank()) {
+                                append(" - ")
+                            }
+                            append(chapter.title)
+                        }
+                    }
+                    url = if (chapterGroup.size == 1 && chapterGroup[0].startsWith("/read/api/")) {
+                        chapterGroup[0]
+                    } else {
+                        "/read/$source/$slug/$chapterNum/$groupNum"
+                    }
+                }
+            }
+        }.sortedByDescending { it.chapter_number }
     }
 
     override fun pageListRequest(chapter: SChapter): Request {
+        val url = "$baseUrl${chapter.url}".toHttpUrl().pathSegments
         return when {
-            chapter.url.contains("/chapter/") -> {
+            url[3] == "chapter" -> {
                 GET("$baseUrl${chapter.url}", cubariHeaders)
             }
             else -> {
-                val url = chapter.url.split("/")
-                val source = url[2]
-                val slug = url[3]
+                val source = url[1]
+                val slug = url[2]
+                val chapNum = url[3]
+                val groupNo = url[4]
 
-                GET("$baseUrl/read/api/$source/series/$slug/", cubariHeaders)
+                GET("$baseUrl/read/api/$source/series/$slug/#$chapNum/$groupNo", cubariHeaders)
             }
-        }
-    }
-
-    private fun directPageListParse(response: Response): List<Page> {
-        val pages = response.parseAs<JsonArray>()
-
-        return pages.mapIndexed { i, jsonEl ->
-            val page = if (jsonEl is JsonObject) {
-                jsonEl.jsonObject["src"]!!.jsonPrimitive.content
-            } else {
-                jsonEl.jsonPrimitive.content
-            }
-
-            Page(i, "", page)
-        }
-    }
-
-    private fun seriesJsonPageListParse(response: Response, chapter: SChapter): List<Page> {
-        val jsonObj = response.parseAs<JsonObject>()
-        val groups = jsonObj["groups"]!!.jsonObject
-        val groupMap = groups.entries.associateBy({ it.value.jsonPrimitive.content.ifEmpty { "default" } }, { it.key })
-        val chapterScanlator = chapter.scanlator ?: "default" // workaround for "" as group causing NullPointerException (#13772)
-
-        // prevent NullPointerException when chapters.key is 084 and chapter.chapter_number is 84
-        val chapters = jsonObj["chapters"]!!.jsonObject.mapKeys {
-            it.key.replace(Regex("^0+(?!$)"), "")
-        }
-
-        val pages = if (chapters[chapter.chapter_number.toString()] != null) {
-            chapters[chapter.chapter_number.toString()]!!
-                .jsonObject["groups"]!!
-                .jsonObject[groupMap[chapterScanlator]]!!
-                .jsonArray
-        } else {
-            chapters[chapter.chapter_number.toInt().toString()]!!
-                .jsonObject["groups"]!!
-                .jsonObject[groupMap[chapterScanlator]]!!
-                .jsonArray
-        }
-
-        return pages.mapIndexed { i, jsonEl ->
-            val page = if (jsonEl is JsonObject) {
-                jsonEl.jsonObject["src"]!!.jsonPrimitive.content
-            } else {
-                jsonEl.jsonPrimitive.content
-            }
-
-            Page(i, "", page)
         }
     }
 
     override fun pageListParse(response: Response): List<Page> {
-        throw UnsupportedOperationException()
+        return if (response.request.url.pathSegments[3] == "chapter") {
+            directPageListParse(response)
+        } else {
+            seriesPageListParse(response)
+        }
     }
 
-    // ------------- Helpers and whatnot ---------------
+    private fun directPageListParse(response: Response): List<Page> {
+        val pages = response.parseAs<List<CubariPage>>()
 
-    private val volumeNotSpecifiedTerms = setOf("Uncategorized", "null", "")
-
-    private fun parseChapterList(response: Response, manga: SManga): List<SChapter> {
-        val jsonObj = response.parseAs<JsonObject>()
-        val groups = jsonObj["groups"]!!.jsonObject
-        val chapters = jsonObj["chapters"]!!.jsonObject
-
-        val chapterList = chapters.entries.flatMap { chapterEntry ->
-            val chapterNum = chapterEntry.key
-            val chapterObj = chapterEntry.value.jsonObject
-            val chapterGroups = chapterObj["groups"]!!.jsonObject
-            val volume = chapterObj["volume"]!!.jsonPrimitive.content.let {
-                if (volumeNotSpecifiedTerms.contains(it)) null else it
-            }
-            val title = chapterObj["title"]!!.jsonPrimitive.content
-
-            chapterGroups.entries.map { groupEntry ->
-                val groupNum = groupEntry.key
-                val releaseDate = chapterObj["release_date"]?.jsonObject?.get(groupNum)
-
-                SChapter.create().apply {
-                    scanlator = groups[groupNum]!!.jsonPrimitive.content
-                    chapter_number = chapterNum.toFloatOrNull() ?: -1f
-
-                    date_upload = if (releaseDate != null) {
-                        releaseDate.jsonPrimitive.double.toLong() * 1000
-                    } else {
-                        0L
-                    }
-
-                    name = buildString {
-                        if (!volume.isNullOrBlank()) append("Vol.$volume ")
-                        append("Ch.$chapterNum")
-                        if (title.isNotBlank()) append(" - $title")
-                    }
-
-                    url = if (chapterGroups[groupNum] is JsonArray) {
-                        "${manga.url}/$chapterNum/$groupNum"
-                    } else {
-                        chapterGroups[groupNum]!!.jsonPrimitive.content
-                    }
-                }
-            }
+        return pages.mapIndexed { i, img ->
+            Page(i, imageUrl = img.src)
         }
-
-        return chapterList.sortedByDescending { it.chapter_number }
     }
 
-    private fun parseManga(jsonObj: JsonObject, mangaReference: SManga? = null): SManga =
-        SManga.create().apply {
-            title = jsonObj["title"]!!.jsonPrimitive.content
-            artist = jsonObj["artist"]?.jsonPrimitive?.content ?: ARTIST_FALLBACK
-            author = jsonObj["author"]?.jsonPrimitive?.content ?: AUTHOR_FALLBACK
+    private fun seriesPageListParse(response: Response): List<Page> {
+        val (chapNum, groupNo) = response.request.url.fragment!!.split("/", limit = 2)
+        val data = response.parseAs<CubariManga>()
+        val pages = data.chapters[chapNum]!!.groups[groupNo]!!
 
-            val descriptionFull = jsonObj["description"]?.jsonPrimitive?.content
-            description = descriptionFull?.substringBefore("Tags: ") ?: DESCRIPTION_FALLBACK
-            genre = descriptionFull?.let {
-                if (it.contains("Tags: ")) {
-                    it.substringAfter("Tags: ")
-                } else {
-                    ""
-                }
-            } ?: ""
+        Log.d("cubari", pages.toJsonString())
 
-            url = mangaReference?.url ?: jsonObj["url"]!!.jsonPrimitive.content
-            thumbnail_url = jsonObj["coverUrl"]?.jsonPrimitive?.content
-                ?: jsonObj["cover"]?.jsonPrimitive?.content ?: ""
+        return pages.mapIndexed { i, img ->
+            Page(i, imageUrl = img)
         }
-
-    // ----------------- Things we aren't supporting -----------------
+    }
 
     override fun imageUrlParse(response: Response): String {
         throw UnsupportedOperationException()
     }
-
-    companion object {
-        const val AUTHOR_FALLBACK = "Unknown"
-        const val ARTIST_FALLBACK = "Unknown"
-        const val DESCRIPTION_FALLBACK = "No description."
-        const val SEARCH_FALLBACK_MSG = "Please enter a valid Cubari URL in search"
-    }
 }
+
+const val SEARCH_FALLBACK_MSG = "Please enter a valid Cubari URL in search"
