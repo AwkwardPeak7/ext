@@ -522,7 +522,7 @@ class Hitomi(
                 scheme("https")
                 host(IMAGE_LOOPBACK_HOST)
                 addQueryParameter(IMAGE_THUMBNAIL, "true")
-                addQueryParameter(IMAGE_GIF, it.isGif.toString())
+                addQueryParameter(IMAGE_EXT, it.ext)
                 fragment(it.hash)
             }.toString()
         }
@@ -597,7 +597,7 @@ class Hitomi(
             val imageUrl = HttpUrl.Builder().apply {
                 scheme("https")
                 host(IMAGE_LOOPBACK_HOST)
-                addQueryParameter(IMAGE_GIF, img.isGif.toString())
+                addQueryParameter(IMAGE_EXT, img.ext)
                 fragment(img.hash)
             }.toString()
 
@@ -687,6 +687,45 @@ class Hitomi(
         return hash.replace(Regex("""^.*(..)(.)$"""), "$2/$1")
     }
 
+    private fun isAnimatedWebP(bytes: ByteArray): Boolean {
+        if (bytes.size < 12 ||
+            String(bytes, 0, 4, Charsets.US_ASCII) != "RIFF" ||
+            String(bytes, 8, 4, Charsets.US_ASCII) != "WEBP"
+        ) {
+            return false
+        }
+
+        var i = 12
+        while (i + 8 <= bytes.size) {
+            val fourcc = String(bytes, i, 4, Charsets.US_ASCII)
+
+            val chunkSize = ByteBuffer.wrap(bytes, i + 4, 4)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .int
+
+            when (fourcc) {
+                "VP8X" -> {
+                    if (chunkSize >= 1 && (i + 8) < bytes.size) {
+                        val flags = bytes[i + 8].toInt()
+                        if ((flags and 2) != 0) {
+                            return true
+                        }
+                    }
+                }
+                "ANIM" -> return true
+                "VP8 ", "VP8L" -> return false
+            }
+
+            i += 8 + chunkSize
+
+            if (chunkSize % 2 != 0) {
+                i++
+            }
+        }
+
+        return false
+    }
+
     private fun imageUrlInterceptor(chain: Interceptor.Chain): Response {
         val request = chain.request()
         if (request.url.host != IMAGE_LOOPBACK_HOST) {
@@ -695,15 +734,30 @@ class Hitomi(
 
         val hash = request.url.fragment!!
         val isThumbnail = request.url.queryParameter(IMAGE_THUMBNAIL) == "true"
-        val isGif = request.url.queryParameter(IMAGE_GIF) == "true"
+        val ext = request.url.queryParameter(IMAGE_EXT) ?: "webp"
+        val imageId = imageIdFromHash(hash)
 
-        val type = if (isGif) {
+        var type = if (ext == "gif" || ext == "webp") {
             "webp"
         } else {
             "avif"
         }
-        val imageId = imageIdFromHash(hash)
+
         val subDomainOffset = runBlocking { subdomainOffset(imageId) }
+
+        if (ext == "webp" && !isThumbnail) {
+            val commonId = runBlocking { commonImageId() }
+            val subDomain = "w${subDomainOffset + 1}"
+            val webpUrl = "https://$subDomain.$cdnDomain/$commonId$imageId/$hash.webp"
+            try {
+                val bytes = runBlocking { getRangedResponse(webpUrl, 0L..29L) }
+                if (!isAnimatedWebP(bytes)) {
+                    type = "avif"
+                }
+            } catch (e: Exception) {
+                Log.w(name, "Unable to detect animated webp", e)
+            }
+        }
 
         val imageUrl = if (isThumbnail) {
             val subDomain = "${'a' + subDomainOffset}tn"
@@ -711,10 +765,9 @@ class Hitomi(
             "https://$subDomain.$cdnDomain/${type}bigtn/${thumbPathFromHash(hash)}/$hash.$type"
         } else {
             val commonId = runBlocking { commonImageId() }
-            val subDomain = if (isGif) {
-                "w${subDomainOffset + 1}"
-            } else {
-                "a${subDomainOffset + 1}"
+            val subDomain = when (type) {
+                "webp" -> "w${subDomainOffset + 1}"
+                else -> "a${subDomainOffset + 1}"
             }
 
             "https://$subDomain.$cdnDomain/$commonId$imageId/$hash.$type"
@@ -738,4 +791,4 @@ class Hitomi(
 
 const val IMAGE_LOOPBACK_HOST = "127.0.0.1"
 const val IMAGE_THUMBNAIL = "is_thumbnail"
-const val IMAGE_GIF = "is_gif"
+const val IMAGE_EXT = "ext"
