@@ -120,10 +120,9 @@ tasks.register("writeManifestFile") {
 
 tasks.register("createProguardFile") {
     File proguardFile = android.buildTypes.release.proguardFiles[0]
-    if (!proguardFile.exists()) {
-        proguardFile.withWriter {
-            it.write("-keep class ${android.namespace}.${android.defaultConfig.applicationIdSuffix}${extClass} { *; }")
-        }
+    proguardFile.parentFile.mkdirs()
+    proguardFile.withWriter {
+        it.write("-keep class ${android.namespace}.${android.defaultConfig.applicationIdSuffix}${extClass} { *; }")
     }
 }
 
