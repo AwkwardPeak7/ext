@@ -95,11 +95,11 @@ jobs:
           java-version: 17
           distribution: temurin
 
-      - name: Run inspector
+      - name: Install inspector dependencies
+        run: pip install --break-system-packages httpx
+
+      - name: Create repo artifacts
         run: |
-          mkdir -p apk
-          find ~/apk-artifacts -name "*.apk" -type f -exec mv {} apk/ \;
-          INSPECTOR_LINK="$(curl -s "https://api.github.com/repos/keiyoushi/extensions-inspector/releases/latest" | jq -r '.assets[0].browser_download_url')"
-          curl -L "$INSPECTOR_LINK" -o ./Inspector.jar
-          java -jar ./Inspector.jar "apk" "output.json" "tmp"
-          jq . output.json
+          cd main
+          python ./.github/scripts/create-repo.py --apks-source ~/apk-artifacts
+
