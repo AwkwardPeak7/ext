@@ -30,8 +30,12 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-PREVIEW_URL = "https://api.github.com/repos/Suwayomi/Suwayomi-Server-preview/releases/latest"
-CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "suwayomi-inspect"
+PREVIEW_URL = (
+    "https://api.github.com/repos/Suwayomi/Suwayomi-Server-preview/releases/latest"
+)
+CACHE_DIR = (
+    Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "suwayomi-inspect"
+)
 
 REPO_DIR = Path("repo")
 APK_DIR = REPO_DIR / "apk"
@@ -72,7 +76,10 @@ def log(msg: str) -> None:
 
 # --- HTTP helpers ----------------------------------------------------------
 
-def encode_multipart(parts: list[tuple[str, tuple[str | None, bytes | str, str]]]) -> tuple[bytes, str]:
+
+def encode_multipart(
+    parts: list[tuple[str, tuple[str | None, bytes | str, str]]],
+) -> tuple[bytes, str]:
     """Encode a list of (name, (filename, body, content_type)) into multipart/form-data."""
     boundary = uuid.uuid4().hex
     chunks = []
@@ -80,12 +87,12 @@ def encode_multipart(parts: list[tuple[str, tuple[str | None, bytes | str, str]]
         header = f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"'
         if filename is not None:
             header += f'; filename="{filename}"'
-        header += f'\r\nContent-Type: {ctype}\r\n\r\n'
+        header += f"\r\nContent-Type: {ctype}\r\n\r\n"
         chunks.append(header.encode())
         chunks.append(body if isinstance(body, bytes) else body.encode())
-        chunks.append(b'\r\n')
-    chunks.append(f'--{boundary}--\r\n'.encode())
-    return b''.join(chunks), f'multipart/form-data; boundary={boundary}'
+        chunks.append(b"\r\n")
+    chunks.append(f"--{boundary}--\r\n".encode())
+    return b"".join(chunks), f"multipart/form-data; boundary={boundary}"
 
 
 def http_post_json(url: str, body: bytes, content_type: str, timeout: float) -> dict:
@@ -96,10 +103,13 @@ def http_post_json(url: str, body: bytes, content_type: str, timeout: float) -> 
 
 # --- jar acquisition -------------------------------------------------------
 
+
 def fetch_jar() -> Path:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     log("Resolving latest Suwayomi-Server-preview release...")
-    req = urllib.request.Request(PREVIEW_URL, headers={"User-Agent": "suwayomi-inspect"})
+    req = urllib.request.Request(
+        PREVIEW_URL, headers={"User-Agent": "suwayomi-inspect"}
+    )
     with urllib.request.urlopen(req, timeout=30) as r:
         rel = json.load(r)
     asset = next(a for a in rel["assets"] if a["name"].endswith(".jar"))
@@ -108,7 +118,9 @@ def fetch_jar() -> Path:
         log(f"Using cached {target.name}")
         return target
     log(f"Downloading {asset['name']} ({asset['size'] // 1_000_000} MB)...")
-    dl = urllib.request.Request(asset["browser_download_url"], headers={"User-Agent": "suwayomi-inspect"})
+    dl = urllib.request.Request(
+        asset["browser_download_url"], headers={"User-Agent": "suwayomi-inspect"}
+    )
     with urllib.request.urlopen(dl, timeout=300) as r, open(target, "wb") as f:
         shutil.copyfileobj(r, f)
     return target
@@ -116,13 +128,19 @@ def fetch_jar() -> Path:
 
 # --- server lifecycle ------------------------------------------------------
 
+
 @contextlib.contextmanager
 def suwayomi_server(jar: Path, port: int, startup_timeout: int):
     root = Path(tempfile.mkdtemp(prefix="suwayomi-inspect-"))
     (root / "server.conf").write_text(SERVER_CONF.format(port=port))
     log_path = root / "server.log"
     proc = subprocess.Popen(
-        ["java", f"-Dsuwayomi.tachidesk.config.server.rootDir={root}", "-jar", str(jar)],
+        [
+            "java",
+            f"-Dsuwayomi.tachidesk.config.server.rootDir={root}",
+            "-jar",
+            str(jar),
+        ],
         stdout=open(log_path, "wb"),
         stderr=subprocess.STDOUT,
         start_new_session=True,
@@ -133,7 +151,9 @@ def suwayomi_server(jar: Path, port: int, startup_timeout: int):
         while time.time() < deadline:
             if proc.poll() is not None:
                 tail = log_path.read_text(errors="replace")[-2000:]
-                raise RuntimeError(f"Server exited (code {proc.returncode}). Tail:\n{tail}")
+                raise RuntimeError(
+                    f"Server exited (code {proc.returncode}). Tail:\n{tail}"
+                )
             try:
                 with urllib.request.urlopen(f"{base_url}/api/graphql", timeout=2) as r:
                     if r.status == 200:
@@ -159,6 +179,7 @@ def suwayomi_server(jar: Path, port: int, startup_timeout: int):
 
 # --- parallel runner -------------------------------------------------------
 
+
 def run_parallel(items, fn, label, workers: int) -> int:
     """Run fn(item) on each item in a thread pool, logging progress; return failure count."""
     items = list(items)
@@ -178,17 +199,25 @@ def run_parallel(items, fn, label, workers: int) -> int:
 
 # --- suwayomi operations ---------------------------------------------------
 
+
 def install_apk(base_url: str, apk: Path) -> None:
-    operations = json.dumps({
-        "query": INSTALL_MUTATION,
-        "variables": {"extensionFile": None},
-    })
+    operations = json.dumps(
+        {
+            "query": INSTALL_MUTATION,
+            "variables": {"extensionFile": None},
+        }
+    )
     map_ = json.dumps({"0": ["variables.extensionFile"]})
-    body, ctype = encode_multipart([
-        ("operations", (None, operations, "application/json")),
-        ("map", (None, map_, "application/json")),
-        ("0", (apk.name, apk.read_bytes(), "application/vnd.android.package-archive")),
-    ])
+    body, ctype = encode_multipart(
+        [
+            ("operations", (None, operations, "application/json")),
+            ("map", (None, map_, "application/json")),
+            (
+                "0",
+                (apk.name, apk.read_bytes(), "application/vnd.android.package-archive"),
+            ),
+        ]
+    )
     result = http_post_json(f"{base_url}/api/graphql", body, ctype, timeout=120)
     if result.get("errors"):
         raise RuntimeError(result["errors"])
@@ -196,7 +225,9 @@ def install_apk(base_url: str, apk: Path) -> None:
 
 def list_extensions(base_url: str) -> dict[str, dict]:
     body = json.dumps({"query": LIST_QUERY}).encode()
-    result = http_post_json(f"{base_url}/api/graphql", body, "application/json", timeout=60)
+    result = http_post_json(
+        f"{base_url}/api/graphql", body, "application/json", timeout=60
+    )
     if result.get("errors"):
         raise RuntimeError(result["errors"])
     return {
@@ -214,9 +245,15 @@ def download_icon(base_url: str, ext: dict) -> None:
 
 # --- index assembly --------------------------------------------------------
 
+
 def build_entry(apk: Path, ext: dict) -> dict:
     sources = [
-        {"name": s["name"], "lang": s["lang"], "id": str(s["id"]), "baseUrl": s["baseUrl"] or ""}
+        {
+            "name": s["name"],
+            "lang": s["lang"],
+            "id": str(s["id"]),
+            "baseUrl": s["baseUrl"] or "",
+        }
         for s in ext["source"]["nodes"]
     ]
     # For single-source extensions, prefer the source's own lang over the manifest lang
@@ -224,7 +261,11 @@ def build_entry(apk: Path, ext: dict) -> dict:
     lang = ext["lang"]
     if len(sources) == 1:
         slang = sources[0]["lang"]
-        if slang != lang and slang not in {"all", "other"} and lang not in {"all", "other"}:
+        if (
+            slang != lang
+            and slang not in {"all", "other"}
+            and lang not in {"all", "other"}
+        ):
             lang = slang
     return {
         "name": f"Tachiyomi: {ext['name']}",
@@ -240,6 +281,7 @@ def build_entry(apk: Path, ext: dict) -> dict:
 
 # --- driver ----------------------------------------------------------------
 
+
 def collect_apks(source_dir: Path) -> None:
     shutil.rmtree(APK_DIR, ignore_errors=True)
     APK_DIR.mkdir(parents=True, exist_ok=True)
@@ -248,8 +290,14 @@ def collect_apks(source_dir: Path) -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--apks-source", type=Path, help="Move APKs from here into repo/apk/ before building")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--apks-source",
+        type=Path,
+        help="Move APKs from here into repo/apk/ before building",
+    )
     ap.add_argument("--port", type=int, default=4567)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--startup-timeout", type=int, default=180)
@@ -275,13 +323,20 @@ def main() -> int:
 
     with suwayomi_server(jar, args.port, args.startup_timeout) as base_url:
         log("Server ready, installing extensions...")
-        install_failures = run_parallel(apks, lambda a: install_apk(base_url, a), lambda a: a.name, args.workers)
+        install_failures = run_parallel(
+            apks, lambda a: install_apk(base_url, a), lambda a: a.name, args.workers
+        )
 
         log("Querying metadata...")
         ext_by_apk = list_extensions(base_url)
 
         log(f"Downloading icons for {len(ext_by_apk)} extension(s)...")
-        run_parallel(ext_by_apk.values(), lambda e: download_icon(base_url, e), lambda e: e["pkgName"], args.workers)
+        run_parallel(
+            ext_by_apk.values(),
+            lambda e: download_icon(base_url, e),
+            lambda e: e["pkgName"],
+            args.workers,
+        )
 
     index = []
     for apk in apks:
