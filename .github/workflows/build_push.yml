@@ -121,9 +121,6 @@ jobs:
           path: main
           persist-credentials: false
 
-      - name: Install inspector dependencies
-        run: pip install --break-system-packages httpx
-
       - name: Create repo artifacts
         run: |
           cd main
