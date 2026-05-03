@@ -1,54 +1,72 @@
+#!/usr/bin/env python3
+"""
+Merge a freshly-built local repo (apk/, icon/, index.min.json) into a remote
+extension-repo checkout, accounting for deleted modules. Also writes
+index.json (pretty), index.min.json (minified), and index.html.
+
+Usage:
+    python merge-repo.py --remote <remote-repo-dir> --local <local-build-dir> [--delete <json-list>]
+"""
+
+import argparse
 import html
-import sys
 import json
-from pathlib import Path
 import shutil
+from pathlib import Path
 
-REMOTE_REPO: Path = Path.cwd()
-LOCAL_REPO: Path = REMOTE_REPO.parent.joinpath("main/repo")
 
-to_delete: list[str] = json.loads(sys.argv[1])
+def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--remote", type=Path, required=True, help="Path to the published-repo checkout")
+    ap.add_argument("--local", type=Path, required=True, help="Path to the freshly-built repo (create-repo.py output)")
+    ap.add_argument("--delete", required=True, help="JSON list of module ids (e.g. en.foo) to remove from the published repo")
+    args = ap.parse_args()
 
-for module in to_delete:
-    apk_name = f"tachiyomi-{module}-v*.*.*.apk"
-    icon_name = f"eu.kanade.tachiyomi.extension.{module}.png"
-    for file in REMOTE_REPO.joinpath("apk").glob(apk_name):
-        print(file.name)
-        file.unlink(missing_ok=True)
-    for file in REMOTE_REPO.joinpath("icon").glob(icon_name):
-        print(file.name)
-        file.unlink(missing_ok=True)
+    remote: Path = args.remote
+    local: Path = args.local
+    to_delete: list[str] = json.loads(args.delete)
 
-shutil.copytree(src=LOCAL_REPO.joinpath("apk"), dst=REMOTE_REPO.joinpath("apk"), dirs_exist_ok = True)
-shutil.copytree(src=LOCAL_REPO.joinpath("icon"), dst=REMOTE_REPO.joinpath("icon"), dirs_exist_ok = True)
+    for module in to_delete:
+        for file in remote.joinpath("apk").glob(f"tachiyomi-{module}-v*.*.*.apk"):
+            print(file.name)
+            file.unlink(missing_ok=True)
+        for file in remote.joinpath("icon").glob(f"eu.kanade.tachiyomi.extension.{module}.png"):
+            print(file.name)
+            file.unlink(missing_ok=True)
 
-with REMOTE_REPO.joinpath("index.json").open() as remote_index_file:
-    remote_index = json.load(remote_index_file)
+    shutil.copytree(local / "apk", remote / "apk", dirs_exist_ok=True)
+    shutil.copytree(local / "icon", remote / "icon", dirs_exist_ok=True)
 
-with LOCAL_REPO.joinpath("index.min.json").open() as local_index_file:
-    local_index = json.load(local_index_file)
+    with (remote / "index.json").open() as f:
+        remote_index = json.load(f)
+    with (local / "index.min.json").open() as f:
+        local_index = json.load(f)
 
-index = [
-    item for item in remote_index
-    if not any([item["pkg"].endswith(f".{module}") for module in to_delete])
-]
-index.extend(local_index)
-index.sort(key=lambda x: x["pkg"])
+    index = [
+        item for item in remote_index
+        if not any(item["pkg"].endswith(f".{module}") for module in to_delete)
+    ]
+    index.extend(local_index)
+    index.sort(key=lambda x: x["pkg"])
 
-with REMOTE_REPO.joinpath("index.json").open("w", encoding="utf-8") as index_file:
-    json.dump(index, index_file, ensure_ascii=False, indent=2)
+    with (remote / "index.json").open("w", encoding="utf-8") as f:
+        json.dump(index, f, ensure_ascii=False, indent=2)
 
-for item in index:
-    for source in item["sources"]:
-        source.pop("versionId", None)
+    for item in index:
+        for source in item["sources"]:
+            source.pop("versionId", None)
 
-with REMOTE_REPO.joinpath("index.min.json").open("w", encoding="utf-8") as index_min_file:
-    json.dump(index, index_min_file, ensure_ascii=False, separators=(",", ":"))
+    with (remote / "index.min.json").open("w", encoding="utf-8") as f:
+        json.dump(index, f, ensure_ascii=False, separators=(",", ":"))
 
-with REMOTE_REPO.joinpath("index.html").open("w", encoding="utf-8") as index_html_file:
-    index_html_file.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>apks</title>\n</head>\n<body>\n<pre>\n')
-    for entry in index:
-        apk_escaped = 'apk/' + html.escape(entry["apk"])
-        name_escaped = html.escape(entry["name"])
-        index_html_file.write(f'<a href="{apk_escaped}">{name_escaped}</a>\n')
-    index_html_file.write('</pre>\n</body>\n</html>\n')
+    with (remote / "index.html").open("w", encoding="utf-8") as f:
+        f.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>apks</title>\n</head>\n<body>\n<pre>\n')
+        for entry in index:
+            apk = "apk/" + html.escape(entry["apk"])
+            name = html.escape(entry["name"])
+            f.write(f'<a href="{apk}">{name}</a>\n')
+        f.write("</pre>\n</body>\n</html>\n")
+
+
+if __name__ == "__main__":
+    main()
