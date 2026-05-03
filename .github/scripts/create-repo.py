@@ -231,11 +231,6 @@ def build_entry(apk: Path, ext: dict) -> dict:
 
 # --- driver ----------------------------------------------------------------
 
-def discover_apks(apks_dir: Path) -> list[Path]:
-    out = [p for p in apks_dir.rglob("*.apk") if len(p.relative_to(apks_dir).parts) <= 2]
-    return sorted(out)
-
-
 def collect_apks(source_dir: Path) -> None:
     shutil.rmtree(REPO_APK_DIR, ignore_errors=True)
     REPO_APK_DIR.mkdir(parents=True, exist_ok=True)
@@ -256,8 +251,6 @@ def main() -> int:
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--startup-timeout", type=int, default=180, help="Seconds to wait for server to come up")
     ap.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR, help="Where the jar is cached")
-    ap.add_argument("--jar", type=Path, default=None, help="Use this Suwayomi-Server jar instead of fetching latest")
-    ap.add_argument("--keep-root", action="store_true", help="Don't delete the server's tmp rootDir on exit")
     args = ap.parse_args()
 
     if args.apks_source is not None:
@@ -270,7 +263,7 @@ def main() -> int:
         log(f"error: {REPO_APK_DIR} is not a directory")
         return 2
 
-    apks = discover_apks(REPO_APK_DIR)
+    apks = sorted(REPO_APK_DIR.glob("*.apk"))
     log(f"Found {len(apks)} APK(s)")
     if not apks:
         REPO_DIR.joinpath("index.min.json").write_text("[]")
@@ -278,14 +271,7 @@ def main() -> int:
 
     REPO_ICON_DIR.mkdir(parents=True, exist_ok=True)
 
-    if args.jar is not None:
-        if not args.jar.is_file():
-            log(f"error: --jar {args.jar} is not a file")
-            return 2
-        jar = args.jar
-        log(f"Using {jar}")
-    else:
-        jar = fetch_latest_jar(args.cache_dir)
+    jar = fetch_latest_jar(args.cache_dir)
     root_dir = Path(tempfile.mkdtemp(prefix="suwayomi-inspect-"))
     log_file = root_dir / "server.log"
     log(f"rootDir: {root_dir}")
@@ -324,10 +310,7 @@ def main() -> int:
                         icon_failures.append((ext["pkgName"], str(e)))
     finally:
         stop_server(proc)
-        if not args.keep_root:
-            shutil.rmtree(root_dir, ignore_errors=True)
-        else:
-            log(f"Kept rootDir at {root_dir}")
+        shutil.rmtree(root_dir, ignore_errors=True)
 
     log(f"Got metadata for {len(ext_by_apk)} extension(s); building index...")
     index = []
