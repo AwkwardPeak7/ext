@@ -1,19 +1,12 @@
 package eu.kanade.tachiyomi.extension.en.comix
 
-import android.annotation.SuppressLint
-import android.app.Application
 import android.content.SharedPreferences
-import android.os.Handler
-import android.os.Looper
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.preference.ListPreference
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
 import eu.kanade.tachiyomi.network.GET
+import eu.kanade.tachiyomi.network.JavaScriptEngine
 import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.ConfigurableSource
@@ -32,13 +25,9 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import okhttp3.Response
-import okio.Buffer
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
 
 class Comix :
     HttpSource(),
@@ -57,6 +46,8 @@ class Comix :
         .build()
 
     override fun headersBuilder() = super.headersBuilder().add("Referer", "$baseUrl/")
+
+    private val signer by lazy { ComixSigner(client, headers, baseUrl) }
 
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
@@ -304,11 +295,8 @@ class Comix :
         val mangaSlug = manga.url.removePrefix("/")
         val hid = mangaSlug.substringBefore("-")
 
-        val token = captureToken(
-            pageUrl = getMangaUrl(manga),
-        ) { url ->
-            url.encodedPath.endsWith("api/v1/manga/$hid/chapters")
-        }
+        val token = signer.sign("/manga/$hid/chapters")
+            ?: throw Exception("Failed to sign chapter list request")
 
         val allChapters = mutableListOf<Chapter>()
         var page = 1
@@ -384,11 +372,8 @@ class Comix :
 
         val chapterId = chapter.url.substringAfterLast("/").substringBefore("-")
 
-        val token = captureToken(
-            pageUrl = getChapterUrl(chapter),
-        ) { url ->
-            url.encodedPath.endsWith("api/v1/chapters/$chapterId")
-        }
+        val token = signer.sign("/chapters/$chapterId")
+            ?: throw Exception("Failed to sign chapter request")
 
         val url = apiUrl.toHttpUrl().newBuilder()
             .addPathSegment("chapters")
@@ -410,65 +395,6 @@ class Comix :
     override fun pageListRequest(chapter: SChapter): Request = throw UnsupportedOperationException()
 
     override fun pageListParse(response: Response): List<Page> = throw UnsupportedOperationException()
-
-    @SuppressLint("SetJavaScriptEnabled")
-    private fun captureToken(pageUrl: String, urlMatches: (HttpUrl) -> Boolean): String {
-        val handler = Handler(Looper.getMainLooper())
-        val latch = CountDownLatch(1)
-        val tokenRef = AtomicReference<String>()
-        var webView: WebView? = null
-        val emptyResponse = WebResourceResponse("text/plain", "utf-8", Buffer().inputStream())
-
-        val createAndLoad = {
-            val view = WebView(Injekt.get<Application>())
-            webView = view
-
-            with(view.settings) {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                blockNetworkImage = true
-                userAgentString = headers["User-Agent"]
-            }
-
-            view.webViewClient = object : WebViewClient() {
-                override fun shouldInterceptRequest(
-                    view: WebView,
-                    request: WebResourceRequest,
-                ): WebResourceResponse? {
-                    val httpUrl = request.url?.toString()?.toHttpUrlOrNull()
-                        ?: return emptyResponse
-
-                    if (urlMatches(httpUrl)) {
-                        httpUrl.queryParameter("_")?.let { token ->
-                            if (tokenRef.compareAndSet(null, token)) {
-                                latch.countDown()
-                            }
-                        }
-                    }
-
-                    return if (httpUrl.host.contains("comix.to") && (httpUrl.encodedPath.contains(".js") || httpUrl.encodedPath.startsWith("/api/") || httpUrl.encodedPath.startsWith("/title/"))) {
-                        super.shouldInterceptRequest(view, request)
-                    } else {
-                        emptyResponse
-                    }
-                }
-            }
-
-            view.loadUrl(pageUrl)
-        }
-
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            createAndLoad()
-        } else {
-            handler.post(createAndLoad)
-        }
-
-        val completed = latch.await(30, TimeUnit.SECONDS)
-        handler.post { webView?.destroy() }
-
-        if (!completed) throw Exception("Timed out waiting for token")
-        return tokenRef.get() ?: throw Exception("Failed to capture token")
-    }
 
     // ============================= Settings =============================
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
