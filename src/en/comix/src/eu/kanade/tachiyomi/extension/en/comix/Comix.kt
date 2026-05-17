@@ -1,13 +1,20 @@
 package eu.kanade.tachiyomi.extension.en.comix
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.content.SharedPreferences
+import android.os.Handler
+import android.os.Looper
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.preference.ListPreference
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.JavaScriptEngine
-import eu.kanade.tachiyomi.network.awaitSuccess
+import eu.kanade.tachiyomi.network.await
 import eu.kanade.tachiyomi.network.interceptor.rateLimit
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.FilterList
@@ -25,9 +32,13 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import okhttp3.Response
+import okio.Buffer
 import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 class Comix :
     HttpSource(),
@@ -295,23 +306,33 @@ class Comix :
         val mangaSlug = manga.url.removePrefix("/")
         val hid = mangaSlug.substringBefore("-")
 
-        val token = signer.sign("/manga/$hid/chapters")
-            ?: throw Exception("Failed to sign chapter list request")
+        val signPath = "/manga/$hid/chapters"
+        var token = fetchToken(signPath, getMangaUrl(manga))
+
+        fun buildUrl(page: Int, token: String): HttpUrl = apiUrl.toHttpUrl().newBuilder()
+            .addPathSegment("manga")
+            .addPathSegment(hid)
+            .addPathSegment("chapters")
+            .addQueryParameter("page", page.toString())
+            .addQueryParameter("limit", "100")
+            .addQueryParameter("order[number]", "desc")
+            .addQueryParameter("_", token)
+            .build()
 
         val allChapters = mutableListOf<Chapter>()
         var page = 1
         while (true) {
-            val url = apiUrl.toHttpUrl().newBuilder()
-                .addPathSegment("manga")
-                .addPathSegment(hid)
-                .addPathSegment("chapters")
-                .addQueryParameter("page", page.toString())
-                .addQueryParameter("limit", "100")
-                .addQueryParameter("order[number]", "desc")
-                .addQueryParameter("_", token)
-                .build()
-            val res = client.newCall(GET(url, headers)).awaitSuccess()
-                .parseAs<ChapterDetailsResponse>()
+            var response = client.newCall(GET(buildUrl(page, token), headers)).await()
+            if (response.code == 403) {
+                response.close()
+                token = captureToken(signPath, getMangaUrl(manga))
+                response = client.newCall(GET(buildUrl(page, token), headers)).await()
+            }
+            if (!response.isSuccessful) {
+                response.close()
+                throw Exception("HTTP error ${response.code}")
+            }
+            val res = response.parseAs<ChapterDetailsResponse>()
             allChapters.addAll(res.result.items)
             if (!res.result.hasNextPage()) break
             page++
@@ -371,18 +392,26 @@ class Comix :
         if (chapter.url.substringAfter("/").substringBeforeLast("/").indexOf("-") == -1) throw Exception("Outdated chapter URL. Please refresh the chapter list")
 
         val chapterId = chapter.url.substringAfterLast("/").substringBefore("-")
+        val signPath = "/chapters/$chapterId"
+        val token = fetchToken(signPath, getChapterUrl(chapter))
 
-        val token = signer.sign("/chapters/$chapterId")
-            ?: throw Exception("Failed to sign chapter request")
-
-        val url = apiUrl.toHttpUrl().newBuilder()
+        fun buildUrl(token: String): HttpUrl = apiUrl.toHttpUrl().newBuilder()
             .addPathSegment("chapters")
             .addPathSegment(chapterId)
             .addQueryParameter("_", token)
             .build()
 
-        val result = client.newCall(GET(url, headers)).awaitSuccess()
-            .parseAs<ChapterResponse>().result.pages
+        var response = client.newCall(GET(buildUrl(token), headers)).await()
+        if (response.code == 403) {
+            response.close()
+            val fresh = captureToken(signPath, getChapterUrl(chapter))
+            response = client.newCall(GET(buildUrl(fresh), headers)).await()
+        }
+        if (!response.isSuccessful) {
+            response.close()
+            throw Exception("HTTP error ${response.code}")
+        }
+        val result = response.parseAs<ChapterResponse>().result.pages
         val base = result.baseUrl.trimEnd('/')
         val pages = result.items.mapIndexed { index, img ->
             val full = if (img.url.startsWith("http")) img.url else "$base/${img.url.trimStart('/')}"
@@ -395,6 +424,71 @@ class Comix :
     override fun pageListRequest(chapter: SChapter): Request = throw UnsupportedOperationException()
 
     override fun pageListParse(response: Response): List<Page> = throw UnsupportedOperationException()
+
+    // ============================== Token ===============================
+    // The signer can fail (site changes secure.js shape) or produce a token the
+    // API rejects with 403 — fall back to the WebView interceptor in either case.
+    private suspend fun fetchToken(signPath: String, pageUrl: String): String = runCatching { signer.sign(signPath) }.getOrNull() ?: captureToken(signPath, pageUrl)
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun captureToken(signPath: String, pageUrl: String): String {
+        val urlSuffix = "/api/v1$signPath"
+        val handler = Handler(Looper.getMainLooper())
+        val latch = CountDownLatch(1)
+        val tokenRef = AtomicReference<String>()
+        var webView: WebView? = null
+        val emptyResponse = WebResourceResponse("text/plain", "utf-8", Buffer().inputStream())
+
+        val createAndLoad = {
+            val view = WebView(Injekt.get<Application>())
+            webView = view
+
+            with(view.settings) {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                blockNetworkImage = true
+                userAgentString = headers["User-Agent"]
+            }
+
+            view.webViewClient = object : WebViewClient() {
+                override fun shouldInterceptRequest(
+                    view: WebView,
+                    request: WebResourceRequest,
+                ): WebResourceResponse? {
+                    val httpUrl = request.url?.toString()?.toHttpUrlOrNull()
+                        ?: return emptyResponse
+
+                    if (httpUrl.encodedPath == urlSuffix) {
+                        httpUrl.queryParameter("_")?.let { token ->
+                            if (tokenRef.compareAndSet(null, token)) {
+                                latch.countDown()
+                            }
+                        }
+                    }
+
+                    return if (httpUrl.host.contains("comix.to") && (httpUrl.encodedPath.contains(".js") || httpUrl.encodedPath.startsWith("/api/") || httpUrl.encodedPath.startsWith("/title/"))) {
+                        super.shouldInterceptRequest(view, request)
+                    } else {
+                        emptyResponse
+                    }
+                }
+            }
+
+            view.loadUrl(pageUrl)
+        }
+
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            createAndLoad()
+        } else {
+            handler.post(createAndLoad)
+        }
+
+        val completed = latch.await(30, TimeUnit.SECONDS)
+        handler.post { webView?.destroy() }
+
+        if (!completed) throw Exception("Timed out waiting for token")
+        return tokenRef.get() ?: throw Exception("Failed to capture token")
+    }
 
     // ============================= Settings =============================
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
