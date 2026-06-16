@@ -3,6 +3,7 @@ ext {
     extClass = '.AsuraScans'
     extVersionCode = 62
     isNsfw = false
+    libVersion = "1.6"
 }
 
 apply plugin: "kei.plugins.extension.legacy"
