@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.multisrc.madara
 
-import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -14,32 +13,27 @@ import keiyoushi.network.get
 import keiyoushi.network.head
 import keiyoushi.network.post
 import keiyoushi.source.KeiSource
-import keiyoushi.utils.applicationContext
-import keiyoushi.utils.decodeProto
-import keiyoushi.utils.encodeProto
 import keiyoushi.utils.firstInstance
 import keiyoushi.utils.firstInstanceOrNull
+import keiyoushi.utils.parseAs
+import keiyoushi.utils.toJsonElement
 import keiyoushi.utils.tryParse
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
-import okhttp3.Call
-import okhttp3.Callback
 import okhttp3.FormBody
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
-import okhttp3.Response
-import okio.IOException
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -98,7 +92,7 @@ abstract class Madara(
             }
 
             when (sort) {
-                MADARA_RELEVANCE_SORT -> {
+                MADARA_RELEVANCE_SORT, null -> {
                     // nothing
                 }
                 MADARA_VIEWS_SORT -> {
@@ -321,13 +315,25 @@ abstract class Madara(
 
     override suspend fun getMangaByUrl(url: HttpUrl): SManga? = null
 
-    override fun getFilterList(): FilterList {
-        val filters = buildList<Filter<*>> {
+    override val supportsFilterFetching = true
+
+    override suspend fun fetchFilterData(): JsonElement? = client.get("$baseUrl/$mangaDirectory/").use {
+        val document = it.asJsoup()
+
+        document.select("div.genres a[href*='/$mangaGenreDirectory/']").map { element ->
+            val slug = element.absUrl("href").toHttpUrl().pathSegments[1]
+            val name = element.ownText()
+            name to slug
+        }.toJsonElement()
+    }
+
+    override fun getFilterList(data: JsonElement?): FilterList {
+        val filters = buildList {
             add(SortFilter())
-            fetchGenres()?.also {
+            data?.also {
                 val genres = buildList {
                     add("" to "")
-                    addAll(it)
+                    addAll(it.parseAs<List<Pair<String, String>>>())
                 }
                 add(GenreFilter(genres))
                 add(Filter.Separator())
@@ -336,67 +342,6 @@ abstract class Madara(
         }
 
         return FilterList(filters)
-    }
-
-    private val genreLock = Any()
-    private var isFetchingGenres = false
-
-    protected fun fetchGenres(): List<Pair<String, String>>? {
-        val file = applicationContext.cacheDir
-            .resolve("source_$id").also { it.mkdirs() }
-            .resolve("genres.pb")
-
-        val isCacheFresh = file.exists() &&
-            System.currentTimeMillis() - file.lastModified() < 24 * 60 * 60 * 1000L
-
-        if (!isCacheFresh) {
-            val shouldFetch = synchronized(genreLock) {
-                if (!isFetchingGenres) {
-                    isFetchingGenres = true
-                    true
-                } else {
-                    false
-                }
-            }
-
-            if (shouldFetch) {
-                client.newCall(GET("$baseUrl/$mangaDirectory/", headers))
-                    .enqueue(
-                        object : Callback {
-                            override fun onResponse(call: Call, response: Response) {
-                                response.use {
-                                    if (it.isSuccessful) {
-                                        try {
-                                            val document = it.asJsoup()
-                                            val genres = document.select("div.genres a[href*='/$mangaGenreDirectory/']").map { element ->
-                                                val slug = element.absUrl("href").toHttpUrl().pathSegments[1]
-                                                val name = element.ownText()
-                                                name to slug
-                                            }
-                                            val tempFile = File(file.parentFile, "${file.name}.tmp")
-                                            tempFile.writeBytes(genres.encodeProto())
-                                            if (!tempFile.renameTo(file)) {
-                                                tempFile.delete()
-                                            }
-                                        } catch (_: Throwable) { }
-                                    }
-                                }
-                                synchronized(genreLock) { isFetchingGenres = false }
-                            }
-
-                            override fun onFailure(call: Call, e: IOException) {
-                                synchronized(genreLock) { isFetchingGenres = false }
-                            }
-                        },
-                    )
-            }
-        }
-
-        return try {
-            file.readBytes().decodeProto()
-        } catch (_: Throwable) {
-            null
-        }
     }
 
     override suspend fun getMangaUpdate(
