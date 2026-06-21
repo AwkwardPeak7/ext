@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.extension.en.apcomics
 
+import eu.kanade.tachiyomi.multisrc.madara.ChapterFetchMethod
 import eu.kanade.tachiyomi.multisrc.madara.Madara
 
 class Apcomics :
@@ -8,5 +9,5 @@ class Apcomics :
         "https://apcomics.org",
         "en",
     ) {
-    override val useNewChapterEndpoint: Boolean = true
+    override val chapterFetchMethod = ChapterFetchMethod.AJAX_V2
 }

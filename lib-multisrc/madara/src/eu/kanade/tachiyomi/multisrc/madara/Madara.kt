@@ -145,6 +145,8 @@ abstract class Madara(
         }
     }
 
+    protected open val mangaListNoAjaxNextPageSelector = "div[role=navigation] span.current + a.page"
+
     protected open suspend fun fetchMangasNoAjax(sort: String?, genre: String?, page: Int): MangasPage {
         val url = baseUrl.toHttpUrl().newBuilder().apply {
             if (genre != null) {
@@ -173,7 +175,7 @@ abstract class Madara(
         client.get(url).use {
             val document = it.asJsoup()
             val manga = parseMangaList(document)
-            val hasNextPage = document.selectFirst("div.nav-previous, nav.navigation-ajax, a.nextpostslink") != null
+            val hasNextPage = document.selectFirst(mangaListNoAjaxNextPageSelector) != null
 
             return MangasPage(manga, hasNextPage)
         }
@@ -320,11 +322,15 @@ abstract class Madara(
     override suspend fun fetchFilterData(): JsonElement? = client.get("$baseUrl/$mangaDirectory/").use {
         val document = it.asJsoup()
 
-        document.select("div.genres a[href*='/$mangaGenreDirectory/']").map { element ->
+        val genres = document.select("div.genres a[href*='/$mangaGenreDirectory/']").map { element ->
             val slug = element.absUrl("href").toHttpUrl().pathSegments[1]
             val name = element.ownText()
             name to slug
-        }.toJsonElement()
+        }
+
+        assert(genres.isNotEmpty())
+
+        return@use genres.toJsonElement()
     }
 
     override fun getFilterList(data: JsonElement?): FilterList {
@@ -349,35 +355,49 @@ abstract class Madara(
         chapters: List<SChapter>,
         fetchDetails: Boolean,
         fetchChapters: Boolean,
-    ): SMangaUpdate {
-        val document = if (fetchDetails || chapterFetchMethod == ChapterFetchMethod.MANGA_PAGE) {
-            val url = if (usePostIdForMangaRequests) {
-                "$baseUrl/?p=${manga.url}"
-            } else {
-                getMangaUrl(manga)
-            }
+    ): SMangaUpdate = coroutineScope {
+        val needsDocumentForChapters = fetchChapters && chapterFetchMethod == ChapterFetchMethod.MANGA_PAGE
+        val needsDocument = fetchDetails || needsDocumentForChapters
 
-            client.get(url).asJsoup()
+        val documentDeferred = if (needsDocument) {
+            async {
+                val url = if (usePostIdForMangaRequests) {
+                    "$baseUrl/?p=${manga.url}"
+                } else {
+                    getMangaUrl(manga)
+                }
+                client.get(url).asJsoup()
+            }
         } else {
             null
         }
 
-        val updatedManga = document?.let { mangaDetailsParse(it) } ?: manga
-
-        val updatedChapters = if (fetchChapters) {
-            val slug = updatedManga.memo["slug"]!!.jsonPrimitive.content
-
-            when (chapterFetchMethod) {
-                ChapterFetchMethod.MANGA_PAGE -> parseChapters(document!!)
-                ChapterFetchMethod.AJAX_V1 -> getChaptersAjaxV1(manga.url, slug)
-                ChapterFetchMethod.AJAX_V2 -> getChaptersAjaxV2(slug)
-                ChapterFetchMethod.AJAX_V2_MULTIPAGE -> getChaptersAjaxV2MultiPage(slug)
+        // If chapters don't depend on the manga page document, kick them off
+        // in parallel instead of waiting on the document fetch/parse first.
+        val chaptersDeferred = if (fetchChapters && !needsDocumentForChapters) {
+            async {
+                val slug = manga.memo["slug"]!!.jsonPrimitive.content
+                when (chapterFetchMethod) {
+                    ChapterFetchMethod.AJAX_V1 -> getChaptersAjaxV1(manga.url, slug)
+                    ChapterFetchMethod.AJAX_V2 -> getChaptersAjaxV2(slug)
+                    ChapterFetchMethod.AJAX_V2_MULTIPAGE -> getChaptersAjaxV2MultiPage(slug)
+                    ChapterFetchMethod.MANGA_PAGE -> error("unreachable")
+                }
             }
         } else {
-            chapters
+            null
         }
 
-        return SMangaUpdate(updatedManga, updatedChapters)
+        val document = documentDeferred?.await()
+        val updatedManga = document?.let { mangaDetailsParse(it) } ?: manga
+
+        val updatedChapters = when {
+            !fetchChapters -> chapters
+            needsDocumentForChapters -> parseChapters(document!!)
+            else -> chaptersDeferred!!.await()
+        }
+
+        SMangaUpdate(updatedManga, updatedChapters)
     }
 
     protected open fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
@@ -548,7 +568,7 @@ abstract class Madara(
             .add("manga", id)
             .build()
         val xhrHeaders = headersBuilder()
-            .set("Referer", "$baseUrl/$mangaDirectory/$slug")
+            .set("Referer", "$baseUrl/$mangaDirectory/$slug/")
             .set("X-Requested-With", "XMLHttpRequest")
             .build()
 
@@ -560,7 +580,7 @@ abstract class Madara(
     protected open suspend fun getChaptersAjaxV2(slug: String): List<SChapter> {
         val emptyForm = FormBody.Builder().build()
         val xhrHeaders = headersBuilder()
-            .set("Referer", "$baseUrl/$mangaDirectory/$slug")
+            .set("Referer", "$baseUrl/$mangaDirectory/$slug/")
             .set("X-Requested-With", "XMLHttpRequest")
             .build()
 
@@ -572,7 +592,7 @@ abstract class Madara(
     protected open suspend fun getChaptersAjaxV2MultiPage(slug: String): List<SChapter> {
         val emptyForm = FormBody.Builder().build()
         val xhrHeaders = headersBuilder()
-            .set("Referer", "$baseUrl/$mangaDirectory/$slug")
+            .set("Referer", "$baseUrl/$mangaDirectory/$slug/")
             .set("X-Requested-With", "XMLHttpRequest")
             .build()
 
@@ -600,24 +620,27 @@ abstract class Madara(
 
     protected open fun parseChapters(document: Document): List<SChapter> = document.select(chapterListSelector).map { element ->
         val urlElement = element.selectFirst("a")!!
-        val slug = urlElement.absUrl("href").toHttpUrl().pathSegments.last()
+        val slug = urlElement.absUrl("href").toHttpUrl().pathSegments[2]
 
-        val title = urlElement.text().substringAfter('-', "").takeIf(String::isNotBlank)
+        val title = urlElement.text().substringAfter('-', "").trim().takeIf(String::isNotBlank)
         val number = parseChapterNumberFromSlug(slug)
 
         SChapter.create().apply {
             url = slug
             name = buildString {
+                val numberString = number.toString().substringBeforeLast(".0")
                 if (title != null) {
-                    if (title.contains(number.toString())) {
+                    if (title.contains(numberString)) {
                         append(title)
                     } else {
                         append("Ch. ")
-                        append(number)
+                        append(numberString)
+                        append(": ")
+                        append(title)
                     }
                 } else {
                     append("Ch. ")
-                    append(number)
+                    append(numberString)
                 }
             }
             number?.also { chapter_number = it }
