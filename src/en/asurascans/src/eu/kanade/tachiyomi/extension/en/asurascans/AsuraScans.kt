@@ -7,8 +7,6 @@ import android.graphics.Canvas
 import android.graphics.Rect
 import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
-import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.awaitSuccess
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -16,17 +14,24 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.SMangaUpdate
-import eu.kanade.tachiyomi.source.online.HttpSource
 import eu.kanade.tachiyomi.util.asJsoup
+import keiyoushi.network.get
 import keiyoushi.network.rateLimit
+import keiyoushi.source.KeiSource
 import keiyoushi.utils.getPreferences
 import keiyoushi.utils.parseAs
+import keiyoushi.utils.toJsonElement
 import keiyoushi.utils.toJsonString
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -36,10 +41,11 @@ import okhttp3.ResponseBody.Companion.asResponseBody
 import okio.Buffer
 import okio.IOException
 import org.jsoup.nodes.Document
+import kotlin.io.use
 import kotlin.time.Duration.Companion.seconds
 
 class AsuraScans :
-    HttpSource(),
+    KeiSource(),
     ConfigurableSource {
 
     override val name = "Asura Scans"
@@ -52,54 +58,42 @@ class AsuraScans :
 
     override val supportsLatest = true
 
-    private val preferences: SharedPreferences = getPreferences()
-
-    init {
-        // remove legacy preferences
-        preferences.run {
-            if (contains("pref_url_map")) {
-                edit().remove("pref_url_map").apply()
-            }
-            if (contains("pref_base_url_host")) {
-                edit().remove("pref_base_url_host").apply()
-            }
-            if (contains("pref_permanent_manga_url_2_en")) {
-                edit().remove("pref_permanent_manga_url_2_en").apply()
-            }
-            if (contains("pref_slug_map")) {
-                edit().remove("pref_slug_map").apply()
-            }
-            if (contains("pref_dynamic_url")) {
-                edit().remove("pref_dynamic_url").apply()
-            }
-            if (contains("pref_slug_map_2")) {
-                edit().remove("pref_slug_map_2").apply()
-            }
-            if (contains("pref_force_high_quality")) {
-                edit().remove("pref_force_high_quality").apply()
-            }
+    private val preferences: SharedPreferences = getPreferences {
+        if (contains("pref_url_map")) {
+            edit().remove("pref_url_map").apply()
+        }
+        if (contains("pref_base_url_host")) {
+            edit().remove("pref_base_url_host").apply()
+        }
+        if (contains("pref_permanent_manga_url_2_en")) {
+            edit().remove("pref_permanent_manga_url_2_en").apply()
+        }
+        if (contains("pref_slug_map")) {
+            edit().remove("pref_slug_map").apply()
+        }
+        if (contains("pref_dynamic_url")) {
+            edit().remove("pref_dynamic_url").apply()
+        }
+        if (contains("pref_slug_map_2")) {
+            edit().remove("pref_slug_map_2").apply()
+        }
+        if (contains("pref_force_high_quality")) {
+            edit().remove("pref_force_high_quality").apply()
         }
     }
 
-    override val client: OkHttpClient = network.client.newBuilder()
-        .addNetworkInterceptor(::scrambledImageInterceptor)
-        .rateLimit(2, 2.seconds) { !it.encodedPath.contains("/covers/") }
-        .build()
+    override fun OkHttpClient.Builder.configureClient() = apply {
+        addInterceptor(::scrambledImageInterceptor)
+        rateLimit(2, 2.seconds) { !it.encodedPath.contains("/covers/") }.build().newBuilder()
+    }
 
-    override fun headersBuilder() = super.headersBuilder()
-        .add("Referer", "$baseUrl/")
+    override suspend fun getPopularManga(page: Int): MangasPage = getSearchMangaList(page, "", FilterList(SortFilter(defaultSort = "popular")))
 
-    // ============================== Popular ==============================
-
-    override suspend fun getPopularManga(page: Int): MangasPage = getSearchManga(page, "", FilterList(SortFilter(defaultSort = "popular")))
-
-    // ============================== Latest ===============================
-
-    override suspend fun getLatestUpdates(page: Int): MangasPage = getSearchManga(page, "", FilterList(SortFilter(defaultSort = "latest")))
+    override suspend fun getLatestUpdates(page: Int): MangasPage = getSearchMangaList(page, "", FilterList(SortFilter(defaultSort = "latest")))
 
     // ============================== Search ===============================
 
-    override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
+    override suspend fun getSearchMangaList(page: Int, query: String, filterList: FilterList): MangasPage {
         val url = "$apiUrl/series".toHttpUrl().newBuilder()
 
         url.addQueryParameter("offset", ((page - 1) * PER_PAGE_LIMIT).toString())
@@ -109,15 +103,30 @@ class AsuraScans :
             url.addQueryParameter("search", query)
         }
 
-        filters.filterIsInstance<UriFilter>().forEach {
+        filterList.filterIsInstance<UriFilter>().forEach {
             it.addToUri(url)
         }
 
-        client.newCall(GET(url.build(), headers)).awaitSuccess().use { response ->
+        client.get(url.build()).use { response ->
             val result = response.parseAs<DataDto<List<MangaDto>>>()
             val mangas = result.data.orEmpty().map { it.toSManga(baseUrl) }
             return MangasPage(mangas, result.meta!!.hasMore)
         }
+    }
+
+    override suspend fun getMangaByUrl(url: HttpUrl): SManga? {
+        if (url.host == baseUrl.toHttpUrl().host && url.pathSegments[0] == "comics") {
+            val slug = url.pathSegments[1]
+
+            val tmpManga = SManga.create().apply {
+                this.url = "/series/$slug"
+                memo = buildJsonObject { put("slug", slug) }
+            }
+
+            return getMangaUpdate(tmpManga, emptyList(), fetchDetails = true, fetchChapters = false).manga
+        }
+
+        return null
     }
 
     // ============================== Details ==============================
@@ -144,7 +153,7 @@ class AsuraScans :
     ): SMangaUpdate {
         val url = getMangaUrl(manga)
 
-        client.newCall(GET(url, headers)).awaitSuccess().use { response ->
+        client.get(url).use { response ->
             val document = response.asJsoup()
 
             val manga = document.extractAstroProp<MangaDetailsDto>("title", "description")
@@ -162,6 +171,8 @@ class AsuraScans :
         }
     }
 
+    override suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> = emptyList()
+
     override fun getChapterUrl(chapter: SChapter): String {
         val randomSlug = chapter.memo["mangaSlug"]?.jsonPrimitive?.content
             ?: throw Exception("Refresh Chapter List")
@@ -175,7 +186,7 @@ class AsuraScans :
     override suspend fun getPageList(chapter: SChapter): List<Page> {
         val url = getChapterUrl(chapter)
 
-        client.newCall(GET(url, headers)).awaitSuccess().use { response ->
+        client.get(url).use { response ->
             val document = response.asJsoup()
             var pages = try {
                 document.extractAstroProp<PageListDto>("pages").pages
@@ -201,7 +212,7 @@ class AsuraScans :
                     .build()
 
                 pages = try {
-                    client.newCall(GET(url, headers)).awaitSuccess().use { premiumResponse ->
+                    client.get(url, headers).use { premiumResponse ->
                         premiumResponse.parseAs<PremiumPageListDto>().data.chapter.pages
                     }
                 } catch (_: Exception) {
@@ -230,13 +241,44 @@ class AsuraScans :
 
     // ============================== Filters ==============================
 
-    override fun getFilterList(): FilterList = FilterList(
-        SortFilter(),
-        StatusFilter(),
-        TypeFilter(),
-        GenresFilter(),
-        MinChaptersFilter(),
-    )
+    override val supportsFilterFetching = true
+
+    override suspend fun fetchFilterData(): JsonElement = coroutineScope {
+        val genres = async {
+            client.get("$baseUrl/browse")
+                .extractAstroProp<AvailableGenres>("availableGenres")
+                .availableGenres
+        }
+
+        val creators = async {
+            client.get("$apiUrl/creators").parseAs<DataDto<Creators>>().data!!
+        }
+
+        FiltersDto(
+            genres = genres.await(),
+            authors = creators.await().authors,
+            artists = creators.await().artists,
+        ).toJsonElement()
+    }
+
+    override fun getFilterList(data: JsonElement?): FilterList {
+        val filters = mutableListOf(
+            SortFilter(),
+            StatusFilter(),
+            TypeFilter(),
+        )
+
+        data?.also {
+            val dto = it.parseAs<FiltersDto>()
+
+            filters.add(GenresFilter(dto.genres))
+            filters.add(CreatorFilter(dto.authors, dto.artists))
+        }
+
+        filters.add(MinChaptersFilter())
+
+        return FilterList(filters)
+    }
 
     // ============================= Utilities =============================
 

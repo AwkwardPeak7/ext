@@ -62,6 +62,7 @@ class MangaDetailsDto(
         description = this@MangaDetailsDto.description?.let { Jsoup.parseBodyFragment(it) }?.text()
         genre = genres?.joinToString { it.name }
         status = parseStatus()
+        initialized = true
     }
 
     fun parseStatus() = when (status?.lowercase()) {
@@ -87,8 +88,27 @@ class MangaUrlDto(
 }
 
 @Serializable
+class AvailableGenres(
+    val availableGenres: List<GenreDto>,
+)
+
+@Serializable
 class GenreDto(
     val name: String,
+    val slug: String,
+)
+
+@Serializable
+class Creators(
+    val artists: List<String>,
+    val authors: List<String>,
+)
+
+@Serializable
+class FiltersDto(
+    val genres: List<GenreDto>,
+    val artists: List<String>,
+    val authors: List<String>,
 )
 
 private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ROOT).apply {
