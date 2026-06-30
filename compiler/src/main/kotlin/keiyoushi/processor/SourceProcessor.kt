@@ -236,42 +236,50 @@ class SourceProcessor(
                     }
                 }.build()
                 addProperty(
-                    PropertySpec.builder("mirrorPrefs", mirrorPrefsClass)
+                    PropertySpec.builder("_mirrorPrefs", mirrorPrefsClass.copy(nullable = true))
                         .addModifiers(KModifier.PRIVATE)
-                        .delegate(
-                            CodeBlock.of(
-                                "lazy { %T(%M(id), arrayOf(%L), title = %S) }",
-                                mirrorPrefsClass, getPreferencesFn, mirrorsArg, strings.mirrorTitle,
-                            ),
-                        ).build(),
+                        .mutable(true)
+                        .addAnnotation(Volatile::class)
+                        .initializer("null")
+                        .build(),
+                )
+                addInitializerBlock(
+                    CodeBlock.of(
+                        "_mirrorPrefs = %T(%M(%LL), arrayOf(%L), title = %S)\n",
+                        mirrorPrefsClass, getPreferencesFn, source.id, mirrorsArg, strings.mirrorTitle,
+                    ),
                 )
                 addProperty(
                     PropertySpec.builder("baseUrl", String::class.asClassName(), KModifier.OVERRIDE)
-                        .getter(FunSpec.getterBuilder().addStatement("return mirrorPrefs.baseUrl").build())
+                        .getter(FunSpec.getterBuilder().addStatement("return _mirrorPrefs?.baseUrl ?: %S", urlSpec.defaultUrl).build())
                         .build(),
                 )
-                addPreferenceScreen(isConfigurable) { addStatement("mirrorPrefs.setupPreferenceScreen(screen)") }
+                addPreferenceScreen(isConfigurable) { addStatement("_mirrorPrefs!!.setupPreferenceScreen(screen)") }
                 if (!isConfigurable) addSuperinterface(configurable)
             }
             "custom" -> {
                 val strings = stringsForLang(source.lang)
                 addProperty(
-                    PropertySpec.builder("customUrlPrefs", customUrlPrefsClass)
+                    PropertySpec.builder("_customUrlPrefs", customUrlPrefsClass.copy(nullable = true))
                         .addModifiers(KModifier.PRIVATE)
-                        .delegate(
-                            CodeBlock.of(
-                                "lazy { %T(%M(id), %S, title = %S, dialogMessage = %S) }",
-                                customUrlPrefsClass, getPreferencesFn, urlSpec.defaultUrl,
-                                strings.customUrlTitle, strings.customUrlDialogMessage,
-                            ),
-                        ).build(),
+                        .mutable(true)
+                        .addAnnotation(Volatile::class)
+                        .initializer("null")
+                        .build(),
+                )
+                addInitializerBlock(
+                    CodeBlock.of(
+                        "_customUrlPrefs = %T(%M(%LL), %S, title = %S, dialogMessage = %S)\n",
+                        customUrlPrefsClass, getPreferencesFn, source.id, urlSpec.defaultUrl,
+                        strings.customUrlTitle, strings.customUrlDialogMessage,
+                    ),
                 )
                 addProperty(
                     PropertySpec.builder("baseUrl", String::class.asClassName(), KModifier.OVERRIDE)
-                        .getter(FunSpec.getterBuilder().addStatement("return customUrlPrefs.baseUrl").build())
+                        .getter(FunSpec.getterBuilder().addStatement("return _customUrlPrefs?.baseUrl ?: %S", urlSpec.defaultUrl).build())
                         .build(),
                 )
-                addPreferenceScreen(isConfigurable) { addStatement("customUrlPrefs.setupPreferenceScreen(screen)") }
+                addPreferenceScreen(isConfigurable) { addStatement("_customUrlPrefs!!.setupPreferenceScreen(screen)") }
                 if (!isConfigurable) addSuperinterface(configurable)
             }
         }
