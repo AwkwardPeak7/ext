@@ -3,6 +3,7 @@ package keiyoushi.gradle.extensions
 import ContentWarning
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import java.io.Serializable
 import javax.inject.Inject
@@ -33,6 +34,12 @@ abstract class SourceSpec {
     internal abstract val resolvedBaseUrl: Property<BaseUrlSpec>
     abstract val versionId: Property<Int>
     abstract val id: Property<Long>
+    internal abstract val resolvedOverrides: MapProperty<String, OverrideValue>
+
+    /** Named values passed to this source's primary constructor in the generated code. */
+    fun overrides(block: OverridesBuilder.() -> Unit) {
+        resolvedOverrides.set(OverridesBuilder().apply(block).build())
+    }
 
     var baseUrl: String
         get() = error("baseUrl is write-only")

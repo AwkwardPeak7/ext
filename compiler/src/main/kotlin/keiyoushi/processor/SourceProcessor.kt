@@ -60,7 +60,25 @@ data class SourceDef(
     val lang: String,
     val id: Long,
     val baseUrl: BaseUrlSpecData,
+    val overrides: List<OverrideData> = emptyList(),
 )
+
+@Serializable
+data class OverrideData(val name: String, val type: String, val value: String)
+
+/** DSL-owned members that must be set via their dedicated `source { }` fields, not `overrides { }`. */
+private val DSL_OWNED_OVERRIDE_KEYS = setOf("name", "lang", "id", "versionId", "baseUrl")
+
+private fun OverrideData.literal(): CodeBlock = when (type) {
+    "int" -> CodeBlock.of("%L", value.toInt())
+    "long" -> CodeBlock.of("%LL", value.toLong())
+    "boolean" -> CodeBlock.of("%L", value.toBoolean())
+    "string" -> CodeBlock.of("%S", value)
+    else -> error("unknown override type: $type")
+}
+
+/** `name = <literal>`, for use as a named constructor argument. */
+private fun OverrideData.asNamedArg(): CodeBlock = CodeBlock.of("%L = %L", name, literal())
 
 private const val HTTP_SOURCE = "eu.kanade.tachiyomi.source.online.HttpSource"
 
@@ -160,6 +178,11 @@ class SourceProcessor(
             .map { it.simpleName.asString() }
             .toSet()
 
+        val primaryCtorParams = annotated.primaryConstructor?.parameters.orEmpty()
+            .mapNotNull { it.name?.asString() }
+            .toSet()
+        validateOverrides(annotated, sources, primaryCtorParams)
+
         val fileProps = mutableListOf<PropertySpec>()
 
         val isConcrete = Modifier.ABSTRACT !in annotated.modifiers
@@ -249,6 +272,27 @@ class SourceProcessor(
             .build()
     }
 
+    private fun validateOverrides(
+        node: KSClassDeclaration,
+        sources: List<SourceDef>,
+        ctorParams: Set<String>,
+    ) {
+        val className = node.simpleName.asString()
+        sources.asSequence().flatMap { it.overrides }.forEach { entry ->
+            when {
+                entry.name in DSL_OWNED_OVERRIDE_KEYS -> logger.error(
+                    "override '${entry.name}' is owned by the DSL; set it via the source { } block, not overrides { }",
+                    node,
+                )
+                entry.name !in ctorParams -> logger.error(
+                    "override '${entry.name}' is not a primary constructor parameter of $className; " +
+                        "declare it as a constructor parameter to receive it",
+                    node,
+                )
+            }
+        }
+    }
+
     private fun validateConcreteSource(
         node: KSClassDeclaration,
         sources: List<SourceDef>,
@@ -301,6 +345,7 @@ class SourceProcessor(
         if ("lang" in ctorParams) add("lang = %S,\n", source.lang)
         if ("id" in ctorParams) add("id = %LL,\n", source.id)
         if ("baseUrl" in ctorParams) add("baseUrl = %S,\n", source.baseUrl.defaultUrl)
+        source.overrides.forEach { add("%L,\n", it.asNamedArg()) }
         unindent()
         add(")")
     }
@@ -314,6 +359,8 @@ class SourceProcessor(
         node: KSClassDeclaration,
     ): TypeSpec.Builder = apply {
         val className = node.simpleName.asString()
+
+        source.overrides.forEach { addSuperclassConstructorParameter(it.asNamedArg()) }
 
         if ("name" in overridden) {
             logger.warn("name is provided by $className; skipping generated name (DSL name is used for metadata only)", node)

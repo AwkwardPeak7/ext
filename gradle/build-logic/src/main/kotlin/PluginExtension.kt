@@ -7,6 +7,7 @@ import keiyoushi.gradle.extensions.DeeplinkFilter
 import keiyoushi.gradle.extensions.DeeplinkSpec
 import keiyoushi.gradle.extensions.KeiyoushiExtension
 import keiyoushi.gradle.extensions.KeiyoushiMultisrcExtension
+import keiyoushi.gradle.extensions.OverrideValue
 import keiyoushi.gradle.extensions.VALID_LIB_VERSIONS
 import keiyoushi.gradle.extensions.alias
 import keiyoushi.gradle.extensions.compileOnly
@@ -202,7 +203,8 @@ class PluginExtension : Plugin<Project> {
                         computeSourceId(name, lang, spec.versionId.orElse(1).get())
                     },
                 ).get()
-                ResolvedSourceData(name, lang, id, baseUrl)
+                val overrides = spec.resolvedOverrides.getOrElse(emptyMap()).toOverrideData()
+                ResolvedSourceData(name, lang, id, baseUrl, overrides)
             }
             val translationsFile = project(":core").projectDir.resolve("translations/strings.json")
             extensions.configure<KspExtension> {
@@ -248,7 +250,25 @@ class PluginExtension : Plugin<Project> {
 }
 
 @Serializable
-private data class ResolvedSourceData(val name: String, val lang: String, val id: Long, val baseUrl: BaseUrlSpecData)
+private data class ResolvedSourceData(
+    val name: String,
+    val lang: String,
+    val id: Long,
+    val baseUrl: BaseUrlSpecData,
+    val overrides: List<OverrideData> = emptyList(),
+)
+
+@Serializable
+private data class OverrideData(val name: String, val type: String, val value: String)
+
+private fun Map<String, OverrideValue>.toOverrideData(): List<OverrideData> = map { (name, value) ->
+    when (value) {
+        is OverrideValue.IntValue -> OverrideData(name, "int", value.value.toString())
+        is OverrideValue.LongValue -> OverrideData(name, "long", value.value.toString())
+        is OverrideValue.BooleanValue -> OverrideData(name, "boolean", value.value.toString())
+        is OverrideValue.StringValue -> OverrideData(name, "string", value.value)
+    }
+}
 
 @Serializable
 private data class ExtensionInfoData(
