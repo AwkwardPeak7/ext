@@ -101,6 +101,9 @@ suspend fun OkHttpClient.get(
  * @param url The [HttpUrl] to request.
  * @param headers The headers to include in the request.
  * @param body The request body payload.
+ * @param cacheControl When set with a positive max-age, allows this POST to be cached by
+ * OkHttp's own cache (see [keiyoushi.network.PostCacheRewriteInterceptor]); left unset, POST
+ * requests are never cached, same as before.
  * @param ensureSuccess If true, throws an exception if the response code is not 2xx.
  * @return The HTTP [Response].
  */
@@ -108,12 +111,14 @@ suspend fun OkHttpClient.post(
     url: HttpUrl,
     headers: Headers,
     body: RequestBody,
+    cacheControl: CacheControl? = null,
     ensureSuccess: Boolean = true,
 ): Response {
     val request = Request.Builder()
         .url(url)
         .headers(headers)
         .post(body)
+        .apply { cacheControl?.let { cacheControl(it) } }
         .build()
     val call = newCall(request)
 
@@ -130,6 +135,9 @@ suspend fun OkHttpClient.post(
  * @param url The URL string to request.
  * @param headers The headers to include in the request.
  * @param body The request body payload.
+ * @param cacheControl When set with a positive max-age, allows this POST to be cached by
+ * OkHttp's own cache (see [keiyoushi.network.PostCacheRewriteInterceptor]); left unset, POST
+ * requests are never cached, same as before.
  * @param ensureSuccess If true, throws an exception if the response code is not 2xx.
  * @return The HTTP [Response].
  */
@@ -137,8 +145,9 @@ suspend fun OkHttpClient.post(
     url: String,
     headers: Headers,
     body: RequestBody,
+    cacheControl: CacheControl? = null,
     ensureSuccess: Boolean = true,
-): Response = post(url.toHttpUrl(), headers, body, ensureSuccess)
+): Response = post(url.toHttpUrl(), headers, body, cacheControl, ensureSuccess)
 
 /**
  * Executes a POST request asynchronously, automatically retrieving the
@@ -146,6 +155,9 @@ suspend fun OkHttpClient.post(
  *
  * @param url The [HttpUrl] to request.
  * @param body The request body payload.
+ * @param cacheControl When set with a positive max-age, allows this POST to be cached by
+ * OkHttp's own cache (see [keiyoushi.network.PostCacheRewriteInterceptor]); left unset, POST
+ * requests are never cached, same as before.
  * @param ensureSuccess If true, throws an exception if the response code is not 2xx.
  * @return The HTTP [Response].
  */
@@ -153,8 +165,9 @@ context(source: HttpSource)
 suspend fun OkHttpClient.post(
     url: HttpUrl,
     body: RequestBody,
+    cacheControl: CacheControl? = null,
     ensureSuccess: Boolean = true,
-): Response = post(url, source.headers, body, ensureSuccess)
+): Response = post(url, source.headers, body, cacheControl, ensureSuccess)
 
 /**
  * Executes a POST request asynchronously using a URL string, automatically retrieving the
@@ -162,6 +175,9 @@ suspend fun OkHttpClient.post(
  *
  * @param url The URL string to request.
  * @param body The request body payload.
+ * @param cacheControl When set with a positive max-age, allows this POST to be cached by
+ * OkHttp's own cache (see [keiyoushi.network.PostCacheRewriteInterceptor]); left unset, POST
+ * requests are never cached, same as before.
  * @param ensureSuccess If true, throws an exception if the response code is not 2xx.
  * @return The HTTP [Response].
  */
@@ -169,8 +185,9 @@ context(source: HttpSource)
 suspend fun OkHttpClient.post(
     url: String,
     body: RequestBody,
+    cacheControl: CacheControl? = null,
     ensureSuccess: Boolean = true,
-): Response = post(url, source.headers, body, ensureSuccess)
+): Response = post(url, source.headers, body, cacheControl, ensureSuccess)
 
 /**
  * Executes a PUT request asynchronously and returns the response.

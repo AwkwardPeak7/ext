@@ -3,13 +3,12 @@ plugins {
 }
 
 dependencies {
-    api(project(":lib:cryptoaes"))
-    api(project(":lib:i18n"))
+    api(project(":lib:cookieinterceptor"))
 }
 
 keiyoushi {
     baseVersionCode = 51
-    libVersion = "1.4"
+    libVersion = "1.6"
 
     deeplink {
         path("/.*/..*")

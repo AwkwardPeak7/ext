@@ -1,43 +1,830 @@
 package eu.kanade.tachiyomi.multisrc.madara
 
-import android.util.Base64
-import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.POST
-import eu.kanade.tachiyomi.network.asObservableSuccess
 import eu.kanade.tachiyomi.source.model.Filter
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
-import eu.kanade.tachiyomi.source.online.HttpSource
+import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.util.asJsoup
-import keiyoushi.lib.cryptoaes.CryptoAES
-import keiyoushi.lib.i18n.Intl
-import keiyoushi.utils.decodeHex
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
+import keiyoushi.lib.cookieinterceptor.CookieInterceptor
+import keiyoushi.network.get
+import keiyoushi.network.head
+import keiyoushi.network.post
+import keiyoushi.source.KeiSource
+import keiyoushi.utils.firstInstance
+import keiyoushi.utils.firstInstanceOrNull
+import keiyoushi.utils.parseAs
+import keiyoushi.utils.toJsonElement
+import keiyoushi.utils.tryParse
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+import okhttp3.CacheControl
 import okhttp3.FormBody
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.OkHttpClient
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import rx.Observable
-import uy.kohesive.injekt.injectLazy
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.time.Duration.Companion.minutes
 
-abstract class Madara : HttpSource() {
+abstract class Madara : KeiSource() {
 
-    protected open val dateFormat: SimpleDateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
+    protected val dateFormat: SimpleDateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
+
+    override fun OkHttpClient.Builder.configureClient() = apply {
+        addNetworkInterceptor(
+            CookieInterceptor(
+                domain = baseUrl.toHttpUrl().host,
+                cookie = "wpmanga-adault" to "1",
+            ),
+        )
+    }
+
+    protected val cache get() = CacheControl.Builder().maxAge(10.minutes).build()
+
+    protected open val mangaDirectory: String = "manga"
+    protected open val mangaGenreDirectory: String = "manga-genre"
+
+    protected open val mangaListFetchMethod: MangaListFetchMethod = MangaListFetchMethod.AJAX_MADARA_LOAD_MORE
+
+    protected open val filterNonMangaItems: Boolean = true
+
+    /**
+     * Determines how to fetch chapters from source
+     * @see [ChapterFetchMethod]
+     */
+    protected open val chapterFetchMethod: ChapterFetchMethod = ChapterFetchMethod.MANGA_PAGE
+
+    protected open val usePostIdForMangaRequests: Boolean = true
+
+    override fun getHomeUrl(): String = "$baseUrl/$mangaDirectory/?post_type=wp-manga&m_orderby=views"
+
+    protected open suspend fun fetchMangasFromAjax(query: String?, sort: String?, genre: String?, page: Int): MangasPage {
+        val pageSize = 25
+        val formBody = FormBody.Builder().apply {
+            add("action", "madara_load_more")
+            add("page", (page - 1).toString())
+            add("template", "madara-core/content/content-archive")
+            add("vars[template]", "archive")
+            add("vars[post_type]", "wp-manga")
+            add("vars[paged]", "1")
+            add("vars[posts_per_page]", "$pageSize")
+            add("vars[sidebar]", "full")
+            add("vars[post_status]", "publish")
+            add("vars[manga_archives_item_layout]", "big_thumbnail")
+            add("vars[meta_query][relation]", "OR")
+
+            if (filterNonMangaItems) {
+                add("vars[meta_query][0][key]", "_wp_manga_chapter_type")
+                add("vars[meta_query][0][value]", "manga")
+            }
+
+            when (sort) {
+                MADARA_RELEVANCE_SORT, null -> {
+                    // nothing
+                }
+                MADARA_VIEWS_SORT -> {
+                    add("vars[orderby]", "meta_value_num")
+                    add("vars[meta_key]", "_wp_manga_views")
+                    add("vars[order]", "desc")
+                }
+                MADARA_RATING_SORT -> {
+                    add("vars[orderby][query_avarage_reviews]", "DESC")
+                    add("vars[orderby][query_total_reviews]", "DESC")
+                    add("vars[meta_query][0][query_avarage_reviews][key]", "_manga_avarage_reviews")
+                    add("vars[meta_query][0][query_total_reviews][key]", "_manga_total_votes")
+                }
+                MADARA_TRENDING_SORT -> {
+                    add("vars[orderby]", "meta_value_num")
+                    add("vars[meta_key]", "_wp_manga_week_views_value")
+                    add("vars[order]", "desc")
+                }
+                MADARA_LATEST_SORT -> {
+                    add("vars[orderby]", "meta_value_num")
+                    add("vars[meta_key]", "_latest_update")
+                    add("vars[order]", "desc")
+                }
+                MADARA_NEW_SORT -> {
+                    add("vars[orderby]", "date")
+                }
+                MADARA_ALPHABET_SORT -> {
+                    add("vars[orderby]", "post_title")
+                    add("vars[order]", "ASC")
+                }
+                else -> throw IllegalArgumentException("Unknown sort: $sort")
+            }
+
+            if (query != null) {
+                add("vars[s]", query.trim())
+            } else if (genre != null) {
+                add("vars[wp-manga-genre]", genre)
+            }
+        }.build()
+
+        val xhrHeaders = headersBuilder()
+            .set("X-Requested-With", "XMLHttpRequest")
+            .build()
+
+        client.post("$baseUrl/wp-admin/admin-ajax.php", xhrHeaders, formBody, cache).use {
+            val document = it.asJsoup()
+            val manga = parseMangaList(document)
+
+            return MangasPage(manga, hasNextPage = manga.size == pageSize)
+        }
+    }
+
+    protected open val mangaListNoAjaxNextPageSelector = "div[role=navigation] span.current + a.page"
+
+    protected open suspend fun fetchMangasNoAjax(sort: String?, genre: String?, page: Int): MangasPage {
+        val url = baseUrl.toHttpUrl().newBuilder().apply {
+            if (genre != null) {
+                addPathSegment(mangaGenreDirectory)
+                addPathSegment(genre)
+            } else {
+                addPathSegment(mangaDirectory)
+            }
+            if (page > 1) {
+                addPathSegment("page")
+                addPathSegment(page.toString())
+            }
+            addPathSegment("")
+            addQueryParameter("post_type", "wp-manga")
+            when (sort) {
+                MADARA_RELEVANCE_SORT, null -> {
+                    // nothing
+                }
+                MADARA_VIEWS_SORT, MADARA_RATING_SORT, MADARA_TRENDING_SORT, MADARA_LATEST_SORT, MADARA_NEW_SORT, MADARA_ALPHABET_SORT -> {
+                    addQueryParameter("m_orderby", sort)
+                }
+                else -> throw IllegalArgumentException("Unknown sort: $sort")
+            }
+        }.build()
+
+        client.get(url).use {
+            val document = it.asJsoup()
+            val manga = parseMangaList(document)
+            val hasNextPage = document.selectFirst(mangaListNoAjaxNextPageSelector) != null
+
+            return MangasPage(manga, hasNextPage)
+        }
+    }
+
+    protected open val mangaListSelector: String get() = if (filterNonMangaItems) {
+        ".page-item-detail.manga div[id^=manga-item-]"
+    } else {
+        ".page-item-detail div[id^=manga-item-]"
+    }
+
+    protected open fun parseMangaList(document: Document): List<SManga> = document.select(mangaListSelector).map { element ->
+        val urlElement = element.selectFirst("a")!!
+
+        SManga.create().apply {
+            url = element.attr("data-post-id")
+            memo = buildJsonObject {
+                put("slug", urlElement.absUrl("href").toHttpUrl().pathSegments[1])
+            }
+            title = urlElement.attr("title")
+            thumbnail_url = element.selectFirst("img")?.imgAttr()
+        }
+    }
+
+    protected open suspend fun fetchSearchMangasNoAjax(query: String): MangasPage {
+        val url = "$baseUrl/".toHttpUrl().newBuilder()
+            .addQueryParameter("s", query.trim())
+            .addQueryParameter("post_type", "wp-manga")
+            .build()
+
+        client.get(url).use {
+            val document = it.asJsoup()
+            var manga = parseMangaList(document)
+            if (manga.isEmpty()) {
+                manga = parseSearchMangaList(document)
+            }
+
+            return MangasPage(manga, hasNextPage = false) // deliberately false
+        }
+    }
+
+    protected open suspend fun parseSearchMangaList(document: Document): List<SManga> = coroutineScope {
+        document.select("div.c-tabs-item__content").map { element ->
+            async {
+                val urlElement = element.selectFirst("div.post-title a")!!
+                val slug = urlElement.absUrl("href").toHttpUrl().pathSegments[1]
+
+                SManga.create().apply {
+                    url = getMangaIdFromSlug(slug)
+                    memo = buildJsonObject {
+                        put("slug", slug)
+                    }
+                    title = urlElement.ownText()
+                    thumbnail_url = element.selectFirst("img")?.imgAttr()
+                }
+            }
+        }.awaitAll()
+    }
+
+    private val headProbeMutex = Mutex()
+    private var headProbeSupportsShortlink: Boolean? = null
+
+    protected suspend fun getMangaIdFromSlug(slug: String): String {
+        val url = "$baseUrl/$mangaDirectory/$slug/"
+
+        val supportsShortlink = headProbeMutex.withLock {
+            if (headProbeSupportsShortlink == null) {
+                try {
+                    val response = client.head(url, ensureSuccess = false)
+                    val link = response.header("Link")
+                    response.close()
+
+                    val match = link?.let { SHORTLINK_REGEX.find(it) }
+                    headProbeSupportsShortlink = match != null
+
+                    val p = match?.groupValues?.get(1)?.toHttpUrlOrNull()?.queryParameter("p")
+                    if (p != null) return p
+                } catch (_: Throwable) {
+                    headProbeSupportsShortlink = false
+                }
+            }
+            headProbeSupportsShortlink!!
+        }
+
+        if (supportsShortlink) {
+            try {
+                val response = client.head(url, ensureSuccess = false)
+                val link = response.header("Link")
+                response.close()
+
+                val match = link?.let { SHORTLINK_REGEX.find(it) }
+                val p = match?.groupValues?.get(1)?.toHttpUrlOrNull()?.queryParameter("p")
+                if (p != null) return p
+            } catch (_: Throwable) {
+            }
+        }
+
+        val response = client.get(url)
+        val document = response.asJsoup()
+        response.close()
+
+        val id = document.selectFirst("div#manga-chapters-holder")?.attr("data-id")?.takeIf { it.isNotEmpty() }
+            ?: document.selectFirst("input.rating-post-id")?.attr("value")?.takeIf { it.isNotEmpty() }
+            ?: document.selectFirst("a[data-post]")?.attr("data-post")?.takeIf { it.isNotEmpty() }
+            ?: document.selectFirst("link[rel=shortlink][href*='?p=']")
+                ?.attr("href")
+                ?.takeIf { it.isNotEmpty() }
+                ?.toHttpUrlOrNull()
+                ?.queryParameter("p")
+
+        return id ?: throw Exception("Failed to extract manga ID from page: $url")
+    }
+
+    override suspend fun getPopularManga(page: Int): MangasPage = when (mangaListFetchMethod) {
+        MangaListFetchMethod.MANGA_LIST_PAGE -> fetchMangasNoAjax(MADARA_VIEWS_SORT, null, page)
+        MangaListFetchMethod.AJAX_MADARA_LOAD_MORE -> fetchMangasFromAjax(null, MADARA_VIEWS_SORT, null, page)
+    }
+
+    override suspend fun getLatestUpdates(page: Int): MangasPage = when (mangaListFetchMethod) {
+        MangaListFetchMethod.MANGA_LIST_PAGE -> fetchMangasNoAjax(MADARA_LATEST_SORT, null, page)
+        MangaListFetchMethod.AJAX_MADARA_LOAD_MORE -> fetchMangasFromAjax(null, MADARA_LATEST_SORT, null, page)
+    }
+
+    override suspend fun getSearchMangaList(page: Int, query: String, filterList: FilterList): MangasPage {
+        val sort = filterList.firstInstance<SortFilter>().sort
+        val genre = filterList.firstInstanceOrNull<GenreFilter>()?.genre
+
+        return when (mangaListFetchMethod) {
+            MangaListFetchMethod.MANGA_LIST_PAGE -> {
+                if (query.isBlank()) {
+                    fetchMangasNoAjax(sort, genre, page)
+                } else {
+                    fetchSearchMangasNoAjax(query)
+                }
+            }
+            MangaListFetchMethod.AJAX_MADARA_LOAD_MORE -> fetchMangasFromAjax(query.takeIf(String::isNotBlank), sort, genre, page)
+        }
+    }
+
+    override suspend fun getMangaByUrl(url: HttpUrl): SManga? = null
+
+    override val supportsFilterFetching = true
+
+    override suspend fun fetchFilterData(): JsonElement = client.get("$baseUrl/$mangaDirectory/").use {
+        val document = it.asJsoup()
+
+        val genres = document.select("div.genres a[href*='/$mangaGenreDirectory/']").map { element ->
+            val slug = element.absUrl("href").toHttpUrl().pathSegments[1]
+            val name = element.ownText()
+            name to slug
+        }
+
+        assert(genres.isNotEmpty())
+
+        return@use genres.toJsonElement()
+    }
+
+    override fun getFilterList(data: JsonElement?): FilterList {
+        val filters = buildList {
+            add(SortFilter())
+            data?.also {
+                val genres = buildList {
+                    add("" to "")
+                    addAll(it.parseAs<List<Pair<String, String>>>())
+                }
+                add(GenreFilter(genres))
+                add(Filter.Separator())
+                add(Filter.Header("Genre Filter doesn't work with text search"))
+            }
+        }
+
+        return FilterList(filters)
+    }
+
+    override suspend fun fetchMangaUpdate(
+        manga: SManga,
+        chapters: List<SChapter>,
+        fetchDetails: Boolean,
+        fetchChapters: Boolean,
+    ): SMangaUpdate = coroutineScope {
+        val needsDocumentForChapters = fetchChapters && chapterFetchMethod == ChapterFetchMethod.MANGA_PAGE
+        val needsDocument = fetchDetails || needsDocumentForChapters
+
+        val documentDeferred = if (needsDocument) {
+            async {
+                val url = if (usePostIdForMangaRequests) {
+                    "$baseUrl/?p=${manga.url}"
+                } else {
+                    getMangaUrl(manga)
+                }
+                client.get(url).asJsoup()
+            }
+        } else {
+            null
+        }
+
+        // If chapters don't depend on the manga page document, kick them off
+        // in parallel instead of waiting on the document fetch/parse first.
+        val chaptersDeferred = if (fetchChapters && !needsDocumentForChapters) {
+            async {
+                val slug = manga.memo["slug"]!!.jsonPrimitive.content
+                when (chapterFetchMethod) {
+                    ChapterFetchMethod.AJAX_V1 -> getChaptersAjaxV1(manga.url, slug)
+                    ChapterFetchMethod.AJAX_V2 -> getChaptersAjaxV2(slug)
+                    ChapterFetchMethod.AJAX_V2_MULTIPAGE -> getChaptersAjaxV2MultiPage(slug)
+                    ChapterFetchMethod.MANGA_PAGE -> error("unreachable")
+                }
+            }
+        } else {
+            null
+        }
+
+        val document = documentDeferred?.await()
+        val updatedManga = document?.let { mangaDetailsParse(it) } ?: manga
+
+        val updatedChapters = when {
+            !fetchChapters -> chapters
+            needsDocumentForChapters -> parseChapters(document!!)
+            else -> chaptersDeferred!!.await()
+        }
+
+        SMangaUpdate(updatedManga, updatedChapters)
+    }
+
+    protected open fun mangaDetailsParse(document: Document): SManga = SManga.create().apply {
+        with(document) {
+            url = document.selectFirst("div#manga-chapters-holder")?.attr("data-id")?.takeIf { it.isNotEmpty() }
+                ?: document.selectFirst("input.rating-post-id")?.attr("value")?.takeIf { it.isNotEmpty() }
+                ?: document.selectFirst("a[data-post]")?.attr("data-post")?.takeIf { it.isNotEmpty() }
+                ?: document.selectFirst("link[rel=shortlink][href*='?p=']")
+                    ?.attr("href")
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.toHttpUrlOrNull()
+                    ?.queryParameter("p")!!
+
+            memo = buildJsonObject {
+                put("slug", document.location().toHttpUrl().pathSegments[1])
+            }
+
+            title = selectFirst(mangaDetailsSelectorTitle)!!.ownText()
+
+            select(mangaDetailsSelectorAuthor).eachText()
+                .filter { it.notUpdating() }
+                .joinToString()
+                .takeIf { it.isNotBlank() }
+                ?.let { author = it }
+
+            select(mangaDetailsSelectorArtist)
+                .eachText()
+                .filter { it.notUpdating() }
+                .joinToString()
+                .takeIf { it.isNotBlank() }
+                ?.let { artist = it }
+
+            selectFirst(mangaDetailsSelectorThumbnail)?.let {
+                thumbnail_url = it.imgAttr()
+            }
+
+            select(mangaDetailsSelectorStatus).last()?.let {
+                status = with(it.text().filter { ch -> ch.isLetterOrDigit() || ch.isWhitespace() }.trim()) {
+                    when {
+                        containsIn(completedStatusList) -> SManga.COMPLETED
+                        containsIn(ongoingStatusList) -> SManga.ONGOING
+                        containsIn(hiatusStatusList) -> SManga.ON_HIATUS
+                        containsIn(canceledStatusList) -> SManga.CANCELLED
+                        else -> SManga.UNKNOWN
+                    }
+                }
+            }
+
+            val genres = select(mangaDetailsSelectorGenre)
+                .map { element -> element.text() }
+                .toMutableList()
+
+            if (mangaDetailsSelectorTag.isNotEmpty()) {
+                select(mangaDetailsSelectorTag).forEach { element ->
+                    if (
+                        element.text().length <= 25 &&
+                        element.text().contains("read", true).not() &&
+                        element.text().contains(name, true).not() &&
+                        element.text().contains(name.replace(" ", ""), true).not() &&
+                        element.text().contains(title, true).not()
+                    ) {
+                        genres.add(element.text())
+                    }
+                }
+            }
+
+            document.selectFirst(seriesTypeSelector)?.ownText()?.let {
+                if (it.isEmpty().not() && it.notUpdating() && it != "-") {
+                    genres.add(it)
+                }
+            }
+
+            genre = genres.distinctBy(String::lowercase).joinToString()
+
+            description = buildString {
+                select(mangaDetailsSelectorDescription).let { desc ->
+                    desc.forEach {
+                        append(it.wholeText().trim())
+                        append("\n\n")
+                    }
+                }
+                document.selectFirst(altNameSelector)?.ownText()?.let { altName ->
+                    if (altName.isNotBlank() && altName.notUpdating()) {
+                        append("Alternative Names:\n")
+                        altName.split(",").forEach {
+                            append("- ")
+                            append(it.trim())
+                            append("\n")
+                        }
+                    }
+                }
+            }.trim()
+        }
+    }
+    protected val completedStatusList: Array<String> = arrayOf(
+        "Completed",
+        "Completo",
+        "Completado",
+        "Concluído",
+        "Concluido",
+        "Finalizado",
+        "Achevé",
+        "Terminé",
+        "Hoàn Thành",
+        "مكتملة",
+        "مكتمل",
+        "已完结",
+        "Tamamlandı",
+        "Đã hoàn thành",
+        "Завершено",
+        "Tamamlanan",
+        "Complété",
+    )
+
+    protected val ongoingStatusList: Array<String> = arrayOf(
+        "OnGoing", "Продолжается", "Updating", "Em Lançamento", "Em lançamento", "Em andamento",
+        "Em Andamento", "En cours", "En Cours", "En cours de publication", "Ativo", "Lançando", "Đang Tiến Hành", "Còn Nữa", "Devam Ediyor",
+        "Devam ediyor", "In Corso", "In Arrivo", "مستمرة", "مستمر", "En Curso", "En curso", "Emision",
+        "Curso", "En marcha", "Publicandose", "Publicándose", "En emision", "连载中", "Em Lançamento", "Devam Ediyo",
+        "Đang làm", "Em postagem", "Devam Eden", "Em progresso", "Em curso", "Atualizações Semanais",
+    )
+
+    protected val hiatusStatusList: Array<String> = arrayOf(
+        "On Hold",
+        "Pausado",
+        "En espera",
+        "Durduruldu",
+        "Beklemede",
+        "Đang chờ",
+        "متوقف",
+        "En Pause",
+        "Заморожено",
+        "En attente",
+    )
+
+    protected val canceledStatusList: Array<String> = arrayOf(
+        "Canceled",
+        "Cancelado",
+        "İptal Edildi",
+        "Güncel",
+        "Đã hủy",
+        "ملغي",
+        "Abandonné",
+        "Заброшено",
+        "Annulé",
+    )
+
+    open val mangaDetailsSelectorTitle = "div.post-title h3, div.post-title h1, #manga-title > h1"
+    open val mangaDetailsSelectorAuthor = "div.author-content > a, div.manga-authors > a"
+    open val mangaDetailsSelectorArtist = "div.artist-content > a"
+    open val mangaDetailsSelectorStatus = "div.summary-content, div.summary-heading:contains(Status) + div"
+    open val mangaDetailsSelectorDescription = "div.description-summary div.summary__content, div.summary_content div.post-content_item > h5 + div, div.summary_content div.manga-excerpt"
+    open val mangaDetailsSelectorThumbnail = "div.summary_image img"
+    open val mangaDetailsSelectorGenre = "div.genres-content a"
+    open val mangaDetailsSelectorTag = "div.tags-content a"
+
+    open val seriesTypeSelector = ".post-content_item:contains(Type) .summary-content"
+    open val altNameSelector = ".post-content_item:contains(Alt) .summary-content"
+    open val updatingRegex = "Updating|Atualizando".toRegex(RegexOption.IGNORE_CASE)
+
+    fun String.notUpdating(): Boolean = this.contains(updatingRegex).not()
+
+    private fun String.containsIn(array: Array<String>): Boolean = this.lowercase() in array.map { it.lowercase() }
+
+    protected open suspend fun getChaptersAjaxV1(id: String, slug: String): List<SChapter> {
+        val form = FormBody.Builder()
+            .add("action", "manga_get_chapters")
+            .add("manga", id)
+            .build()
+        val xhrHeaders = headersBuilder()
+            .set("Referer", "$baseUrl/$mangaDirectory/$slug/")
+            .set("X-Requested-With", "XMLHttpRequest")
+            .build()
+
+        client.post("$baseUrl/wp-admin/admin-ajax.php", xhrHeaders, form, cache).use {
+            return parseChapters(it.asJsoup())
+        }
+    }
+
+    protected open suspend fun getChaptersAjaxV2(slug: String): List<SChapter> {
+        val emptyForm = FormBody.Builder().build()
+        val xhrHeaders = headersBuilder()
+            .set("Referer", "$baseUrl/$mangaDirectory/$slug/")
+            .set("X-Requested-With", "XMLHttpRequest")
+            .build()
+
+        client.post("$baseUrl/$mangaDirectory/$slug/ajax/chapters/", xhrHeaders, emptyForm, cache).use {
+            return parseChapters(it.asJsoup())
+        }
+    }
+
+    protected open suspend fun getChaptersAjaxV2MultiPage(slug: String): List<SChapter> {
+        val emptyForm = FormBody.Builder().build()
+        val xhrHeaders = headersBuilder()
+            .set("Referer", "$baseUrl/$mangaDirectory/$slug/")
+            .set("X-Requested-With", "XMLHttpRequest")
+            .build()
+
+        val chapters = mutableListOf<SChapter>()
+        var page = 1
+        while (true) {
+            client.post("$baseUrl/$mangaDirectory/$slug/ajax/chapters/?t=$page", xhrHeaders, emptyForm, cache).use {
+                val document = it.asJsoup()
+                val currentPage = parseChapters(document)
+
+                if (currentPage.isNotEmpty()) {
+                    chapters.addAll(currentPage)
+                    page++
+                } else {
+                    break
+                }
+            }
+        }
+
+        return chapters
+    }
+
+    protected open val chapterListSelector = "li.wp-manga-chapter"
+    protected open val chapterDateSelector = "span.chapter-release-date"
+
+    protected open fun parseChapters(document: Document): List<SChapter> = document.select(chapterListSelector).map { element ->
+        val urlElement = element.selectFirst("a")!!
+        val slug = urlElement.absUrl("href").toHttpUrl().pathSegments[2]
+
+        val title = urlElement.text().substringAfter('-', "").trim().takeIf(String::isNotBlank)
+        val number = parseChapterNumberFromSlug(slug)
+
+        SChapter.create().apply {
+            url = slug
+            name = buildString {
+                val numberString = number.toString().substringBeforeLast(".0")
+                if (title != null) {
+                    if (title.contains(numberString)) {
+                        append(title)
+                    } else {
+                        append("Ch. ")
+                        append(numberString)
+                        append(": ")
+                        append(title)
+                    }
+                } else {
+                    append("Ch. ")
+                    append(numberString)
+                }
+            }
+            number?.also { chapter_number = it }
+            date_upload = element.selectFirst("img:not(.thumb)")?.attr("alt")?.let { parseRelativeDate(it) }
+                ?: element.selectFirst("span a")?.attr("title")?.let { parseRelativeDate(it) }
+                ?: parseChapterDate(element.selectFirst(chapterDateSelector)?.text())
+        }
+    }
+
+    /**
+     * 	Chapter number is first occurrence of a number in the last element of url when split with "/" (aka the slug)
+     * 	e.g.
+     * 	one-piece-color-jk-english/volume-20-showdown-at-alubarna/chapter-177-30-million-vs-81-million/
+     * 	has chapter number 177
+     * 	parasite-chromatique-french/volume-10/chapitre-062-5/
+     * 	has chapter number 62.5
+     *
+     * 	This method takes the last part of the url aka the slug and returns the number
+     */
+    protected fun parseChapterNumberFromSlug(slug: String): Float? {
+        val cleanSlug = slug.split('_', '/')[0]
+        val matches = CHAPTER_REGEX.findAll(cleanSlug).iterator()
+
+        if (!matches.hasNext()) return null
+
+        val firstValue = matches.next().value.toFloat()
+
+        return if (matches.hasNext()) {
+            firstValue + (matches.next().value.toFloat() / 10f)
+        } else {
+            firstValue
+        }
+    }
+
+    protected open fun parseChapterDate(date: String?): Long {
+        date ?: return 0
+
+        return when {
+            // Handle 'yesterday' and 'today', using midnight
+            WordSet("yesterday", "يوم واحد").startsWith(date) -> {
+                Calendar.getInstance().apply {
+                    add(Calendar.DAY_OF_MONTH, -1) // yesterday
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            }
+
+            WordSet("today").startsWith(date) -> {
+                Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            }
+
+            WordSet("يومين").startsWith(date) -> {
+                Calendar.getInstance().apply {
+                    add(Calendar.DAY_OF_MONTH, -2) // day before yesterday
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }.timeInMillis
+            }
+
+            WordSet("ago", "atrás", "önce", "قبل", "trước").endsWith(date) -> {
+                parseRelativeDate(date)
+            }
+
+            WordSet("hace", "năm", "tháng", "tuần", "ngày", "giờ", "phút", "giây").startsWith(date) -> {
+                parseRelativeDate(date)
+            }
+
+            // Handle "jour" with a number before it
+            date.contains(Regex("""\b\d+ jour""")) -> {
+                parseRelativeDate(date)
+            }
+
+            date.contains(Regex("""\d(st|nd|rd|th)""")) -> {
+                // Clean date (e.g. 5th December 2019 to 5 December 2019) before parsing it
+                date.split(" ").map {
+                    if (it.contains(Regex("""\d\D\D"""))) {
+                        it.replace(Regex("""\D"""), "")
+                    } else {
+                        it
+                    }
+                }
+                    .let { dateFormat.tryParse(it.joinToString(" ")) }
+            }
+
+            else -> dateFormat.tryParse(date)
+        }
+    }
+
+    // Parses dates in this form:
+    // 21 horas ago
+    protected open fun parseRelativeDate(date: String): Long {
+        val number = Regex("""(\d+)""").find(date)?.value?.toIntOrNull() ?: return 0
+        val cal = Calendar.getInstance()
+
+        return when {
+            WordSet("hari", "gün", "jour", "día", "dia", "day", "วัน", "ngày", "giorni", "أيام", "天").anyWordIn(date) -> cal.apply { add(Calendar.DAY_OF_MONTH, -number) }.timeInMillis
+            WordSet("jam", "saat", "heure", "hora", "hour", "ชั่วโมง", "giờ", "ore", "ساعة", "小时").anyWordIn(date) -> cal.apply { add(Calendar.HOUR, -number) }.timeInMillis
+            WordSet("menit", "dakika", "min", "minute", "minuto", "นาที", "دقائق", "phút").anyWordIn(date) -> cal.apply { add(Calendar.MINUTE, -number) }.timeInMillis
+            WordSet("detik", "segundo", "second", "วินาที", "giây").anyWordIn(date) -> cal.apply { add(Calendar.SECOND, -number) }.timeInMillis
+            WordSet("week", "semana", "tuần").anyWordIn(date) -> cal.apply { add(Calendar.DAY_OF_MONTH, -number * 7) }.timeInMillis
+            WordSet("month", "mes", "tháng").anyWordIn(date) -> cal.apply { add(Calendar.MONTH, -number) }.timeInMillis
+            WordSet("year", "año", "năm").anyWordIn(date) -> cal.apply { add(Calendar.YEAR, -number) }.timeInMillis
+            else -> 0
+        }
+    }
+
+    override fun getMangaUrl(manga: SManga): String {
+        val slug = manga.memo["slug"]!!.jsonPrimitive.content
+
+        return "$baseUrl/$mangaDirectory/$slug/"
+    }
+
+    override suspend fun fetchRelatedMangaList(manga: SManga): List<SManga> = emptyList()
+
+    override suspend fun getPageList(chapter: SChapter): List<Page> = emptyList()
+
+    override fun getChapterUrl(chapter: SChapter): String = ""
+
+    protected open fun Element.imgAttr(): String? = when {
+        hasAttr("data-src") -> absUrl("data-src")
+        hasAttr("data-lazy-src") -> absUrl("data-lazy-src")
+        hasAttr("data-cfsrc") -> absUrl("data-cfsrc")
+        hasAttr("data-manga-src") -> absUrl("data-manga-src")
+        hasAttr("data-srcset") -> attr("data-srcset").getSrcSetImage()
+        hasAttr("srcset") -> attr("srcset").getSrcSetImage()
+        else -> absUrl("src")
+    }
+
+    protected open fun String.getSrcSetImage(): String? = this.split(" ")
+        .filter(URL_REGEX::matches)
+        .maxOfOrNull(String::toString)
+}
+
+enum class MangaListFetchMethod {
+    MANGA_LIST_PAGE,
+    AJAX_MADARA_LOAD_MORE,
+}
+
+enum class ChapterFetchMethod {
+    /**
+     * All chapters are embedded directly on manga page HTML
+     */
+    MANGA_PAGE,
+
+    /**
+     * All chapters are fetched via **WordPress Admin AJAX endpoint**
+     * `manga_get_chapters` action POST call to `/wp-admin/admin-ajax.php`
+     */
+    AJAX_V1,
+
+    /**
+     * All chapters are fetched via *WordPress Chapter AJAX endpoint**
+     * GET call to `/manga/$slug/ajax/chapters/
+     */
+    AJAX_V2,
+
+    /**
+     * Chapters are fetched via paginated *WordPress Chapter AJAX endpoint**
+     * multiple GET calls to `/manga/$slug/ajax/chapters/?t=$page
+     */
+    AJAX_V2_MULTIPAGE,
+}
+
+val URL_REGEX = """^(https?://[^\s/$.?#].\S*)$""".toRegex()
+val SHORTLINK_REGEX = Regex("""<([^>]+)>;\s*rel="?shortlink"?""", RegexOption.IGNORE_CASE)
+val CHAPTER_REGEX = """\d+(?:\.\d+)?""".toRegex()
+
+/*
+abstract class MadaraOld(
+    override val name: String,
+    override val baseUrl: String,
+    final override val lang: String,
+    protected val dateFormat: SimpleDateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US),
+) : HttpSource() {
 
     override val supportsLatest = true
 
@@ -60,53 +847,53 @@ abstract class Madara : HttpSource() {
     )
 
     /**
-     * If enabled, will attempt to remove non-manga items in popular and latest.
-     * The filter will not be used in search as the theme doesn't set the CSS class.
-     * Can be disabled if the source incorrectly sets the entry types.
-     */
+ * If enabled, will attempt to remove non-manga items in popular and latest.
+ * The filter will not be used in search as the theme doesn't set the CSS class.
+ * Can be disabled if the source incorrectly sets the entry types.
+ */
     protected open val filterNonMangaItems = true
 
     /**
-     * The CSS selector used to filter manga items in popular and latest
-     * if `filterNonMangaItems` is set to `true`. Can be override if needed.
-     * If the flag is set to `false`, it will be empty by default.
-     */
+ * The CSS selector used to filter manga items in popular and latest
+ * if `filterNonMangaItems` is set to `true`. Can be override if needed.
+ * If the flag is set to `false`, it will be empty by default.
+ */
     protected open val mangaEntrySelector: String by lazy {
         if (filterNonMangaItems) ".manga" else ""
     }
 
     /**
-     * Automatically fetched genres from the source to be used in the filters.
-     */
+ * Automatically fetched genres from the source to be used in the filters.
+ */
     protected open var genresList: List<Genre> = emptyList()
 
     /**
-     * Whether genres have been fetched
-     */
+ * Whether genres have been fetched
+ */
     private var genresFetched: Boolean = false
 
     /**
-     * Inner variable to control how much tries the genres request was called.
-     */
+ * Inner variable to control how much tries the genres request was called.
+ */
     private var fetchGenresAttempts: Int = 0
 
     /**
-     * Disable it if you don't want the genres to be fetched.
-     */
+ * Disable it if you don't want the genres to be fetched.
+ */
     protected open val fetchGenres: Boolean = true
 
     /**
-     * The path used in the URL for the manga pages. Can be
-     * changed if needed as some sites modify it to other words.
-     */
+ * The path used in the URL for the manga pages. Can be
+ * changed if needed as some sites modify it to other words.
+ */
     protected open val mangaSubString = "manga"
 
     /**
-     * enable if the site use "madara_load_more" to load manga on the site
-     * Typically has "load More" instead of next/previous page
-     *
-     * with LoadMoreStrategy.AutoDetect it tries to detect if site uses `madara_load_more`
-     */
+ * enable if the site use "madara_load_more" to load manga on the site
+ * Typically has "load More" instead of next/previous page
+ *
+ * with LoadMoreStrategy.AutoDetect it tries to detect if site uses `madara_load_more`
+ */
     protected open val useLoadMoreRequest = LoadMoreStrategy.AutoDetect
 
     enum class LoadMoreStrategy {
@@ -116,8 +903,8 @@ abstract class Madara : HttpSource() {
     }
 
     /**
-     * internal variable to save if site uses load_more or not
-     */
+ * internal variable to save if site uses load_more or not
+ */
     private var loadMoreRequestDetected = LoadMoreDetection.Pending
 
     private enum class LoadMoreDetection {
@@ -822,29 +1609,29 @@ abstract class Madara : HttpSource() {
     }
 
     /**
-     *  Get the best image quality available from srcset
-     */
+ *  Get the best image quality available from srcset
+ */
     protected open fun String.getSrcSetImage(): String? = this.split(" ")
         .filter(URL_REGEX::matches)
         .maxOfOrNull(String::toString)
 
     /**
-     *  Apply any additional processing to the thumbnail URL if needed.
-     */
+ *  Apply any additional processing to the thumbnail URL if needed.
+ */
     protected open fun processThumbnail(url: String?, fromSearch: Boolean = false): String? = url
 
     /**
-     * Set it to true if the source uses the new AJAX endpoint to
-     * fetch the manga chapters instead of the old admin-ajax.php one.
-     */
+ * Set it to true if the source uses the new AJAX endpoint to
+ * fetch the manga chapters instead of the old admin-ajax.php one.
+ */
     protected open val useNewChapterEndpoint: Boolean = false
 
     /**
-     * Internal attribute to control if it should always use the
-     * new chapter endpoint after a first check if useNewChapterEndpoint is
-     * set to false. Using a separate variable to still allow the other
-     * one to be overridable manually in each source.
-     */
+ * Internal attribute to control if it should always use the
+ * new chapter endpoint after a first check if useNewChapterEndpoint is
+ * set to false. Using a separate variable to still allow the other
+ * one to be overridable manually in each source.
+ */
     private var oldChapterEndpointDisabled: Boolean = false
 
     protected open fun oldXhrChaptersRequest(mangaId: String): Request {
@@ -1067,9 +1854,9 @@ abstract class Madara : HttpSource() {
     override fun imageUrlParse(response: Response) = throw UnsupportedOperationException()
 
     /**
-     * Set it to false if you want to disable the extension reporting the view count
-     * back to the source website through admin-ajax.php.
-     */
+ * Set it to false if you want to disable the extension reporting the view count
+ * back to the source website through admin-ajax.php.
+ */
     protected open val sendViewCount: Boolean = true
 
     protected open fun countViewsRequest(document: Document): Request? {
@@ -1104,10 +1891,10 @@ abstract class Madara : HttpSource() {
     }
 
     /**
-     * Send the view count request to the Madara endpoint.
-     *
-     * @param document The response document with the wp-manga data
-     */
+ * Send the view count request to the Madara endpoint.
+ *
+ * @param document The response document with the wp-manga data
+ */
     protected fun countViews(document: Document) {
         if (!sendViewCount) {
             return
@@ -1120,8 +1907,8 @@ abstract class Madara : HttpSource() {
     }
 
     /**
-     * Fetch the genres from the source to be used in the filters.
-     */
+ * Fetch the genres from the source to be used in the filters.
+ */
     protected fun fetchGenres() {
         if (fetchGenres && fetchGenresAttempts < 3 && !genresFetched) {
             try {
@@ -1142,15 +1929,15 @@ abstract class Madara : HttpSource() {
     }
 
     /**
-     * The request to the search page (or another one) that have the genres list.
-     */
-    protected open fun genresRequest(): Request = GET("$baseUrl/?s=genre&post_type=wp-manga", headers)
+ * The request to the search page (or another one) that have the genres list.
+ */
+    protected open fun genresRequest(): Request = GET("$baseUrl/?s=genre&c", headers)
 
     /**
-     * Get the genres from the search page document.
-     *
-     * @param document The search page document
-     */
+ * Get the genres from the search page document.
+ *
+ * @param document The search page document
+ */
     protected open fun parseGenres(document: Document): List<Genre> = document.selectFirst("div.checkbox-group")
         ?.select("div.checkbox")
         .orEmpty()
@@ -1171,7 +1958,7 @@ abstract class Madara : HttpSource() {
         const val URL_SEARCH_PREFIX = "slug:"
         val URL_REGEX = """^(https?://[^\s/$.?#].[^\s]*)${'$'}""".toRegex()
     }
-}
+}*/
 
 class WordSet(private vararg val words: String) {
     fun anyWordIn(dateString: String): Boolean = words.any { dateString.contains(it, ignoreCase = true) }
