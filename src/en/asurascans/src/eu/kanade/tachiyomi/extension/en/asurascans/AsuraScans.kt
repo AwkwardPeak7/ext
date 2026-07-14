@@ -27,6 +27,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -157,7 +158,8 @@ abstract class AsuraScans :
 
             val hidePremium = preferences.hidePremiumChapters()
             val chapters = document.extractAstroProp<ChapterListDto>("chapters").chapters
-                .filterNot { hidePremium && it.isLocked }
+                ?.filterNot { hidePremium && it.isLocked }
+                .orEmpty()
                 .map { it.toSChapter(randomMangaSlug) }
 
             return SMangaUpdate(manga, chapters)
@@ -372,10 +374,11 @@ abstract class AsuraScans :
 
     private fun JsonElement.unwrapAstro(): JsonElement = when (this) {
         is JsonArray -> when {
+            isEmpty() -> JsonNull
+            size == 1 -> JsonNull
             size == 2 && this[0] is JsonPrimitive -> this[1].unwrapAstro()
             else -> JsonArray(map { it.unwrapAstro() })
         }
-
         is JsonObject -> JsonObject(mapValues { it.value.unwrapAstro() })
         else -> this
     }

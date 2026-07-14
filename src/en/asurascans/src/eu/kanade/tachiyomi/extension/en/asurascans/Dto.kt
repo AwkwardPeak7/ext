@@ -117,7 +117,7 @@ private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ROO
 
 @Serializable
 class ChapterListDto(
-    val chapters: List<ChapterDto> = emptyList(),
+    val chapters: List<ChapterDto>? = null,
 )
 
 @Serializable
