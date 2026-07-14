@@ -11,9 +11,6 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.SMangaUpdate
 import eu.kanade.tachiyomi.source.online.HttpSource
-import keiyoushi.network.CacheControlOverrideInterceptor
-import keiyoushi.network.PostCacheRestoreInterceptor
-import keiyoushi.network.PostCacheRewriteInterceptor
 import keiyoushi.utils.applicationContext
 import keiyoushi.utils.jsonInstance
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -71,26 +68,22 @@ abstract class KeiSource : HttpSource() {
 
             val networkInterceptors = networkInterceptors()
 
-//            check(
-//                networkInterceptors.none { it.javaClass.simpleName == "IgnoreGzipInterceptor" },
-//            ) {
-//                "IgnoreGzipInterceptor must not be present in default client"
-//            }
-//
-//            check(
-//                networkInterceptors.none { it is BrotliInterceptor },
-//            ) {
-//                "BrotliInterceptor must not be present in default client"
-//            }
+            check(
+                networkInterceptors.none { it.javaClass.simpleName == "IgnoreGzipInterceptor" },
+            ) {
+                "IgnoreGzipInterceptor must not be present in default client"
+            }
+
+            check(
+                networkInterceptors.none { it is BrotliInterceptor },
+            ) {
+                "BrotliInterceptor must not be present in default client"
+            }
 
             networkInterceptors.removeAll { it.javaClass.simpleName == "IgnoreGzipInterceptor" }
             networkInterceptors.removeAll { it is BrotliInterceptor }
 
             configureClient()
-
-            addInterceptor(PostCacheRewriteInterceptor())
-            addNetworkInterceptor(PostCacheRestoreInterceptor())
-            addNetworkInterceptor(CacheControlOverrideInterceptor())
 
             // last application interceptor
             addInterceptor(CompressionInterceptor(Brotli, Gzip, Zstd))
