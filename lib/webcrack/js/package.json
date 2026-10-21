@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild entry.js --bundle --minify --format=iife --global-name=webcrack --platform=browser --target=es2017 --legal-comments=none --alias:@babel/core=./empty.js --alias:isolated-vm=./empty.js --alias:node:fs/promises=./empty.js --alias:node:path=path-browserify --define:process.env={} --outfile=../assets/webcrack.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "path-browserify": "1.0.1",
+    "webcrack": "2.16.0"
+  }
+}
