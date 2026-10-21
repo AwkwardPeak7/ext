@@ -10,7 +10,7 @@ import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import keiyoushi.annotation.Source
 import keiyoushi.lib.cryptoaes.CryptoAES
-import keiyoushi.lib.synchrony.Deobfuscator
+import keiyoushi.lib.webcrack.Webcrack
 import keiyoushi.network.get
 import keiyoushi.network.rateLimit
 import keiyoushi.utils.decodeHex
@@ -84,8 +84,7 @@ abstract class MangasIn : MMRCMS() {
 
     private suspend fun getKey(): String {
         val script = client.get("$baseUrl/js/ads2.js").body.string()
-        val deobfuscatedScript = Deobfuscator.deobfuscateScript(script)
-            ?: throw Exception("No se pudo desofuscar el script")
+        val deobfuscatedScript = Webcrack.deobfuscate(script)
 
         val variable = KEY_REGEX.find(deobfuscatedScript)?.groupValues?.get(1)
             ?: throw Exception("No se pudo encontrar la clave")

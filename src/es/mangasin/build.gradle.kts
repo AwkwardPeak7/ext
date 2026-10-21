@@ -6,7 +6,7 @@ plugins {
 
 keiyoushi {
     name = "Mangas.in"
-    versionCode = 0
+    versionCode = 1
     contentWarning = ContentWarning.MIXED
     libVersion = "1.6"
     theme = "mmrcms"
@@ -19,6 +19,6 @@ keiyoushi {
 
 dependencies {
 
-    implementation(project(":lib:synchrony"))
+    implementation(project(":lib:webcrack"))
     implementation(project(":lib:cryptoaes"))
 }

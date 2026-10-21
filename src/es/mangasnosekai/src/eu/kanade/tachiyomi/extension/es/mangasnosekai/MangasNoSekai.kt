@@ -3,7 +3,7 @@ package eu.kanade.tachiyomi.extension.es.mangasnosekai
 import eu.kanade.tachiyomi.multisrc.madara.MadaraNoAjax
 import eu.kanade.tachiyomi.source.model.SChapter
 import keiyoushi.annotation.Source
-import keiyoushi.lib.synchrony.Deobfuscator
+import keiyoushi.lib.webcrack.Webcrack
 import keiyoushi.network.get
 import keiyoushi.network.post
 import keiyoushi.network.rateLimit
@@ -68,8 +68,7 @@ abstract class MangasNoSekai : MadaraNoAjax() {
         mangaPage: Document?,
     ): List<SChapter> {
         val coreScript = mangaPage!!.selectFirst("script#wp-manga-js")!!.attr("abs:src")
-        val coreScriptBody = Deobfuscator.deobfuscateScript(client.get(coreScript, headers).body.string())
-            ?: throw Exception("No se pudo deobfuscar el script")
+        val coreScriptBody = Webcrack.deobfuscate(client.get(coreScript, headers).body.string())
 
         val regexCapture = ACTION_REGEX.find(coreScriptBody)?.groupValues
         val url = regexCapture?.get(1) ?: throw Exception("No se pudo obtener la url del capítulo")
@@ -113,8 +112,8 @@ abstract class MangasNoSekai : MadaraNoAjax() {
     override suspend fun fetchChapterDocument(chapterUrl: String) = super.fetchChapterDocument(chapterUrl.trimEnd('/') + "/")
 
     companion object {
-        val ACTION_REGEX = """function\s+.*?[\s\S]*?\.ajax;?[\s\S]*?(?:'?url'?:\s*'([^']*)')(?:[\s\S]*?'?data'?:\s*\{([^}]*)\})?""".toRegex()
-        val OBJECTS_REGEX = """\s*'?(\w+)'?\s*:\s*(?:(?:'([^']*)'|([^,\r\n]+))\s*,?\s*)""".toRegex()
+        val ACTION_REGEX = """function\s+.*?[\s\S]*?\.ajax;?[\s\S]*?(?:['"]?url['"]?:\s*['"]([^'"]*)['"])(?:[\s\S]*?['"]?data['"]?:\s*\{([^}]*)\})?""".toRegex()
+        val OBJECTS_REGEX = """\s*['"]?(\w+)['"]?\s*:\s*(?:(?:['"]([^'"]*)['"]|([^,\r\n]+))\s*,?\s*)""".toRegex()
         val MANGA_ID_REGEX = """\"manga_id"\s*:\s*"(.*)\"""".toRegex()
         val ALT_MANGA_ID_REGEX = """\"postId"\s*:\s*"(.*)\"""".toRegex()
     }

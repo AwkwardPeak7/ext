@@ -6,7 +6,7 @@ plugins {
 
 keiyoushi {
     name = "Mangas No Sekai"
-    versionCode = 20
+    versionCode = 21
     contentWarning = ContentWarning.SAFE
     libVersion = "1.6"
     theme = "madara"
@@ -19,5 +19,5 @@ keiyoushi {
 
 dependencies {
 
-    implementation(project(":lib:synchrony"))
+    implementation(project(":lib:webcrack"))
 }
